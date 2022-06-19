@@ -1,3 +1,22 @@
 {
-	basic			.
+	-basic							v_10-59_19-06-2022
+	-canvas cannot					.
+	 fill rects in upper right
+	 and cannot
+	 draw points in lower left
+	 why ??? is rust-sdl buggy?
+	 
+	-framerate 30					.
+	-timescale						.
+	-keyboard to control			.
+		-select material				.
+		 (arrow up/down)
+		-set timescale					.
+		 (arrow left/right)
+		
+	-draw hud						.
+		-selected material				.
+		-timescale						.
+	-gravity						.
+	-v 								. -> 0.1.0
 }

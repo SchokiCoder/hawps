@@ -6,6 +6,8 @@ edition = "2018"
 license = "GPLv3"
 publish = false
 
+[dependencies]
+
 [dependencies.sdl2]
 version = "0.35.*"
 default-features = false
