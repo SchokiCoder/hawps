@@ -1,22 +1,28 @@
 {
 	-basic							v_10-59_19-06-2022
-	-canvas cannot					.
-	 fill rects in upper right
-	 and cannot
-	 draw points in lower left
-	 why ??? is rust-sdl buggy?
+	-lower left is being not being	v_13-18_20-06-2022
+	 drawn too by pixel draw part
+	 "for y in 0..x" ...
+	 what was i thinking?
+
+	 im sorry sdl, i should have
+	 never doubted you
 	 
-	-framerate 30					.
+	-framerate 30					v_14-04
+	-keyboard to control			v_15-37
+	 select material				
+	 (arrow up/down)
+
+	-draw hud						.
+	 selected material				
+
+	-gravity						.
+
 	-timescale						.
 	-keyboard to control			.
-		-select material				.
-		 (arrow up/down)
-		-set timescale					.
-		 (arrow left/right)
-		
+	  set timescale					
+	  (arrow left/right)
 	-draw hud						.
-		-selected material				.
-		-timescale						.
-	-gravity						.
+	 timescale						
 	-v 								. -> 0.1.0
 }
