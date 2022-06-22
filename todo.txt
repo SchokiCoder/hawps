@@ -24,5 +24,8 @@
 	  (arrow left/right)
 	-draw hud						.
 	 timescale						
+
+	-material spawn out of bounds	.
+	 (either fix or internal cursor)
 	-v 								. -> 0.1.0
 }
