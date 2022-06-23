@@ -13,13 +13,13 @@
 	 select material				
 	 (arrow up/down)
 
-	-draw hud						.
+	-draw hud						v_09-29_23-06-2022
 	 selected material				
 
-	-gravity						.
+	-gravity						v_10-44
 
-	-timescale						.
-	-keyboard to control			.
+	-timescale						v
+	-keyboard to control			v_10-55
 	  set timescale					
 	  (arrow left/right)
 	-draw hud						.
