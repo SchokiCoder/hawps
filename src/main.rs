@@ -3,7 +3,9 @@ use sdl2::event::*;
 use sdl2::pixels::*;
 use sdl2::surface::*;
 use sdl2::render::*;
+use sdl2::video::*;
 use sdl2::rect::*;
+use sdl2::ttf::*;
 
 pub struct Material {
 	name: &'static str,
@@ -70,21 +72,45 @@ const MATERIALS: [Material; 5] = [
 
 type MatIndex = usize;
 
-fn update_tick_ps(
-	tick_ps: &mut u32,
-	tick_ps_surface: &mut Surface,
-	tick_ps_texture: &mut Texture,
-	font: &sdl2::ttf::Font,
-	texture_creator: &TextureCreator<WindowCanvas>) {
+struct Sprite<'a> {
+	font: &'a Font<'a, 'a>,
+	texture_creator: &'a TextureCreator<WindowContext>,
+	surface: Option<Surface<'a>>,
+	texture: Option<Texture<'a>>,
+}
 
-	*tick_ps_surface = font
-		.render(tick_ps.to_string().as_str())
-		.solid(Color::RGB(255, 255, 255))
-		.unwrap();
+impl Sprite<'_> {
+	pub fn new<'a>(font: &'a Font, texture_creator: &'a TextureCreator<WindowContext>) -> Sprite<'a> {
+		return Sprite {
+			font: font,
+			texture_creator: texture_creator,
+			surface: None,
+			texture: None,
+		};
+	}
 
-	*tick_ps_texture = tick_ps_surface
-		.as_texture(&texture_creator)
-		.unwrap();
+	pub fn text(&mut self, text: &str) {
+		self.surface = Some(self.font
+			.render(text)
+			.solid(Color::RGB(255, 255, 255))
+			.unwrap());
+		
+		self.texture = Some(self.surface
+			.as_ref()
+			.unwrap()
+			.as_texture(self.texture_creator)
+			.unwrap());
+	}
+
+	pub fn rect(&self) -> Rect {
+		return self.surface.as_ref().unwrap().rect();
+	}
+
+	pub fn draw(&self, canvas: &mut Canvas<Window>, rect: Rect) {
+		canvas
+			.copy(&self.texture.as_ref().unwrap(), None, Some(rect))
+			.unwrap();
+	}
 }
 
 fn main() {	
@@ -116,64 +142,20 @@ fn main() {
 		FONT_SIZE as u16).unwrap();
 
 	// text textures
-	let tick_ps_surface = font
-		.render(tick_ps.to_string().as_str())
-		.solid(Color::RGB(255, 255, 255))
-		.unwrap();
-
-	let tick_ps_texture = tick_ps_surface
-		.as_texture(&texture_creator)
-		.unwrap();
+	let mut spr_tick_ps = Sprite::new(&font, &texture_creator);
+	spr_tick_ps.text(tick_ps.to_string().as_str());
 	
-	// this looks terrible but rust wont let init the array in a loop	
-	let mat_surfaces: [Surface; MATERIALS.len()] = [
-		font
-			.render(MATERIALS[0].name)
-			.solid(Color::RGB(255, 255, 255))
-			.unwrap(),
-
-		font
-			.render(MATERIALS[1].name)
-			.solid(Color::RGB(255, 255, 255))
-			.unwrap(),
-
-		font
-			.render(MATERIALS[2].name)
-			.solid(Color::RGB(255, 255, 255))
-			.unwrap(),
-
-		font
-			.render(MATERIALS[3].name)
-			.solid(Color::RGB(255, 255, 255))
-			.unwrap(),
-
-		font
-			.render(MATERIALS[4].name)
-			.solid(Color::RGB(255, 255, 255))
-			.unwrap(),
+	let mut spr_mat_names: [Sprite; MATERIALS.len()] = [
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
 	];
-	
-	let mat_textures: [Texture; MATERIALS.len()] = [
-		mat_surfaces[0]
-			.as_texture(&texture_creator)
-			.unwrap(),
 
-		mat_surfaces[1]
-			.as_texture(&texture_creator)
-			.unwrap(),
-
-		mat_surfaces[2]
-			.as_texture(&texture_creator)
-			.unwrap(),
-
-		mat_surfaces[3]
-			.as_texture(&texture_creator)
-			.unwrap(),
-
-		mat_surfaces[4]
-			.as_texture(&texture_creator)
-			.unwrap(),
-	];
+	for i in 0..MATERIALS.len() {
+		spr_mat_names[i].text(MATERIALS[i].name);
+	}
 
 	// mainloop
 	let mut ts_now: std::time::Instant;
@@ -216,12 +198,14 @@ fn main() {
 							if tick_ps > TICK_CHANGE_STEP {
 								tick_ps -= TICK_CHANGE_STEP;
 								tick_delta = 1_000_000_000 / tick_ps;
+								spr_tick_ps.text(tick_ps.to_string().as_str());
 							}
 						},
 
 						Keycode::Right => {
 							tick_ps += TICK_CHANGE_STEP;
 							tick_delta = 1_000_000_000 / tick_ps;
+							spr_tick_ps.text(tick_ps.to_string().as_str());
 						},
 
 						_ => ()
@@ -284,21 +268,17 @@ fn main() {
 			// hud
 			rect_draw.x = HUD_MATERIAL_X as i32;
 			rect_draw.y = HUD_MATERIAL_Y as i32;
-			rect_draw.w = mat_surfaces[selected_mat].rect().w;
-			rect_draw.h = mat_surfaces[selected_mat].rect().h;
+			rect_draw.w = spr_mat_names[selected_mat].rect().w;
+			rect_draw.h = spr_mat_names[selected_mat].rect().h;
 			
-			canvas
-				.copy(&mat_textures[selected_mat], None, Some(rect_draw))
-				.unwrap();
+			spr_mat_names[selected_mat].draw(&mut canvas, rect_draw);
 
 			rect_draw.x = HUD_TICK_PS_X as i32;
 			rect_draw.y = HUD_TICK_PS_Y as i32;
-			rect_draw.w = tick_ps_surface.rect().w;
-			rect_draw.h = tick_ps_surface.rect().h;
-						
-			canvas
-				.copy(&tick_ps_texture, None, Some(rect_draw))
-				.unwrap();
+			rect_draw.w = spr_tick_ps.rect().w;
+			rect_draw.h = spr_tick_ps.rect().h;
+			
+			spr_tick_ps.draw(&mut canvas, rect_draw);
 
 			// pixels
 			let mut dx: i32 = SANDBOX_X as i32;

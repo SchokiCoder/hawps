@@ -22,10 +22,11 @@
 	-keyboard to control			v_10-55
 	  set timescale					
 	  (arrow left/right)
-	-draw hud						.
+	-draw hud						v_10-31_26-06-2022
 	 timescale						
+	-rework surface/texture mess	v_10-41
 
-	-material spawn out of bounds	.
+	-detached material				.
 	 (either fix or internal cursor)
 	-v 								. -> 0.1.0
 }
