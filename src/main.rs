@@ -14,6 +14,7 @@ pub struct Material {
 }
 
 // game stuff
+const STD_CURSOR_SIZE: i32 = 5;
 const STD_TICK_PS: u32 = 30;
 const TICK_CHANGE_STEP: u32 = 10;
 
@@ -23,19 +24,21 @@ const WINDOW_W: u32 = 400;
 const WINDOW_H: u32 = 400;
 
 // world size
-const SANDBOX_X: u32 = 200;
-const SANDBOX_Y: u32 = 200;
-const SANDBOX_W: u32 = 200;
-const SANDBOX_H: u32 = 200;
+const SANDBOX_W: i32 = 200;
+const SANDBOX_H: i32 = 200;
 
-// hud positions
-const FONT_SIZE: u32 = 24;
+// hud
+const FONT_SIZE: u16 = 24;
 
-const HUD_MATERIAL_X: u32 = 10;
-const HUD_MATERIAL_Y: u32 = 10;
+const HUD_BG_COLOR: Color = Color::RGB(50, 50, 50);
 
-const HUD_TICK_PS_X: u32 = HUD_MATERIAL_X;
-const HUD_TICK_PS_Y: u32 = HUD_MATERIAL_Y + FONT_SIZE + 5;
+const HUD_CURSOR_COLOR: Color = Color::RGB(255, 0, 255);
+
+const HUD_MATERIAL_X: i32 = SANDBOX_W + 10;
+const HUD_MATERIAL_Y: i32 = 10;
+
+const HUD_TICK_PS_X: i32 = HUD_MATERIAL_X;
+const HUD_TICK_PS_Y: i32 = HUD_MATERIAL_Y + FONT_SIZE as i32 + 5;
 
 // material properties
 const MATERIALS: [Material; 5] = [
@@ -139,7 +142,7 @@ fn main() {
 
 	let font = ttf.load_font(
 		"/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-		FONT_SIZE as u16).unwrap();
+		FONT_SIZE).unwrap();
 
 	// text textures
 	let mut spr_tick_ps = Sprite::new(&font, &texture_creator);
@@ -167,6 +170,10 @@ fn main() {
 
 	let mut selected_mat: MatIndex = 0;
 
+	let mut cursor = Point::new(0, 0);
+	let mut cursor_speed: i32 = 3;
+	let mut cursor_size: i32 = STD_CURSOR_SIZE;
+
 	'mainloop: loop {
 		// time
 		ts_now = std::time::Instant::now();
@@ -182,19 +189,19 @@ fn main() {
 					}
 					
 					match keycode.unwrap() {
-						Keycode::Up => {
+						Keycode::N => {
 							if selected_mat > 0 {
 								selected_mat -= 1;
 							}
 						},
 
-						Keycode::Down => {
+						Keycode::M => {
 							if selected_mat < (MATERIALS.len() - 1) {
 								selected_mat += 1;
 							}
 						},
 
-						Keycode::Left => {
+						Keycode::K => {
 							if tick_ps > TICK_CHANGE_STEP {
 								tick_ps -= TICK_CHANGE_STEP;
 								tick_delta = 1_000_000_000 / tick_ps;
@@ -202,24 +209,132 @@ fn main() {
 							}
 						},
 
-						Keycode::Right => {
+						Keycode::L => {
 							tick_ps += TICK_CHANGE_STEP;
 							tick_delta = 1_000_000_000 / tick_ps;
 							spr_tick_ps.text(tick_ps.to_string().as_str());
+						},
+
+						Keycode::Q => {
+							if cursor_speed > 1 {
+								cursor_speed -= 1;
+							}
+						},
+						
+						Keycode::E => {
+							if cursor_speed < i32::MAX {
+								cursor_speed += 1;
+							}
+						},
+
+						Keycode::V => {
+							if cursor_size > 1 {
+								cursor_size -= 1;
+							}
+						},
+						
+						Keycode::B => {
+							if cursor_size < i32::MAX {
+								cursor_size += 1;
+							}
 						},
 
 						_ => ()
 					}
 				}
 
-				Event::MouseMotion {mousestate, x, y, ..} => {
+				Event::KeyDown {keycode, ..} => {
+					if keycode.is_some() == false {
+						break;
+					}
+
+					match keycode.unwrap() {
+						Keycode::W => {
+							cursor.y -= cursor_speed;
+
+							if cursor.y < 0 {
+								cursor.y = 0;
+							}
+						},
+						
+						Keycode::A => {
+							cursor.x -= cursor_speed;
+
+							if cursor.x < 0 {
+								cursor.x = 0;
+							}
+						},
+						
+						Keycode::S => {
+							cursor.y += cursor_speed;
+
+							if cursor.y > SANDBOX_H - 1 {
+								cursor.y = SANDBOX_H - 1;
+							}
+						},
+						
+						Keycode::D => {
+							cursor.x += cursor_speed;
+
+							if cursor.x > SANDBOX_W - 1 {
+								cursor.x = SANDBOX_W - 1;
+							}
+						},
+
+						Keycode::Space => {
+							// calculate spawn area from cursor and cursor size
+							let mut x1 = cursor.x - cursor_size / 2;
+
+							if x1 < 0 {
+								x1 = 0;
+							}
+							
+							let x1 = x1 as usize;
+							
+							let mut x2 = cursor.x + cursor_size / 2;
+
+							if x2 > SANDBOX_W - 1 {
+								x2 = SANDBOX_W - 1;
+							}
+							
+							let x2 = x2 as usize;
+
+							let mut y1 = cursor.y - cursor_size / 2;
+
+							if y1 < 0 {
+								y1 = 0;
+							}
+							
+							let y1 = y1 as usize;
+							
+							let mut y2 = cursor.y + cursor_size / 2;
+
+							if y2 > SANDBOX_H - 1 {
+								y2 = SANDBOX_H - 1;
+							}
+							
+							let y2 = y2 as usize;
+
+							// spawn selected material
+							for x in x1..x2 {
+								for y in y1..y2 {
+									sandbox_mat[x][y] = selected_mat;
+								}
+							}
+						},
+
+						_ => ()
+					}
+				},
+
+				/*Event::MouseMotion {mousestate, x, y, ..} => {
 					// if lmb is held down while mousemotion
 					if mousestate.left() {
 					
 						// spawn selected material
 						sandbox_mat[x as usize][y as usize] = selected_mat;
 					}
-				},
+				},*/
 
 				Event::Quit {..} => break 'mainloop,
 				
@@ -262,7 +377,7 @@ fn main() {
 		// draw
 		if ts_now > (ts_draw + std::time::Duration::new(0, FRAME_DELTA)) {
 			// bg
-			canvas.set_draw_color(Color::RGB(0, 0, 0));
+			canvas.set_draw_color(HUD_BG_COLOR);
 			canvas.fill_rect(window_rect).unwrap();
 
 			// hud
@@ -280,21 +395,23 @@ fn main() {
 			
 			spr_tick_ps.draw(&mut canvas, rect_draw);
 
-			// pixels
-			let mut dx: i32 = SANDBOX_X as i32;
-			let mut dy: i32 = SANDBOX_Y as i32;
-			
+			// pixels		
 			for x in 0..SANDBOX_W as usize {
 				for y in 0..SANDBOX_H as usize {
 					canvas.set_draw_color(MATERIALS[sandbox_mat[x][y]].color);
-					canvas.draw_point(Point::new(dx, dy)).unwrap();
-
-					dy += 1;
+					canvas.draw_point(Point::new(x as i32, y as i32)).unwrap();
 				}
-				
-				dx += 1;
-				dy = SANDBOX_Y as i32;
 			}
+
+			// cursor
+			let x1 = Point::new(cursor.x - cursor_size as i32 / 2, cursor.y);
+			let x2 = Point::new(cursor.x + cursor_size as i32 / 2, cursor.y);
+			let y1 = Point::new(cursor.x, cursor.y - cursor_size as i32 / 2);
+			let y2 = Point::new(cursor.x, cursor.y + cursor_size as i32 / 2);
+
+			canvas.set_draw_color(HUD_CURSOR_COLOR);
+			canvas.draw_line(x1, x2).unwrap();
+			canvas.draw_line(y1, y2).unwrap();
 			
 			canvas.present();
 

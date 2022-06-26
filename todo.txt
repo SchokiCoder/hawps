@@ -1,4 +1,9 @@
 {
+	-temperature
+	-toogle view key "F1"
+}
+
+{
 	-basic							v_10-59_19-06-2022
 	-lower left is being not being	v_13-18_20-06-2022
 	 drawn too by pixel draw part
@@ -26,7 +31,12 @@
 	 timescale						
 	-rework surface/texture mess	v_10-41
 
-	-detached material				.
+	-detached material				
 	 (either fix or internal cursor)
+	->cursor						v_11-44
+		-move							v_11-21
+		-spawn (key space)				v_11-23
+		-cursor/spawn size				v_11-44
+		
 	-v 								. -> 0.1.0
 }
