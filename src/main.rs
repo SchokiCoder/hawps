@@ -11,6 +11,8 @@ pub struct Material {
 	name: &'static str,
 	color: Color,
 	weight: u32,
+	melt_point: i16,
+	boil_point: i16,
 }
 
 // game stuff
@@ -41,35 +43,117 @@ const HUD_TICK_PS_X: i32 = HUD_MATERIAL_X;
 const HUD_TICK_PS_Y: i32 = HUD_MATERIAL_Y + FONT_SIZE as i32 + 5;
 
 // material properties
-const MATERIALS: [Material; 5] = [
+const MATERIALS: [Material; 14] = [
 	Material {
 		name: "None",
 		color: Color::RGB(0, 0, 0),
 		weight: 0,
+		melt_point: 0,
+		boil_point: 0,
 	},
 
 	Material {
 		name: "Oxygen",
 		color: Color::RGB(155, 219, 245),
-		weight: 1,
+		weight: 32,
+		melt_point: -219,
+		boil_point: -183,
 	},
 
 	Material {
 		name: "CarbonDioxide",
 		color: Color::RGB(155, 219, 245),
+		weight: 44,
+		melt_point: -57,
+		boil_point: -78,
+	},
+
+	Material {
+		name: "Hydrogen",
+		color: Color::RGB(155, 219, 245),
 		weight: 2,
+		melt_point: -259,
+		boil_point: -256,
 	},
 
 	Material {
-		name: "Sand",
+		name: "Nitrogen",
+		color: Color::RGB(155, 219, 245),
+		weight: 28,
+		melt_point: -210,
+		boil_point: -196,
+	},
+
+	Material {
+		name: "Carbon",
+		color: Color::RGB(10, 10, 10),
+		weight: 12,
+		melt_point: 3550,
+		boil_point: 4200,
+	},
+
+	Material {
+		name: "SiliconDioxide",
 		color: Color::RGB(255, 255, 0),
-		weight: 50,
+		weight: 60,
+		melt_point: 1710,
+		boil_point: 2230,
 	},
 
 	Material {
-		name: "Dirt",
-		color: Color::RGB(37, 25, 13),
-		weight: 50,
+		name: "Silicon",
+		color: Color::RGB(50, 50, 50),
+		weight: 28,
+		melt_point: 1410,
+		boil_point: 2355,
+	},
+
+	Material {
+		name: "Aluminum",
+		color: Color::RGB(200, 200, 220),
+		weight: 27,
+		melt_point: 660,
+		boil_point: 2327,
+	},
+
+	Material {
+		name: "Iron",
+		color: Color::RGB(170, 170, 170),
+		weight: 56,
+		melt_point: 1538,
+		boil_point: 2861,
+	},
+
+	Material {
+		name: "Calcium",
+		color: Color::RGB(230, 230, 230),
+		weight: 40,
+		melt_point: 840,
+		boil_point: 1484,
+	},
+
+	Material {
+		name: "Sodium",
+		color: Color::RGB(230, 230, 230),
+		weight: 23,
+		melt_point: 98,
+		boil_point: 880,
+	},
+
+	Material {
+		name: "Magnesium",
+		color: Color::RGB(190, 190, 190),
+		weight: 24,
+		melt_point: 650,
+		boil_point: 1100,
+	},
+
+	Material {
+		name: "Potassium",
+		color: Color::RGB(220, 220, 220),
+		weight: 39,
+		melt_point: 63,
+		boil_point: 762,
 	},
 ];
 
@@ -116,6 +200,44 @@ impl Sprite<'_> {
 	}
 }
 
+#[derive(Copy, Clone)]
+enum AggregateState {
+	Solid,
+	Liquid,
+	Gas,
+}
+
+struct Sandbox {
+	width: usize,
+	height: usize,
+	
+	pub material: Vec<Vec<MatIndex>>,
+	pub moved: Vec<Vec<bool>>,
+	pub temperature: Vec<Vec<i16>>,	// celsius
+	pub state: Vec<Vec<AggregateState>>,
+}
+
+impl Sandbox {
+	pub fn new(width: usize, height: usize) -> Sandbox {
+		return Sandbox {
+			width: width,
+			height: height,
+			material: vec![vec![0; height]; width],
+			moved: vec![vec![false; height]; width],
+			temperature: vec![vec![20; height]; width],
+			state: vec![vec![AggregateState::Solid; height]; width],
+		};
+	}
+
+	pub fn w(&self) -> usize {
+		return self.width;
+	}
+
+	pub fn h(&self) -> usize {
+		return self.height;
+	}
+}
+
 fn main() {	
 	let window_rect = Rect::new(0, 0, WINDOW_W, WINDOW_H);
 	
@@ -154,6 +276,15 @@ fn main() {
 		Sprite::new(&font, &texture_creator),
 		Sprite::new(&font, &texture_creator),
 		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
+		Sprite::new(&font, &texture_creator),
 	];
 
 	for i in 0..MATERIALS.len() {
@@ -164,15 +295,13 @@ fn main() {
 	let mut ts_now: std::time::Instant;
 	let mut ts_tick = std::time::Instant::now();
 	let mut ts_draw = std::time::Instant::now();
-	
-	let mut sandbox_mat = [[0 as MatIndex; SANDBOX_H as usize]; SANDBOX_W as usize];
-	let mut sandbox_moved = [[false; SANDBOX_H as usize]; SANDBOX_W as usize];
 
 	let mut selected_mat: MatIndex = 0;
-
 	let mut cursor = Point::new(0, 0);
 	let mut cursor_speed: i32 = 3;
 	let mut cursor_size: i32 = STD_CURSOR_SIZE;
+
+	let mut sandbox = Sandbox::new(SANDBOX_W as usize, SANDBOX_H as usize);
 
 	'mainloop: loop {
 		// time
@@ -268,16 +397,16 @@ fn main() {
 						Keycode::S => {
 							cursor.y += cursor_speed;
 
-							if cursor.y > SANDBOX_H - 1 {
-								cursor.y = SANDBOX_H - 1;
+							if cursor.y > sandbox.h() as i32 - 1 {
+								cursor.y = sandbox.h() as i32 - 1;
 							}
 						},
 						
 						Keycode::D => {
 							cursor.x += cursor_speed;
 
-							if cursor.x > SANDBOX_W - 1 {
-								cursor.x = SANDBOX_W - 1;
+							if cursor.x > sandbox.w() as i32 - 1 {
+								cursor.x = sandbox.w() as i32 - 1;
 							}
 						},
 
@@ -293,8 +422,8 @@ fn main() {
 							
 							let mut x2 = cursor.x + cursor_size / 2;
 
-							if x2 > SANDBOX_W - 1 {
-								x2 = SANDBOX_W - 1;
+							if x2 > sandbox.w() as i32 - 1 {
+								x2 = sandbox.w() as i32 - 1;
 							}
 							
 							let x2 = x2 as usize;
@@ -309,8 +438,8 @@ fn main() {
 							
 							let mut y2 = cursor.y + cursor_size / 2;
 
-							if y2 > SANDBOX_H - 1 {
-								y2 = SANDBOX_H - 1;
+							if y2 > sandbox.h() as i32 - 1 {
+								y2 = sandbox.h() as i32 - 1;
 							}
 							
 							let y2 = y2 as usize;
@@ -318,7 +447,7 @@ fn main() {
 							// spawn selected material
 							for x in x1..x2 {
 								for y in y1..y2 {
-									sandbox_mat[x][y] = selected_mat;
+									sandbox.material[x][y] = selected_mat;
 								}
 							}
 						},
@@ -344,20 +473,51 @@ fn main() {
 
 		// physics tick
 		if ts_now > (ts_tick + std::time::Duration::new(0, tick_delta)) {
-			// gravity
-			for x in 0..SANDBOX_W as usize {
-				for y in 0..SANDBOX_H as usize - 1 as usize {
-				
-					if sandbox_moved[x][y] == false {
-						if MATERIALS[sandbox_mat[x][y]].weight >
-							MATERIALS[sandbox_mat[x][y + 1]].weight {
-							
-							let temp = sandbox_mat[x][y];
-							sandbox_mat[x][y] = sandbox_mat[x][y + 1];
-							sandbox_mat[x][y + 1] = temp;
 
-							sandbox_moved[x][y] = true;
-							sandbox_moved[x][y + 1] = true;
+			// temperature
+			for x in 0..sandbox.w() {
+				
+				for y in 0..sandbox.h() {
+
+					// skip, material none
+					if sandbox.material[x][y] == 0 {
+						continue;
+					}
+
+				}
+			}
+
+			// aggregate state flag
+			for x in 0..sandbox.w() {
+				for y in 0..sandbox.h() {
+					if sandbox.temperature[x][y] > MATERIALS[sandbox.material[x][y]].boil_point {
+						sandbox.state[x][y] = AggregateState::Gas;
+					}
+
+					else if sandbox.temperature[x][y] > MATERIALS[sandbox.material[x][y]].melt_point {
+						sandbox.state[x][y] = AggregateState::Liquid;
+					}
+
+					else {
+						sandbox.state[x][y] = AggregateState::Solid;
+					}
+				}
+			}
+
+			// gravity
+			for x in 0..sandbox.w() {
+				for y in 0..sandbox.h() - 1 {
+				
+					if sandbox.moved[x][y] == false {
+						if MATERIALS[sandbox.material[x][y]].weight >
+							MATERIALS[sandbox.material[x][y + 1]].weight {
+							
+							let temp = sandbox.material[x][y];
+							sandbox.material[x][y] = sandbox.material[x][y + 1];
+							sandbox.material[x][y + 1] = temp;
+
+							sandbox.moved[x][y] = true;
+							sandbox.moved[x][y + 1] = true;
 						}
 					}
 				}
@@ -369,7 +529,7 @@ fn main() {
 			// reset moved flags
 			for x in 0..SANDBOX_W as usize {
 				for y in 0..SANDBOX_H as usize {
-					sandbox_moved[x][y] = false;
+					sandbox.moved[x][y] = false;
 				}
 			}
 		}
@@ -398,7 +558,7 @@ fn main() {
 			// pixels		
 			for x in 0..SANDBOX_W as usize {
 				for y in 0..SANDBOX_H as usize {
-					canvas.set_draw_color(MATERIALS[sandbox_mat[x][y]].color);
+					canvas.set_draw_color(MATERIALS[sandbox.material[x][y]].color);
 					canvas.draw_point(Point::new(x as i32, y as i32)).unwrap();
 				}
 			}

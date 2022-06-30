@@ -1,7 +1,20 @@
 {
-	-temperature
-	-toogle view key "F1"
+	-more accurate data					v_09-59_30-06-2022
+	 about materials
+	-temperature						.
+		-aggregate state flag				v_11-06
+		-thermal conduction					.
+
+	-aggregate change					.
+	-toogle view key "F1"				.
+
+	-flowing movement					.
+
+	-optimize out "moved" flag			.
+	-optimize temperature processing	.
 }
+
+--- done ---
 
 {
 	-basic							v_10-59_19-06-2022
@@ -38,5 +51,5 @@
 		-spawn (key space)				v_11-23
 		-cursor/spawn size				v_11-44
 		
-	-v 								. -> 0.1.0
+	-v 								v_11-47 -> 0.1.0
 }
