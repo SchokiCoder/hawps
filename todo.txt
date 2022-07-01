@@ -1,9 +1,16 @@
 {
 	-more accurate data					v_09-59_30-06-2022
 	 about materials
-	-temperature						.
-		-aggregate state flag				v_11-06
-		-thermal conduction					.
+
+	-terminal control					.
+	
+	-pressure sys						.
+	 (precise system on what and
+	  how much can be represented in
+	  a pixel (1mm²))
+	  percentages?
+
+	-thermal conduction					.
 
 	-aggregate change					.
 	-toogle view key "F1"				.
