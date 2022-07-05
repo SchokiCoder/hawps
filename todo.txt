@@ -2,7 +2,11 @@
 	-more accurate data					v_09-59_30-06-2022
 	 about materials
 
-	-terminal control					.
+	-terminal control					v_10-40_05-07-2022
+
+	-former mainloop					.
+
+	-commands							.
 	
 	-pressure sys						.
 	 (precise system on what and
