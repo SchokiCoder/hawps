@@ -96,10 +96,22 @@ Add materials:
 
 - Dirt
 - Iron
+- Ironoxide
+- Aluminum
+- Aluminumoxide
 - Glass
 - some Rocks lol
 - Coal
 - Sulfur
+- Gunpowder
+- Thermite
+
+Add chemical reactions:
+
+- Sulfur and Coal collision, creating Gunpowder
+- Oxygen and Iron collision, creating Ironoxide
+- Oxygen and Aluminum collision, creating Aluminumoxide
+- Ironoxide and Aluminumoxide collision, creating Thermite
 
 ## v.1.0.0 polish
 
@@ -110,3 +122,5 @@ Add materials:
 
 So far we only use flat colors for all the materials.  
 A pile of the same material looks pretty boring.  
+  
+Use a shader?  
