@@ -19,8 +19,10 @@ We got a bumpy new roadmap ahead of us.
 
 ## Kicking the dead horse
 
-I don't know why i started t think that it would be a good idea to try a serious
-simulation of physics but i am sure it killed all my fun back then.  
+I don't know why i started to think that it would be a good idea to try a
+serious simulation of physics but i am sure it killed all my fun back then.  
 This pile of +#!% also suffered from my good old habit of jumping into a new
 thing without ever thinking it through.  
-Dipshittery is dead, long live <goals.md>.  
+Dipshittery is dead, long live [docs/goals.md][goals.md].  
+
+[goals.md]: <https://github.com/SchokiCoder/hawps/blob/main/docs/goals.md>

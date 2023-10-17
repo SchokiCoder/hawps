@@ -11,7 +11,8 @@ Examples for that could be:
 
 All __primary goals__ are to be implemented __before the final release__, unless
 the implementation of a single goal proves to be too difficult or would come
-with a too high cost such as a high increase of the sloc count.
+with a too high cost such as a high increase of the sloc count
+(if such limit is defined).
 The update implementing the last primary goal, becomes the final release update,
 which in semantic versioning would be 1.0.0.  
 Optimally the primary goals are documented as a roadmap.  
@@ -22,13 +23,17 @@ starting where the primary goal-roadmap ended.
 
 # Limitations
 
-- try Zig, only Zig, just Zig, raw Zig, no Makefile, no C, shell for install
-  allowed
+- try Zig, only Zig, just Zig, raw Zig, no Makefile, shell for install allowed
+  (C can be used for optimizations or for using libraries)
 - data-oriented programming
 - configuration via Zig source code file
-- max. 5000 sloc in Zig (not including config or build files)
-- max. 500 sloc in Zig for build files
+- max. 10.000 sloc in Zig (not including config or build files)
+- max. 1.000 sloc in Zig for build files
 - must be compatible with Linux, FreeBSD and Android
+- must work if only mouse is available
+- must work if only touch is available
+- keyboard must be able to do everything aside from spawning materials/objects
+  (spawning via keyboard is optional)
 - fun is more important (in programming and in use)
 
 # Roadmap (done)
@@ -41,7 +46,7 @@ Only a mock-up sort of proof of concept thing for now.
 No user interaction yet, aside from window close of course.  
 
 - open window, window close event
-- draw pixels (take first that succeeds: try OpenGL ES, then Open GL, then SDL)
+- draw pixels (via Vulkan as mock-up)
 - add material "Sand"
 - gravity and basic collision
 - no more brain-dead stack of materials upon fallig on top of each other
@@ -113,14 +118,20 @@ Add chemical reactions:
 - Oxygen and Aluminum collision, creating Aluminumoxide
 - Ironoxide and Aluminumoxide collision, creating Thermite
 
-## v.1.0.0 polish
-
-- make sure it runs on Linux, FreeBSD and Android
-- make sure all other limitations are respected
-
-## v1.1.0 beatiful specks of dirt
+## v0.8.0 beautiful specks of dirt
 
 So far we only use flat colors for all the materials.  
 A pile of the same material looks pretty boring.  
   
 Use a shader?  
+
+## v0.9.0 Android
+
+- make compatible with Android
+- make touch work
+- search for performance optimizations so as to not fry batteries
+
+## v.1.0.0 polish
+
+- make sure it runs on Linux, FreeBSD and Android
+- make sure all other limitations are respected
