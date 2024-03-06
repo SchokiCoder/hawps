@@ -1,5 +1,5 @@
 + create base material scene
-- make test world with basic walls
++ add test world with basic walls
 - create sand
 - idk lol
 
