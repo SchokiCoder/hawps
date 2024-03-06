@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://dol4qkrwv0kh7"]
 
 [ext_resource type="TileSet" uid="uid://b3dcmtoijyg0i" path="res://tiles.tres" id="1_jp8hy"]
-[ext_resource type="PackedScene" uid="uid://cx6eet8y6bbym" path="res://base_dot.tscn" id="1_s8tlk"]
+[ext_resource type="PackedScene" uid="uid://bc4av3xedjj1s" path="res://sand_dot.tscn" id="3_hu3tw"]
 
 [node name="World" type="Node2D"]
 
@@ -14,5 +14,13 @@ layer_0/tile_data = PackedInt32Array(524281, 1, 0, 524282, 1, 0, 524283, 1, 0, 5
 
 [node name="TempTestContent" type="Node" parent="."]
 
-[node name="BaseDot" parent="TempTestContent" instance=ExtResource("1_s8tlk")]
-position = Vector2(-10, -303)
+[node name="SandDot" parent="TempTestContent" instance=ExtResource("3_hu3tw")]
+
+[node name="SandDot2" parent="TempTestContent" instance=ExtResource("3_hu3tw")]
+position = Vector2(-3, -60)
+
+[node name="SandDot3" parent="TempTestContent" instance=ExtResource("3_hu3tw")]
+position = Vector2(1, -106)
+
+[node name="SandDot4" parent="TempTestContent" instance=ExtResource("3_hu3tw")]
+position = Vector2(21, -32)

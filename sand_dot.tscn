@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bc4av3xedjj1s"]
+
+[ext_resource type="PackedScene" uid="uid://cx6eet8y6bbym" path="res://base_dot.tscn" id="1_82lvu"]
+
+[node name="SandDot" instance=ExtResource("1_82lvu")]
+
+[node name="Polygon2D" parent="." index="0"]
+color = Color(0.929412, 0.847059, 0.337255, 1)
