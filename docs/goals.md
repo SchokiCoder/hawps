@@ -23,12 +23,6 @@ starting where the primary goal-roadmap ended.
 
 # Limitations
 
-- try Zig, only Zig, just Zig, raw Zig, no Makefile, shell for install allowed
-  (C can be used for optimizations or for using libraries)
-- data-oriented programming
-- configuration via Zig source code file
-- max. 10.000 sloc in Zig (not including config or build files)
-- max. 1.000 sloc in Zig for build files
 - must be compatible with Linux, FreeBSD and Android
 - must work if only mouse is available
 - must work if only touch is available
@@ -46,20 +40,9 @@ Only a mock-up sort of proof of concept thing for now.
 No user interaction yet, aside from window close of course.  
 
 - open window, window close event
-- draw pixels (via Vulkan as mock-up)
+- create base material, which is just a ball with 2d physics
 - add material "Sand"
 - gravity and basic collision
-- no more brain-dead stack of materials upon fallig on top of each other
-  (see following snippet, where O represents a dot of sand)
-
-```
-   O
-   O       ---\
-   O       ---/    O
-   O              OOO
-
-brain-dead ---> nice pile
-```
 
 ## v0.2.0 liquids
 
