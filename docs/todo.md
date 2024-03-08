@@ -1,5 +1,4 @@
-- add water
-  (can this be a dot and still be displaced by sand?)
++ add water
 
 -----
 

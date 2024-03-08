@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://cx6eet8y6bbym" path="res://base_dot.tscn" id="1_82lvu"]
 
 [node name="SandDot" instance=ExtResource("1_82lvu")]
+mass = 1.0
 
 [node name="Polygon2D" parent="." index="0"]
 color = Color(0.929412, 0.847059, 0.337255, 1)
