@@ -1,3 +1,19 @@
+# 2nd rework
+
+Godot or any other game engine seems to not really be a good fit.
+I wanted this initially for the collision physics, but it turned out that this
+is far too complex in the first place.
+Reject polygons, return to pixels...
+and with that to just programming languages.
+This should be more fun anyways.
+Now, which langauge?
+
+Rust: Meh, too annyoing.
+Zig:  No tabs... dumb.
+C:    Memory and pointer fun, but janky.
+Go:   Maybe too easy.
+Odin: Maybe, but didn't compile last time. Plus need to learn.
+
 # 1st rework
 
 ## Why a rework (to another one of my repos)

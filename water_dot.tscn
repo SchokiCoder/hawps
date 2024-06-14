@@ -1,9 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://da6e4umni1htv"]
-
-[ext_resource type="PackedScene" uid="uid://cx6eet8y6bbym" path="res://base_dot.tscn" id="1_x7mp5"]
-
-[node name="WaterDot" instance=ExtResource("1_x7mp5")]
-mass = 0.01
-
-[node name="Polygon2D" parent="." index="0"]
-color = Color(0, 0.988235, 1, 1)
