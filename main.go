@@ -11,6 +11,7 @@ import (
 
 const (
 	gfxScale = 10
+	gravity = 980
 	tickrate = 60
 	worldWidth  = 80
 	worldHeight = 60
@@ -73,6 +74,10 @@ func moveWorld(delta float64,
 	dVelY *dotsVelY) {
 
 	for i := 0; i < *dCount; i++ {
+		// gravity
+		dVelY[i] += (gravity * delta)
+
+		// move
 		dX[i] += (dVelX[i] * delta)
 		dY[i] += (dVelY[i] * delta)
 	}

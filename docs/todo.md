@@ -1,5 +1,16 @@
 - add water
+
+# Manipulation
+
+- add runtime dot manipulation interface
 - remove manual tomfoolery
+
+# Niceties
+
+- add arguments for
+	- gfxScale
+	- tickrate
+	- `-h --help`
 
 # Base
 
@@ -17,9 +28,11 @@ which caused the obsolescence of the world data type,
 which was initially meant as a way to quickly index via position.
 
 + fix dot draw ignoring gfxScale in regards to pos
-- add gravity
++ add gravity
+- add timescale
 - add bounds collision
 - add dot collision
+- check if gravity calculation makes sense
 
 - set version to 0.1.
 
