@@ -1,4 +1,5 @@
 - add water
+- remove manual tomfoolery
 
 # Base
 
@@ -8,7 +9,14 @@ Also add basic data models in Go.
 
 + add graphics
 
-- add dot velocity and movement
++ add dot velocity and movement
+
+This also caused the implementation of a fixed tick- and framerate.
+Velocity pretty much only makes sense as a float,
+which caused the obsolescence of the world data type,
+which was initially meant as a way to quickly index via position.
+
+- add gravity
 - add bounds collision
 - add dot collision
 
