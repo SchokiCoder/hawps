@@ -51,8 +51,8 @@ func drawWorld(dCount *int,
 
 	for i := 0; i < *dCount; i++ {
 		rect := sdl.Rect{
-			X: int32(dX[i] * gfxScale),
-			Y: int32(dY[i] * gfxScale),
+			X: int32(int64(dX[i]) * gfxScale),
+			Y: int32(int64(dY[i]) * gfxScale),
 			W: int32(gfxScale),
 			H: int32(gfxScale),
 		}
@@ -128,9 +128,9 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnDot(0, 0, dotSand, &dCount, &dMat, &dX, &dY)
-	dVelX[0] = 1.0
-	dVelY[0] = 1.0
+	spawnDot(79.999, 1.0, dotSand, &dCount, &dMat, &dX, &dY)
+	dVelX[0] = 0.0
+	dVelY[0] = 5.0
 
 	mainloop:
 	for {

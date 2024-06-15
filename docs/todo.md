@@ -16,6 +16,7 @@ Velocity pretty much only makes sense as a float,
 which caused the obsolescence of the world data type,
 which was initially meant as a way to quickly index via position.
 
++ fix dot draw ignoring gfxScale in regards to pos
 - add gravity
 - add bounds collision
 - add dot collision
