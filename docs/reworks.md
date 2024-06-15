@@ -14,6 +14,78 @@ C:    Memory and pointer fun, but janky.
 Go:   Maybe too easy.
 Odin: Maybe, but didn't compile last time. Plus need to learn.
 
+Originally RNG told me to do C:
+
+```C
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2024  Andy Frank Schoknecht
+
+#define WORLD_W  80
+#define WORLD_H  60
+#define MAX_DOTS (WORLD_W * WORLD_H)
+
+enum DotMaterial {
+	D_NONE,
+	D_SAND
+};
+
+typedef int DotId;
+
+typedef struct _wld {
+	DotId n[WORLD_W][WORLD_H];
+} World;
+
+typedef struct _dmat {
+	enum DotMaterial n[MAX_DOTS];
+} DotsMaterial;
+
+DotsMaterial new_DotsMaterial()
+{
+	int          i;
+	DotsMaterial ret;
+
+	for (i = 0; i < MAX_DOTS; i++) {
+		ret.n[i] = D_NONE;
+	}
+
+	return ret;
+}
+
+World new_World()
+{
+	World ret;
+	int   x, y;
+
+	for (x = 0; x < WORLD_W; x++) {
+		for (y = 0; y < WORLD_H; y++) {
+			ret.n[x][y] = -1;
+		}
+	}
+
+	return ret;
+}
+
+void manually_spawn_some_sand(DotsMaterial *d_mat, World *world)
+{
+	d_mat->n[0] = D_SAND;
+	world->n[2][2] = 0;
+}
+
+int main(int argc, char *argv[])
+{	
+	DotsMaterial d_mat;
+	World        world;
+
+	d_mat = new_DotsMaterial();
+	world = new_World();
+
+	manually_spawn_some_sand(&d_mat, &world);
+}
+
+```
+
+But... eh.
+
 # 1st rework
 
 ## Why a rework (to another one of my repos)

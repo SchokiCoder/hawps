@@ -6,8 +6,11 @@
 
 Also add basic data models in Go.
 
-- add test world with basic walls
-- add sand dot
++ add graphics
+
+- add dot velocity and movement
+- add bounds collision
+- add dot collision
 
 - set version to 0.1.
 
