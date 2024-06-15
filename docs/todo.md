@@ -29,7 +29,7 @@ which was initially meant as a way to quickly index via position.
 
 + fix dot draw ignoring gfxScale in regards to pos
 + add gravity
-- add timescale
++ add timescale
 - add bounds collision
 - add dot collision
 - check if gravity calculation makes sense

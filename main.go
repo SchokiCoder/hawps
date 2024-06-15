@@ -13,6 +13,7 @@ const (
 	gfxScale = 10
 	gravity = 980
 	tickrate = 60
+	timescale = 1.0
 	worldWidth  = 80
 	worldHeight = 60
 )
@@ -139,13 +140,14 @@ func main() {
 
 	mainloop:
 	for {
-		nanoDelta := time.Since(lastTick)
-		if nanoDelta >= (1_000_000_000 / tickrate) {
-			delta = float64(nanoDelta) / float64(1_000_000_000)
+		rawDelta := time.Since(lastTick)
+		if rawDelta >= (1_000_000_000 / tickrate) {
+			delta = float64(rawDelta) / float64(1_000_000_000)
+			delta *= timescale
 			drawWorld(&dCount, &dMat, &dX, &dY, surface, window)
 			moveWorld(delta, &dCount, &dX, &dY, &dVelX, &dVelY)
 
-			fmt.Printf("f/s %v\n", int(1.0 / delta))
+			fmt.Printf("f/s %v\n", int(1_000_000_000 / rawDelta))
 
 			event := sdl.PollEvent()
 
