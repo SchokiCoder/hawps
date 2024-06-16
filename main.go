@@ -10,18 +10,37 @@ import (
 )
 
 const (
-	gfxScale = 10
-	gravity = 980
-	tickrate = 60
-	timescale = 1.0
-	worldWidth  = 80.0
-	worldHeight = 60.0
+	gfxScale       = 10
+	gravity        = 980
+	groundFriction = 0.5
+	tickrate       = 60
+	timescale      = 0.1
+	worldWidth     = 80.0
+	worldHeight    = 60.0
 )
 
 const (
-	dotNone = 0
+	dotNone = iota
 	dotSand
 )
+
+func matFriction(index dotMaterial) float64 {
+	var protectedArray = [...]float64{
+		0.0,
+		0.7,
+	}
+
+	return protectedArray[index]
+}
+
+func matWeight(index dotMaterial) float64 {
+	var protectedArray = [...]float64{
+		0.0,
+		1.5,
+	}
+
+	return protectedArray[index]
+}
 
 type (
 	dotMaterial  int
@@ -30,6 +49,9 @@ type (
 	dotsY        [worldWidth * worldHeight]float64
 	dotsVelX     [worldWidth * worldHeight]float64
 	dotsVelY     [worldWidth * worldHeight]float64
+	dotsGrounded [worldWidth * worldHeight]bool
+	dotsFriction [worldWidth * worldHeight]float64
+	dotsWeight   [worldWidth * worldHeight]float64
 )
 
 func newDotsMaterial() dotsMaterial {
@@ -67,12 +89,17 @@ func drawWorld(dCount *int,
 // Moves every dot.
 // A dot is 1 cm big (W and H).
 // Velocity is cm/s.
+// Friction is the average of ground friction and dot friction,
+// and is given as a percentage of velocity loss. (1.0 == full stop)
 func moveWorld(delta float64,
 	dCount *int,
 	dX *dotsX,
 	dY *dotsY,
 	dVelX *dotsVelX,
-	dVelY *dotsVelY) {
+	dVelY *dotsVelY,
+	dGrounded *dotsGrounded,
+	dFric *dotsFriction,
+	dWeight *dotsWeight) {
 
 	for i := 0; i < *dCount; i++ {
 		// gravity
@@ -97,6 +124,29 @@ func moveWorld(delta float64,
 		} else if dY[i] >= worldHeight {
 			dY[i] = worldHeight - 1.0
 			dVelY[i] = 0.0
+			dGrounded[i] = true
+		}
+
+		// ground friction
+		if dGrounded[i] && dVelX[i] != 0.0 {
+			velLoss := gravity *
+				dWeight[i] *
+				((groundFriction + dFric[i]) / 2) *
+				delta
+
+			if dVelX[i] > 0.0 {
+				if velLoss > dVelX[i] {
+					dVelX[i] = 0.0
+				} else {
+					dVelX[i] -= velLoss
+				}
+			} else {
+				if velLoss < dVelX[i] {
+					dVelX[i] = 0.0
+				} else {
+					dVelX[i] += velLoss
+				}
+			}
 		}
 	}
 }
@@ -106,22 +156,29 @@ func spawnDot(x, y float64,
 	dCount *int,
 	dMat *dotsMaterial,
 	dX *dotsX,
-	dY *dotsY) {
+	dY *dotsY,
+	dFric *dotsFriction,
+	dWeight *dotsWeight) {
 
 	dMat[*dCount] = mat
 	dX[*dCount] = x
 	dY[*dCount] = y
+	dFric[*dCount] = matFriction(mat)
+	dWeight[*dCount] = matWeight(mat)
 	*dCount += 1
 }
 
 func main() {
 	var (
-		dCount int
-		dMat   dotsMaterial = newDotsMaterial()
-		dX     dotsX
-		dY     dotsY
-		dVelX  dotsVelX
-		dVelY  dotsVelY
+		dCount    int
+		dMat      dotsMaterial = newDotsMaterial()
+		dX        dotsX
+		dY        dotsY
+		dVelX     dotsVelX
+		dVelY     dotsVelY
+		dGrounded dotsGrounded
+		dFric     dotsFriction
+		dWeight   dotsWeight
 
 		delta float64
 		lastTick time.Time
@@ -151,9 +208,9 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, &dMat, &dX, &dY)
-	dVelX[0] = 50.0
-	dVelY[0] = -200.0
+	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, &dMat, &dX, &dY, &dFric, &dWeight)
+	dVelX[0] = 250.0
+	dVelY[0] = 200.0
 
 	mainloop:
 	for {
@@ -162,9 +219,13 @@ func main() {
 			delta = float64(rawDelta) / float64(1_000_000_000)
 			delta *= timescale
 			drawWorld(&dCount, &dMat, &dX, &dY, surface, window)
-			moveWorld(delta, &dCount, &dX, &dY, &dVelX, &dVelY)
+			moveWorld(delta,
+				&dCount,
+				&dX, &dY,
+				&dVelX, &dVelY,
+				&dGrounded, &dFric, &dWeight)
 
-			fmt.Printf("f/s %v\n", int(1_000_000_000 / rawDelta))
+			fmt.Printf("delta %v\n", delta)
 
 			event := sdl.PollEvent()
 

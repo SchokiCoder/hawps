@@ -31,7 +31,7 @@ which was initially meant as a way to quickly index via position.
 + add gravity
 + add timescale
 + add bounds collision
-- add ground friction
++ add ground friction
 - add dot collision
 - check if gravity calculation makes sense
 
