@@ -14,8 +14,8 @@ const (
 	gravity = 980
 	tickrate = 60
 	timescale = 1.0
-	worldWidth  = 80
-	worldHeight = 60
+	worldWidth  = 80.0
+	worldHeight = 60.0
 )
 
 const (
@@ -81,6 +81,23 @@ func moveWorld(delta float64,
 		// move
 		dX[i] += (dVelX[i] * delta)
 		dY[i] += (dVelY[i] * delta)
+
+		// bounds collision
+		if dX[i] < 0.0 {
+			dX[i] = 0.0
+			dVelX[i] = 0.0
+		} else if dX[i] >= worldWidth {
+			dX[i] = worldWidth - 1.0
+			dVelX[i] = 0.0
+		}
+
+		if dY[i] < 0.0 {
+			dY[i] = 0.0
+			dVelY[i] = 0.0
+		} else if dY[i] >= worldHeight {
+			dY[i] = worldHeight - 1.0
+			dVelY[i] = 0.0
+		}
 	}
 }
 
@@ -134,9 +151,9 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnDot(79.999, 1.0, dotSand, &dCount, &dMat, &dX, &dY)
-	dVelX[0] = 0.0
-	dVelY[0] = 5.0
+	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, &dMat, &dX, &dY)
+	dVelX[0] = 50.0
+	dVelY[0] = -200.0
 
 	mainloop:
 	for {
