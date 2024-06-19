@@ -80,17 +80,54 @@ func drawWorld(dCount *int,
 			W: int32(gfxScale),
 			H: int32(gfxScale),
 		}
-		pixel := sdl.MapRGB(surface.Format, 150, 150, 20)
+		pixel := sdl.MapRGB(surface.Format, 238, 217, 86)
 		surface.FillRect(&rect, pixel)
 		window.UpdateSurface()
+	}
+}
+
+func dotCheckBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
+	if *x < 0.0 {
+		*x = 0.0
+		*velX = 0.0
+	} else if *x >= worldWidth {
+		*x = worldWidth - 1.0
+		*velX = 0.0
+	}
+
+	if *y < 0.0 {
+		*y = 0.0
+		*velY = 0.0
+	} else if *y >= worldHeight {
+		*y = worldHeight - 1.0
+		*velY = 0.0
+		*grounded = true
+	}
+}
+
+// Friction is the average of ground friction and dot friction,
+// and is given as a percentage of velocity loss.
+func dotApplyGroundFriction(velX *float64, delta, fric, weight float64) {
+	var velLoss = gravity * weight * ((groundFriction + fric) / 2.0) * delta
+
+	if *velX > 0.0 {
+		if velLoss >= *velX {
+			*velX = 0.0
+		} else {
+			*velX -= velLoss
+		}
+	} else {
+		if velLoss <= *velX {
+			*velX = 0.0
+		} else {
+			*velX += velLoss
+		}
 	}
 }
 
 // Moves every dot.
 // A dot is 1 cm big (W and H).
 // Velocity is cm/s.
-// Friction is the average of ground friction and dot friction,
-// and is given as a percentage of velocity loss. (1.0 == full stop)
 func moveWorld(delta float64,
 	dCount *int,
 	dX *dotsX,
@@ -109,44 +146,13 @@ func moveWorld(delta float64,
 		dX[i] += (dVelX[i] * delta)
 		dY[i] += (dVelY[i] * delta)
 
-		// bounds collision
-		if dX[i] < 0.0 {
-			dX[i] = 0.0
-			dVelX[i] = 0.0
-		} else if dX[i] >= worldWidth {
-			dX[i] = worldWidth - 1.0
-			dVelX[i] = 0.0
-		}
+		dotCheckBoundsCollision(&dX[i], &dY[i],
+			&dVelX[i], &dVelY[i],
+			&dGrounded[i])
 
-		if dY[i] < 0.0 {
-			dY[i] = 0.0
-			dVelY[i] = 0.0
-		} else if dY[i] >= worldHeight {
-			dY[i] = worldHeight - 1.0
-			dVelY[i] = 0.0
-			dGrounded[i] = true
-		}
-
-		// ground friction
 		if dGrounded[i] && dVelX[i] != 0.0 {
-			velLoss := gravity *
-				dWeight[i] *
-				((groundFriction + dFric[i]) / 2) *
-				delta
-
-			if dVelX[i] > 0.0 {
-				if velLoss > dVelX[i] {
-					dVelX[i] = 0.0
-				} else {
-					dVelX[i] -= velLoss
-				}
-			} else {
-				if velLoss < dVelX[i] {
-					dVelX[i] = 0.0
-				} else {
-					dVelX[i] += velLoss
-				}
-			}
+			dotApplyGroundFriction(&dVelX[i],
+				delta, dFric[i], dWeight[i])
 		}
 	}
 }
@@ -211,6 +217,7 @@ func main() {
 	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, &dMat, &dX, &dY, &dFric, &dWeight)
 	dVelX[0] = 250.0
 	dVelY[0] = 200.0
+	spawnDot(worldWidth / 3.0 * 2.0, worldHeight - 2.0, dotSand, &dCount, &dMat, &dX, &dY, &dFric, &dWeight)
 
 	mainloop:
 	for {

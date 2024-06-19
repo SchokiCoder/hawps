@@ -1,11 +1,12 @@
-- add water
-
 # Manipulation
 
 - add runtime dot manipulation interface
 - remove manual tomfoolery
 
 # Niceties
+
+- add water
+  rgb(0, 253, 255)?
 
 - add arguments for
 	- gfxScale
@@ -32,8 +33,9 @@ which was initially meant as a way to quickly index via position.
 + add timescale
 + add bounds collision
 + add ground friction
++ check if gravity calculation makes sense
 - add dot collision
-- check if gravity calculation makes sense
+- add dot friction
 
 - set version to 0.1.
 
