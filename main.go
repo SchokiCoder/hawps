@@ -64,6 +64,26 @@ func newDotsMaterial() dotsMaterial {
 	return ret
 }
 
+// Friction is the average of ground friction and dot friction,
+// and is given as a percentage of velocity loss.
+func applyDotGroundFriction(velX *float64, delta, fric, weight float64) {
+	var velLoss = gravity * weight * ((groundFriction + fric) / 2.0) * delta
+
+	if *velX > 0.0 {
+		if velLoss >= *velX {
+			*velX = 0.0
+		} else {
+			*velX -= velLoss
+		}
+	} else {
+		if velLoss <= *velX {
+			*velX = 0.0
+		} else {
+			*velX += velLoss
+		}
+	}
+}
+
 func drawWorld(dCount *int,
 	dMat *dotsMaterial,
 	dX *dotsX,
@@ -86,7 +106,7 @@ func drawWorld(dCount *int,
 	}
 }
 
-func dotCheckBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
+func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	if *x < 0.0 {
 		*x = 0.0
 		*velX = 0.0
@@ -105,23 +125,43 @@ func dotCheckBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	}
 }
 
-// Friction is the average of ground friction and dot friction,
-// and is given as a percentage of velocity loss.
-func dotApplyGroundFriction(velX *float64, delta, fric, weight float64) {
-	var velLoss = gravity * weight * ((groundFriction + fric) / 2.0) * delta
+func handleDotDotCollision(i int,
+	newX, newY float64,
+	dX *dotsX,
+	dY *dotsY,
+	dVelX *dotsVelX,
+	dVelY *dotsVelY,
+	dWeight *dotsWeight) {
 
-	if *velX > 0.0 {
-		if velLoss >= *velX {
-			*velX = 0.0
-		} else {
-			*velX -= velLoss
-		}
-	} else {
-		if velLoss <= *velX {
-			*velX = 0.0
-		} else {
-			*velX += velLoss
-		}
+	// TODO: MAAAGIIC
+	// (instead of just changing the values flat out (like before))
+	dX[i] = newX
+	dY[i] = newY
+}
+
+func moveDot(i int,
+	delta float64,
+	dCount int,
+	dX *dotsX,
+	dY *dotsY,
+	dVelX *dotsVelX,
+	dVelY *dotsVelY,
+	dWeight *dotsWeight) {
+	var (
+		newX, newY float64
+	)
+
+	newX = dX[i] + (dVelX[i] * delta)
+	newY = dY[i] + (dVelY[i] * delta)
+
+	// check for collisions with other dots
+	for j := 0; j < i; j++ {
+		handleDotDotCollision(i, newX, newY,
+			dX, dY, dVelX, dVelY, dWeight)
+	}
+	for j := i + 1; j < dCount; j++ {
+		handleDotDotCollision(i, newX, newY,
+			dX, dY, dVelX, dVelY, dWeight)
 	}
 }
 
@@ -129,7 +169,7 @@ func dotApplyGroundFriction(velX *float64, delta, fric, weight float64) {
 // A dot is 1 cm big (W and H).
 // Velocity is cm/s.
 func moveWorld(delta float64,
-	dCount *int,
+	dCount int,
 	dX *dotsX,
 	dY *dotsY,
 	dVelX *dotsVelX,
@@ -138,20 +178,18 @@ func moveWorld(delta float64,
 	dFric *dotsFriction,
 	dWeight *dotsWeight) {
 
-	for i := 0; i < *dCount; i++ {
+	for i := 0; i < dCount; i++ {
 		// gravity
 		dVelY[i] += (gravity * delta)
 
-		// move
-		dX[i] += (dVelX[i] * delta)
-		dY[i] += (dVelY[i] * delta)
+		moveDot(i, delta, dCount, dX, dY, dVelX, dVelY, dWeight)
 
-		dotCheckBoundsCollision(&dX[i], &dY[i],
+		handleDotBoundsCollision(&dX[i], &dY[i],
 			&dVelX[i], &dVelY[i],
 			&dGrounded[i])
 
 		if dGrounded[i] && dVelX[i] != 0.0 {
-			dotApplyGroundFriction(&dVelX[i],
+			applyDotGroundFriction(&dVelX[i],
 				delta, dFric[i], dWeight[i])
 		}
 	}
@@ -227,7 +265,7 @@ func main() {
 			delta *= timescale
 			drawWorld(&dCount, &dMat, &dX, &dY, surface, window)
 			moveWorld(delta,
-				&dCount,
+				dCount,
 				&dX, &dY,
 				&dVelX, &dVelY,
 				&dGrounded, &dFric, &dWeight)
