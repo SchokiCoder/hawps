@@ -54,14 +54,16 @@ type (
 	dotsWeight   [worldWidth * worldHeight]float64
 )
 
-func newDotsMaterial() dotsMaterial {
-	var ret dotsMaterial
-	
-	for i := 0; i < len(ret); i++ {
-		ret[i] = dotNone
-	}
+type point struct {
+	X, Y float64
+}
 
-	return ret
+type line struct {
+	X1, Y1, X2, Y2 float64
+}
+
+type rect struct {
+	X, Y, W, H float64
 }
 
 // Friction is the average of ground friction and dot friction,
@@ -81,6 +83,92 @@ func applyDotGroundFriction(velX *float64, delta, fric, weight float64) {
 		} else {
 			*velX += velLoss
 		}
+	}
+}
+
+// On collision, returns true and point of intersection.
+// Thanks jeffreythompson.org
+func checkLineLineCollision(l1, l2 line) (bool, point) {
+	var (
+		uA, uB float64
+	)
+
+	uA = ((l2.X2-l2.X1) * (l1.Y1-l2.Y1) - (l2.Y2-l2.Y1) * (l1.X1-l2.X1)) /
+		((l2.Y2-l2.Y1) * (l1.X2-l1.X1) - (l2.X2-l2.X1) * (l1.Y2-l1.Y1))
+	uB = ((l1.X2-l1.X1) * (l1.Y1-l2.Y1) - (l1.Y2-l1.Y1) * (l1.X1-l2.X1)) /
+		((l2.Y1-l2.Y1) * (l1.X2-l1.X1) - (l2.X2-l2.X1) * (l1.Y2-l1.Y1))
+
+	if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+		return true,
+			point {l1.X1 + (uA * (l1.X2 - l1.X1)),
+				l1.Y1 + (uA * (l1.Y2 - l1.Y1))}
+	}
+
+	return false, point{}
+}
+
+// On collision, returns first point of intersection.
+func checkLineRectCollision(l line, r rect) (bool, point) {
+	var (
+		idxIntersections []int
+		intersects       bool
+		intersections    [4]point
+		rLines =         [4]line {
+			line {X1: r.X, Y1: r.Y, X2: r.X + r.W, Y2: r.Y},
+			line {X1: r.X + r.W, Y1: r.Y, X2: r.X + r.W, Y2: r.Y},
+			line {X1: r.X + r.W, Y1: r.Y, X2: r.X + r.W, Y2: r.Y + r.H},
+			line {X1: r.X, Y1: r.Y + r.H, X2: r.X + r.W, Y2: r.Y + r.H},
+		}
+	)
+
+	for i := 0; i < len(rLines); i++ {
+		intersects, intersections[i] = checkLineLineCollision(l, rLines[i])
+		if intersects {
+			idxIntersections = append(idxIntersections, i)
+		}
+	}
+
+	switch len(idxIntersections) {
+	case 1:
+		return true, intersections[idxIntersections[0]]
+
+	case 2:
+		return true, closestPointToPointA(point {l.X1, l.Y1},
+			intersections[idxIntersections[0]],
+			intersections[idxIntersections[1]])
+	}
+
+	return false, point{}
+}
+
+func closestPointToPointA(a, b, c point) point {
+	var (
+		lbx, lby, lcx, lcy float64
+	)
+
+	lbx = b.X - a.X
+	lby = b.Y - a.Y
+
+	lcx = c.X - a.X
+	lcy = c.Y - a.Y
+
+	if lbx < 0.0 {
+		lbx *= -1.0
+	}
+	if lby < 0.0 {
+		lby *= -1.0
+	}
+	if lcx < 0.0 {
+		lcx *= -1.0
+	}
+	if lcx < 0.0 {
+		lcx *= -1.0
+	}
+
+	if (lbx + lby) > (lcx + lcy) {
+		return c
+	} else {
+		return b
 	}
 }
 
@@ -127,16 +215,28 @@ func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 
 func handleDotDotCollision(i int,
 	newX, newY float64,
+	j int,
 	dX *dotsX,
 	dY *dotsY,
 	dVelX *dotsVelX,
 	dVelY *dotsVelY,
 	dWeight *dotsWeight) {
+	var (
+		collision bool
+		collPoint point
+	)
 
-	// TODO: MAAAGIIC
-	// (instead of just changing the values flat out (like before))
-	dX[i] = newX
-	dY[i] = newY
+	collision, collPoint = checkLineRectCollision(
+		line {dX[i], dY[i], newX, newY},
+		rect {dX[j], dY[j], 1.0, 1.0})
+
+	if (collision) {
+		dX[i] = collPoint.X
+		dY[i] = collPoint.Y
+
+		// TODO: transmit force from dot[i] to dot[j]
+		// mind the velocity, and weight OF BOTH, and the angle
+	}
 }
 
 func moveDot(i int,
@@ -156,11 +256,11 @@ func moveDot(i int,
 
 	// check for collisions with other dots
 	for j := 0; j < i; j++ {
-		handleDotDotCollision(i, newX, newY,
+		handleDotDotCollision(i, newX, newY, j,
 			dX, dY, dVelX, dVelY, dWeight)
 	}
 	for j := i + 1; j < dCount; j++ {
-		handleDotDotCollision(i, newX, newY,
+		handleDotDotCollision(i, newX, newY, j,
 			dX, dY, dVelX, dVelY, dWeight)
 	}
 }
@@ -215,7 +315,7 @@ func spawnDot(x, y float64,
 func main() {
 	var (
 		dCount    int
-		dMat      dotsMaterial = newDotsMaterial()
+		dMat      dotsMaterial
 		dX        dotsX
 		dY        dotsY
 		dVelX     dotsVelX

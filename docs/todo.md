@@ -35,6 +35,8 @@ which was initially meant as a way to quickly index via position.
 + add ground friction
 + check if gravity calculation makes sense
 - add dot collision
+	(last todo... and set dot[i].pos to collision point)
+
 - add dot friction
 
 - set version to 0.1.
