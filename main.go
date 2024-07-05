@@ -227,12 +227,12 @@ func handleDotDotCollision(i int,
 	)
 
 	collision, collPoint = checkLineRectCollision(
-		line {dX[i], dY[i], newX, newY},
+		line {dX[i] + 0.5, dY[i] + 0.5, newX + 0.5, newY + 0.5},
 		rect {dX[j], dY[j], 1.0, 1.0})
 
 	if (collision) {
-		dX[i] = collPoint.X
-		dY[i] = collPoint.Y
+		dX[i] = collPoint.X - 0.5
+		dY[i] = collPoint.Y - 0.5
 
 		// TODO: transmit force from dot[i] to dot[j]
 		// mind the velocity, and weight OF BOTH, and the angle
