@@ -172,13 +172,14 @@ func closestPointToPointA(a, b, c point) point {
 	}
 }
 
-func drawWorld(dCount *int,
-	dMat *dotsMaterial,
-	dX *dotsX,
-	dY *dotsY,
+func drawWorld(
+	dCount  *int,
+	dMat    *dotsMaterial,
+	dX      *dotsX,
+	dY      *dotsY,
 	surface *sdl.Surface,
-	window  *sdl.Window) {
-
+	window  *sdl.Window,
+) {
 	surface.FillRect(nil, 0)
 
 	for i := 0; i < *dCount; i++ {
@@ -213,14 +214,17 @@ func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	}
 }
 
-func handleDotDotCollision(i int,
-	newX, newY float64,
-	j int,
-	dX *dotsX,
-	dY *dotsY,
-	dVelX *dotsVelX,
-	dVelY *dotsVelY,
-	dWeight *dotsWeight) {
+func handleDotDotCollision(
+	i       int,
+	newX    float64,
+	newY    float64,
+	j       int,
+	dX      *dotsX,
+	dY      *dotsY,
+	dVelX   *dotsVelX,
+	dVelY   *dotsVelY,
+	dWeight *dotsWeight,
+) {
 	var (
 		collision bool
 		collPoint point
@@ -239,14 +243,16 @@ func handleDotDotCollision(i int,
 	}
 }
 
-func moveDot(i int,
-	delta float64,
-	dCount int,
-	dX *dotsX,
-	dY *dotsY,
-	dVelX *dotsVelX,
-	dVelY *dotsVelY,
-	dWeight *dotsWeight) {
+func moveDot(
+	i       int,
+	delta   float64,
+	dCount  int,
+	dX      *dotsX,
+	dY      *dotsY,
+	dVelX   *dotsVelX,
+	dVelY   *dotsVelY,
+	dWeight *dotsWeight,
+) {
 	var (
 		newX, newY float64
 	)
@@ -268,16 +274,17 @@ func moveDot(i int,
 // Moves every dot.
 // A dot is 1 cm big (W and H).
 // Velocity is cm/s.
-func moveWorld(delta float64,
-	dCount int,
-	dX *dotsX,
-	dY *dotsY,
-	dVelX *dotsVelX,
-	dVelY *dotsVelY,
+func moveWorld(
+	delta     float64,
+	dCount    int,
+	dX        *dotsX,
+	dY        *dotsY,
+	dVelX     *dotsVelX,
+	dVelY     *dotsVelY,
 	dGrounded *dotsGrounded,
-	dFric *dotsFriction,
-	dWeight *dotsWeight) {
-
+	dFric     *dotsFriction,
+	dWeight   *dotsWeight,
+) {
 	for i := 0; i < dCount; i++ {
 		// gravity
 		dVelY[i] += (gravity * delta)
@@ -295,15 +302,17 @@ func moveWorld(delta float64,
 	}
 }
 
-func spawnDot(x, y float64,
-	mat dotMaterial,
-	dCount *int,
-	dMat *dotsMaterial,
-	dX *dotsX,
-	dY *dotsY,
-	dFric *dotsFriction,
-	dWeight *dotsWeight) {
-
+func spawnDot(
+	x       float64,
+	y       float64,
+	mat     dotMaterial,
+	dCount  *int,
+	dMat    *dotsMaterial,
+	dX      *dotsX,
+	dY      *dotsY,
+	dFric   *dotsFriction,
+	dWeight *dotsWeight,
+) {
 	dMat[*dCount] = mat
 	dX[*dCount] = x
 	dY[*dCount] = y
