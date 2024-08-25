@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	dotSize        = 10.0
-	gfxScale       = 1
+	dotSize        = 1.0
+	gfxScale       = 10
 	gravity        = 980
 	groundFriction = 0.5
 	tickrate       = 60
@@ -238,6 +238,9 @@ func handleDotDotCollision(
 
 		// TODO: transmit force from dot[i] to dot[j]
 		// mind the velocity, and weight OF BOTH, and the angle
+	} else {
+		dX[i] = newX
+		dY[i] = newY
 	}
 }
 
