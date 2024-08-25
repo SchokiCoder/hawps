@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	gfxScale       = 10
+	dotSize        = 10.0
+	gfxScale       = 1
 	gravity        = 980
 	groundFriction = 0.5
 	tickrate       = 60
@@ -44,14 +45,6 @@ func matWeight(index dotMaterial) float64 {
 
 type (
 	dotMaterial  int
-	dotsMaterial [worldWidth * worldHeight]dotMaterial
-	dotsX        [worldWidth * worldHeight]float64
-	dotsY        [worldWidth * worldHeight]float64
-	dotsVelX     [worldWidth * worldHeight]float64
-	dotsVelY     [worldWidth * worldHeight]float64
-	dotsGrounded [worldWidth * worldHeight]bool
-	dotsFriction [worldWidth * worldHeight]float64
-	dotsWeight   [worldWidth * worldHeight]float64
 )
 
 type point struct {
@@ -174,9 +167,9 @@ func closestPointToPointA(a, b, c point) point {
 
 func drawWorld(
 	dCount  *int,
-	dMat    *dotsMaterial,
-	dX      *dotsX,
-	dY      *dotsY,
+	dMat    []dotMaterial,
+	dX      []float64,
+	dY      []float64,
 	surface *sdl.Surface,
 	window  *sdl.Window,
 ) {
@@ -186,8 +179,8 @@ func drawWorld(
 		rect := sdl.Rect{
 			X: int32(int64(dX[i]) * gfxScale),
 			Y: int32(int64(dY[i]) * gfxScale),
-			W: int32(gfxScale),
-			H: int32(gfxScale),
+			W: int32(dotSize * gfxScale),
+			H: int32(dotSize * gfxScale),
 		}
 		pixel := sdl.MapRGB(surface.Format, 238, 217, 86)
 		surface.FillRect(&rect, pixel)
@@ -199,16 +192,16 @@ func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	if *x < 0.0 {
 		*x = 0.0
 		*velX = 0.0
-	} else if *x >= worldWidth {
-		*x = worldWidth - 1.0
+	} else if *x + dotSize >= worldWidth {
+		*x = worldWidth - dotSize
 		*velX = 0.0
 	}
 
 	if *y < 0.0 {
 		*y = 0.0
 		*velY = 0.0
-	} else if *y >= worldHeight {
-		*y = worldHeight - 1.0
+	} else if *y + dotSize >= worldHeight {
+		*y = worldHeight - dotSize
 		*velY = 0.0
 		*grounded = true
 	}
@@ -219,11 +212,11 @@ func handleDotDotCollision(
 	newX    float64,
 	newY    float64,
 	j       int,
-	dX      *dotsX,
-	dY      *dotsY,
-	dVelX   *dotsVelX,
-	dVelY   *dotsVelY,
-	dWeight *dotsWeight,
+	dX      []float64,
+	dY      []float64,
+	dVelX   []float64,
+	dVelY   []float64,
+	dWeight []float64,
 ) {
 	var (
 		collision bool
@@ -231,12 +224,17 @@ func handleDotDotCollision(
 	)
 
 	collision, collPoint = checkLineRectCollision(
-		line {dX[i] + 0.5, dY[i] + 0.5, newX + 0.5, newY + 0.5},
-		rect {dX[j], dY[j], 1.0, 1.0})
+		line {
+			dX[i] + dotSize / 2.0,
+			dY[i] + dotSize / 2.0,
+			newX + dotSize / 2.0,
+			newY + dotSize / 2.0,
+		},
+		rect {dX[j], dY[j], dotSize, dotSize})
 
 	if (collision) {
-		dX[i] = collPoint.X - 0.5
-		dY[i] = collPoint.Y - 0.5
+		dX[i] = collPoint.X - dotSize / 2.0
+		dY[i] = collPoint.Y - dotSize / 2.0
 
 		// TODO: transmit force from dot[i] to dot[j]
 		// mind the velocity, and weight OF BOTH, and the angle
@@ -247,11 +245,11 @@ func moveDot(
 	i       int,
 	delta   float64,
 	dCount  int,
-	dX      *dotsX,
-	dY      *dotsY,
-	dVelX   *dotsVelX,
-	dVelY   *dotsVelY,
-	dWeight *dotsWeight,
+	dX      []float64,
+	dY      []float64,
+	dVelX   []float64,
+	dVelY   []float64,
+	dWeight []float64,
 ) {
 	var (
 		newX, newY float64
@@ -277,13 +275,13 @@ func moveDot(
 func moveWorld(
 	delta     float64,
 	dCount    int,
-	dX        *dotsX,
-	dY        *dotsY,
-	dVelX     *dotsVelX,
-	dVelY     *dotsVelY,
-	dGrounded *dotsGrounded,
-	dFric     *dotsFriction,
-	dWeight   *dotsWeight,
+	dX        []float64,
+	dY        []float64,
+	dVelX     []float64,
+	dVelY     []float64,
+	dGrounded []bool,
+	dFric     []float64,
+	dWeight   []float64,
 ) {
 	for i := 0; i < dCount; i++ {
 		// gravity
@@ -307,11 +305,11 @@ func spawnDot(
 	y       float64,
 	mat     dotMaterial,
 	dCount  *int,
-	dMat    *dotsMaterial,
-	dX      *dotsX,
-	dY      *dotsY,
-	dFric   *dotsFriction,
-	dWeight *dotsWeight,
+	dMat    []dotMaterial,
+	dX      []float64,
+	dY      []float64,
+	dFric   []float64,
+	dWeight []float64,
 ) {
 	dMat[*dCount] = mat
 	dX[*dCount] = x
@@ -324,14 +322,14 @@ func spawnDot(
 func main() {
 	var (
 		dCount    int
-		dMat      dotsMaterial
-		dX        dotsX
-		dY        dotsY
-		dVelX     dotsVelX
-		dVelY     dotsVelY
-		dGrounded dotsGrounded
-		dFric     dotsFriction
-		dWeight   dotsWeight
+		dMat      [worldWidth * worldHeight]dotMaterial
+		dX        [worldWidth * worldHeight]float64
+		dY        [worldWidth * worldHeight]float64
+		dVelX     [worldWidth * worldHeight]float64
+		dVelY     [worldWidth * worldHeight]float64
+		dGrounded [worldWidth * worldHeight]bool
+		dFric     [worldWidth * worldHeight]float64
+		dWeight   [worldWidth * worldHeight]float64
 
 		delta float64
 		lastTick time.Time
@@ -361,10 +359,10 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, &dMat, &dX, &dY, &dFric, &dWeight)
+	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 	dVelX[0] = 250.0
 	dVelY[0] = 200.0
-	spawnDot(worldWidth / 3.0 * 2.0, worldHeight - 2.0, dotSand, &dCount, &dMat, &dX, &dY, &dFric, &dWeight)
+	spawnDot(worldWidth / 3.0 * 2.0, worldHeight - dotSize + 2.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 
 	mainloop:
 	for {
@@ -372,12 +370,21 @@ func main() {
 		if rawDelta >= (1_000_000_000 / tickrate) {
 			delta = float64(rawDelta) / float64(1_000_000_000)
 			delta *= timescale
-			drawWorld(&dCount, &dMat, &dX, &dY, surface, window)
+			drawWorld(&dCount,
+				dMat[:],
+				dX[:],
+				dY[:],
+				surface,
+				window)
 			moveWorld(delta,
 				dCount,
-				&dX, &dY,
-				&dVelX, &dVelY,
-				&dGrounded, &dFric, &dWeight)
+				dX[:],
+				dY[:],
+				dVelX[:],
+				dVelY[:],
+				dGrounded[:],
+				dFric[:],
+				dWeight[:])
 
 			fmt.Printf("delta %v\n", delta)
 
