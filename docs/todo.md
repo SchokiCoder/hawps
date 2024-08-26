@@ -44,8 +44,7 @@ There is a clear cut between params and function start,
 which often is var declarations.
 No more weird alignment because of first param vs the other.
 
-- add dot collision
-	(last todo... and set dot[i].pos to collision point)
++ add dot collision
 
 - add dot friction
 

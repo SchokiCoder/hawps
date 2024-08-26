@@ -4,8 +4,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
+	"math"
 	"time"
 )
 
@@ -47,18 +47,6 @@ type (
 	dotMaterial  int
 )
 
-type point struct {
-	X, Y float64
-}
-
-type line struct {
-	X1, Y1, X2, Y2 float64
-}
-
-type rect struct {
-	X, Y, W, H float64
-}
-
 // Friction is the average of ground friction and dot friction,
 // and is given as a percentage of velocity loss.
 func applyDotGroundFriction(velX *float64, delta, fric, weight float64) {
@@ -79,92 +67,6 @@ func applyDotGroundFriction(velX *float64, delta, fric, weight float64) {
 	}
 }
 
-// On collision, returns true and point of intersection.
-// Thanks jeffreythompson.org
-func checkLineLineCollision(l1, l2 line) (bool, point) {
-	var (
-		uA, uB float64
-	)
-
-	uA = ((l2.X2-l2.X1) * (l1.Y1-l2.Y1) - (l2.Y2-l2.Y1) * (l1.X1-l2.X1)) /
-		((l2.Y2-l2.Y1) * (l1.X2-l1.X1) - (l2.X2-l2.X1) * (l1.Y2-l1.Y1))
-	uB = ((l1.X2-l1.X1) * (l1.Y1-l2.Y1) - (l1.Y2-l1.Y1) * (l1.X1-l2.X1)) /
-		((l2.Y1-l2.Y1) * (l1.X2-l1.X1) - (l2.X2-l2.X1) * (l1.Y2-l1.Y1))
-
-	if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
-		return true,
-			point {l1.X1 + (uA * (l1.X2 - l1.X1)),
-				l1.Y1 + (uA * (l1.Y2 - l1.Y1))}
-	}
-
-	return false, point{}
-}
-
-// On collision, returns first point of intersection.
-func checkLineRectCollision(l line, r rect) (bool, point) {
-	var (
-		idxIntersections []int
-		intersects       bool
-		intersections    [4]point
-		rLines =         [4]line {
-			line {X1: r.X, Y1: r.Y, X2: r.X + r.W, Y2: r.Y},
-			line {X1: r.X + r.W, Y1: r.Y, X2: r.X + r.W, Y2: r.Y},
-			line {X1: r.X + r.W, Y1: r.Y, X2: r.X + r.W, Y2: r.Y + r.H},
-			line {X1: r.X, Y1: r.Y + r.H, X2: r.X + r.W, Y2: r.Y + r.H},
-		}
-	)
-
-	for i := 0; i < len(rLines); i++ {
-		intersects, intersections[i] = checkLineLineCollision(l, rLines[i])
-		if intersects {
-			idxIntersections = append(idxIntersections, i)
-		}
-	}
-
-	switch len(idxIntersections) {
-	case 1:
-		return true, intersections[idxIntersections[0]]
-
-	case 2:
-		return true, closestPointToPointA(point {l.X1, l.Y1},
-			intersections[idxIntersections[0]],
-			intersections[idxIntersections[1]])
-	}
-
-	return false, point{}
-}
-
-func closestPointToPointA(a, b, c point) point {
-	var (
-		lbx, lby, lcx, lcy float64
-	)
-
-	lbx = b.X - a.X
-	lby = b.Y - a.Y
-
-	lcx = c.X - a.X
-	lcy = c.Y - a.Y
-
-	if lbx < 0.0 {
-		lbx *= -1.0
-	}
-	if lby < 0.0 {
-		lby *= -1.0
-	}
-	if lcx < 0.0 {
-		lcx *= -1.0
-	}
-	if lcx < 0.0 {
-		lcx *= -1.0
-	}
-
-	if (lbx + lby) > (lcx + lcy) {
-		return c
-	} else {
-		return b
-	}
-}
-
 func drawWorld(
 	dCount  *int,
 	dMat    []dotMaterial,
@@ -182,7 +84,8 @@ func drawWorld(
 			W: int32(dotSize * gfxScale),
 			H: int32(dotSize * gfxScale),
 		}
-		pixel := sdl.MapRGB(surface.Format, 238, 217, 86)
+		// TODO: remove debug color manipulation
+		pixel := sdl.MapRGB(surface.Format, 238, 217 - uint8(i)*50, 86 + uint8(i)*100)
 		surface.FillRect(&rect, pixel)
 		window.UpdateSurface()
 	}
@@ -207,68 +110,147 @@ func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	}
 }
 
+// Changes velocity on collision.
+// Dots are considered to be circles for collision detection.
+// Returns true on collision.
 func handleDotDotCollision(
-	i       int,
-	newX    float64,
-	newY    float64,
-	j       int,
-	dX      []float64,
-	dY      []float64,
-	dVelX   []float64,
-	dVelY   []float64,
-	dWeight []float64,
-) {
+	dX       []float64,
+	dY       []float64,
+	dVelX    []float64,
+	dVelY    []float64,
+	dWeight  []float64,
+	i        int,
+	j        int,
+) bool {
 	var (
-		collision bool
-		collPoint point
+		deltaX, deltaY   float64
+		distance         float64
+		forceIX, forceIY float64
+		forceJX, forceJY float64
 	)
 
-	collision, collPoint = checkLineRectCollision(
-		line {
-			dX[i] + dotSize / 2.0,
-			dY[i] + dotSize / 2.0,
-			newX + dotSize / 2.0,
-			newY + dotSize / 2.0,
-		},
-		rect {dX[j], dY[j], dotSize, dotSize})
+	deltaX = dX[i] - dX[j]
+	deltaY = dY[i] - dY[j]
+	distance = math.Sqrt(deltaX * deltaX + deltaY * deltaY)
 
-	if (collision) {
-		dX[i] = collPoint.X - dotSize / 2.0
-		dY[i] = collPoint.Y - dotSize / 2.0
+	if (distance < dotSize) {
+		forceIX = dVelX[i] * dWeight[i]
+		forceIY = dVelY[i] * dWeight[i]
+		forceJX = dVelX[j] * dWeight[j]
+		forceJY = dVelY[j] * dWeight[j]
 
-		// TODO: transmit force from dot[i] to dot[j]
-		// mind the velocity, and weight OF BOTH, and the angle
-	} else {
-		dX[i] = newX
-		dY[i] = newY
+		dVelX[i] -= (forceIX + forceJX) / dWeight[i]
+		dVelY[i] -= (forceIY + forceJY) / dWeight[i]
+		dVelX[j] += (forceIX + forceJX) / dWeight[i]
+		dVelY[j] += (forceIY + forceJY) / dWeight[i]
+
+		return true
 	}
+
+	return false
 }
 
+// You have found the source of evil. Good.
 func moveDot(
-	i       int,
-	delta   float64,
-	dCount  int,
-	dX      []float64,
-	dY      []float64,
-	dVelX   []float64,
-	dVelY   []float64,
-	dWeight []float64,
+	i         int,
+	delta     float64,
+	dCount    int,
+	dX        []float64,
+	dY        []float64,
+	dVelX     []float64,
+	dVelY     []float64,
+	dGrounded []bool,
+	dWeight   []float64,
 ) {
 	var (
-		newX, newY float64
+		alreadyCollided [64]int
+		collisions      int
+		deltaX          float64
+		deltaY          float64
+		newX            float64
+		newY            float64
+		steps           int
+		stepX           float64
+		stepY           float64
+		xNegative       bool
+		yNegative       bool
 	)
+
+	collCheckRange := func(start, end int) {
+		jloop:
+		for j := start; j < end; j++ {
+			for c := 0; c < collisions; c++ {
+				if j == alreadyCollided[c] {
+					continue jloop
+				}
+			}
+
+			coll := handleDotDotCollision(dX, dY,
+				dVelX, dVelY,
+				dWeight,
+				i, j)
+			if coll {
+				alreadyCollided[collisions] = j
+				collisions++
+			}
+		}
+	}
 
 	newX = dX[i] + (dVelX[i] * delta)
 	newY = dY[i] + (dVelY[i] * delta)
 
-	// check for collisions with other dots
-	for j := 0; j < i; j++ {
-		handleDotDotCollision(i, newX, newY, j,
-			dX, dY, dVelX, dVelY, dWeight)
+	deltaX = newX - dX[i]
+	deltaY = newY - dY[i]
+
+	if deltaX < 1.0 && deltaY < 1.0 {
+		dX[i] = newX
+		dY[i] = newY
+
+		collCheckRange(0, i)
+		collCheckRange(i + 1, dCount)
+
+		handleDotBoundsCollision(&dX[i], &dY[i],
+			&dVelX[i], &dVelY[i],
+			&dGrounded[i])
+		return
 	}
-	for j := i + 1; j < dCount; j++ {
-		handleDotDotCollision(i, newX, newY, j,
-			dX, dY, dVelX, dVelY, dWeight)
+
+	if deltaX < 0.0 {
+		xNegative = true
+		deltaX *= -1.0
+	}
+	if deltaY < 0.0{
+		yNegative = true
+		deltaY *= -1.0
+	}
+
+	if deltaX > deltaY {
+		steps = int(deltaX)
+		stepX = 1.0
+		stepY = deltaY / deltaX
+	} else {
+		steps = int(deltaY)
+		stepX = deltaX / deltaY
+		stepY = 1.0
+	}
+
+	if xNegative {
+		stepX *= -1.0
+	}
+	if yNegative {
+		stepY *= -1.0
+	}
+
+	for count := 0; count < steps; count++ {
+		dX[i] += stepX
+		dY[i] += stepY
+
+		collCheckRange(0, i)
+		collCheckRange(i + 1, dCount)
+
+		handleDotBoundsCollision(&dX[i], &dY[i],
+			&dVelX[i], &dVelY[i],
+			&dGrounded[i])
 	}
 }
 
@@ -290,11 +272,8 @@ func moveWorld(
 		// gravity
 		dVelY[i] += (gravity * delta)
 
-		moveDot(i, delta, dCount, dX, dY, dVelX, dVelY, dWeight)
-
-		handleDotBoundsCollision(&dX[i], &dY[i],
-			&dVelX[i], &dVelY[i],
-			&dGrounded[i])
+		moveDot(i, delta,
+			dCount, dX, dY, dVelX, dVelY, dGrounded, dWeight)
 
 		if dGrounded[i] && dVelX[i] != 0.0 {
 			applyDotGroundFriction(&dVelX[i],
@@ -366,6 +345,7 @@ func main() {
 	dVelX[0] = 250.0
 	dVelY[0] = 200.0
 	spawnDot(worldWidth / 3.0 * 2.0, worldHeight - dotSize + 2.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
+	dVelX[1] = -50.0
 
 	mainloop:
 	for {
@@ -388,8 +368,6 @@ func main() {
 				dGrounded[:],
 				dFric[:],
 				dWeight[:])
-
-			fmt.Printf("delta %v\n", delta)
 
 			event := sdl.PollEvent()
 
