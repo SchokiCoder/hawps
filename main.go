@@ -39,12 +39,14 @@ const (
 const (
 	dotNone = iota
 	dotSand
+	dotWater
 )
 
 func matFriction(index dotMaterial) float64 {
 	var protectedArray = [...]float64{
 		0.0,
 		0.7,
+		0.3,
 	}
 
 	return protectedArray[index]
@@ -54,6 +56,37 @@ func matWeight(index dotMaterial) float64 {
 	var protectedArray = [...]float64{
 		0.0,
 		1.5,
+		1.0,
+	}
+
+	return protectedArray[index]
+}
+
+func matR(index dotMaterial) uint8 {
+	var protectedArray = [...]uint8{
+		255,
+		238,
+		0,
+	}
+
+	return protectedArray[index]
+}
+
+func matG(index dotMaterial) uint8 {
+	var protectedArray = [...]uint8{
+		0,
+		217,
+		253,
+	}
+
+	return protectedArray[index]
+}
+
+func matB(index dotMaterial) uint8 {
+	var protectedArray = [...]uint8{
+		255,
+		86,
+		255,
 	}
 
 	return protectedArray[index]
@@ -100,8 +133,9 @@ func drawWorld(
 			W: int32(dotSize * gfxScale),
 			H: int32(dotSize * gfxScale),
 		}
-		// TODO: remove debug color manipulation
-		pixel := sdl.MapRGB(surface.Format, 238, 217 - uint8(i)*50, 86 + uint8(i)*100)
+
+		pixel := sdl.MapRGB(surface.Format,
+			matR(dMat[i]), matG(dMat[i]), matB(dMat[i]))
 		surface.FillRect(&rect, pixel)
 		window.UpdateSurface()
 	}
@@ -415,7 +449,7 @@ func main() {
 	spawnDot(worldWidth / 3.0 + 1.0, worldHeight / 3.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 	dVelX[0] = 100.0
 	dVelY[0] = 100.0
-	spawnDot(worldWidth / 3.0 * 2.0, worldHeight / 2.0 + 2.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
+	spawnDot(worldWidth / 3.0 * 2.0, worldHeight / 2.0 + 2.0, dotWater, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 	dVelX[1] = -100.0
 
 	for active {

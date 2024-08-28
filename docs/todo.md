@@ -1,3 +1,6 @@
+- add runtime dot manipulation interface
+- remove manual tomfoolery
+
 # Gases Update
 
 - add dot friction?
@@ -7,15 +10,13 @@
 
 - set version to 0.3
 
-# Manipulation Update
+# Liquid Update
 
-- add runtime dot manipulation interface
-- remove manual tomfoolery
++ add water
+
+- water must be displaced when sand falls onto it
 
 - consider line v circle segment algorithm for collision
-
-- add water and liquid behavior
-  rgb(0, 253, 255)?
 
 - add arguments for
 	- gfxScale
@@ -27,9 +28,9 @@
 	- worldHeight
 	- `-h --help`
 
-- remove debug color manipulation (has a TODO mark)
-
 - set version to 0.2
+
+-----
 
 # Base
 
@@ -68,6 +69,3 @@ No more weird alignment because of first param vs the other.
 
 Also add quit keybind (ESC), and
 set version to 0.1
-
-
------
