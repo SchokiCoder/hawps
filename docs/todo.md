@@ -1,17 +1,35 @@
-# Manipulation
+# Gases Update
+
+- add dot friction?
+- add dot bounciness?
+
+- add oxygen and gas behavior
+
+- set version to 0.3
+
+# Manipulation Update
 
 - add runtime dot manipulation interface
 - remove manual tomfoolery
 
-# Niceties
+- consider line v circle segment algorithm for collision
 
-- add water
+- add water and liquid behavior
   rgb(0, 253, 255)?
 
 - add arguments for
 	- gfxScale
+	- gravity
+	- groundFriction
 	- tickrate
+	- timescale
+	- worldWidth
+	- worldHeight
 	- `-h --help`
+
+- remove debug color manipulation (has a TODO mark)
+
+- set version to 0.2
 
 # Base
 
@@ -46,9 +64,10 @@ No more weird alignment because of first param vs the other.
 
 + add dot collision
 
-- add dot friction
++ add about print argument
 
-- set version to 0.1.
+Also add quit keybind (ESC), and
+set version to 0.1
 
 
 -----

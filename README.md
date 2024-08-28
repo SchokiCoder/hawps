@@ -1,9 +1,8 @@
 # HAWPS
 
-Half assed wannabe physics simulation.
-Introduction here...
-
-Ave, true to Caesar.
+Half assed wannabe physics simulator.  
+The name is the game.  
+I just want to have fun writing something dumb.  
 
 # Build
 

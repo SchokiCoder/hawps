@@ -4,15 +4,31 @@
 package main
 
 import (
+	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
 	"math"
+	"os"
 	"time"
+)
+
+const (
+	appName       = "hawps"
+	appNameFormal = "Half Assed Wannabe Physics Simulator"
+	appVersion    = "v0.1"
+	appLicense    = "GPL-2.0-or-later"
+	appRepository = "https://github.com/SchokiCoder/hawps"
+	appLicenseUrl = "https://www.gnu.org/licenses/gpl-2.0.html"
+)
+
+const (
+	earthGravity = 980
+	moonGravity  = 162
 )
 
 const (
 	dotSize        = 1.0
 	gfxScale       = 10
-	gravity        = 980
+	gravity        = 0
 	groundFriction = 0.5
 	tickrate       = 60
 	timescale      = 0.1
@@ -91,6 +107,34 @@ func drawWorld(
 	}
 }
 
+func handleArgs() bool {
+	for i := 1; i < len(os.Args); i++ {
+		switch os.Args[i] {
+		case "-a":
+			fallthrough
+		case "--about":
+			fmt.Printf("The source code of \"%v\" aka %v %v is available, "+
+				"licensed under the %v at:\n"+
+				"%v\n\n"+
+				"If you did not receive a copy of the license, "+
+				"see below:\n"+
+				"%v\n",
+				appNameFormal, appName, appVersion,
+				appLicense,
+				appRepository,
+				appLicenseUrl)
+			return false
+
+		default:
+			fmt.Fprintf(os.Stderr,
+				"Argument \"%v\" is not recognized.\n",
+				os.Args[i])
+		}
+	}
+
+	return true
+}
+
 func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	if *x < 0.0 {
 		*x = 0.0
@@ -148,6 +192,26 @@ func handleDotDotCollision(
 	}
 
 	return false
+}
+
+func handleEvents(active *bool) {
+	event := sdl.PollEvent()
+
+	for ; event != nil; event = sdl.PollEvent() {
+		switch event.(type) {
+		case *sdl.KeyboardEvent:
+			event := event.(*sdl.KeyboardEvent)
+			if event.GetType() == sdl.KEYUP {
+				switch event.Keysym.Sym {
+				case sdl.K_ESCAPE:
+					*active = false
+				}
+			}
+
+		case *sdl.QuitEvent:
+			*active = false
+		}
+	}
 }
 
 // You have found the source of evil. Good.
@@ -303,6 +367,7 @@ func spawnDot(
 
 func main() {
 	var (
+		active    bool
 		dCount    int
 		dMat      [worldWidth * worldHeight]dotMaterial
 		dX        [worldWidth * worldHeight]float64
@@ -316,6 +381,12 @@ func main() {
 		delta float64
 		lastTick time.Time
 	)
+
+	active = true
+
+	if handleArgs() == false {
+		return
+	}
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -341,14 +412,13 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnDot(1.0, worldHeight / 2, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
-	dVelX[0] = 250.0
-	dVelY[0] = 200.0
-	spawnDot(worldWidth / 3.0 * 2.0, worldHeight - dotSize + 2.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
-	dVelX[1] = -50.0
+	spawnDot(worldWidth / 3.0 + 1.0, worldHeight / 3.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
+	dVelX[0] = 100.0
+	dVelY[0] = 100.0
+	spawnDot(worldWidth / 3.0 * 2.0, worldHeight / 2.0 + 2.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
+	dVelX[1] = -100.0
 
-	mainloop:
-	for {
+	for active {
 		rawDelta := time.Since(lastTick)
 		if rawDelta >= (1_000_000_000 / tickrate) {
 			delta = float64(rawDelta) / float64(1_000_000_000)
@@ -369,14 +439,7 @@ func main() {
 				dFric[:],
 				dWeight[:])
 
-			event := sdl.PollEvent()
-
-			for ; event != nil; event = sdl.PollEvent() {
-				switch event.(type) {
-				case *sdl.QuitEvent:
-					break mainloop
-				}
-			}
+			handleEvents(&active)
 
 			lastTick = time.Now()
 		}
