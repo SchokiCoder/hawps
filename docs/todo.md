@@ -1,9 +1,13 @@
 - add runtime dot manipulation interface
 - remove manual tomfoolery
+- would disabling friction calculations while gravity is 0, save cpu time?
 
 # Gases Update
 
 - add dot friction?
+  upon colliding with a grounded dot,
+  get grounded and use friction average of own and below dot mul by grav and delta
+
 - add dot bounciness?
 
 - add oxygen and gas behavior
@@ -14,9 +18,12 @@
 
 + add water
 
-- water must be displaced when sand falls onto it
+- collision/force transmission is completely wonky and laggy
+  who would have thought?
+  20 dots are enough to completely freeze MY PC sometimes
+  consider line v circle segment algorithm for collision
 
-- consider line v circle segment algorithm for collision
+- water must be displaced when sand falls onto it
 
 - add arguments for
 	- gfxScale

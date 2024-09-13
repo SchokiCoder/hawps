@@ -28,7 +28,7 @@ const (
 const (
 	dotSize        = 1.0
 	gfxScale       = 10
-	gravity        = 0
+	gravity        = earthGravity
 	groundFriction = 0.5
 	tickrate       = 60
 	timescale      = 0.1
@@ -188,6 +188,40 @@ func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	}
 }
 
+type Vec struct {
+	X, Y float64
+}
+
+func VecAdd(a, b Vec) Vec {
+	return Vec{
+		X: a.X + b.X,
+		Y: a.Y + b.Y,
+	}
+}
+
+func VecDot(a, b Vec) float64 {
+	return a.X * b.X + a.Y * b.Y
+}
+
+func VecHypot2(a, b Vec) float64 {
+	return VecDot(VecSub(a, b), VecSub(a, b))
+}
+
+func VecProj(a, b Vec) Vec {
+	k := VecDot(a, b) / VecDot(b, b)
+	return Vec{
+		X: k * b.X,
+		Y: k * b.Y,
+	}
+}
+
+func VecSub(a, b Vec) Vec {
+	return Vec{
+		X: a.X - b.X,
+		Y: a.Y - b.Y,
+	}
+}
+
 // Changes velocity on collision.
 // Dots are considered to be circles for collision detection.
 // Returns true on collision.
@@ -199,19 +233,50 @@ func handleDotDotCollision(
 	dWeight  []float64,
 	i        int,
 	j        int,
-) bool {
+	newX     float64,
+	newY     float64,
+) {
 	var (
-		deltaX, deltaY   float64
-		distance         float64
-		forceIX, forceIY float64
-		forceJX, forceJY float64
+		distance, k float64
+		forceIX, forceIY   float64
+		forceJX, forceJY   float64
 	)
 
-	deltaX = dX[i] - dX[j]
-	deltaY = dY[i] - dY[j]
-	distance = math.Sqrt(deltaX * deltaX + deltaY * deltaY)
+	a := Vec{
+		(dX[j] + dotSize / 2.0),
+		(dY[j] + dotSize / 2.0),
+	}
+	b := Vec{
+		(newX + dotSize / 2.0),
+		(newY + dotSize / 2.0),
+	}
+	c := Vec{
+		(dX[i] + dotSize / 2.0),
+		(dY[i] + dotSize / 2.0),
+	}
 
-	if (distance < dotSize) {
+	ac := VecSub(c, a)
+	ab := VecSub(b, a)
+
+	d := VecAdd(VecProj(ac, ab), c)
+
+	ad := VecSub(d, a)
+
+	if math.Abs(ab.X) > math.Abs(ab.Y) {
+		k = ad.X / ab.X
+	} else {
+		k = ad.Y / ab.Y
+	}
+
+	if k <= 0.0 {
+		distance = math.Sqrt(VecHypot2(c, a))
+	} else if (k >= 1.0) {
+		distance = math.Sqrt(VecHypot2(c, b))
+	}
+
+	distance = math.Sqrt(VecHypot2(c, d))
+
+	if (distance < dotSize / 2.0) {
 		forceIX = dVelX[i] * dWeight[i]
 		forceIY = dVelY[i] * dWeight[i]
 		forceJX = dVelX[j] * dWeight[j]
@@ -221,11 +286,59 @@ func handleDotDotCollision(
 		dVelY[i] -= (forceIY + forceJY) / dWeight[i]
 		dVelX[j] += (forceIX + forceJX) / dWeight[i]
 		dVelY[j] += (forceIY + forceJY) / dWeight[i]
-
-		return true
 	}
 
-	return false
+	/*
+	Second variant, with, so far, unpredictable behavior.
+	The above is slightly less buggy.
+
+	I think I have to half ass it even more, and that fundamentally.
+
+	Maybe just convert positions to int and just equal check?
+	That with steps, like in the prior over-engineered solution?
+
+	Maybe just get rid of all floats?
+	That would probably make velocity based movement as is impossible.
+	Velocity would then be a "moves every X ticks" value.
+	I already have an update title for this one: "The Big Downdate".
+
+	var (
+		crossProduct       float64
+		deltaABX, deltaABY float64
+		deltaACX, deltaACY float64
+		deltaX, deltaY     float64
+		forceIX, forceIY   float64
+		forceJX, forceJY   float64
+		movementLineLen    float64
+		nearestDistance    float64
+	)
+
+	deltaABX = (dX[i] + dotSize / 2.0) - (dX[j] + dotSize / 2.0)
+	deltaABY = (dY[i] + dotSize / 2.0) - (dY[j] + dotSize / 2.0)
+
+	deltaACX = (newX + dotSize / 2.0) - (dX[j] + dotSize / 2.0)
+	deltaACY = (newY + dotSize / 2.0) - (dY[j] + dotSize / 2.0)
+
+	crossProduct = deltaABX * deltaACY - deltaABY * deltaACX
+
+	deltaX = dX[i] - dX[j]
+	deltaY = dY[i] - dY[j]
+
+	movementLineLen = math.Sqrt(deltaX * deltaX + deltaY * deltaY)
+
+	nearestDistance = crossProduct / movementLineLen
+
+	if (nearestDistance < dotSize / 2.0) {
+		forceIX = dVelX[i] * dWeight[i]
+		forceIY = dVelY[i] * dWeight[i]
+		forceJX = dVelX[j] * dWeight[j]
+		forceJY = dVelY[j] * dWeight[j]
+
+		dVelX[i] -= (forceIX + forceJX) / dWeight[i]
+		dVelY[i] -= (forceIY + forceJY) / dWeight[i]
+		dVelX[j] += (forceIX + forceJX) / dWeight[i]
+		dVelY[j] += (forceIY + forceJY) / dWeight[i]
+	}*/
 }
 
 func handleEvents(active *bool) {
@@ -248,7 +361,6 @@ func handleEvents(active *bool) {
 	}
 }
 
-// You have found the source of evil. Good.
 func moveDot(
 	i         int,
 	delta     float64,
@@ -261,95 +373,32 @@ func moveDot(
 	dWeight   []float64,
 ) {
 	var (
-		alreadyCollided [64]int
-		collisions      int
-		deltaX          float64
-		deltaY          float64
 		newX            float64
 		newY            float64
-		steps           int
-		stepX           float64
-		stepY           float64
-		xNegative       bool
-		yNegative       bool
 	)
 
 	collCheckRange := func(start, end int) {
-		jloop:
 		for j := start; j < end; j++ {
-			for c := 0; c < collisions; c++ {
-				if j == alreadyCollided[c] {
-					continue jloop
-				}
-			}
-
-			coll := handleDotDotCollision(dX, dY,
+			handleDotDotCollision(dX, dY,
 				dVelX, dVelY,
 				dWeight,
-				i, j)
-			if coll {
-				alreadyCollided[collisions] = j
-				collisions++
-			}
+				i, j,
+				newX, newY)
 		}
 	}
 
 	newX = dX[i] + (dVelX[i] * delta)
 	newY = dY[i] + (dVelY[i] * delta)
 
-	deltaX = newX - dX[i]
-	deltaY = newY - dY[i]
+	collCheckRange(0, i)
+	collCheckRange(i + 1, dCount)
 
-	if deltaX < 1.0 && deltaY < 1.0 {
-		dX[i] = newX
-		dY[i] = newY
+	dX[i] = newX
+	dY[i] = newY
 
-		collCheckRange(0, i)
-		collCheckRange(i + 1, dCount)
-
-		handleDotBoundsCollision(&dX[i], &dY[i],
-			&dVelX[i], &dVelY[i],
-			&dGrounded[i])
-		return
-	}
-
-	if deltaX < 0.0 {
-		xNegative = true
-		deltaX *= -1.0
-	}
-	if deltaY < 0.0{
-		yNegative = true
-		deltaY *= -1.0
-	}
-
-	if deltaX > deltaY {
-		steps = int(deltaX)
-		stepX = 1.0
-		stepY = deltaY / deltaX
-	} else {
-		steps = int(deltaY)
-		stepX = deltaX / deltaY
-		stepY = 1.0
-	}
-
-	if xNegative {
-		stepX *= -1.0
-	}
-	if yNegative {
-		stepY *= -1.0
-	}
-
-	for count := 0; count < steps; count++ {
-		dX[i] += stepX
-		dY[i] += stepY
-
-		collCheckRange(0, i)
-		collCheckRange(i + 1, dCount)
-
-		handleDotBoundsCollision(&dX[i], &dY[i],
-			&dVelX[i], &dVelY[i],
-			&dGrounded[i])
-	}
+	handleDotBoundsCollision(&dX[i], &dY[i],
+		&dVelX[i], &dVelY[i],
+		&dGrounded[i])
 }
 
 // Moves every dot.
@@ -427,7 +476,7 @@ func main() {
 	}
 	defer sdl.Quit()
 
-	window, err := sdl.CreateWindow("test",
+	window, err := sdl.CreateWindow(appNameFormal,
 		sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED,
 		worldWidth * gfxScale,
@@ -446,11 +495,14 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnDot(worldWidth / 3.0 + 1.0, worldHeight / 3.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
-	dVelX[0] = 100.0
-	dVelY[0] = 100.0
+	spawnSand := 20
+	for i := 0; i < spawnSand; i++ {
+		spawnDot(float64(i * 2), worldHeight / 3.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
+		dVelX[i] = 100.0
+		dVelY[i] = 200.0
+	}
 	spawnDot(worldWidth / 3.0 * 2.0, worldHeight / 2.0 + 2.0, dotWater, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
-	dVelX[1] = -100.0
+	dVelX[spawnSand] = -100.0
 
 	for active {
 		rawDelta := time.Since(lastTick)
