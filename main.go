@@ -6,7 +6,6 @@ package main
 import (
 	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
-	"math"
 	"os"
 	"time"
 )
@@ -188,38 +187,15 @@ func handleDotBoundsCollision(x, y, velX, velY *float64, grounded *bool) {
 	}
 }
 
-type Vec struct {
-	X, Y float64
-}
-
-func VecAdd(a, b Vec) Vec {
-	return Vec{
-		X: a.X + b.X,
-		Y: a.Y + b.Y,
+func pointInRect(
+	pX, pY, rX, rY, rW, rH float64,
+) bool {
+	if pX > rX && pX < (rX + rW) &&
+	   pY > rY && pY < (rY + rH) {
+		return true
 	}
-}
 
-func VecDot(a, b Vec) float64 {
-	return a.X * b.X + a.Y * b.Y
-}
-
-func VecHypot2(a, b Vec) float64 {
-	return VecDot(VecSub(a, b), VecSub(a, b))
-}
-
-func VecProj(a, b Vec) Vec {
-	k := VecDot(a, b) / VecDot(b, b)
-	return Vec{
-		X: k * b.X,
-		Y: k * b.Y,
-	}
-}
-
-func VecSub(a, b Vec) Vec {
-	return Vec{
-		X: a.X - b.X,
-		Y: a.Y - b.Y,
-	}
+	return false
 }
 
 // Changes velocity on collision.
@@ -237,98 +213,56 @@ func handleDotDotCollision(
 	newY     float64,
 ) {
 	var (
-		distance, k float64
-		forceIX, forceIY   float64
-		forceJX, forceJY   float64
+		iAX, iBX, iCX, iDX float64
+		iAY, iBY, iCY, iDY float64
+		jRX, jRY, jRW, jRH float64
 	)
 
-	a := Vec{
-		(dX[j] + dotSize / 2.0),
-		(dY[j] + dotSize / 2.0),
-	}
-	b := Vec{
-		(newX + dotSize / 2.0),
-		(newY + dotSize / 2.0),
-	}
-	c := Vec{
-		(dX[i] + dotSize / 2.0),
-		(dY[i] + dotSize / 2.0),
-	}
+	iAX = newX - (dotSize / 2.0)
+	iAY = newY - (dotSize / 2.0)
+	iBX = newX + (dotSize / 2.0)
+	iBY = newY - (dotSize / 2.0)
+	iCX = newX - (dotSize / 2.0)
+	iCY = newY + (dotSize / 2.0)
+	iDX = newX + (dotSize / 2.0)
+	iDY = newY + (dotSize / 2.0)
 
-	ac := VecSub(c, a)
-	ab := VecSub(b, a)
+	jRX = dX[j] - (dotSize / 2.0)
+	jRY = dX[j] - (dotSize / 2.0)
+	jRW = dotSize
+	jRH = dotSize
 
-	d := VecAdd(VecProj(ac, ab), c)
-
-	ad := VecSub(d, a)
-
-	if math.Abs(ab.X) > math.Abs(ab.Y) {
-		k = ad.X / ab.X
-	} else {
-		k = ad.Y / ab.Y
+	if pointInRect(iAX, iAY, jRX, jRY, jRW, jRH) ||
+	   pointInRect(iBX, iBY, jRX, jRY, jRW, jRH) ||
+	   pointInRect(iCX, iCY, jRX, jRY, jRW, jRH) ||
+	   pointInRect(iDX, iDY, jRX, jRY, jRW, jRH) {
+		fmt.Printf("coll\n")
 	}
 
-	if k <= 0.0 {
-		distance = math.Sqrt(VecHypot2(c, a))
-	} else if (k >= 1.0) {
-		distance = math.Sqrt(VecHypot2(c, b))
-	}
-
-	distance = math.Sqrt(VecHypot2(c, d))
-
-	if (distance < dotSize / 2.0) {
-		forceIX = dVelX[i] * dWeight[i]
-		forceIY = dVelY[i] * dWeight[i]
-		forceJX = dVelX[j] * dWeight[j]
-		forceJY = dVelY[j] * dWeight[j]
-
-		dVelX[i] -= (forceIX + forceJX) / dWeight[i]
-		dVelY[i] -= (forceIY + forceJY) / dWeight[i]
-		dVelX[j] += (forceIX + forceJX) / dWeight[i]
-		dVelY[j] += (forceIY + forceJY) / dWeight[i]
-	}
-
-	/*
-	Second variant, with, so far, unpredictable behavior.
-	The above is slightly less buggy.
-
-	I think I have to half ass it even more, and that fundamentally.
-
-	Maybe just convert positions to int and just equal check?
-	That with steps, like in the prior over-engineered solution?
-
-	Maybe just get rid of all floats?
-	That would probably make velocity based movement as is impossible.
-	Velocity would then be a "moves every X ticks" value.
-	I already have an update title for this one: "The Big Downdate".
-
+	/* circle v circle, radius check method, force transmission probably faulty
 	var (
-		crossProduct       float64
-		deltaABX, deltaABY float64
-		deltaACX, deltaACY float64
-		deltaX, deltaY     float64
-		forceIX, forceIY   float64
-		forceJX, forceJY   float64
-		movementLineLen    float64
-		nearestDistance    float64
+		a2, b2 float64
+		hypot2 float64
+		distance float64
+		forceIX, forceIY float64
+		forceJX, forceJY float64
 	)
 
-	deltaABX = (dX[i] + dotSize / 2.0) - (dX[j] + dotSize / 2.0)
-	deltaABY = (dY[i] + dotSize / 2.0) - (dY[j] + dotSize / 2.0)
+	a2 = (newX + (dotSize / 2.0)) - (dX[j] + (dotSize / 2.0))
+	if a2 < 0.0 {
+		a2 *= -1.0
+	}
 
-	deltaACX = (newX + dotSize / 2.0) - (dX[j] + dotSize / 2.0)
-	deltaACY = (newY + dotSize / 2.0) - (dY[j] + dotSize / 2.0)
+	b2 = (newY + (dotSize / 2.0)) - (dY[j] + (dotSize / 2.0))
+	if b2 < 0.0 {
+		b2 *= -1.0
+	}
 
-	crossProduct = deltaABX * deltaACY - deltaABY * deltaACX
+	hypot2 = a2 + b2
 
-	deltaX = dX[i] - dX[j]
-	deltaY = dY[i] - dY[j]
+	distance = math.Sqrt(hypot2)
 
-	movementLineLen = math.Sqrt(deltaX * deltaX + deltaY * deltaY)
-
-	nearestDistance = crossProduct / movementLineLen
-
-	if (nearestDistance < dotSize / 2.0) {
+	if distance < (dotSize / 2.0) {
 		forceIX = dVelX[i] * dWeight[i]
 		forceIY = dVelY[i] * dWeight[i]
 		forceJX = dVelX[j] * dWeight[j]
@@ -495,14 +429,18 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnSand := 20
+	/*spawnSand := 20
 	for i := 0; i < spawnSand; i++ {
 		spawnDot(float64(i * 2), worldHeight / 3.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 		dVelX[i] = 100.0
 		dVelY[i] = 200.0
+	}*/
+	spawn2 := 10
+	for i := 0; i < spawn2; i++ {
+		spawnDot(worldWidth / 2.0, worldHeight - 1.0 - float64(i), dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 	}
 	spawnDot(worldWidth / 3.0 * 2.0, worldHeight / 2.0 + 2.0, dotWater, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
-	dVelX[spawnSand] = -100.0
+	dVelX[dCount -1] = -100.0
 
 	for active {
 		rawDelta := time.Since(lastTick)

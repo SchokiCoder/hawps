@@ -1,45 +1,47 @@
-- add runtime dot manipulation interface
-- remove manual tomfoolery
-- would disabling friction calculations while gravity is 0, save cpu time?
+- [ ] add runtime dot manipulation interface
+- [ ] remove manual tomfoolery
+- [ ] would disabling friction calculations while gravity is 0, save cpu time?
 
 # Gases Update
 
-- add dot friction?
-  upon colliding with a grounded dot,
-  get grounded and use friction average of own and below dot mul by grav and delta
+- [ ] add dot friction?
+upon colliding with a grounded dot,
+get grounded and use friction average of own and below dot mul by grav and delta
 
-- add dot bounciness?
+- [ ] add dot bounciness?
 
-- add oxygen and gas behavior
+- [ ] add oxygen and gas behavior
 
-- set version to 0.3
+- [ ] set version to 0.3
 
 # Liquid Update
 
-+ add water
+- [x] add water
 
-- collision/force transmission is completely wonky and laggy
-  who would have thought?
-  20 dots are enough to completely freeze MY PC sometimes
-  consider line v circle segment algorithm for collision
+- [ ] rework collision to be simpler, more performant, and produce sane results
+Drop worrying about the movement path,
+which should prevent fast dots from phasing through other dots.
+This just adds too much complexity.
+Consider dots to be non-tumbling squares.
+This way they can sit on top of each other.
 
-- water must be displaced when sand falls onto it
+- [ ] water must be displaced when sand falls onto it
 
-- add arguments for
-	- gfxScale
-	- gravity
-	- groundFriction
-	- tickrate
-	- timescale
-	- worldWidth
-	- worldHeight
-	- `-h --help`
+- [ ] add arguments for
+	- [ ] gfxScale
+	- [ ] gravity
+	- [ ] groundFriction
+	- [ ] tickrate
+	- [ ] timescale
+	- [ ] worldWidth
+	- [ ] worldHeight
+	- [ ] `-h --help`
 
-- set version to 0.2
+- [ ] set version to 0.2
 
 -----
 
-# Base
+# Base (done)
 
 + remove Godot implementation, see docs/reworks.md
 
