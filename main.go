@@ -120,24 +120,31 @@ func drawWorld(
 	dMat    []dotMaterial,
 	dX      []float64,
 	dY      []float64,
-	surface *sdl.Surface,
+	frame *sdl.Surface,
 	window  *sdl.Window,
 ) {
-	surface.FillRect(nil, 0)
+	frame.FillRect(nil, 0)
 
 	for i := 0; i < *dCount; i++ {
 		rect := sdl.Rect{
-			X: int32(int64(dX[i]) * gfxScale),
-			Y: int32(int64(dY[i]) * gfxScale),
-			W: int32(dotSize * gfxScale),
-			H: int32(dotSize * gfxScale),
+			X: int32(int64(dX[i])),
+			Y: int32(int64(dY[i])),
+			W: dotSize,
+			H: dotSize,
 		}
 
-		pixel := sdl.MapRGB(surface.Format,
+		pixel := sdl.MapRGB(frame.Format,
 			matR(dMat[i]), matG(dMat[i]), matB(dMat[i]))
-		surface.FillRect(&rect, pixel)
-		window.UpdateSurface()
+		frame.FillRect(&rect, pixel)
 	}
+
+	ws, err := window.GetSurface()
+	if err != nil {
+		panic(err)
+	}
+
+	frame.BlitScaled(&frame.ClipRect, ws, &ws.ClipRect)
+	window.UpdateSurface()
 }
 
 func handleArgs() bool {
@@ -396,6 +403,7 @@ func main() {
 		dWeight   [worldWidth * worldHeight]float64
 
 		delta float64
+		frame *sdl.Surface
 		lastTick time.Time
 	)
 
@@ -421,7 +429,8 @@ func main() {
 	}
 	defer window.Destroy()
 
-	surface, err := window.GetSurface()
+	frame, err = sdl.CreateRGBSurface(0, worldWidth, worldHeight, 32,
+	                                  0, 0, 0, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -429,12 +438,12 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	/*spawnSand := 20
+	spawnSand := 20
 	for i := 0; i < spawnSand; i++ {
 		spawnDot(float64(i * 2), worldHeight / 3.0, dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
 		dVelX[i] = 100.0
 		dVelY[i] = 200.0
-	}*/
+	}
 	spawn2 := 10
 	for i := 0; i < spawn2; i++ {
 		spawnDot(worldWidth / 2.0, worldHeight - 1.0 - float64(i), dotSand, &dCount, dMat[:], dX[:], dY[:], dFric[:], dWeight[:])
@@ -451,7 +460,7 @@ func main() {
 				dMat[:],
 				dX[:],
 				dY[:],
-				surface,
+				frame,
 				window)
 			moveWorld(delta,
 				dCount,

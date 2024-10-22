@@ -18,12 +18,16 @@ get grounded and use friction average of own and below dot mul by grav and delta
 
 - [x] add water
 
-- [ ] rework collision to be simpler, more performant, and produce sane results
+- [x] fix visual flickering
+
+- [ ] rework movement and collision
 Drop worrying about the movement path,
 which should prevent fast dots from phasing through other dots.
 This just adds too much complexity.
 Consider dots to be non-tumbling squares.
 This way they can sit on top of each other.
+No more floats. No velocities.
+A dot always tries to move every tick.
 
 - [ ] water must be displaced when sand falls onto it
 
