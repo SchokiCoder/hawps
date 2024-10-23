@@ -24,7 +24,7 @@ get grounded and use friction average of own and below dot mul by grav and delta
 No more floats. No velocities. Just a simple matrix.
 A dot always tries to move every tick.
 
-- [ ] water must be displaced when sand falls onto it
+- [x] add material displacement
 
 - [ ] towers of sand must collapse
 

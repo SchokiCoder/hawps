@@ -11,7 +11,6 @@ import (
 )
 
 type (
-	dotMaterial  int
 	world [worldWidth][worldHeight]dotMaterial
 )
 
@@ -31,11 +30,22 @@ const (
 	worldHeight    = 60
 )
 
+type dotMaterial int
 const (
 	dotNone = iota
 	dotSand
 	dotWater
 )
+
+func matWeight(index dotMaterial) int {
+	var protectedArray = [...]int{
+		0,
+		2,
+		1,
+	}
+
+	return protectedArray[index]
+}
 
 func matR(index dotMaterial) uint8 {
 	var protectedArray = [...]uint8{
@@ -70,23 +80,24 @@ func matB(index dotMaterial) uint8 {
 func applyGravity(
 	dots *world,
 ) {
+	var (
+		below *dotMaterial
+		cur   *dotMaterial
+		tmp    dotMaterial
+	)
+
 	for x := 0; x < worldWidth; x++ {
 		for y := worldHeight - 2; y >= 0; y-- {
-			switch dots[x][y] {
-			case dotSand:
-				fallthrough
-			case dotWater:
-				if y >= worldHeight {
-					continue
-				}
-				if y + 1 >= worldHeight ||
-				   dots[x][y + 1] != dotNone {
-					continue
-				}
-				dots[x][y +1] = dots[x][y]
-				dots[x][y] = dotNone
-				break
+			below = &dots[x][y + 1]
+			cur = &dots[x][y]
+
+			if matWeight(*below) >= matWeight(*cur) {
+				continue
 			}
+
+			tmp = *below
+			*below = *cur
+			*cur = tmp
 		}
 	}
 }
@@ -218,11 +229,11 @@ func main() {
 	spawn2 := 10
 	for i := 0; i < spawn2; i++ {
 		x := int(worldWidth / 2.0)
-		y := int(worldHeight - 1.0 - float64(i))
+		y := int(worldHeight - 10.0 - float64(i))
 		dots[x][y] = dotSand
 	}
-	x := int(worldWidth) / 3 * 2
-	y := int(worldHeight / 2 + 2)
+	x := int(worldWidth) / 2
+	y := int(worldHeight - 1)
 	dots[x][y] = dotWater
 
 	for active {
