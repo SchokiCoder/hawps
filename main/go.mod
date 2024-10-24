@@ -1,4 +1,4 @@
-module github.com/SchokiCoder/hawps
+module github.com/SchokiCoder/hawps/main
 
 go 1.18
 

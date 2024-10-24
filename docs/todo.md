@@ -26,6 +26,10 @@ A dot always tries to move every tick.
 
 - [x] add material displacement
 
+- [x] add more readable way of declaring material properties
+
+- [ ] fix sdl.Surface "frame" not being freed
+
 - [ ] towers of sand must collapse
 
 - [ ] add arguments for

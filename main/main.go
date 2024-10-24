@@ -5,13 +5,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/veandco/go-sdl2/sdl"
 	"os"
 	"time"
+
+	"github.com/SchokiCoder/hawps/materals"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type (
-	world [worldWidth][worldHeight]dotMaterial
+	world [worldWidth][worldHeight]mats.Mat
 )
 
 const (
@@ -30,60 +32,13 @@ const (
 	worldHeight    = 60
 )
 
-type dotMaterial int
-const (
-	dotNone = iota
-	dotSand
-	dotWater
-)
-
-func matWeight(index dotMaterial) int {
-	var protectedArray = [...]int{
-		0,
-		2,
-		1,
-	}
-
-	return protectedArray[index]
-}
-
-func matR(index dotMaterial) uint8 {
-	var protectedArray = [...]uint8{
-		0,
-		238,
-		0,
-	}
-
-	return protectedArray[index]
-}
-
-func matG(index dotMaterial) uint8 {
-	var protectedArray = [...]uint8{
-		0,
-		217,
-		253,
-	}
-
-	return protectedArray[index]
-}
-
-func matB(index dotMaterial) uint8 {
-	var protectedArray = [...]uint8{
-		0,
-		86,
-		255,
-	}
-
-	return protectedArray[index]
-}
-
 func applyGravity(
 	dots *world,
 ) {
 	var (
-		below *dotMaterial
-		cur   *dotMaterial
-		tmp    dotMaterial
+		below *mats.Mat
+		cur   *mats.Mat
+		tmp    mats.Mat
 	)
 
 	for x := 0; x < worldWidth; x++ {
@@ -91,7 +46,7 @@ func applyGravity(
 			below = &dots[x][y + 1]
 			cur = &dots[x][y]
 
-			if matWeight(*below) >= matWeight(*cur) {
+			if mats.Weight(*below) >= mats.Weight(*cur) {
 				continue
 			}
 
@@ -117,9 +72,9 @@ func drawWorld(
 			}
 
 			pixel := sdl.MapRGB(frame.Format,
-				            matR(dots[x][y]),
-				            matG(dots[x][y]),
-				            matB(dots[x][y]))
+				            mats.R(dots[x][y]),
+				            mats.G(dots[x][y]),
+				            mats.B(dots[x][y]))
 			frame.FillRect(&rect, pixel)
 		}
 	}
@@ -224,17 +179,17 @@ func main() {
 	for i := 0; i < spawnSand; i++ {
 		x := i * 2
 		y := int(worldHeight / 3.0)
-		dots[x][y] = dotSand
+		dots[x][y] = mats.Sand
 	}
 	spawn2 := 10
 	for i := 0; i < spawn2; i++ {
 		x := int(worldWidth / 2.0)
 		y := int(worldHeight - 10.0 - float64(i))
-		dots[x][y] = dotSand
+		dots[x][y] = mats.Sand
 	}
 	x := int(worldWidth) / 2
 	y := int(worldHeight - 1)
-	dots[x][y] = dotWater
+	dots[x][y] = mats.Water
 
 	for active {
 		delta := time.Since(lastTick)
