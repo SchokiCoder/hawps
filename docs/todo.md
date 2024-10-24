@@ -30,14 +30,15 @@ A dot always tries to move every tick.
 
 - [x] fix sdl.Surface "frame" not being freed
 
-- [ ] towers of sand must collapse
+- [ ] add stack collapsing via gravity
+	- [ ] grain collapsing is odd (jumping up and left)
+	- [ ] liquid collapsing freezes the entire thing
+
+- [ ] add pause button
 
 - [ ] add arguments for
 	- [ ] gfxScale
-	- [ ] gravity
-	- [ ] groundFriction
 	- [ ] tickrate
-	- [ ] timescale
 	- [ ] worldWidth
 	- [ ] worldHeight
 	- [ ] `-h --help`

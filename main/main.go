@@ -32,27 +32,109 @@ const (
 	worldHeight    = 60
 )
 
-func applyGravity(
+func dropGrain(
 	dots *world,
+	x int,
+	y int,
+) {
+	var (
+		below  *mats.Mat
+		belowL *mats.Mat
+		belowR *mats.Mat
+		cur    *mats.Mat
+		tmp     mats.Mat
+	)
+
+	cur = &dots[x][y]
+	below = &dots[x][y + 1]
+
+	if mats.None == *below ||
+	   (mats.Weight(*below) < mats.Weight(*cur) &&
+	    mats.Structure(*below) == mats.MsLiquid) {
+		tmp = *below
+		*below = *cur
+		*cur = tmp
+		return
+	}
+
+	if x - 1 >= 0 {
+		belowL = &dots[x - 1][y - 1]
+
+		if mats.None == *belowL {
+			*belowL = *cur
+			*cur = mats.None
+			return
+		}
+	}
+	if x + 1 < worldWidth {
+		belowR = &dots[x + 1][y - 1]
+
+		if mats.None == *belowR {
+			*belowR = *cur
+			*cur = mats.None
+			return
+		}
+	}
+}
+
+func dropLiquid(
+	dots *world,
+	x int,
+	y int,
 ) {
 	var (
 		below *mats.Mat
 		cur   *mats.Mat
-		tmp    mats.Mat
 	)
 
+	cur = &dots[x][y]
+	below = &dots[x][y + 1]
+
+	if mats.None == *below {
+		*below = *cur
+		*cur = mats.None
+		return
+	}
+
+	if mats.Structure(*below) != mats.MsLiquid {
+		return
+	}
+
+	for cX := x - 1; cX >= 0; x-- {
+		if mats.Structure(dots[cX][y - 1]) == mats.MsLiquid {
+			dots[cX][y - 1] = *below
+			*below = *cur
+			*cur = mats.None
+			return
+		}
+	}
+	for cX := x + 1; cX < worldWidth; x++ {
+		if mats.Structure(dots[cX][y - 1]) == mats.MsLiquid {
+			dots[cX][y - 1] = *below
+			*below = *cur
+			*cur = mats.None
+			return
+		}
+	}
+}
+
+func applyGravity(
+	dots *world,
+) {
 	for x := 0; x < worldWidth; x++ {
 		for y := worldHeight - 2; y >= 0; y-- {
-			below = &dots[x][y + 1]
-			cur = &dots[x][y]
+			switch mats.Structure(dots[x][y]) {
+			case mats.MsStatic:
+				break
 
-			if mats.Weight(*below) >= mats.Weight(*cur) {
-				continue
+			case mats.MsGrain:
+				dropGrain(dots, x, y)
+				break
+
+			case mats.MsLiquid:
+				dropLiquid(dots, x, y)
+				break
 			}
-
-			tmp = *below
-			*below = *cur
-			*cur = tmp
 		}
 	}
 }
@@ -176,21 +258,24 @@ func main() {
 	lastTick = time.Now()
 
 	// TODO: remove manual tomfoolery
-	spawnSand := 20
-	for i := 0; i < spawnSand; i++ {
-		x := i * 2
-		y := int(worldHeight / 3.0)
-		dots[x][y] = mats.Sand
+	spawn1X := worldWidth / 3
+	spawn1Y := worldHeight / 3 * 2
+	spawn1W := 3
+	spawn1H := 3
+	spawn2X := worldWidth / 3 * 2
+	spawn2Y := worldHeight / 3
+	spawn2W := 5
+	spawn2H := 5
+	for x := spawn1X; x < spawn1X + spawn1W; x++ {
+		for y := spawn1Y; y < spawn1Y + spawn1H; y++ {
+			dots[x][y] = mats.Sand
+		}
 	}
-	spawn2 := 10
-	for i := 0; i < spawn2; i++ {
-		x := int(worldWidth / 2.0)
-		y := int(worldHeight - 10.0 - float64(i))
-		dots[x][y] = mats.Sand
+	for x := spawn2X; x < spawn2X + spawn2W; x++ {
+		for y := spawn2Y; y < spawn2Y + spawn2H; y++ {
+			dots[x][y] = mats.Water
+		}
 	}
-	x := int(worldWidth) / 2
-	y := int(worldHeight - 1)
-	dots[x][y] = mats.Water
 
 	for active {
 		delta := time.Since(lastTick)
