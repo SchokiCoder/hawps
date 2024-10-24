@@ -171,6 +171,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer frame.Free()
 
 	lastTick = time.Now()
 
