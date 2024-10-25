@@ -39,8 +39,6 @@ func dropGrain(
 ) {
 	var (
 		below  *mats.Mat
-		belowL *mats.Mat
-		belowR *mats.Mat
 		cur    *mats.Mat
 		tmp     mats.Mat
 	)
@@ -48,9 +46,16 @@ func dropGrain(
 	cur = &dots[x][y]
 	below = &dots[x][y + 1]
 
-	if mats.None == *below ||
-	   (mats.Weight(*below) < mats.Weight(*cur) &&
-	    mats.Structure(*below) == mats.MsLiquid) {
+	isDotDisplacable := func(src, dst mats.Mat) bool {
+		if mats.None == dst ||
+		   (mats.Weight(dst) < mats.Weight(src) &&
+		    mats.Structure(dst) == mats.MsLiquid) {
+			return true
+		}
+		return false
+	}
+
+	if isDotDisplacable(*cur, *below) {
 		tmp = *below
 		*below = *cur
 		*cur = tmp
@@ -58,19 +63,19 @@ func dropGrain(
 	}
 
 	if x - 1 >= 0 {
-		belowL = &dots[x - 1][y + 1]
+		below = &dots[x - 1][y + 1]
 
-		if mats.None == *belowL {
-			*belowL = *cur
+		if isDotDisplacable(*cur, *below) {
+			*below = *cur
 			*cur = mats.None
 			return
 		}
 	}
 	if x + 1 < worldWidth {
-		belowR = &dots[x + 1][y + 1]
+		below = &dots[x + 1][y + 1]
 
-		if mats.None == *belowR {
-			*belowR = *cur
+		if isDotDisplacable(*cur, *below) {
+			*below = *cur
 			*cur = mats.None
 			return
 		}
@@ -279,18 +284,18 @@ func main() {
 	spawn1Y := worldHeight / 3 * 2
 	spawn1W := 10
 	spawn1H := 10
-	spawn2X := worldWidth / 3
-	spawn2Y := worldHeight / 3
-	spawn2W := 10
-	spawn2H := 10
-	for x := spawn1X; x < spawn1X + spawn1W; x++ {
-		for y := spawn1Y; y < spawn1Y + spawn1H; y++ {
-			dots[x][y] = mats.Sand
-		}
-	}
+	spawn2X := 0
+	spawn2Y := 0
+	spawn2W := worldWidth
+	spawn2H := worldHeight
 	for x := spawn2X; x < spawn2X + spawn2W; x++ {
 		for y := spawn2Y; y < spawn2Y + spawn2H; y++ {
 			dots[x][y] = mats.Water
+		}
+	}
+	for x := spawn1X; x < spawn1X + spawn1W; x++ {
+		for y := spawn1Y; y < spawn1Y + spawn1H; y++ {
+			dots[x][y] = mats.Sand
 		}
 	}
 

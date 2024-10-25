@@ -34,7 +34,8 @@ A dot always tries to move every tick.
 	- [x] fix liquid collapsing incorrectly iterating loops
 	- [x] fix grain collapsing making grains jump up
 	- [x] fix basic liquid collapsing
-	- [ ] grain collapsing can be blocked by a lighter liquid (probably anything)
+	- [x] fix grain collapsing being blocked by something
+	- [ ] fix grain collapsing letting dots disappear
 	- [ ] fix accidental adhesion of liquids on top of grains
 
 - [ ] add pause button
