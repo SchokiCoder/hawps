@@ -35,7 +35,7 @@ A dot always tries to move every tick.
 	- [x] fix grain collapsing making grains jump up
 	- [x] fix basic liquid collapsing
 	- [x] fix grain collapsing being blocked by something
-	- [ ] fix grain collapsing letting dots disappear
+	- [x] fix grain collapsing letting dots disappear
 	- [ ] fix accidental adhesion of liquids on top of grains
 
 - [ ] add pause button

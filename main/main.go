@@ -66,8 +66,9 @@ func dropGrain(
 		below = &dots[x - 1][y + 1]
 
 		if isDotDisplacable(*cur, *below) {
+			tmp = *below
 			*below = *cur
-			*cur = mats.None
+			*cur = tmp
 			return
 		}
 	}
@@ -75,8 +76,9 @@ func dropGrain(
 		below = &dots[x + 1][y + 1]
 
 		if isDotDisplacable(*cur, *below) {
+			tmp = *below
 			*below = *cur
-			*cur = mats.None
+			*cur = tmp
 			return
 		}
 	}
