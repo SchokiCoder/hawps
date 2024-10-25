@@ -31,9 +31,8 @@ A dot always tries to move every tick.
 - [x] fix sdl.Surface "frame" not being freed
 
 - [ ] add stack collapsing via gravity
-	- [ ] fix liquid collapsing incorrectly iterating loops
-	- [ ] grain collapsing is odd (jumping up and left)
-	belowL R is assigned with y-1 when it should be y+1
+	- [x] fix liquid collapsing incorrectly iterating loops
+	- [x] fix grain collapsing making grains jump up
 	- [ ] liquid collapsing makes it disappear partially
 
 - [ ] add pause button

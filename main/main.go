@@ -58,7 +58,7 @@ func dropGrain(
 	}
 
 	if x - 1 >= 0 {
-		belowL = &dots[x - 1][y - 1]
+		belowL = &dots[x - 1][y + 1]
 
 		if mats.None == *belowL {
 			*belowL = *cur
@@ -67,7 +67,7 @@ func dropGrain(
 		}
 	}
 	if x + 1 < worldWidth {
-		belowR = &dots[x + 1][y - 1]
+		belowR = &dots[x + 1][y + 1]
 
 		if mats.None == *belowR {
 			*belowR = *cur
