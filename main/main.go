@@ -100,19 +100,36 @@ func dropLiquid(
 		return
 	}
 
-	for cX := x - 1; cX >= 0; cX-- {
-		if mats.Structure(dots[cX][y - 1]) == mats.MsLiquid {
-			dots[cX][y - 1] = *below
+	displaceBelowCheck := func(x, y int) int {
+		if mats.None == dots[x][y] {
+			dots[x][y] = *below
 			*below = *cur
 			*cur = mats.None
+			return 2
+		}
+		if mats.Structure(dots[x][y]) != mats.MsLiquid {
+			return 1
+		}
+		return 0
+	}
+
+	for cX := x - 1; cX >= 0; cX-- {
+		switch displaceBelowCheck(cX, y + 1) {
+		case 1:
+			cX = -1
+			break
+
+		case 2:
 			return
 		}
 	}
 	for cX := x + 1; cX < worldWidth; cX++ {
-		if mats.Structure(dots[cX][y - 1]) == mats.MsLiquid {
-			dots[cX][y - 1] = *below
-			*below = *cur
-			*cur = mats.None
+		switch displaceBelowCheck(cX, y + 1) {
+		case 1:
+			cX = worldWidth
+			break
+
+		case 2:
 			return
 		}
 	}
@@ -260,12 +277,12 @@ func main() {
 	// TODO: remove manual tomfoolery
 	spawn1X := worldWidth / 3
 	spawn1Y := worldHeight / 3 * 2
-	spawn1W := 3
-	spawn1H := 3
-	spawn2X := worldWidth / 3 * 2
+	spawn1W := 10
+	spawn1H := 10
+	spawn2X := worldWidth / 3
 	spawn2Y := worldHeight / 3
-	spawn2W := 5
-	spawn2H := 5
+	spawn2W := 10
+	spawn2H := 10
 	for x := spawn1X; x < spawn1X + spawn1W; x++ {
 		for y := spawn1Y; y < spawn1Y + spawn1H; y++ {
 			dots[x][y] = mats.Sand
