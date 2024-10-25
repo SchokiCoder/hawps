@@ -100,7 +100,7 @@ func dropLiquid(
 		return
 	}
 
-	for cX := x - 1; cX >= 0; x-- {
+	for cX := x - 1; cX >= 0; cX-- {
 		if mats.Structure(dots[cX][y - 1]) == mats.MsLiquid {
 			dots[cX][y - 1] = *below
 			*below = *cur
@@ -108,7 +108,7 @@ func dropLiquid(
 			return
 		}
 	}
-	for cX := x + 1; cX < worldWidth; x++ {
+	for cX := x + 1; cX < worldWidth; cX++ {
 		if mats.Structure(dots[cX][y - 1]) == mats.MsLiquid {
 			dots[cX][y - 1] = *below
 			*below = *cur
