@@ -4,11 +4,17 @@
 
 # Gases Update
 
-- [ ] add dot friction?
-upon colliding with a grounded dot,
-get grounded and use friction average of own and below dot mul by grav and delta
+- [ ] add server/client split
+Send via UDP.
+Server calculates dots.
+Default client draws them to screen,
+and uses an API to run the server in itself without network use.
+The default client may later receive a launch arg,
+for instead connecting to a server via network.
+Other clients may draw them to a console or print them or whatever.
+I won't tell you what to do.
 
-- [ ] add dot bounciness?
+- [ ] add solid dots
 
 - [ ] add oxygen and gas behavior
 
@@ -30,15 +36,15 @@ A dot always tries to move every tick.
 
 - [x] fix sdl.Surface "frame" not being freed
 
+- [x] add pause button
+
 - [ ] add stack collapsing via gravity
 	- [x] fix liquid collapsing incorrectly iterating loops
 	- [x] fix grain collapsing making grains jump up
 	- [x] fix basic liquid collapsing
 	- [x] fix grain collapsing being blocked by something
 	- [x] fix grain collapsing letting dots disappear
-	- [ ] fix accidental adhesion of liquids on top of grains
-
-- [ ] add pause button
+	- [ ] fix adhesion of liquids on top of grains
 
 - [ ] add arguments for
 	- [ ] gfxScale

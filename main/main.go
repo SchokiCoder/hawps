@@ -222,7 +222,10 @@ func handleArgs() bool {
 	return true
 }
 
-func handleEvents(active *bool) {
+func handleEvents(
+	active   *bool,
+	pauseMod *int,
+) {
 	event := sdl.PollEvent()
 
 	for ; event != nil; event = sdl.PollEvent() {
@@ -230,14 +233,29 @@ func handleEvents(active *bool) {
 		case *sdl.KeyboardEvent:
 			event := event.(*sdl.KeyboardEvent)
 			if event.GetType() == sdl.KEYUP {
-				switch event.Keysym.Sym {
-				case sdl.K_ESCAPE:
-					*active = false
-				}
+				handleKey(event.Keysym.Sym, active, pauseMod)
 			}
 
 		case *sdl.QuitEvent:
 			*active = false
+		}
+	}
+}
+
+func handleKey(
+	key      sdl.Keycode,
+	active   *bool,
+	pauseMod *int,
+) {
+	switch key {
+	case sdl.K_ESCAPE:
+		*active = false
+
+	case sdl.K_SPACE:
+		if 1 == *pauseMod {
+			*pauseMod = 0
+		} else {
+			*pauseMod = 1
 		}
 	}
 }
@@ -248,9 +266,11 @@ func main() {
 		dots     world
 		frame    *sdl.Surface
 		lastTick time.Time
+		pauseMod int
 	)
 
 	active = true
+	pauseMod = 1
 
 	if handleArgs() == false {
 		return
@@ -302,12 +322,12 @@ func main() {
 	}
 
 	for active {
+		handleEvents(&active, &pauseMod)
+
 		delta := time.Since(lastTick)
-		if delta >= (1_000_000_000 / tickrate) {
+		if delta * time.Duration(pauseMod) >= (1_000_000_000 / tickrate) {
 			drawWorld(&dots, frame, window)
 			applyGravity(&dots)
-
-			handleEvents(&active)
 
 			lastTick = time.Now()
 		}
