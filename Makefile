@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2024  Andy Frank Schoknecht
 
-APP_NAME:=hawps
+CC       := cc
+CFLAGS   := -Wall -Wextra -std=c99 -pedantic -fsanitize=address,undefined -g
+INCLUDES := -I /usr/include/SDL2
+LIBS     := -lSDL2
 
-.PHONY: all build clean vet
+APP_NAME := hawps
 
-all: vet build
+.PHONY: clean
 
-build:
-	go build -o $(APP_NAME) ./main
+$(APP_NAME): main.c
+	$(CC) -o $@ $(CFLAGS) $(INCLUDES) $(LIBS) $^
 
 clean:
 	rm -f $(APP_NAME)
-
-vet:
-	go vet ./materials
-	go vet ./main
