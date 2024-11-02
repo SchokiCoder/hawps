@@ -14,7 +14,7 @@
 #define APP_LICENSE_URL "https://www.gnu.org/licenses/gpl-2.0.html"
 
 #define STD_TICKRATE 24.0
-#define GFXSCALE     10
+#define STD_DOTSCALE 10
 #define WORLD_WIDTH  80
 #define WORLD_HEIGHT 60
 
@@ -71,8 +71,9 @@ draw_world(
 
 int
 handle_args(
-	int argc,
-	char *argv[],
+	int    argc,
+	char  *argv[],
+	int   *dotscale,
 	float *tickrate);
 
 void
@@ -266,12 +267,18 @@ draw_world(
 
 int
 handle_args(
-	int argc,
-	char *argv[],
+	int    argc,
+	char  *argv[],
+	int   *dotscale,
 	float *tickrate)
 {
+	const char *ERR_ARG_CONV =
+		"\"%s\" could not be converted to a %s\n";
+	const char *ERR_NO_ARG_VALUE =
+		"The argument \"%s\" needs a value from the next argument\n";
 	int i;
-	float f;
+	int vi;
+	float vf;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-a") == 0 ||
@@ -287,23 +294,40 @@ handle_args(
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return 0;
-		} else if (strcmp(argv[i], "--tickrate") == 0) {
+		} else if (strcmp(argv[i], "--dotscale") == 0) {
 			if (argc <= i + 1) {
-				fprintf(stderr,
-				        "The argument \"%s\" needs a value from the next argument\n",
-				        argv[i]);
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
 				return 0;
 			}
 			i++;
 
-			f = strtof(argv[i], NULL);
-			if (errno != 0) {
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
 				fprintf(stderr,
-				        "\"%s\" could not be converted to a float\n",
-				        argv[i - 1]);
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
 				return 0;
 			}
-			*tickrate = f;
+			*dotscale = vi;
+		} else if (strcmp(argv[i], "--tickrate") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vf = strtof(argv[i], NULL);
+			if (errno != 0) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "float");
+				return 0;
+			}
+			*tickrate = vf;
 		} else {
 			fprintf(stderr,
 			        "Argument \"%s\" is not recognized.\n",
@@ -370,6 +394,7 @@ main(
 	int          active = 1;
 	float        delta;
 	World        dots;
+	int          dotscale = STD_DOTSCALE;
 	SDL_Surface *frame = NULL;
 	clock_t      t1, t2;
 	float        tickrate = STD_TICKRATE;
@@ -377,7 +402,7 @@ main(
 	SDL_Window  *win = NULL;
 	int          x, y;
 
-	if (handle_args(argc, argv, &tickrate) == 0) {
+	if (handle_args(argc, argv, &dotscale, &tickrate) == 0) {
 		return 0;
 	}
 
@@ -389,8 +414,8 @@ main(
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
-	                       WORLD_WIDTH * GFXSCALE,
-	                       WORLD_HEIGHT * GFXSCALE,
+	                       WORLD_WIDTH * dotscale,
+	                       WORLD_HEIGHT * dotscale,
 	                       SDL_WINDOW_SHOWN);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
