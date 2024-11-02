@@ -47,8 +47,8 @@ A dot always tries to move every tick.
 	- [ ] fix adhesion of liquids on top of grains
 
 - [ ] add arguments for
+	- [x] tickrate
 	- [ ] gfxScale
-	- [ ] tickrate
 	- [ ] worldWidth
 	- [ ] worldHeight
 	- [ ] `-h --help`

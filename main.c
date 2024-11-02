@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2024  Andy Frank Schoknecht
 
+#include <errno.h>
 #include <SDL.h>
 #include <stdio.h>
 #include <time.h>
@@ -12,8 +13,8 @@
 #define APP_REPOSITORY  "https://github.com/SchokiCoder/hawps"
 #define APP_LICENSE_URL "https://www.gnu.org/licenses/gpl-2.0.html"
 
+#define STD_TICKRATE 24.0
 #define GFXSCALE     10
-#define TICKRATE     24.0
 #define WORLD_WIDTH  80
 #define WORLD_HEIGHT 60
 
@@ -71,7 +72,8 @@ draw_world(
 int
 handle_args(
 	int argc,
-	char *argv[]);
+	char *argv[],
+	float *tickrate);
 
 void
 handle_events(
@@ -265,9 +267,11 @@ draw_world(
 int
 handle_args(
 	int argc,
-	char *argv[])
+	char *argv[],
+	float *tickrate)
 {
 	int i;
+	float f;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-a") == 0 ||
@@ -283,6 +287,23 @@ handle_args(
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return 0;
+		} else if (strcmp(argv[i], "--tickrate") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr,
+				        "The argument \"%s\" needs a value from the next argument\n",
+				        argv[i]);
+				return 0;
+			}
+			i++;
+
+			f = strtof(argv[i], NULL);
+			if (errno != 0) {
+				fprintf(stderr,
+				        "\"%s\" could not be converted to a float\n",
+				        argv[i - 1]);
+				return 0;
+			}
+			*tickrate = f;
 		} else {
 			fprintf(stderr,
 			        "Argument \"%s\" is not recognized.\n",
@@ -351,11 +372,12 @@ main(
 	World        dots;
 	SDL_Surface *frame = NULL;
 	clock_t      t1, t2;
+	float        tickrate = STD_TICKRATE;
 	float        pause_mod = 1.0;
 	SDL_Window  *win = NULL;
 	int          x, y;
 
-	if (handle_args(argc, argv) == 0) {
+	if (handle_args(argc, argv, &tickrate) == 0) {
 		return 0;
 	}
 
@@ -415,7 +437,7 @@ main(
 	while (active) {
 		t1 = clock();
 		delta = 1.0 * (t1 - t2) / CLOCKS_PER_SEC;
-		if (delta >= (1.0 / TICKRATE * pause_mod)) {
+		if (delta >= (1.0 / tickrate * pause_mod)) {
 			if (draw_world(dots, frame, win) != 0) {
 				active = 0;
 				break;
