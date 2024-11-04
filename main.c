@@ -375,9 +375,9 @@ handle_key(
 
 	case SDLK_SPACE:
 		if (*pause_mod != 0.0) {
-			*pause_mod = 1.0;
-		} else {
 			*pause_mod = 0.0;
+		} else {
+			*pause_mod = 1.0;
 		}
 		break;
 
@@ -460,15 +460,16 @@ main(
 	t2 = 0.0;
 
 	while (active) {
+		handle_events(&active, &pause_mod);
+
 		t1 = clock();
 		delta = 1.0 * (t1 - t2) / CLOCKS_PER_SEC;
-		if (delta >= (1.0 / tickrate * pause_mod)) {
+		if (delta * pause_mod >= (1.0 / tickrate)) {
 			if (draw_world(dots, frame, win) != 0) {
 				active = 0;
 				break;
 			}
 			apply_gravity(dots);
-			handle_events(&active, &pause_mod);
 
 			t2 = t1;
 		}
