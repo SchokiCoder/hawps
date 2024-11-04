@@ -13,10 +13,10 @@
 #define APP_REPOSITORY  "https://github.com/SchokiCoder/hawps"
 #define APP_LICENSE_URL "https://www.gnu.org/licenses/gpl-2.0.html"
 
-#define STD_TICKRATE 24.0
-#define STD_DOTSCALE 10
-#define WORLD_WIDTH  80
-#define WORLD_HEIGHT 60
+#define STD_TICKRATE     24.0
+#define STD_DOTSCALE     10
+#define STD_WORLD_WIDTH  80
+#define STD_WORLD_HEIGHT 60
 
 enum Mat {
 	M_none,
@@ -24,13 +24,17 @@ enum Mat {
 	M_water
 };
 
+struct World {
+	int        w;
+	int        h;
+	enum Mat **dots;
+};
+
 enum MatState {
 	MS_static,
 	MS_grain,
 	MS_liquid,
 };
-
-typedef enum Mat World[WORLD_WIDTH][WORLD_HEIGHT];
 
 const char *MAT_NAME[] =          {"None",    "Sand",   "Water"};
 const int MAT_WEIGHT[] =          {0,         2,        1};
@@ -41,7 +45,7 @@ const Uint8 MAT_B[] =             {0,         86,       255};
 
 void
 apply_gravity(
-	World dots);
+	struct World *wld);
 
 int
 can_liquid_displace(
@@ -53,28 +57,30 @@ can_grain_displace(
 
 void
 drop_grain(
-	World dots,
+	struct World *wld,
 	int x,
 	int y);
 
 void
 drop_liquid(
-	World dots,
+	struct World *wld,
 	int x,
 	int y);
 
 int
 draw_world(
-	World        dots,
-	SDL_Surface *frame,
-	SDL_Window  *win);
+	const struct World  wld,
+	SDL_Surface        *frame,
+	SDL_Window         *win);
 
 int
 handle_args(
 	int    argc,
 	char  *argv[],
 	int   *dotscale,
-	float *tickrate);
+	float *tickrate,
+	int   *world_w,
+	int   *world_h);
 
 void
 handle_events(
@@ -89,22 +95,22 @@ handle_key(
 
 void
 apply_gravity(
-	World dots)
+	struct World *wld)
 {
 	int x, y;
 
-	for (x = 0; x < WORLD_WIDTH; x++) {
-		for (y = WORLD_HEIGHT - 2; y >= 0; y--) {
-			switch (MAT_STATE[dots[x][y]]) {
+	for (x = 0; x < wld->w; x++) {
+		for (y = wld->h - 2; y >= 0; y--) {
+			switch (MAT_STATE[wld->dots[x][y]]) {
 			case MS_static:
 				break;
 
 			case MS_grain:
-				drop_grain(dots, x, y);
+				drop_grain(wld, x, y);
 				break;
 
 			case MS_liquid:
-				drop_liquid(dots, x, y);
+				drop_liquid(wld, x, y);
 				break;
 			}
 		}
@@ -138,7 +144,7 @@ can_grain_displace(
 
 void
 drop_grain(
-	World dots,
+	struct World *wld,
 	int x,
 	int y)
 {
@@ -146,8 +152,8 @@ drop_grain(
 	enum Mat *cur;
 	enum Mat  tmp;
 
-	cur = &dots[x][y];
-	below = &dots[x][y + 1];
+	cur = &wld->dots[x][y];
+	below = &wld->dots[x][y + 1];
 
 	if (can_grain_displace(*cur, *below)) {
 		tmp = *below;
@@ -157,7 +163,7 @@ drop_grain(
 	}
 
 	if (x - 1 >= 0) {
-		below = &dots[x - 1][y + 1];
+		below = &wld->dots[x - 1][y + 1];
 
 		if (can_grain_displace(*cur, *below)) {
 			tmp = *below;
@@ -166,8 +172,8 @@ drop_grain(
 			return;
 		}
 	}
-	if (x + 1 < WORLD_WIDTH) {
-		below = &dots[x + 1][y + 1];
+	if (x + 1 < wld->w) {
+		below = &wld->dots[x + 1][y + 1];
 
 		if (can_grain_displace(*cur, *below)) {
 			tmp = *below;
@@ -180,7 +186,7 @@ drop_grain(
 
 void
 drop_liquid(
-	World dots,
+	struct World *wld,
 	int x,
 	int y)
 {
@@ -189,8 +195,8 @@ drop_liquid(
 	enum Mat *cur;
 	enum Mat  tmp;
 
-	cur = &dots[x][y];
-	below = &dots[x][y + 1];
+	cur = &wld->dots[x][y];
+	below = &wld->dots[x][y + 1];
 
 	if (can_liquid_displace(*cur, *below)) {
 		tmp = *below;
@@ -200,7 +206,7 @@ drop_liquid(
 	}
 
 	for (bx = x - 1; bx >= 0; bx--) {
-		below = &dots[bx][y + 1];
+		below = &wld->dots[bx][y + 1];
 		if (can_liquid_displace(*cur, *below)) {
 			tmp = *below;
 			*below = *cur;
@@ -212,8 +218,8 @@ drop_liquid(
 			break;
 		}
 	}
-	for (bx = x + 1; bx < WORLD_WIDTH; bx++) {
-		below = &dots[bx][y + 1];
+	for (bx = x + 1; bx < wld->w; bx++) {
+		below = &wld->dots[bx][y + 1];
 		if (can_liquid_displace(*cur, *below)) {
 			tmp = *below;
 			*below = *cur;
@@ -229,26 +235,26 @@ drop_liquid(
 
 int
 draw_world(
-	World        dots,
-	SDL_Surface *frame,
-	SDL_Window  *win)
+	const struct World  wld,
+	SDL_Surface        *frame,
+	SDL_Window         *win)
 {
 	Uint32 pixel;
 	SDL_Rect rect;
 	SDL_Surface *tmp;
 	int x, y;
 
-	for (x = 0; x < WORLD_WIDTH; x++) {
-		for (y = 0; y < WORLD_HEIGHT; y++) {
+	for (x = 0; x < wld.w; x++) {
+		for (y = 0; y < wld.h; y++) {
 			rect.x = x;
 			rect.y = y;
 			rect.w = 1;
 			rect.h = 1;
 
 			pixel = SDL_MapRGB(frame->format,
-			                   MAT_R[dots[x][y]],
-			                   MAT_G[dots[x][y]],
-			                   MAT_B[dots[x][y]]);
+			                   MAT_R[wld.dots[x][y]],
+			                   MAT_G[wld.dots[x][y]],
+			                   MAT_B[wld.dots[x][y]]);
 			SDL_FillRect(frame, &rect, pixel);
 		}
 	}
@@ -270,7 +276,9 @@ handle_args(
 	int    argc,
 	char  *argv[],
 	int   *dotscale,
-	float *tickrate)
+	float *tickrate,
+	int   *world_w,
+	int   *world_h)
 {
 	const char *ERR_ARG_CONV =
 		"\"%s\" could not be converted to a %s\n";
@@ -328,6 +336,40 @@ handle_args(
 				return 0;
 			}
 			*tickrate = vf;
+		} else if (strcmp(argv[i], "--world_width") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*world_w = vi;
+		} else if (strcmp(argv[i], "--world_height") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*world_h = vi;
 		} else {
 			fprintf(stderr,
 			        "Argument \"%s\" is not recognized.\n",
@@ -391,18 +433,26 @@ main(
 	int argc,
 	char *argv[])
 {
-	int          active = 1;
-	float        delta;
-	World        dots;
-	int          dotscale = STD_DOTSCALE;
-	SDL_Surface *frame = NULL;
-	clock_t      t1, t2;
-	float        tickrate = STD_TICKRATE;
-	float        pause_mod = 1.0;
-	SDL_Window  *win = NULL;
-	int          x, y;
+	int           active = 1;
+	float         delta;
+	int           dotscale = STD_DOTSCALE;
+	SDL_Surface  *frame = NULL;
+	clock_t       t1, t2;
+	float         tickrate = STD_TICKRATE;
+	float         pause_mod = 1.0;
+	SDL_Window   *win = NULL;
+	struct World  wld;
+	int           x, y;
 
-	if (handle_args(argc, argv, &dotscale, &tickrate) == 0) {
+	wld.w = STD_WORLD_WIDTH;
+	wld.h = STD_WORLD_HEIGHT;
+
+	if (handle_args(argc,
+	                argv,
+			&dotscale,
+			&tickrate,
+			&wld.w,
+			&wld.h) == 0) {
 		return 0;
 	}
 
@@ -414,45 +464,57 @@ main(
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
-	                       WORLD_WIDTH * dotscale,
-	                       WORLD_HEIGHT * dotscale,
+	                       wld.w * dotscale,
+	                       wld.h * dotscale,
 	                       SDL_WINDOW_SHOWN);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
 		goto cleanup;
 	}
 
-	frame = SDL_CreateRGBSurface(0, WORLD_WIDTH, WORLD_HEIGHT, 32,
+	frame = SDL_CreateRGBSurface(0, wld.w, wld.h, 32,
 	                             0, 0, 0, 0);
 	if (NULL == frame) {
 		fprintf(stderr, "Couldn't create surface\n");
 		goto cleanup;
 	}
 
-	for (x = 0; x < WORLD_WIDTH; x++) {
-		for (y = 0; y < WORLD_HEIGHT; y++) {
-			dots[x][y] = M_none;
+	wld.dots = malloc(sizeof(enum Mat*) * wld.w);
+	if (NULL == wld.dots) {
+		fprintf(stderr, "Couldn't create world\n");
+		goto cleanup;
+	}
+
+	for (x = 0; x < wld.w; x++) {
+		wld.dots[x] = malloc(sizeof(enum Mat) * wld.h);
+		if (NULL == wld.dots[x]) {
+			fprintf(stderr, "Couldn't create world col\n");
+			goto cleanup;
+		}
+
+		for (y = 0; y < wld.h; y++) {
+			wld.dots[x][y] = M_none;
 		}
 	}
 
 	// TODO: remove manual tomfoolery
-	const int spawn1X = WORLD_WIDTH / 3;
-	const int spawn1Y = WORLD_HEIGHT / 3 * 2;
+	const int spawn1X = wld.w / 3;
+	const int spawn1Y = wld.h / 3 * 2;
 	const int spawn1W = 10;
 	const int spawn1H = 10;
 	const int spawn2X = 0;
 	const int spawn2Y = 0;
-	const int spawn2W = WORLD_WIDTH / 2;
-	const int spawn2H = WORLD_HEIGHT;
+	const int spawn2W = wld.w / 2;
+	const int spawn2H = wld.h;
 
 	for (x = spawn2X; x < spawn2X + spawn2W; x++) {
 		for (y = spawn2Y; y < spawn2Y + spawn2H; y++) {
-			dots[x][y] = M_water;
+			wld.dots[x][y] = M_water;
 		}
 	}
 	for (x = spawn1X; x < spawn1X + spawn1W; x++) {
 		for (y = spawn1Y; y < spawn1Y + spawn1H; y++) {
-			dots[x][y] = M_sand;
+			wld.dots[x][y] = M_sand;
 		}
 	}
 
@@ -465,17 +527,24 @@ main(
 		t1 = clock();
 		delta = 1.0 * (t1 - t2) / CLOCKS_PER_SEC;
 		if (delta * pause_mod >= (1.0 / tickrate)) {
-			if (draw_world(dots, frame, win) != 0) {
+			if (draw_world(wld, frame, win) != 0) {
 				active = 0;
 				break;
 			}
-			apply_gravity(dots);
+			apply_gravity(&wld);
 
 			t2 = t1;
 		}
 	}
 
 cleanup:
+	for (x = 0; x < wld.w; x++) {
+		if (NULL != wld.dots[x]) {
+			free(wld.dots[x]);
+		}
+	}
+	free(wld.dots);
+
 	SDL_FreeSurface(frame);
 	SDL_DestroyWindow(win);
 	SDL_Quit();

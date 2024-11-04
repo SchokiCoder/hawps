@@ -49,8 +49,8 @@ A dot always tries to move every tick.
 - [ ] add arguments for
 	- [x] tickrate
 	- [x] dotscale
-	- [ ] worldWidth
-	- [ ] worldHeight
+	- [x] world_width
+	- [x] world_height
 	- [ ] `-h --help`
 
 - [ ] set version to 0.2
