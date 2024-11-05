@@ -10,4 +10,4 @@ I just want to have fun writing something dumb.
 
 ## Dependencies
 
-`sudo apt install golang libsdl2-dev`
+`sudo apt install libsdl2-dev`
