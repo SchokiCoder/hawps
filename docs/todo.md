@@ -4,7 +4,7 @@
 
 # Gasy Update
 
-- [ ] maybe adding a mat state MS_none **just** for M_none could save some ifs ?
+- [x] add a none mat state for the none mat
 
 - [ ] add server/client split
 Send via UDP.

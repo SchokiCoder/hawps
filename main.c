@@ -75,6 +75,7 @@ struct World {
 };
 
 enum MatState {
+	MS_none,
 	MS_static,
 	MS_grain,
 	MS_liquid,
@@ -82,7 +83,7 @@ enum MatState {
 
 const char *MAT_NAME[] =          {"None",    "Sand",   "Water"};
 const int MAT_WEIGHT[] =          {0,         2,        1};
-const enum MatState MAT_STATE[] = {MS_static, MS_grain, MS_liquid};
+const enum MatState MAT_STATE[] = {MS_none,   MS_grain, MS_liquid};
 const Uint8 MAT_R[] =             {0,         238,      100};
 const Uint8 MAT_G[] =             {0,         217,      100};
 const Uint8 MAT_B[] =             {0,         86,       255};
@@ -146,6 +147,7 @@ apply_gravity(
 	for (x = 0; x < wld->w; x++) {
 		for (y = wld->h - 2; y >= 0; y--) {
 			switch (MAT_STATE[wld->dots[x][y]]) {
+			case MS_none:
 			case MS_static:
 				break;
 
@@ -165,9 +167,15 @@ int
 can_liquid_displace(
 	enum Mat src, enum Mat dest)
 {
-	if (M_none == dest ||
-	    MAT_WEIGHT[dest] < MAT_WEIGHT[src]) {
+	switch (MAT_STATE[dest]) {
+	case MS_none:
 		return 1;
+
+	default:
+		if (MAT_WEIGHT[dest] < MAT_WEIGHT[src]) {
+			return 1;
+		}
+		break;
 	}
 
 	return 0;
@@ -177,10 +185,18 @@ int
 can_grain_displace(
 	enum Mat src, enum Mat dest)
 {
-	if (M_none == dest ||
-	   (MAT_WEIGHT[dest] < MAT_WEIGHT[src] &&
-	    MAT_STATE[dest] == MS_liquid)) {
+	switch (MAT_STATE[dest]) {
+	case MS_none:
 		return 1;
+
+	case MS_liquid:
+		if (MAT_WEIGHT[dest] < MAT_WEIGHT[src]) {
+			return 1;
+		}
+		break;
+
+	default:
+		break;
 	}
 
 	return 0;
@@ -554,7 +570,7 @@ main(
 	const int spawn1Y = wld.h / 3 * 2;
 	const int spawn1W = 10;
 	const int spawn1H = 10;
-	const int spawn2X = wld.w / 3;
+	const int spawn2X = wld.w / 3 * 2;
 	const int spawn2Y = 0;
 	const int spawn2W = wld.w / 4;
 	const int spawn2H = wld.h / 3;
