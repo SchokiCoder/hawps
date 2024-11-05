@@ -2,7 +2,7 @@
 - [ ] remove manual tomfoolery
 - [ ] fix liquids running past grains ?
 
-# Gases Update
+# Gasy Update
 
 - [ ] maybe adding a mat state MS_none **just** for M_none could save some ifs ?
 
@@ -15,6 +15,8 @@ The default client may later receive a launch arg,
 for instead connecting to a server via network.
 Other clients may draw them to a console or print them or whatever.
 I won't tell you what to do.
+
+- [ ] change license to LGPL-2.1-only ?
 
 - [ ] add solid dots
 
@@ -57,7 +59,7 @@ A dot always tries to move every tick.
 
 - [x] change dotscale to world_scale
 
-- [ ] set version to 0.2
+- [x] set version to 0.2
 
 -----
 

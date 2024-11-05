@@ -8,7 +8,7 @@
 
 #define APP_NAME        "hawps"
 #define APP_NAME_FORMAL "Half Assed Wannabe Physics Simulator"
-#define APP_VERSION     "v0.1"
+#define APP_VERSION     "v0.2"
 #define APP_LICENSE     "GPL-2.0-or-later"
 #define APP_REPOSITORY  "https://github.com/SchokiCoder/hawps"
 #define APP_LICENSE_URL "https://www.gnu.org/licenses/gpl-2.0.html"
