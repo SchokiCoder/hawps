@@ -1,8 +1,10 @@
 - [ ] add runtime dot manipulation interface
 - [ ] remove manual tomfoolery
-- [ ] would disabling friction calculations while gravity is 0, save cpu time?
+- [ ] fix liquids running past grains ?
 
 # Gases Update
+
+- [ ] maybe adding a mat state MS_none **just** for M_none could save some ifs ?
 
 - [ ] add server/client split
 Send via UDP.
@@ -38,13 +40,12 @@ A dot always tries to move every tick.
 
 - [x] add pause button
 
-- [ ] add stack collapsing via gravity
+- [x] add stack collapsing via gravity
 	- [x] fix liquid collapsing incorrectly iterating loops
 	- [x] fix grain collapsing making grains jump up
 	- [x] fix basic liquid collapsing
 	- [x] fix grain collapsing being blocked by something
 	- [x] fix grain collapsing letting dots disappear
-	- [ ] fix adhesion of liquids on top of grains
 
 - [x] add arguments for
 	- [x] tickrate
@@ -54,7 +55,7 @@ A dot always tries to move every tick.
 	- [x] help print
 	- [x] version info print
 
-- [ ] change dotscale to world_scale?
+- [x] change dotscale to world_scale
 
 - [ ] set version to 0.2
 

@@ -14,7 +14,7 @@
 #define APP_LICENSE_URL "https://www.gnu.org/licenses/gpl-2.0.html"
 
 #define STD_TICKRATE     24.0
-#define STD_DOTSCALE     10
+#define STD_WORLD_SCALE  10
 #define STD_WORLD_WIDTH  80
 #define STD_WORLD_HEIGHT 60
 
@@ -31,10 +31,6 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "    -a --about\n"
 "        prints program name, version, license and repository information then exits\n"
 "\n"
-"    --dotscale\n"
-"        sets the graphical scale of dots and thus the world too\n"
-"        default: " DEF_TO_STRING(STD_DOTSCALE) "\n"
-"\n"
 "    -h --help\n"
 "        prints this message then exits\n"
 "\n"
@@ -44,6 +40,10 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "    -v --version\n"
 "        prints version information then exits\n"
+"\n"
+"    --world_scale\n"
+"        sets the graphical scale of the physical world\n"
+"        default: " DEF_TO_STRING(STD_WORLD_SCALE) "\n"
 "\n"
 "    --world_width\n"
 "        sets the width of the world\n"
@@ -121,7 +121,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
-	int   *dotscale,
+	int   *wld_scale,
 	float *tickrate,
 	int   *world_w,
 	int   *world_h);
@@ -319,7 +319,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
-	int   *dotscale,
+	int   *wld_scale,
 	float *tickrate,
 	int   *world_w,
 	int   *world_h)
@@ -346,23 +346,6 @@ handle_args(
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return 0;
-		} else if (strcmp(argv[i], "--dotscale") == 0) {
-			if (argc <= i + 1) {
-				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
-				return 0;
-			}
-			i++;
-
-			errno = 0;
-			vi = strtol(argv[i], NULL, 10);
-			if (errno != 0 || 0 == vi) {
-				fprintf(stderr,
-				        ERR_ARG_CONV,
-				        argv[i - 1],
-				        "int");
-				return 0;
-			}
-			*dotscale = vi;
 		} else if (strcmp(argv[i], "-h") == 0 ||
 		           strcmp(argv[i], "--help") == 0) {
 			printf("%s", APP_HELP);
@@ -388,6 +371,23 @@ handle_args(
 		           strcmp(argv[i], "--version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return 0;
+		} else if (strcmp(argv[i], "--world_scale") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*wld_scale = vi;
 		} else if (strcmp(argv[i], "--world_width") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
@@ -487,12 +487,12 @@ main(
 {
 	int           active = 1;
 	float         delta;
-	int           dotscale = STD_DOTSCALE;
 	SDL_Surface  *frame = NULL;
 	clock_t       t1, t2;
 	float         tickrate = STD_TICKRATE;
 	float         pause_mod = 1.0;
 	SDL_Window   *win = NULL;
+	int           wld_scale = STD_WORLD_SCALE;
 	struct World  wld;
 	int           x, y;
 
@@ -501,7 +501,7 @@ main(
 
 	if (handle_args(argc,
 	                argv,
-			&dotscale,
+			&wld_scale,
 			&tickrate,
 			&wld.w,
 			&wld.h) == 0) {
@@ -516,8 +516,8 @@ main(
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
-	                       wld.w * dotscale,
-	                       wld.h * dotscale,
+	                       wld.w * wld_scale,
+	                       wld.h * wld_scale,
 	                       SDL_WINDOW_SHOWN);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
@@ -554,10 +554,10 @@ main(
 	const int spawn1Y = wld.h / 3 * 2;
 	const int spawn1W = 10;
 	const int spawn1H = 10;
-	const int spawn2X = 0;
+	const int spawn2X = wld.w / 3;
 	const int spawn2Y = 0;
-	const int spawn2W = wld.w / 2;
-	const int spawn2H = wld.h;
+	const int spawn2W = wld.w / 4;
+	const int spawn2H = wld.h / 3;
 
 	for (x = spawn2X; x < spawn2X + spawn2W; x++) {
 		for (y = spawn2Y; y < spawn2Y + spawn2H; y++) {
