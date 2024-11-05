@@ -1,3 +1,6 @@
+- [ ] test android build
+`sudo apt install google-android-ndk-r26d-installer or newer version`
+
 - [ ] add runtime dot manipulation interface
 - [ ] remove manual tomfoolery
 - [ ] fix liquids running past grains ?
@@ -6,15 +9,17 @@
 
 - [x] add a none mat state for the none mat
 
-- [ ] add server/client split
+- [ ] add server client split
 Send via UDP.
 Server calculates dots.
-Default client draws them to screen,
-and uses an API to run the server in itself without network use.
-The default client may later receive a launch arg,
-for instead connecting to a server via network.
+Default client draws them to screen via SDL,
+and is listens to localhost.
 Other clients may draw them to a console or print them or whatever.
 I won't tell you what to do.
+	- [ ] add networking
+
+- [ ] add argument ip address on client
+- [ ] add argument port on client and server
 
 - [ ] change license to LGPL-2.1-only ?
 
