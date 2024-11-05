@@ -384,6 +384,10 @@ handle_args(
 				return 0;
 			}
 			*tickrate = vf;
+		} else if (strcmp(argv[i], "-v") == 0 ||
+		           strcmp(argv[i], "--version") == 0) {
+			printf("%s: version %s\n", APP_NAME, APP_VERSION);
+			return 0;
 		} else if (strcmp(argv[i], "--world_width") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);

@@ -46,13 +46,13 @@ A dot always tries to move every tick.
 	- [x] fix grain collapsing letting dots disappear
 	- [ ] fix adhesion of liquids on top of grains
 
-- [ ] add arguments for
+- [x] add arguments for
 	- [x] tickrate
 	- [x] dotscale
 	- [x] world_width
 	- [x] world_height
 	- [x] help print
-	- [ ] version info print
+	- [x] version info print
 
 - [ ] change dotscale to world_scale?
 
