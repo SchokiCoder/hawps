@@ -51,7 +51,10 @@ A dot always tries to move every tick.
 	- [x] dotscale
 	- [x] world_width
 	- [x] world_height
-	- [ ] `-h --help`
+	- [x] help print
+	- [ ] version info print
+
+- [ ] change dotscale to world_scale?
 
 - [ ] set version to 0.2
 

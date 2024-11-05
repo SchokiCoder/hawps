@@ -18,6 +18,50 @@
 #define STD_WORLD_WIDTH  80
 #define STD_WORLD_HEIGHT 60
 
+#define _DUMB_MAGIC(arg) #arg
+#define DEF_TO_STRING(name) _DUMB_MAGIC(name)
+
+const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
+"\n"
+"Silly program to simulate physics in *very* convincing ways.\n"
+"It'll be great. Trust me.\n"
+"\n"
+"Options:\n"
+"\n"
+"    -a --about\n"
+"        prints program name, version, license and repository information then exits\n"
+"\n"
+"    --dotscale\n"
+"        sets the graphical scale of dots and thus the world too\n"
+"        default: " DEF_TO_STRING(STD_DOTSCALE) "\n"
+"\n"
+"    -h --help\n"
+"        prints this message then exits\n"
+"\n"
+"    --tickrate\n"
+"        sets the tickrate (ticks per second), which effects visible speed\n"
+"        default: " DEF_TO_STRING(STD_TICKRATE) "\n"
+"\n"
+"    -v --version\n"
+"        prints version information then exits\n"
+"\n"
+"    --world_width\n"
+"        sets the width of the world\n"
+"        default: " DEF_TO_STRING(STD_WORLD_WIDTH) "\n"
+"\n"
+"    --world_height\n"
+"        sets the height of the world\n"
+"        default: " DEF_TO_STRING(STD_WORLD_HEIGHT) "\n"
+"\n"
+"Default keybinds:\n"
+"\n"
+"    ESC\n"
+"        quit the program\n"
+"\n"
+"    Space\n"
+"        pause world\n"
+"\n";
+
 enum Mat {
 	M_none,
 	M_sand,
@@ -319,6 +363,10 @@ handle_args(
 				return 0;
 			}
 			*dotscale = vi;
+		} else if (strcmp(argv[i], "-h") == 0 ||
+		           strcmp(argv[i], "--help") == 0) {
+			printf("%s", APP_HELP);
+			return 0;
 		} else if (strcmp(argv[i], "--tickrate") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
