@@ -9,14 +9,14 @@
 
 - [x] add a none mat state for the none mat
 
-- [ ] add server client split
+- [x] add server client split
 Send via UDP.
 Server calculates dots.
 Default client draws them to screen via SDL,
 and is listens to localhost.
 Other clients may draw them to a console or print them or whatever.
 I won't tell you what to do.
-	- [ ] add networking
+	- [x] add actual networking
 
 - [ ] add argument ip address on client
 - [ ] add argument port on client and server

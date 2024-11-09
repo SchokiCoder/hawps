@@ -5,13 +5,13 @@
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
+#include "common.h"
+#include "net.h"
 #include "world.h"
 
-#define _DUMB_MAGIC(arg) #arg
-#define DEF_TO_STRING(name) _DUMB_MAGIC(name)
-
-#define STD_IP_ADDRESS   "127.0.0.1"
+#define IP_ADDRESS   "127.0.0.1"
 #define STD_WORLD_SCALE  10
 
 const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
@@ -175,11 +175,10 @@ handle_events(
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_KEYUP:
-			send(CE_request_pause);
+			//write(socket, CE_request_pause, sizeof(CE_request_pause));
 			break;
 
 		case SDL_QUIT:
-			send(CE_disconnect);
 			*active = 0;
 			break;
 
@@ -218,13 +217,14 @@ main(
 	int argc,
 	char *argv[])
 {
-	int           active = 1;
-	float         delta;
-	SDL_Surface  *frame = NULL;
-	SDL_Window   *win = NULL;
-	int           wld_scale = STD_WORLD_SCALE;
-	struct World  wld;
-	int           x, y;
+	int                 active = 1;
+	int                 i;
+	SDL_Surface        *frame = NULL;
+	struct sockaddr_in  sockaddr;
+	int                 socket = -1;
+	SDL_Window         *win = NULL;
+	int                 wld_scale = STD_WORLD_SCALE;
+	struct World        wld;
 
 	if (handle_args(argc,
 	                argv,
@@ -235,6 +235,30 @@ main(
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		fprintf(stderr, "SDL Init failed\n");
 		return 0;
+	}
+
+	socket = TCP_open_socket();
+	if (-1 == socket) {
+		fprintf(stderr, "Socket init failed\n");
+		goto cleanup;
+	}
+
+	if (TCP_setup_sockaddr(&sockaddr, IP_ADDRESS) == -1) {
+		fprintf(stderr, "Invalid IP address\n");
+		goto cleanup;
+	}
+
+	if (connect(socket, (struct sockaddr*) &sockaddr, sizeof(sockaddr)) < 0) {
+		fprintf(stderr, "Connect failed\n");
+		goto cleanup;
+	}
+
+	read(socket, &wld.w, sizeof(wld.w));
+	read(socket, &wld.h, sizeof(wld.h));
+
+	if (World_new(&wld, wld.w, wld.h) != 0) {
+		fprintf(stderr, "Couldn't initialize world\n");
+		goto cleanup;
 	}
 
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
@@ -255,27 +279,28 @@ main(
 		goto cleanup;
 	}
 
-	if (World_new(&wld, wld.w, wld.h) != 0) {
-		fprintf(stderr, "Couldn't initialize world\n");
-		goto cleanup;
-	}
-
 	while (active) {
 		handle_events(&active);
 
-		listen(); berkely socket stuff;
-
-		if (new wld packet received) {
-			if (draw_world(wld, frame, win) != 0) {
+		for (i = 0; i < wld.w; i++) {
+			if (read(socket,
+				 wld.dots[i],
+				 sizeof(enum Mat) * wld.h) == -1) {
 				active = 0;
 				break;
 			}
 		}
+
+		if (draw_world(wld, frame, win) != 0) {
+			active = 0;
+			break;
+		}
 	}
 
 cleanup:
-	World_free(&wld);
 	SDL_FreeSurface(frame);
 	SDL_DestroyWindow(win);
+	World_free(&wld);
+	close(socket);
 	SDL_Quit();
 }

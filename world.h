@@ -25,12 +25,12 @@ enum MatState {
 	MS_liquid,
 };
 
-const char *MAT_NAME[] =          {"None",  "Sand",   "Water"};
-const int MAT_WEIGHT[] =          {0,       2,        1};
-const enum MatState MAT_STATE[] = {MS_none, MS_grain, MS_liquid};
-const uint8_t MAT_R[] =           {0,       238,      100};
-const uint8_t MAT_G[] =           {0,       217,      100};
-const uint8_t MAT_B[] =           {0,       86,       255};
+static const char *MAT_NAME[] =          {"None",  "Sand",   "Water"};
+static const int MAT_WEIGHT[] =          {0,       2,        1};
+static const enum MatState MAT_STATE[] = {MS_none, MS_grain, MS_liquid};
+static const uint8_t MAT_R[] =           {0,       238,      100};
+static const uint8_t MAT_G[] =           {0,       217,      100};
+static const uint8_t MAT_B[] =           {0,       86,       255};
 
 /* Returns 0 on success
  */

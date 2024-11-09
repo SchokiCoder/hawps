@@ -6,12 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
+#include "common.h"
+#include "net.h"
 #include "world.h"
 
-#define _DUMB_MAGIC(arg) #arg
-#define DEF_TO_STRING(name) _DUMB_MAGIC(name)
-
+#define MAX_CLIENTS      1
 #define STD_TICKRATE     24.0
 #define STD_WORLD_WIDTH  40
 #define STD_WORLD_HEIGHT 40
@@ -160,13 +161,16 @@ main(
 	int argc,
 	char *argv[])
 {
-	int           active = 1;
-	float         delta;
-	clock_t       t1, t2;
-	float         tickrate = STD_TICKRATE;
-	float         pause_mod = 1.0;
-	struct World  wld;
-	int           x, y;
+	int                active = 1;
+	int                csocket;
+	float              delta;
+	struct sockaddr_in sockaddr;
+	int                socket = -1;
+	clock_t            t1, t2;
+	float              tickrate = STD_TICKRATE;
+	float              pause_mod = 1.0;
+	struct World       wld;
+	int                x, y;
 
 	wld.w = STD_WORLD_WIDTH;
 	wld.h = STD_WORLD_HEIGHT;
@@ -175,7 +179,7 @@ main(
 	                argv,
 			&tickrate,
 			&wld.w,
-			&wld.h) == 0) {
+			&wld.h) != 0) {
 		return 0;
 	}
 
@@ -207,18 +211,56 @@ main(
 	t1 = 0.0;
 	t2 = 0.0;
 
+	socket = TCP_open_socket();
+	if (-1 == socket) {
+		fprintf(stderr, "Socket init failed\n");
+		goto cleanup;
+	}
+
+	if (TCP_setup_sockaddr(&sockaddr, NULL) == -1) {
+		fprintf(stderr, "Invalid IP address\n");
+		goto cleanup;
+	}
+
+	if (bind(socket, (struct sockaddr*) &sockaddr, sizeof(sockaddr)) < 0) {
+		fprintf(stderr, "Bind failed\n");
+		goto cleanup;
+	}
+
+	if (listen(socket, MAX_CLIENTS) < 0) {
+		fprintf(stderr, "Listen failed\n");
+		goto cleanup;
+	}
+
+	csocket = accept(socket, NULL, NULL);
+	if (0 > csocket) {
+		fprintf(stderr, "Accept failed\n");
+		goto cleanup;
+	}
+
+	write(csocket, &wld.w, sizeof(wld.w));
+	write(csocket, &wld.h, sizeof(wld.h));
+
 	while (active) {
 		t1 = clock();
 		delta = 1.0 * (t1 - t2) / CLOCKS_PER_SEC;
 		if (delta * pause_mod >= (1.0 / tickrate)) {
-			handle_events(&active, &pause_mod);
 			World_tick(&wld);
-			send(); berkely socket stuff;
 
 			t2 = t1;
+
+			for (x = 0; x < wld.w; x++) {
+				if (write(csocket,
+					  wld.dots[x],
+					  sizeof(enum Mat) * wld.h) == -1) {
+					active = 0;
+					break;
+				}
+			}
 		}
 	}
 
 cleanup:
+	close(socket);
 	World_free(&wld);
 }
