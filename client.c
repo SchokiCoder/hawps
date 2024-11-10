@@ -218,7 +218,6 @@ main(
 	char *argv[])
 {
 	int                 active = 1;
-	int                 i;
 	SDL_Surface        *frame = NULL;
 	struct sockaddr_in  sockaddr;
 	int                 socket = -1;
@@ -282,13 +281,12 @@ main(
 	while (active) {
 		handle_events(&active);
 
-		for (i = 0; i < wld.w; i++) {
-			if (read(socket,
-				 wld.dots[i],
-				 sizeof(enum Mat) * wld.h) == -1) {
-				active = 0;
-				break;
-			}
+		if (read(socket,
+		         wld._dots_data,
+		         sizeof(enum Mat) * wld.w * wld.h)
+		    == -1) {
+			active = 0;
+			break;
 		}
 
 		if (draw_world(wld, frame, win) != 0) {

@@ -15,7 +15,8 @@ enum Mat {
 struct World {
 	int        w;
 	int        h;
-	enum Mat **dots;
+	enum Mat **dots;       /* convenience pointers to actual data */
+	enum Mat  *_dots_data; /* actual data in here */
 };
 
 enum MatState {

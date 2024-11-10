@@ -249,13 +249,12 @@ main(
 
 			t2 = t1;
 
-			for (x = 0; x < wld.w; x++) {
-				if (write(csocket,
-					  wld.dots[x],
-					  sizeof(enum Mat) * wld.h) == -1) {
-					active = 0;
-					break;
-				}
+			if (write(csocket,
+				  wld._dots_data,
+				  sizeof(enum Mat) * wld.w * wld.h)
+			    == -1) {
+				active = 0;
+				break;
 			}
 		}
 	}

@@ -195,16 +195,15 @@ World_new(
 	wld->w = w;
 	wld->h = h;
 
-	wld->dots = malloc(sizeof(enum Mat*) * wld->w);
-	if (NULL == wld->dots) {
+	wld->_dots_data = malloc(sizeof(enum Mat*) * wld->w * wld->h);
+	if (NULL == wld->_dots_data) {
 		return 1;
 	}
 
+	wld->dots = malloc(sizeof(enum Mat*) * wld->w);
+
 	for (x = 0; x < wld->w; x++) {
-		wld->dots[x] = malloc(sizeof(enum Mat) * wld->h);
-		if (NULL == wld->dots[x]) {
-			return 1;
-		}
+		wld->dots[x] = &wld->_dots_data[wld->h * x];
 
 		for (y = 0; y < wld->h; y++) {
 			wld->dots[x][y] = M_none;
@@ -225,12 +224,11 @@ void
 World_free(
 	struct World *wld)
 {
-	int x;
-
-	for (x = 0; x < wld->w; x++) {
-		if (NULL != wld->dots[x]) {
-			free(wld->dots[x]);
-		}
+	if (NULL != wld->dots) {
+		free(wld->dots);
 	}
-	free(wld->dots);
+
+	if (NULL != wld->_dots_data) {
+		free(wld->_dots_data);
+	}
 }

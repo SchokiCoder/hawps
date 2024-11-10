@@ -10,7 +10,6 @@
 - [x] add a none mat state for the none mat
 
 - [x] add server client split
-Send via UDP.
 Server calculates dots.
 Default client draws them to screen via SDL,
 and is listens to localhost.
@@ -18,8 +17,14 @@ Other clients may draw them to a console or print them or whatever.
 I won't tell you what to do.
 	- [x] add actual networking
 
-- [ ] add argument ip address on client
-- [ ] add argument port on client and server
+- [x] improve memory layout of world and TCP read/write of world
+
+- [ ] add argument for setting ip address on client
+- [ ] add argument for setting port on client and server
+
+- [ ] fix ESC key to quit on client
+
+- [ ] reimplement pause key for network
 
 - [ ] change license to LGPL-2.1-only ?
 
