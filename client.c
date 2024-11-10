@@ -30,6 +30,10 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "    --ipv4\n"
 "        sets the target IPv4 address in the format xxx.xxx.xxx.xxx\n"
 "\n"
+"    --port\n"
+"        sets the TCP port number\n"
+"        default: " DEF_TO_STRING(STD_IP_PORT) "\n"
+"\n"
 "    -v --version\n"
 "        prints version information then exits\n"
 "\n"
@@ -57,6 +61,7 @@ handle_args(
 	int    argc,
 	char  *argv[],
 	char **ip_address,
+	int   *ip_port,
 	int   *wld_scale);
 
 void
@@ -112,6 +117,7 @@ handle_args(
 	int    argc,
 	char  *argv[],
 	char **ip_address,
+	int   *ip_port,
 	int   *wld_scale)
 {
 	const char *ERR_ARG_CONV =
@@ -147,6 +153,23 @@ handle_args(
 			i++;
 
 			*ip_address = argv[i];
+		} else if (strcmp(argv[i], "--port") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*ip_port = vi;
 		} else if (strcmp(argv[i], "-v") == 0 ||
 		           strcmp(argv[i], "--version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
@@ -233,6 +256,7 @@ main(
 	int                 active = 1;
 	SDL_Surface        *frame = NULL;
 	char               *ip_address = STD_IP_ADDRESS;
+	int                ip_port = STD_IP_PORT;
 	struct sockaddr_in  sockaddr;
 	int                 socket = -1;
 	SDL_Window         *win = NULL;
@@ -242,6 +266,7 @@ main(
 	if (handle_args(argc,
 	                argv,
 	                &ip_address,
+	                &ip_port,
 	                &wld_scale)
 	    == 0) {
 		return 0;
@@ -258,7 +283,7 @@ main(
 		goto cleanup;
 	}
 
-	if (TCP_setup_sockaddr(&sockaddr, ip_address) == -1) {
+	if (TCP_setup_sockaddr(&sockaddr, ip_address, ip_port) == -1) {
 		fprintf(stderr, "Invalid IP address\n");
 		goto cleanup;
 	}

@@ -16,6 +16,7 @@ TCP_open_socket(
 int
 TCP_setup_sockaddr(
 	struct sockaddr_in *sockaddr,
-	const char         *ip_address);
+	const char         *ip_address,
+	const int           ip_port);
 
 #endif /* _NET_H */

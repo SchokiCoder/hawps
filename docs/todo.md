@@ -20,7 +20,7 @@ I won't tell you what to do.
 - [x] improve memory layout of world and TCP read/write of world
 
 - [x] add argument for setting ip address on client
-- [ ] add argument for setting port on client and server
+- [x] add argument for setting port on client and server
 
 - [ ] fix ESC key to quit on client
 

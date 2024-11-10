@@ -8,6 +8,8 @@
 #define _DUMB_MAGIC(arg) #arg
 #define DEF_TO_STRING(name) _DUMB_MAGIC(name)
 
+#define STD_IP_PORT 25565
+
 enum ClientEvent {
 	CE_request_pause,
 };

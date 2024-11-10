@@ -8,8 +8,6 @@ APP_LICENSE     :=\"GPL-2.0-or-later\"
 APP_REPOSITORY  :=\"https://github.com/SchokiCoder/hawps\"
 APP_LICENSE_URL :=\"https://www.gnu.org/licenses/gpl-2.0.html\"
 
-IP_PORT := 25565
-
 CC       := cc
 CFLAGS   := -Wall -Wextra -std=c99 -pedantic -fsanitize=address,undefined -g
 INCLUDES := -I /usr/include/SDL2
@@ -20,8 +18,7 @@ DEFINES  := -D _DEFAULT_SOURCE \
 	-D APP_VERSION=$(APP_VERSION) \
 	-D APP_LICENSE=$(APP_LICENSE) \
 	-D APP_REPOSITORY=$(APP_REPOSITORY) \
-	-D APP_LICENSE_URL=$(APP_LICENSE_URL) \
-	-D IP_PORT=$(IP_PORT)
+	-D APP_LICENSE_URL=$(APP_LICENSE_URL)
 
 .PHONY: clean
 
@@ -31,7 +28,7 @@ hawps: client.c net.c world.c
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) $(LIBS) $(DEFINES) $^
 
 hawpsds: server.c net.c world.c
-	$(CC) -o $@ $(CFLAGS) $(INCLUDES) $(LIBS) $(DEFINES) $^
+	$(CC) -o $@ $(CFLAGS) $(DEFINES) $^
 
 clean:
 	rm -f hawps hawpsds

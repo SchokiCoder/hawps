@@ -30,6 +30,10 @@ const char *APP_HELP = "Usage: " APP_NAME " [OPTIONS]\n"
 "    -h --help\n"
 "        prints this message then exits\n"
 "\n"
+"    --port\n"
+"        sets the TCP port number\n"
+"        default: " DEF_TO_STRING(STD_IP_PORT) "\n"
+"\n"
 "    --tickrate\n"
 "        sets the tickrate (ticks per second), which effects visible speed\n"
 "        default: " DEF_TO_STRING(STD_TICKRATE) "\n"
@@ -52,6 +56,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
+	int   *ip_port,
 	float *tickrate,
 	int   *world_w,
 	int   *world_h);
@@ -60,6 +65,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
+	int   *ip_port,
 	float *tickrate,
 	int   *world_w,
 	int   *world_h)
@@ -90,6 +96,23 @@ handle_args(
 		           strcmp(argv[i], "--help") == 0) {
 			printf("%s", APP_HELP);
 			return 1;
+		} else if (strcmp(argv[i], "--port") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*ip_port = vi;
 		} else if (strcmp(argv[i], "--tickrate") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
@@ -164,6 +187,7 @@ main(
 	int                active = 1;
 	int                csocket;
 	float              delta;
+	int                ip_port = STD_IP_PORT;
 	struct sockaddr_in sockaddr;
 	int                socket = -1;
 	clock_t            t1, t2;
@@ -177,6 +201,7 @@ main(
 
 	if (handle_args(argc,
 	                argv,
+	                &ip_port,
 			&tickrate,
 			&wld.w,
 			&wld.h) != 0) {
@@ -217,7 +242,7 @@ main(
 		goto cleanup;
 	}
 
-	if (TCP_setup_sockaddr(&sockaddr, NULL) == -1) {
+	if (TCP_setup_sockaddr(&sockaddr, NULL, ip_port) == -1) {
 		fprintf(stderr, "Invalid IP address\n");
 		goto cleanup;
 	}

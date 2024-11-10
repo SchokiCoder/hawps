@@ -21,11 +21,12 @@ TCP_open_socket(
 int
 TCP_setup_sockaddr(
 	struct sockaddr_in *sockaddr,
-	const char         *ip_address)
+	const char         *ip_address,
+	const int           ip_port)
 {
 	memset(sockaddr, 0, sizeof(*sockaddr));
 	sockaddr->sin_family = AF_INET;
-	sockaddr->sin_port = htons(IP_PORT);
+	sockaddr->sin_port = htons(ip_port);
 
 	if (NULL == ip_address) {
 		sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);
