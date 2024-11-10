@@ -11,7 +11,7 @@
 #include "net.h"
 #include "world.h"
 
-#define IP_ADDRESS   "127.0.0.1"
+#define STD_IP_ADDRESS   "127.0.0.1"
 #define STD_WORLD_SCALE  10
 
 const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
@@ -26,6 +26,9 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "    -h --help\n"
 "        prints this message then exits\n"
+"\n"
+"    --ipv4\n"
+"        sets the target IPv4 address in the format xxx.xxx.xxx.xxx\n"
 "\n"
 "    -v --version\n"
 "        prints version information then exits\n"
@@ -53,6 +56,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
+	char **ip_address,
 	int   *wld_scale);
 
 void
@@ -107,6 +111,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
+	char **ip_address,
 	int   *wld_scale)
 {
 	const char *ERR_ARG_CONV =
@@ -134,6 +139,14 @@ handle_args(
 		           strcmp(argv[i], "--help") == 0) {
 			printf("%s", APP_HELP);
 			return 0;
+		} else if (strcmp(argv[i], "--ipv4") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			*ip_address = argv[i];
 		} else if (strcmp(argv[i], "-v") == 0 ||
 		           strcmp(argv[i], "--version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
@@ -219,6 +232,7 @@ main(
 {
 	int                 active = 1;
 	SDL_Surface        *frame = NULL;
+	char               *ip_address = STD_IP_ADDRESS;
 	struct sockaddr_in  sockaddr;
 	int                 socket = -1;
 	SDL_Window         *win = NULL;
@@ -227,7 +241,9 @@ main(
 
 	if (handle_args(argc,
 	                argv,
-			&wld_scale) == 0) {
+	                &ip_address,
+	                &wld_scale)
+	    == 0) {
 		return 0;
 	}
 
@@ -242,7 +258,7 @@ main(
 		goto cleanup;
 	}
 
-	if (TCP_setup_sockaddr(&sockaddr, IP_ADDRESS) == -1) {
+	if (TCP_setup_sockaddr(&sockaddr, ip_address) == -1) {
 		fprintf(stderr, "Invalid IP address\n");
 		goto cleanup;
 	}
