@@ -1,3 +1,19 @@
+# 3rd rework
+
+So I did it in Go, but now I redid it in C anyway.  
+I have fun with C. Can you blame me?  
+
+Before that, I should also mention the rejection of float-based physics.  
+No more velocity, friction, or hitboxes at all.  
+Now a dot is just a single blip in a matrix of data.  
+
+Also, I added networking, which caused a bunch of splits,
+but I am very pleased with how it turned out.  
+The server doesn't need SDL to be compiled,
+can be statically compiled, and can be copied to another system in the LAN,
+to be tested.  
+I put it on my Debian 12 server and it just worked.  
+
 # 2nd rework
 
 Godot or any other game engine seems to not really be a good fit.
