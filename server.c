@@ -222,6 +222,10 @@ main(
 	const int spawn2Y = 0;
 	const int spawn2W = wld.w / 4;
 	const int spawn2H = wld.h / 3;
+	const int spawn3X = 0;
+	const int spawn3Y = wld.h - 5;
+	const int spawn3W = wld.w - 1;
+	const int spawn3H = 1;
 	for (x = spawn2X; x < spawn2X + spawn2W; x++) {
 		for (y = spawn2Y; y < spawn2Y + spawn2H; y++) {
 			wld.dots[x][y] = M_water;
@@ -230,6 +234,11 @@ main(
 	for (x = spawn1X; x < spawn1X + spawn1W; x++) {
 		for (y = spawn1Y; y < spawn1Y + spawn1H; y++) {
 			wld.dots[x][y] = M_sand;
+		}
+	}
+	for (x = spawn3X; x < spawn3X + spawn3W; x++) {
+		for (y = spawn3Y; y < spawn3Y + spawn3H; y++) {
+			wld.dots[x][y] = M_iron;
 		}
 	}
 

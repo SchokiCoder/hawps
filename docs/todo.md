@@ -22,15 +22,17 @@ I won't tell you what to do.
 - [x] add argument for setting ip address on client
 - [x] add argument for setting port on client and server
 
+- [x] add iron and solid dots
+
 - [ ] fix ESC key to quit on client
 
 - [ ] reimplement pause key for network
 
 - [ ] change license to LGPL-2.1-only ?
 
-- [ ] add solid dots
+- [ ] add oxygen, hydrogen and gas behavior
 
-- [ ] add oxygen and gas behavior
+- [ ] add reaction to oxygen meeting hydrogen
 
 - [ ] set version to 0.3
 

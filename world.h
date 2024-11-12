@@ -9,7 +9,8 @@
 enum Mat {
 	M_none,
 	M_sand,
-	M_water
+	M_water,
+	M_iron
 };
 
 struct World {
@@ -26,12 +27,12 @@ enum MatState {
 	MS_liquid,
 };
 
-static const char *MAT_NAME[] =          {"None",  "Sand",   "Water"};
-static const int MAT_WEIGHT[] =          {0,       2,        1};
-static const enum MatState MAT_STATE[] = {MS_none, MS_grain, MS_liquid};
-static const uint8_t MAT_R[] =           {0,       238,      100};
-static const uint8_t MAT_G[] =           {0,       217,      100};
-static const uint8_t MAT_B[] =           {0,       86,       255};
+static const char *MAT_NAME[] =          {"None",  "Sand",   "Water",   "Iron"};
+static const float MAT_WEIGHT[] =        {0.0,     1.5,      0.999,     7.874}; /* g/cm³ */
+static const enum MatState MAT_STATE[] = {MS_none, MS_grain, MS_liquid, MS_static};
+static const uint8_t MAT_R[] =           {0,       238,      100,       200};
+static const uint8_t MAT_G[] =           {0,       217,      100,       200};
+static const uint8_t MAT_B[] =           {0,       86,       255,       200};
 
 /* Returns 0 on success
  */
