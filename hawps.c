@@ -318,10 +318,10 @@ main(
 	}
 
 	// TODO: remove manual tomfoolery
-	const int spawn1X = wld.w / 3;
-	const int spawn1Y = wld.h / 3 * 2;
-	const int spawn1W = 10;
-	const int spawn1H = 10;
+	const int spawn1X = 0;
+	const int spawn1Y = 0;
+	const int spawn1W = wld.w;
+	const int spawn1H = wld.h;
 	const int spawn2X = wld.w / 3;
 	const int spawn2Y = 0;
 	const int spawn2W = wld.w / 4;
@@ -330,14 +330,14 @@ main(
 	const int spawn3Y = wld.h - 5;
 	const int spawn3W = wld.w - 1;
 	const int spawn3H = 1;
+	for (x = spawn1X; x < spawn1X + spawn1W; x++) {
+		for (y = spawn1Y; y < spawn1Y + spawn1H; y++) {
+			wld.dots[x][y] = M_oxygen;
+		}
+	}
 	for (x = spawn2X; x < spawn2X + spawn2W; x++) {
 		for (y = spawn2Y; y < spawn2Y + spawn2H; y++) {
 			wld.dots[x][y] = M_water;
-		}
-	}
-	for (x = spawn1X; x < spawn1X + spawn1W; x++) {
-		for (y = spawn1Y; y < spawn1Y + spawn1H; y++) {
-			wld.dots[x][y] = M_sand;
 		}
 	}
 	for (x = spawn3X; x < spawn3X + spawn3W; x++) {

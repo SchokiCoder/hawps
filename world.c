@@ -10,12 +10,22 @@ apply_gravity(
 	struct World *wld);
 
 int
-can_liquid_displace(
+can_gas_displace(
 	enum Mat src, enum Mat dest);
 
 int
 can_grain_displace(
 	enum Mat src, enum Mat dest);
+
+int
+can_liquid_displace(
+	enum Mat src, enum Mat dest);
+
+void
+drop_gas(
+	struct World *wld,
+	int x,
+	int y);
 
 void
 drop_grain(
@@ -42,6 +52,10 @@ apply_gravity(
 			case MS_static:
 				break;
 
+			case MS_gas:
+				drop_gas(wld, x, y);
+				break;
+
 			case MS_grain:
 				drop_grain(wld, x, y);
 				break;
@@ -55,17 +69,18 @@ apply_gravity(
 }
 
 int
-can_liquid_displace(
+can_gas_displace(
 	enum Mat src, enum Mat dest)
 {
 	switch (MAT_STATE[dest]) {
 	case MS_none:
-		return 1;
-
-	default:
+	case MS_gas:
 		if (MAT_WEIGHT[dest] < MAT_WEIGHT[src]) {
 			return 1;
 		}
+		break;
+
+	default:
 		break;
 	}
 
@@ -78,6 +93,7 @@ can_grain_displace(
 {
 	switch (MAT_STATE[dest]) {
 	case MS_none:
+	case MS_gas:
 		return 1;
 
 	case MS_liquid:
@@ -91,6 +107,74 @@ can_grain_displace(
 	}
 
 	return 0;
+}
+
+int
+can_liquid_displace(
+	enum Mat src, enum Mat dest)
+{
+	switch (MAT_STATE[dest]) {
+	case MS_none:
+	case MS_gas:
+		return 1;
+
+	default:
+		if (MAT_WEIGHT[dest] < MAT_WEIGHT[src]) {
+			return 1;
+		}
+		break;
+	}
+
+	return 0;
+}
+
+void
+drop_gas(
+	struct World *wld,
+	int x,
+	int y)
+{
+	int bx;
+	enum Mat *below;
+	enum Mat *cur;
+	enum Mat  tmp;
+
+	cur = &wld->dots[x][y];
+	below = &wld->dots[x][y + 1];
+
+	if (can_gas_displace(*cur, *below)) {
+		tmp = *below;
+		*below = *cur;
+		*cur = tmp;
+		return;
+	}
+
+	for (bx = x - 1; bx >= 0; bx--) {
+		below = &wld->dots[bx][y + 1];
+		if (can_gas_displace(*cur, *below)) {
+			tmp = *below;
+			*below = *cur;
+			*cur = tmp;
+			return;
+		}
+
+		if (MAT_STATE[*below] == MS_static) {
+			break;
+		}
+	}
+	for (bx = x + 1; bx < wld->w; bx++) {
+		below = &wld->dots[bx][y + 1];
+		if (can_gas_displace(*cur, *below)) {
+			tmp = *below;
+			*below = *cur;
+			*cur = tmp;
+			return;
+		}
+
+		if (MAT_STATE[*below] == MS_static) {
+			break;
+		}
+	}
 }
 
 void

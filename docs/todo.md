@@ -36,7 +36,7 @@ I won't tell you what to do.
 
 - [x] change license to LGPL-2.1-only
 
-- [ ] add oxygen, hydrogen and gas behavior
+- [x] add oxygen, hydrogen and gas behavior
 
 - [ ] add reaction to oxygen meeting hydrogen
 
