@@ -1,9 +1,19 @@
 - [ ] test android build
 `sudo apt install google-android-ndk-r26d-installer or newer version`
 
-- [ ] add runtime dot manipulation interface
-- [ ] remove manual tomfoolery
 - [ ] fix liquids running past grains ?
+
+# UI update
+
+- [ ] remove manual tomfoolery
+
+- create hud mock-ups
+- hud for selecting tools
+- brush for setting materials at a spot to selected
+- add key binds
+- add "hold ALT key" to display on hud what uses which key bind
+
+- [ ] set version to 0.4
 
 # Gasy Update
 
@@ -24,7 +34,7 @@ I won't tell you what to do.
 
 - [x] add iron and solid dots
 
-- [ ] change license to LGPL-2.1-only ?
+- [x] change license to LGPL-2.1-only
 
 - [ ] add oxygen, hydrogen and gas behavior
 

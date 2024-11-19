@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: LGPL-2.1-only
 // Copyright (C) 2024  Andy Frank Schoknecht
 
 #include "world.h"
