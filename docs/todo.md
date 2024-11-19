@@ -24,10 +24,6 @@ I won't tell you what to do.
 
 - [x] add iron and solid dots
 
-- [ ] fix ESC key to quit on client
-
-- [ ] reimplement pause key for network
-
 - [ ] change license to LGPL-2.1-only ?
 
 - [ ] add oxygen, hydrogen and gas behavior

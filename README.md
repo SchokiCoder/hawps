@@ -7,9 +7,7 @@ I just want to have fun writing something dumb.
 # Build
 
 `make`  
-This will create two binaries.  
-The server has a "ds" at the end of the name.  
 
 ## Dependencies
 
-client: `sudo apt install libsdl2-dev`  
+`sudo apt install libsdl2-dev`  

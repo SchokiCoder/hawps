@@ -22,13 +22,10 @@ DEFINES  := -D _DEFAULT_SOURCE \
 
 .PHONY: clean
 
-all: hawps hawpsds
+all: hawps
 
-hawps: client.c net.c world.c
+hawps: hawps.c world.c
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) $(LIBS) $(DEFINES) $^
 
-hawpsds: server.c net.c world.c
-	$(CC) -o $@ $(CFLAGS) $(DEFINES) $^
-
 clean:
-	rm -f hawps hawpsds
+	rm -f hawps
