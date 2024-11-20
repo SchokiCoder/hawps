@@ -69,6 +69,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
+	float *tickrate,
 	int   *wld_scale,
 	int   *wld_w,
 	int   *wld_h);
@@ -126,6 +127,7 @@ int
 handle_args(
 	int    argc,
 	char  *argv[],
+	float *tickrate,
 	int   *wld_scale,
 	int   *wld_w,
 	int   *wld_h)
@@ -136,6 +138,7 @@ handle_args(
 		"The argument \"%s\" needs a value from the next argument\n";
 	int i;
 	int vi;
+	float vf;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-a") == 0 ||
@@ -155,6 +158,23 @@ handle_args(
 		           strcmp(argv[i], "--help") == 0) {
 			printf("%s", APP_HELP);
 			return 0;
+		} else if (strcmp(argv[i], "--tickrate") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 1;
+			}
+			i++;
+
+			errno = 0;
+			vf = strtof(argv[i], NULL);
+			if (errno != 0) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "float");
+				return 1;
+			}
+			*tickrate = vf;
 		} else if (strcmp(argv[i], "-v") == 0 ||
 		           strcmp(argv[i], "--version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
@@ -285,7 +305,12 @@ main(
 	struct World  wld = {.w = STD_WORLD_WIDTH, .h = STD_WORLD_HEIGHT};
 	int           x, y;
 
-	if (handle_args(argc, argv, &wld_scale, &wld.w, &wld.h) == 0) {
+	if (handle_args(argc,
+	                argv,
+	                &tickrate,
+	                &wld_scale,
+	                &wld.w,
+	                &wld.h) == 0) {
 		return 0;
 	}
 

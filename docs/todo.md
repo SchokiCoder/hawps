@@ -40,7 +40,8 @@ I won't tell you what to do.
 
 - [x] add reaction to oxygen meeting hydrogen
 
-- [ ] fix arg --tickrate being not recognised
+- [x] fix arg --tickrate missing
+I forgot to bring it from server.c.
 
 - [ ] set version to 0.3
 
