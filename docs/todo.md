@@ -43,7 +43,7 @@ I won't tell you what to do.
 - [x] fix arg --tickrate missing
 I forgot to bring it from server.c.
 
-- [ ] set version to 0.3
+- [x] set version to 0.3
 
 # Liquid Update
 

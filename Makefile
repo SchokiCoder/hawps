@@ -3,7 +3,7 @@
 
 APP_NAME        :=\"hawps\"
 APP_NAME_FORMAL :="\"Half Assed Wannabe Physics Simulator\""
-APP_VERSION     :=\"v0.2\"
+APP_VERSION     :=\"v0.3\"
 APP_LICENSE     :=\"LGPL-2.1-only\"
 APP_REPOSITORY  :=\"https://github.com/SchokiCoder/hawps\"
 APP_LICENSE_URL :=\"https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html\"
