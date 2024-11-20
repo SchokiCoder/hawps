@@ -6,7 +6,8 @@
 # UI update
 
 - [x] remove world size args
-- [ ] make all flags single hyphen
+- [x] make all args single hyphen
+- [ ] fix window flicker after first tick
 - [ ] handle args with parameters via a function ?
 
 - [ ] make fullscreen default

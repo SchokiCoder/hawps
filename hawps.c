@@ -25,20 +25,20 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "Options:\n"
 "\n"
-"    -a --about\n"
+"    -a -about\n"
 "        prints program name, version, license and repository information then exits\n"
 "\n"
-"    -h --help\n"
+"    -h -help\n"
 "        prints this message then exits\n"
 "\n"
-"    --tickrate\n"
+"    -tickrate\n"
 "        sets the tickrate (ticks per second), which effects visible speed\n"
 "        default: " DEF_TO_STRING(STD_TICKRATE) "\n"
 "\n"
-"    -v --version\n"
+"    -v -version\n"
 "        prints version information then exits\n"
 "\n"
-"    --world_scale\n"
+"    -world_scale\n"
 "        sets the graphical scale of the physical world\n"
 "        default: " DEF_TO_STRING(STD_WORLD_SCALE) "\n"
 "\n"
@@ -130,7 +130,7 @@ handle_args(
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-a") == 0 ||
-		    strcmp(argv[i], "--about") == 0) {
+		    strcmp(argv[i], "-about") == 0) {
 			printf("The source code of \"%s\" aka %s %s is available, "
 			       "licensed under the %s at:\n"
 			       "%s\n\n"
@@ -143,10 +143,10 @@ handle_args(
 			       APP_LICENSE_URL);
 			return 0;
 		} else if (strcmp(argv[i], "-h") == 0 ||
-		           strcmp(argv[i], "--help") == 0) {
+		           strcmp(argv[i], "-help") == 0) {
 			printf("%s", APP_HELP);
 			return 0;
-		} else if (strcmp(argv[i], "--tickrate") == 0) {
+		} else if (strcmp(argv[i], "-tickrate") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
 				return 1;
@@ -164,10 +164,10 @@ handle_args(
 			}
 			*tickrate = vf;
 		} else if (strcmp(argv[i], "-v") == 0 ||
-		           strcmp(argv[i], "--version") == 0) {
+		           strcmp(argv[i], "-version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return 0;
-		} else if (strcmp(argv[i], "--world_scale") == 0) {
+		} else if (strcmp(argv[i], "-world_scale") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
 				return 0;
