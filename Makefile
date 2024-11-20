@@ -20,7 +20,10 @@ DEFINES  := -D _DEFAULT_SOURCE \
 	-D APP_REPOSITORY=$(APP_REPOSITORY) \
 	-D APP_LICENSE_URL=$(APP_LICENSE_URL)
 
-.PHONY: clean
+.PHONY: clean run
+
+run: clean all
+	./hawps
 
 all: hawps
 

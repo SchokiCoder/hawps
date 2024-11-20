@@ -5,15 +5,27 @@
 
 # UI update
 
-- [ ] remove manual tomfoolery
+- [x] remove world size args
+- [ ] make all flags single hyphen
+- [ ] handle args with parameters via a function ?
 
-- create hud mock-ups
-- hud for selecting tools
-- brush for setting materials at a spot to selected
-- add key binds
-- add "hold ALT key" to display on hud what uses which key bind
+- [ ] make fullscreen default
+- [ ] add arg "-window" "-windowed"
+- [ ] add arg "-noborder" (only used when windowed)
+- [ ] add arg "-width" "-W" <n> (default 640, only used when windowed)
+- [ ] add arg "-height" "-H" <n> (default 480, , only used when windowed)
+
+- [ ] add wide UI layout
+- [ ] add tall UI layout
+- [ ] add arg "-wide_layout"
+- [ ] add arg "-tall_layout"
+
+- [ ] add UI key binds
+- [ ] add "hold ALT key" to display what UI element uses which key bind
 
 - [ ] set version to 0.4
+
+-----
 
 # Gasy Update
 
@@ -81,8 +93,6 @@ A dot always tries to move every tick.
 - [x] change dotscale to world_scale
 
 - [x] set version to 0.2
-
------
 
 # Base (done)
 

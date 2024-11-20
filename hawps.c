@@ -42,14 +42,6 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "        sets the graphical scale of the physical world\n"
 "        default: " DEF_TO_STRING(STD_WORLD_SCALE) "\n"
 "\n"
-"    --world_width\n"
-"        sets the width of the world\n"
-"        default: " DEF_TO_STRING(STD_WORLD_WIDTH) "\n"
-"\n"
-"    --world_height\n"
-"        sets the height of the world\n"
-"        default: " DEF_TO_STRING(STD_WORLD_HEIGHT) "\n"
-"\n"
 "Default keybinds:\n"
 "\n"
 "    ESC\n"
@@ -70,9 +62,7 @@ handle_args(
 	int    argc,
 	char  *argv[],
 	float *tickrate,
-	int   *wld_scale,
-	int   *wld_w,
-	int   *wld_h);
+	int   *wld_scale);
 
 void
 handle_events(
@@ -128,9 +118,7 @@ handle_args(
 	int    argc,
 	char  *argv[],
 	float *tickrate,
-	int   *wld_scale,
-	int   *wld_w,
-	int   *wld_h)
+	int   *wld_scale)
 {
 	const char *ERR_ARG_CONV =
 		"\"%s\" could not be converted to a %s\n";
@@ -196,40 +184,6 @@ handle_args(
 				return 0;
 			}
 			*wld_scale = vi;
-		} else if (strcmp(argv[i], "--world_width") == 0) {
-			if (argc <= i + 1) {
-				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
-				return 1;
-			}
-			i++;
-
-			errno = 0;
-			vi = strtol(argv[i], NULL, 10);
-			if (errno != 0 || 0 == vi) {
-				fprintf(stderr,
-				        ERR_ARG_CONV,
-				        argv[i - 1],
-				        "int");
-				return 1;
-			}
-			*wld_w = vi;
-		} else if (strcmp(argv[i], "--world_height") == 0) {
-			if (argc <= i + 1) {
-				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
-				return 1;
-			}
-			i++;
-
-			errno = 0;
-			vi = strtol(argv[i], NULL, 10);
-			if (errno != 0 || 0 == vi) {
-				fprintf(stderr,
-				        ERR_ARG_CONV,
-				        argv[i - 1],
-				        "int");
-				return 1;
-			}
-			*wld_h = vi;
 		} else {
 			fprintf(stderr,
 			        "Argument \"%s\" is not recognized.\n",
@@ -303,14 +257,11 @@ main(
 	SDL_Window   *win = NULL;
 	int           wld_scale = STD_WORLD_SCALE;
 	struct World  wld = {.w = STD_WORLD_WIDTH, .h = STD_WORLD_HEIGHT};
-	int           x, y;
 
 	if (handle_args(argc,
 	                argv,
 	                &tickrate,
-	                &wld_scale,
-	                &wld.w,
-	                &wld.h) == 0) {
+	                &wld_scale) == 0) {
 		return 0;
 	}
 
@@ -340,35 +291,6 @@ main(
 	if (World_new(&wld, wld.w, wld.h) != 0) {
 		fprintf(stderr, "Couldn't initialize world\n");
 		goto cleanup;
-	}
-
-	// TODO: remove manual tomfoolery
-	const int spawn1X = 0;
-	const int spawn1Y = wld.h / 2;
-	const int spawn1W = wld.w;
-	const int spawn1H = wld.h / 2;
-	const int spawn2X = wld.w / 3;
-	const int spawn2Y = 0;
-	const int spawn2W = wld.w / 4;
-	const int spawn2H = wld.h / 3;
-	const int spawn3X = 0;
-	const int spawn3Y = wld.h - 5;
-	const int spawn3W = wld.w - 1;
-	const int spawn3H = 1;
-	for (x = spawn1X; x < spawn1X + spawn1W; x++) {
-		for (y = spawn1Y; y < spawn1Y + spawn1H; y++) {
-			wld.dots[x][y] = M_oxygen;
-		}
-	}
-	for (x = spawn2X; x < spawn2X + spawn2W; x++) {
-		for (y = spawn2Y; y < spawn2Y + spawn2H; y++) {
-			wld.dots[x][y] = M_hydrogen;
-		}
-	}
-	for (x = spawn3X; x < spawn3X + spawn3W; x++) {
-		for (y = spawn3Y; y < spawn3Y + spawn3H; y++) {
-			wld.dots[x][y] = M_iron;
-		}
 	}
 
 	while (active) {
