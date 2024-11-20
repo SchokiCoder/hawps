@@ -38,7 +38,9 @@ I won't tell you what to do.
 
 - [x] add oxygen, hydrogen and gas behavior
 
-- [ ] add reaction to oxygen meeting hydrogen
+- [x] add reaction to oxygen meeting hydrogen
+
+- [ ] fix arg --tickrate being not recognised
 
 - [ ] set version to 0.3
 

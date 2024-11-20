@@ -6,6 +6,10 @@
 #include <stdlib.h>
 
 void
+apply_chem_reactions(
+	struct World *wld);
+
+void
 apply_gravity(
 	struct World *wld);
 
@@ -20,6 +24,10 @@ can_grain_displace(
 int
 can_liquid_displace(
 	enum Mat src, enum Mat dest);
+
+void
+chem_react(
+	enum Mat *src, enum Mat *dest);
 
 void
 drop_gas(
@@ -38,6 +46,37 @@ drop_liquid(
 	struct World *wld,
 	int x,
 	int y);
+
+void
+apply_chem_reactions(
+	struct World *wld)
+{
+	int x, y;
+
+	y = wld->h - 1;
+	for (x = 1; x < wld->w - 1; x++) {
+		chem_react(&wld->dots[x][y], &wld->dots[x - 1][y]);
+		chem_react(&wld->dots[x][y], &wld->dots[x + 1][y]);
+	}
+
+	for (x = 1; x < wld->w - 1; x++) {
+		for (y = wld->h - 2; y >= 0; y--) {
+			chem_react(&wld->dots[x][y], &wld->dots[x][y - 1]);
+			chem_react(&wld->dots[x][y], &wld->dots[x - 1][y]);
+			chem_react(&wld->dots[x][y], &wld->dots[x + 1][y]);
+		}
+	}
+
+	x = 0;
+	for (y = wld->h - 2; y >= 0; y--) {
+		chem_react(&wld->dots[x][y], &wld->dots[x][y - 1]);
+	}
+
+	x = wld->w - 1;
+	for (y = wld->h - 2; y >= 0; y--) {
+		chem_react(&wld->dots[x][y], &wld->dots[x][y - 1]);
+	}
+}
 
 void
 apply_gravity(
@@ -126,6 +165,23 @@ can_liquid_displace(
 	}
 
 	return 0;
+}
+
+void
+chem_react(
+	enum Mat *src, enum Mat *dest)
+{
+	switch (*src) {
+	case M_oxygen:
+		if (M_hydrogen == *dest) {
+			*src = M_none;
+			*dest = M_water;
+		}
+		break;
+
+	default:
+		break;
+	}
 }
 
 void
@@ -301,6 +357,7 @@ void
 World_tick(
 	struct World *wld)
 {
+	apply_chem_reactions(wld);
 	apply_gravity(wld);
 }
 

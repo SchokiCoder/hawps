@@ -319,9 +319,9 @@ main(
 
 	// TODO: remove manual tomfoolery
 	const int spawn1X = 0;
-	const int spawn1Y = 0;
+	const int spawn1Y = wld.h / 2;
 	const int spawn1W = wld.w;
-	const int spawn1H = wld.h;
+	const int spawn1H = wld.h / 2;
 	const int spawn2X = wld.w / 3;
 	const int spawn2Y = 0;
 	const int spawn2W = wld.w / 4;
@@ -337,7 +337,7 @@ main(
 	}
 	for (x = spawn2X; x < spawn2X + spawn2W; x++) {
 		for (y = spawn2Y; y < spawn2Y + spawn2H; y++) {
-			wld.dots[x][y] = M_water;
+			wld.dots[x][y] = M_hydrogen;
 		}
 	}
 	for (x = spawn3X; x < spawn3X + spawn3W; x++) {
