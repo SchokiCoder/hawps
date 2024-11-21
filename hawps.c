@@ -33,6 +33,9 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "    -h -help\n"
 "        prints this message then exits\n"
 "\n"
+"    -noborder\n"
+"        removes window decoration from window\n"
+"\n"
 "    -tickrate\n"
 "        sets the tickrate (ticks per second), which effects visible speed\n"
 "        default: " DEF_TO_STRING(STD_TICKRATE) "\n"
@@ -153,6 +156,8 @@ handle_args(
 		           strcmp(argv[i], "-help") == 0) {
 			printf("%s", APP_HELP);
 			return 0;
+		} else if (strcmp(argv[i], "-noborder") == 0) {
+			*window_flags |= SDL_WINDOW_BORDERLESS;
 		} else if (strcmp(argv[i], "-tickrate") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
@@ -176,8 +181,8 @@ handle_args(
 			return 0;
 		} else if (strcmp(argv[i], "-window") == 0 ||
 		           strcmp(argv[i], "-windowed") == 0) {
-			*window_flags = SDL_WINDOW_SHOWN;
-			return 1;
+			*window_flags ^= SDL_WINDOW_FULLSCREEN_DESKTOP;
+			*window_flags |= SDL_WINDOW_SHOWN;
 		} else if (strcmp(argv[i], "-world_scale") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
