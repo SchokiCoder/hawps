@@ -12,8 +12,9 @@
 - [x] add arg "-window" "-windowed"
 - [x] add arg "-noborder"
 Also fix "-window" flag stopping arg parsing.
-- [ ] add arg "-width" "-W" <n> (default 640, only used when windowed)
-- [ ] add arg "-height" "-H" <n> (default 480, , only used when windowed)
+- [x] add arg "-width" "-W"
+- [ ] add arg "-height" "-H"
+- [ ] update help text to show which arg needs a parameter
 
 - [ ] add wide UI layout
 - [ ] add tall UI layout

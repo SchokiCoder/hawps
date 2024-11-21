@@ -14,7 +14,7 @@
 #define DEF_TO_STRING(name) _DUMB_MAGIC(name)
 
 #define STD_TICKRATE     24.0
-#define WINDOW_W 640
+#define STD_WINDOW_W 640
 #define WINDOW_H 480
 #define STD_WORLD_SCALE  10
 #define STD_WORLD_WIDTH  40
@@ -42,6 +42,10 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "    -v -version\n"
 "        prints version information then exits\n"
+"\n"
+"    -W -width\n"
+"        sets the window width\n"
+"        default: " DEF_TO_STRING(STD_WINDOW_W) "\n"
 "\n"
 "    -window -windowed\n"
 "        starts the app in windowed mode... not fullscreen\n"
@@ -71,6 +75,7 @@ handle_args(
 	char   *argv[],
 	float  *tickrate,
 	Uint32 *window_flags,
+	int    *window_w,
 	int    *wld_scale);
 
 void
@@ -128,6 +133,7 @@ handle_args(
 	char   *argv[],
 	float  *tickrate,
 	Uint32 *window_flags,
+	int    *window_w,
 	int    *wld_scale)
 {
 	const char *ERR_ARG_CONV =
@@ -179,6 +185,24 @@ handle_args(
 		           strcmp(argv[i], "-version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return 0;
+		} else if (strcmp(argv[i], "-W") == 0 ||
+		           strcmp(argv[i], "-width") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*window_w = vi;
 		} else if (strcmp(argv[i], "-window") == 0 ||
 		           strcmp(argv[i], "-windowed") == 0) {
 			*window_flags ^= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -272,6 +296,7 @@ main(
 	float         pause_mod = 1.0;
 	SDL_Window   *win = NULL;
 	Uint32        window_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+	int           window_w = STD_WINDOW_W;
 	int           wld_scale = STD_WORLD_SCALE;
 	struct World  wld = {.w = STD_WORLD_WIDTH, .h = STD_WORLD_HEIGHT};
 
@@ -279,6 +304,7 @@ main(
 	                argv,
 	                &tickrate,
 	                &window_flags,
+	                &window_w,
 	                &wld_scale) == 0) {
 		return 0;
 	}
@@ -291,7 +317,7 @@ main(
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
-	                       WINDOW_W,
+	                       window_w,
 	                       WINDOW_H,
 	                       window_flags);
 	if (NULL == win) {
