@@ -14,7 +14,7 @@
 Also fix "-window" flag stopping arg parsing.
 - [x] add arg "-width" "-W"
 - [x] add arg "-height" "-H"
-- [ ] update help text to show which arg needs a parameter
+- [x] update help text to show which arg needs a parameter
 
 - [ ] add wide UI layout
 - [ ] add tall UI layout

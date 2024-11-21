@@ -14,8 +14,8 @@
 #define DEF_TO_STRING(name) _DUMB_MAGIC(name)
 
 #define STD_TICKRATE     24.0
-#define STD_WINDOW_W 640
-#define STD_WINDOW_H 480
+#define STD_WINDOW_W     640
+#define STD_WINDOW_H     480
 #define STD_WORLD_SCALE  10
 #define STD_WORLD_WIDTH  40
 #define STD_WORLD_HEIGHT 40
@@ -30,7 +30,7 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "    -a -about\n"
 "        prints program name, version, license and repository information then exits\n"
 "\n"
-"    -H -height\n"
+"    -H -height DECIMAL\n"
 "        sets the window height\n"
 "        default: " DEF_TO_STRING(STD_WINDOW_H) "\n"
 "\n"
@@ -40,21 +40,21 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "    -noborder\n"
 "        removes window decoration from window\n"
 "\n"
-"    -tickrate\n"
+"    -tickrate FRACTION\n"
 "        sets the tickrate (ticks per second), which effects visible speed\n"
 "        default: " DEF_TO_STRING(STD_TICKRATE) "\n"
 "\n"
 "    -v -version\n"
 "        prints version information then exits\n"
 "\n"
-"    -W -width\n"
+"    -W -width DECIMAL\n"
 "        sets the window width\n"
 "        default: " DEF_TO_STRING(STD_WINDOW_W) "\n"
 "\n"
 "    -window -windowed\n"
 "        starts the app in windowed mode... not fullscreen\n"
 "\n"
-"    -world_scale\n"
+"    -world_scale DECIMAL\n"
 "        sets the graphical scale of the physical world\n"
 "        default: " DEF_TO_STRING(STD_WORLD_SCALE) "\n"
 "\n"
