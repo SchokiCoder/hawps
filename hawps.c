@@ -15,7 +15,7 @@
 
 #define STD_TICKRATE     24.0
 #define STD_WINDOW_W 640
-#define WINDOW_H 480
+#define STD_WINDOW_H 480
 #define STD_WORLD_SCALE  10
 #define STD_WORLD_WIDTH  40
 #define STD_WORLD_HEIGHT 40
@@ -29,6 +29,10 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "    -a -about\n"
 "        prints program name, version, license and repository information then exits\n"
+"\n"
+"    -H -height\n"
+"        sets the window height\n"
+"        default: " DEF_TO_STRING(STD_WINDOW_H) "\n"
 "\n"
 "    -h -help\n"
 "        prints this message then exits\n"
@@ -76,6 +80,7 @@ handle_args(
 	float  *tickrate,
 	Uint32 *window_flags,
 	int    *window_w,
+	int    *window_h,
 	int    *wld_scale);
 
 void
@@ -134,6 +139,7 @@ handle_args(
 	float  *tickrate,
 	Uint32 *window_flags,
 	int    *window_w,
+	int    *window_h,
 	int    *wld_scale)
 {
 	const char *ERR_ARG_CONV =
@@ -158,6 +164,24 @@ handle_args(
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return 0;
+		} else if (strcmp(argv[i], "-H") == 0 ||
+		           strcmp(argv[i], "-height") == 0) {
+			if (argc <= i + 1) {
+				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
+				return 0;
+			}
+			i++;
+
+			errno = 0;
+			vi = strtol(argv[i], NULL, 10);
+			if (errno != 0 || 0 == vi) {
+				fprintf(stderr,
+				        ERR_ARG_CONV,
+				        argv[i - 1],
+				        "int");
+				return 0;
+			}
+			*window_h = vi;
 		} else if (strcmp(argv[i], "-h") == 0 ||
 		           strcmp(argv[i], "-help") == 0) {
 			printf("%s", APP_HELP);
@@ -297,6 +321,7 @@ main(
 	SDL_Window   *win = NULL;
 	Uint32        window_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int           window_w = STD_WINDOW_W;
+	int           window_h = STD_WINDOW_H;
 	int           wld_scale = STD_WORLD_SCALE;
 	struct World  wld = {.w = STD_WORLD_WIDTH, .h = STD_WORLD_HEIGHT};
 
@@ -305,6 +330,7 @@ main(
 	                &tickrate,
 	                &window_flags,
 	                &window_w,
+	                &window_h,
 	                &wld_scale) == 0) {
 		return 0;
 	}
@@ -318,7 +344,7 @@ main(
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       window_w,
-	                       WINDOW_H,
+	                       window_h,
 	                       window_flags);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
