@@ -40,6 +40,9 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "    -v -version\n"
 "        prints version information then exits\n"
 "\n"
+"    -window -windowed\n"
+"        starts the app in windowed mode... not fullscreen\n"
+"\n"
 "    -world_scale\n"
 "        sets the graphical scale of the physical world\n"
 "        default: " DEF_TO_STRING(STD_WORLD_SCALE) "\n"
@@ -61,10 +64,11 @@ draw_world(
 
 int
 handle_args(
-	int    argc,
-	char  *argv[],
-	float *tickrate,
-	int   *wld_scale);
+	int     argc,
+	char   *argv[],
+	float  *tickrate,
+	Uint32 *window_flags,
+	int    *wld_scale);
 
 void
 handle_events(
@@ -117,10 +121,11 @@ draw_world(
 
 int
 handle_args(
-	int    argc,
-	char  *argv[],
-	float *tickrate,
-	int   *wld_scale)
+	int     argc,
+	char   *argv[],
+	float  *tickrate,
+	Uint32 *window_flags,
+	int    *wld_scale)
 {
 	const char *ERR_ARG_CONV =
 		"\"%s\" could not be converted to a %s\n";
@@ -169,6 +174,10 @@ handle_args(
 		           strcmp(argv[i], "-version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return 0;
+		} else if (strcmp(argv[i], "-window") == 0 ||
+		           strcmp(argv[i], "-windowed") == 0) {
+			*window_flags = SDL_WINDOW_SHOWN;
+			return 1;
 		} else if (strcmp(argv[i], "-world_scale") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
@@ -257,12 +266,14 @@ main(
 	float         tickrate = STD_TICKRATE;
 	float         pause_mod = 1.0;
 	SDL_Window   *win = NULL;
+	Uint32        window_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int           wld_scale = STD_WORLD_SCALE;
 	struct World  wld = {.w = STD_WORLD_WIDTH, .h = STD_WORLD_HEIGHT};
 
 	if (handle_args(argc,
 	                argv,
 	                &tickrate,
+	                &window_flags,
 	                &wld_scale) == 0) {
 		return 0;
 	}
@@ -277,7 +288,7 @@ main(
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       WINDOW_W,
 	                       WINDOW_H,
-	                       SDL_WINDOW_FULLSCREEN_DESKTOP);
+	                       window_flags);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
 		goto cleanup;

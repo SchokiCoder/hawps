@@ -9,7 +9,7 @@
 - [x] make all args single hyphen
 
 - [x] make fullscreen default
-- [ ] add arg "-window" "-windowed"
+- [x] add arg "-window" "-windowed"
 - [ ] add arg "-noborder" (only used when windowed)
 - [ ] add arg "-width" "-W" <n> (default 640, only used when windowed)
 - [ ] add arg "-height" "-H" <n> (default 480, , only used when windowed)
