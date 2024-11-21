@@ -8,6 +8,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "ui.h"
 #include "world.h"
 
 #define _DUMB_MAGIC(arg) #arg
@@ -68,19 +69,27 @@ const char *APP_HELP =  "Usage: " APP_NAME " [OPTIONS]\n"
 "\n";
 
 int
+draw(
+	SDL_Surface        *frame,
+	const struct UI     ui,
+	SDL_Window         *win,
+	const struct World  wld,
+	SDL_Surface        *wld_surface);
+
+void
 draw_world(
 	const struct World  wld,
-	SDL_Surface        *frame,
-	SDL_Window         *win);
+	const SDL_Rect      wld_rect,
+	SDL_Surface        *wld_surface);
 
 int
 handle_args(
 	int     argc,
 	char   *argv[],
 	float  *tickrate,
-	Uint32 *window_flags,
-	int    *window_w,
-	int    *window_h,
+	Uint32 *win_flags,
+	int    *win_w,
+	int    *win_h,
 	int    *wld_scale);
 
 void
@@ -95,30 +104,22 @@ handle_key(
 	float *pause_mod);
 
 int
-draw_world(
-	const struct World  wld,
+draw(
 	SDL_Surface        *frame,
-	SDL_Window         *win)
+	const struct UI     ui,
+	SDL_Window         *win,
+	const struct World  wld,
+	SDL_Surface        *wld_surface)
 {
-	Uint32 pixel;
-	SDL_Rect rect;
 	SDL_Surface *tmp;
-	int x, y;
 
-	for (x = 0; x < wld.w; x++) {
-		for (y = 0; y < wld.h; y++) {
-			rect.x = x;
-			rect.y = y;
-			rect.w = 1;
-			rect.h = 1;
+	UI_draw(ui, frame);
+	draw_world(wld, ui.world, wld_surface);
 
-			pixel = SDL_MapRGB(frame->format,
-			                   MAT_R[wld.dots[x][y]],
-			                   MAT_G[wld.dots[x][y]],
-			                   MAT_B[wld.dots[x][y]]);
-			SDL_FillRect(frame, &rect, pixel);
-		}
-	}
+	SDL_BlitSurface(wld_surface,
+	                &wld_surface->clip_rect,
+	                frame,
+	                (SDL_Rect*) &ui.world);
 
 	tmp = SDL_GetWindowSurface(win);
 	if (NULL == tmp) {
@@ -132,14 +133,39 @@ draw_world(
 	return 0;
 }
 
+void
+draw_world(
+	const struct World  wld,
+	const SDL_Rect      wld_rect,
+	SDL_Surface        *wld_surface)
+{
+	Uint32 pixel;
+	SDL_Rect rect = {.w = 1, .h = 1};
+	int x, y;
+
+	for (x = 0; x < wld.w; x++) {
+		rect.x = wld_rect.x + x;
+
+		for (y = 0; y < wld.h; y++) {
+			rect.y = wld_rect.y + y;
+
+			pixel = SDL_MapRGB(wld_surface->format,
+			                   MAT_R[wld.dots[x][y]],
+			                   MAT_G[wld.dots[x][y]],
+			                   MAT_B[wld.dots[x][y]]);
+			SDL_FillRect(wld_surface, &rect, pixel);
+		}
+	}
+}
+
 int
 handle_args(
 	int     argc,
 	char   *argv[],
 	float  *tickrate,
-	Uint32 *window_flags,
-	int    *window_w,
-	int    *window_h,
+	Uint32 *win_flags,
+	int    *win_w,
+	int    *win_h,
 	int    *wld_scale)
 {
 	const char *ERR_ARG_CONV =
@@ -181,13 +207,13 @@ handle_args(
 				        "int");
 				return 0;
 			}
-			*window_h = vi;
+			*win_h = vi;
 		} else if (strcmp(argv[i], "-h") == 0 ||
 		           strcmp(argv[i], "-help") == 0) {
 			printf("%s", APP_HELP);
 			return 0;
 		} else if (strcmp(argv[i], "-noborder") == 0) {
-			*window_flags |= SDL_WINDOW_BORDERLESS;
+			*win_flags |= SDL_WINDOW_BORDERLESS;
 		} else if (strcmp(argv[i], "-tickrate") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
@@ -226,11 +252,11 @@ handle_args(
 				        "int");
 				return 0;
 			}
-			*window_w = vi;
+			*win_w = vi;
 		} else if (strcmp(argv[i], "-window") == 0 ||
 		           strcmp(argv[i], "-windowed") == 0) {
-			*window_flags ^= SDL_WINDOW_FULLSCREEN_DESKTOP;
-			*window_flags |= SDL_WINDOW_SHOWN;
+			*win_flags ^= SDL_WINDOW_FULLSCREEN_DESKTOP;
+			*win_flags |= SDL_WINDOW_SHOWN;
 		} else if (strcmp(argv[i], "-world_scale") == 0) {
 			if (argc <= i + 1) {
 				fprintf(stderr, ERR_NO_ARG_VALUE, argv[i]);
@@ -318,19 +344,21 @@ main(
 	clock_t       t2 = -9999999;
 	float         tickrate = STD_TICKRATE;
 	float         pause_mod = 1.0;
+	struct UI     ui = UI_new();
 	SDL_Window   *win = NULL;
-	Uint32        window_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
-	int           window_w = STD_WINDOW_W;
-	int           window_h = STD_WINDOW_H;
+	Uint32        win_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+	int           win_w = STD_WINDOW_W;
+	int           win_h = STD_WINDOW_H;
 	int           wld_scale = STD_WORLD_SCALE;
+	SDL_Surface  *wld_surface = NULL;
 	struct World  wld = {.w = STD_WORLD_WIDTH, .h = STD_WORLD_HEIGHT};
 
 	if (handle_args(argc,
 	                argv,
 	                &tickrate,
-	                &window_flags,
-	                &window_w,
-	                &window_h,
+	                &win_flags,
+	                &win_w,
+	                &win_h,
 	                &wld_scale) == 0) {
 		return 0;
 	}
@@ -343,15 +371,25 @@ main(
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
-	                       window_w,
-	                       window_h,
-	                       window_flags);
+	                       win_w,
+	                       win_h,
+	                       win_flags);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
 		goto cleanup;
 	}
 
-	frame = SDL_CreateRGBSurface(0, wld.w, wld.h, 32,
+	SDL_GetWindowSize(win, &win_w, &win_h);
+	UI_set_wide_layout(&ui, win_w, win_h);
+
+	wld_surface = SDL_CreateRGBSurface(0, wld.w, wld.h, 32,
+	                             0, 0, 0, 0);
+	if (NULL == wld_surface) {
+		fprintf(stderr, "Couldn't create surface\n");
+		goto cleanup;
+	}
+
+	frame = SDL_CreateRGBSurface(0, win_w, win_h, 32,
 	                             0, 0, 0, 0);
 	if (NULL == frame) {
 		fprintf(stderr, "Couldn't create surface\n");
@@ -369,7 +407,7 @@ main(
 		t1 = clock();
 		delta = 1.0 * (t1 - t2) / CLOCKS_PER_SEC;
 		if (delta * pause_mod >= (1.0 / tickrate)) {
-			if (draw_world(wld, frame, win) != 0) {
+			if (draw(frame, ui, win, wld, wld_surface) != 0) {
 				active = 0;
 				break;
 			}
@@ -383,6 +421,7 @@ main(
 cleanup:
 	World_free(&wld);
 	SDL_FreeSurface(frame);
+	SDL_FreeSurface(wld_surface);
 	SDL_DestroyWindow(win);
 	SDL_Quit();
 }

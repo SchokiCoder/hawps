@@ -25,9 +25,9 @@ DEFINES  := -D _DEFAULT_SOURCE \
 all: hawps
 
 run: clean all
-	./hawps
+	./hawps -windowed
 
-hawps: hawps.c world.c
+hawps: hawps.c ui.c world.c
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) $(LIBS) $(DEFINES) $^
 
 clean:

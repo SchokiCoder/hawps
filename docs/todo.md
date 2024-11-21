@@ -16,10 +16,13 @@ Also fix "-window" flag stopping arg parsing.
 - [x] add arg "-height" "-H"
 - [x] update help text to show which arg needs a parameter
 
-- [ ] add wide UI layout
-- [ ] add tall UI layout
+- [x] add UI base
+- [ ] add tool box functionality
+- [ ] add mat box functionality
+- [ ] add tall UI layout and automatic layout determination
 - [ ] add arg "-wide_layout"
 - [ ] add arg "-tall_layout"
+- [ ] add automatic world size, fitting remaining space
 
 - [ ] add UI key binds
 - [ ] add "hold ALT key" to display what UI element uses which key bind
