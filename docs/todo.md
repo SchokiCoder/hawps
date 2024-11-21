@@ -7,10 +7,8 @@
 
 - [x] remove world size args
 - [x] make all args single hyphen
-- [ ] fix window flicker after first tick
-- [ ] handle args with parameters via a function ?
 
-- [ ] make fullscreen default
+- [x] make fullscreen default
 - [ ] add arg "-window" "-windowed"
 - [ ] add arg "-noborder" (only used when windowed)
 - [ ] add arg "-width" "-W" <n> (default 640, only used when windowed)
@@ -23,6 +21,9 @@
 
 - [ ] add UI key binds
 - [ ] add "hold ALT key" to display what UI element uses which key bind
+
+- [ ] handle args with parameters via a function ?
+- [ ] fix window flicker after first tick
 
 - [ ] set version to 0.4
 

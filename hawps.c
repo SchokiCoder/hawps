@@ -14,6 +14,8 @@
 #define DEF_TO_STRING(name) _DUMB_MAGIC(name)
 
 #define STD_TICKRATE     24.0
+#define WINDOW_W 640
+#define WINDOW_H 480
 #define STD_WORLD_SCALE  10
 #define STD_WORLD_WIDTH  40
 #define STD_WORLD_HEIGHT 40
@@ -250,8 +252,8 @@ main(
 	int           active = 1;
 	float         delta;
 	SDL_Surface  *frame = NULL;
-	clock_t       t1 = 0.0;
-	clock_t       t2 = 0.0;
+	clock_t       t1 = 0;
+	clock_t       t2 = -9999999;
 	float         tickrate = STD_TICKRATE;
 	float         pause_mod = 1.0;
 	SDL_Window   *win = NULL;
@@ -273,9 +275,9 @@ main(
 	win = SDL_CreateWindow(APP_NAME_FORMAL,
 	                       SDL_WINDOWPOS_UNDEFINED,
 	                       SDL_WINDOWPOS_UNDEFINED,
-	                       wld.w * wld_scale,
-	                       wld.h * wld_scale,
-	                       SDL_WINDOW_SHOWN);
+	                       WINDOW_W,
+	                       WINDOW_H,
+	                       SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if (NULL == win) {
 		fprintf(stderr, "Couldn't open window\n");
 		goto cleanup;

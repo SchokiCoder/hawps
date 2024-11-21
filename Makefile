@@ -22,10 +22,10 @@ DEFINES  := -D _DEFAULT_SOURCE \
 
 .PHONY: clean run
 
+all: hawps
+
 run: clean all
 	./hawps
-
-all: hawps
 
 hawps: hawps.c world.c
 	$(CC) -o $@ $(CFLAGS) $(INCLUDES) $(LIBS) $(DEFINES) $^
