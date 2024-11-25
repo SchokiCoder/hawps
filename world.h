@@ -12,7 +12,9 @@ enum Mat {
 	M_water,
 	M_iron,
 	M_oxygen,
-	M_hydrogen
+	M_hydrogen,
+
+	M_COUNT
 };
 
 struct World {

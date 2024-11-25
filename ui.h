@@ -30,20 +30,20 @@
 #define UI_WIDE_WORLD_W (1.0 - UI_WIDE_TOOL_W)
 #define UI_WIDE_WORLD_H (1.0)
 
+struct UIBox;
+
 struct UI {
-	SDL_Rect  toolbox;
-	SDL_Color toolbox_col;
-	SDL_Rect  matbox;
-	SDL_Color matbox_col;
-	SDL_Rect  world;
+	struct UIBox *tools;
+	struct UIBox *mats;
+	SDL_Rect     world;
 };
 
-struct UI
+struct UI*
 UI_new(
 	void);
 
-void
-UI_set_wide_layout(
+int
+UI_wide_layout_init(
 	struct UI *ui,
 	const int  win_w,
 	const int  win_h);
@@ -52,5 +52,9 @@ void
 UI_draw(
 	const struct UI  ui,
 	SDL_Surface     *frame);
+
+void
+UI_free(
+	struct UI *ui);
 
 #endif /* _UI_H */

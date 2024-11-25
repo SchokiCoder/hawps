@@ -3,47 +3,150 @@
 
 #include "ui.h"
 
-struct UI
-UI_new(void)
+#include "world.h"
+
+struct UIBox {
+	SDL_Surface  *surface;
+	SDL_Rect      rect;
+	SDL_Color     bg;
+	int           cols;
+	int           rows;
+	int           n_tiles;
+	SDL_Surface **tiles;
+	int           n_visible_tiles;
+	SDL_Surface **visible_tiles;
+	int           cursor;
+};
+
+struct UIBox*
+UIBox_new(
+	void)
 {
-	struct UI ret = {
-		.toolbox_col = {
-			.r = UI_TOOLBOX_R,
-			.g = UI_TOOLBOX_G,
-			.b = UI_TOOLBOX_B,
-			.a = UI_TOOLBOX_A
-		},
-		.matbox_col = {
-			.r = UI_MATBOX_R,
-			.g = UI_MATBOX_G,
-			.b = UI_MATBOX_B,
-			.a = UI_MATBOX_A
-		},
-	};
+	struct UIBox *ret = NULL;
+
+	ret = calloc(1, sizeof(struct UIBox));
 
 	return ret;
 }
 
+int
+UIBox_init(
+	struct UIBox   *b,
+	const int       cols,
+	const int       rows)
+{
+	b->surface = SDL_CreateRGBSurface(0, b->rect.w, b->rect.h, 32,
+	                                  0, 0, 0, 0);
+	if (NULL == b->surface) {
+		return 1;
+	}
+
+	b->cols = cols;
+	b->rows = rows;
+	b->n_tiles = cols * rows;
+	b->tiles = calloc(b->n_tiles, sizeof(SDL_Surface*));
+	if (NULL == b->tiles) {
+		return 1;
+	}
+
+	return 0;
+}
+
 void
-UI_set_wide_layout(
+UIBox_free(
+	struct UIBox *b)
+{
+	int i;
+
+	if (NULL == b) {
+		return;
+	}
+
+	SDL_FreeSurface(b->surface);
+
+	for (i = 0; i < b->n_tiles; i++) {
+		SDL_FreeSurface(b->tiles[i]);
+	}
+
+	if (NULL != b->visible_tiles) {
+		free(b->visible_tiles);
+	}
+	b->visible_tiles = NULL;
+	b->n_visible_tiles = 0;
+
+	if (NULL != b->tiles) {
+		free(b->tiles);
+	}
+	b->tiles = NULL;
+	b->n_tiles = 0;
+
+	free(b);
+}
+
+struct UI*
+UI_new(void)
+{
+	struct UI *ret = calloc(1, sizeof(struct UI));
+	if (NULL == ret) {
+		return ret;
+	}
+
+	ret->tools = UIBox_new();
+	ret->mats = UIBox_new();
+	if (NULL == ret->tools || NULL == ret->mats) {
+		return ret;
+	}
+
+	ret->tools->bg.r = UI_TOOLBOX_R;
+	ret->tools->bg.g = UI_TOOLBOX_G;
+	ret->tools->bg.b = UI_TOOLBOX_B;
+	ret->tools->bg.a = UI_TOOLBOX_A;
+
+	ret->mats->bg.r = UI_MATBOX_R;
+	ret->mats->bg.g = UI_MATBOX_G;
+	ret->mats->bg.b = UI_MATBOX_B;
+	ret->mats->bg.a = UI_MATBOX_A;
+
+	return ret;
+}
+
+int
+UI_wide_layout_init(
 	struct UI *ui,
 	const int  win_w,
 	const int  win_h)
 {
-	ui->toolbox.x = win_w / 1.0 * UI_WIDE_TOOL_X;
-	ui->toolbox.y = win_h / 1.0 * UI_WIDE_TOOL_Y;
-	ui->toolbox.w = win_w / 1.0 * UI_WIDE_TOOL_W;
-	ui->toolbox.h = win_h / 1.0 * UI_WIDE_TOOL_H;
+	int cols;
+	int ret = 0;
 
-	ui->matbox.x = win_w / 1.0 * UI_WIDE_MAT_X;
-	ui->matbox.y = win_h / 1.0 * UI_WIDE_MAT_Y;
-	ui->matbox.w = win_w / 1.0 * UI_WIDE_MAT_W;
-	ui->matbox.h = win_h / 1.0 * UI_WIDE_MAT_H;
+	ui->tools->rect.x = win_w / 1.0 * UI_WIDE_TOOL_X;
+	ui->tools->rect.y = win_h / 1.0 * UI_WIDE_TOOL_Y;
+	ui->tools->rect.w = win_w / 1.0 * UI_WIDE_TOOL_W;
+	ui->tools->rect.h = win_h / 1.0 * UI_WIDE_TOOL_H;
+
+	ui->mats->rect.x = win_w / 1.0 * UI_WIDE_MAT_X;
+	ui->mats->rect.y = win_h / 1.0 * UI_WIDE_MAT_Y;
+	ui->mats->rect.w = win_w / 1.0 * UI_WIDE_MAT_W;
+	ui->mats->rect.h = win_h / 1.0 * UI_WIDE_MAT_H;
 
 	ui->world.x = win_w / 1.0 * UI_WIDE_WORLD_X;
 	ui->world.y = win_h / 1.0 * UI_WIDE_WORLD_Y;
 	ui->world.w = win_w / 1.0 * UI_WIDE_WORLD_W;
 	ui->world.h = win_h / 1.0 * UI_WIDE_WORLD_H;
+
+	ret = UIBox_init(ui->tools, 3, 1);
+	if (0 == ret)
+		return ret;
+
+	cols = M_COUNT / 2;
+	if (M_COUNT % 2 != 0.0)
+		cols++;
+
+	ret = UIBox_init(ui->mats, cols, 2);
+	if (0 == ret)
+		return ret;
+
+	return 0;
 }
 
 void
@@ -54,16 +157,33 @@ UI_draw(
 	Uint32 col;
 
 	col = SDL_MapRGBA(frame->format,
-	            ui.toolbox_col.r,
-		    ui.toolbox_col.g,
-		    ui.toolbox_col.b,
-		    ui.toolbox_col.a);
-	SDL_FillRect(frame, &ui.toolbox, col);
+	            ui.tools->bg.r,
+		    ui.tools->bg.g,
+		    ui.tools->bg.b,
+		    ui.tools->bg.a);
+	SDL_FillRect(frame, &ui.tools->rect, col);
 
 	col = SDL_MapRGBA(frame->format,
-	            ui.matbox_col.r,
-		    ui.matbox_col.g,
-		    ui.matbox_col.b,
-		    ui.matbox_col.a);
-	SDL_FillRect(frame, &ui.matbox, col);
+	            ui.mats->bg.r,
+		    ui.mats->bg.g,
+		    ui.mats->bg.b,
+		    ui.mats->bg.a);
+	SDL_FillRect(frame, &ui.mats->rect, col);
+}
+
+void
+UI_free(
+	struct UI *ui)
+{
+	if (NULL == ui) {
+		return;
+	}
+
+	UIBox_free(ui->tools);
+	ui->tools = NULL;
+
+	UIBox_free(ui->mats);
+	ui->tools = NULL;
+
+	free(ui);
 }

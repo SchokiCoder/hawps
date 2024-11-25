@@ -17,6 +17,8 @@ Also fix "-window" flag stopping arg parsing.
 - [x] update help text to show which arg needs a parameter
 
 - [x] add UI base
+- [x] refine UI base and add basic data structs
+
 - [ ] add tool box functionality
 - [ ] add mat box functionality
 - [ ] add tall UI layout and automatic layout determination

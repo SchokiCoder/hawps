@@ -344,7 +344,7 @@ main(
 	clock_t       t2 = -9999999;
 	float         tickrate = STD_TICKRATE;
 	float         pause_mod = 1.0;
-	struct UI     ui = UI_new();
+	struct UI    *ui = NULL;
 	SDL_Window   *win = NULL;
 	Uint32        win_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int           win_w = STD_WINDOW_W;
@@ -379,8 +379,16 @@ main(
 		goto cleanup;
 	}
 
+	ui = UI_new();
+	if (NULL == ui) {
+		goto cleanup;
+	}
+
 	SDL_GetWindowSize(win, &win_w, &win_h);
-	UI_set_wide_layout(&ui, win_w, win_h);
+	if (UI_wide_layout_init(ui, win_w, win_h) != 0) {
+		fprintf(stderr, "Couldn't create UI\n");
+		goto cleanup;
+	}
 
 	wld_surface = SDL_CreateRGBSurface(0, wld.w, wld.h, 32,
 	                             0, 0, 0, 0);
@@ -407,7 +415,7 @@ main(
 		t1 = clock();
 		delta = 1.0 * (t1 - t2) / CLOCKS_PER_SEC;
 		if (delta * pause_mod >= (1.0 / tickrate)) {
-			if (draw(frame, ui, win, wld, wld_surface) != 0) {
+			if (draw(frame, *ui, win, wld, wld_surface) != 0) {
 				active = 0;
 				break;
 			}
@@ -422,6 +430,7 @@ cleanup:
 	World_free(&wld);
 	SDL_FreeSurface(frame);
 	SDL_FreeSurface(wld_surface);
+	UI_free(ui);
 	SDL_DestroyWindow(win);
 	SDL_Quit();
 }
