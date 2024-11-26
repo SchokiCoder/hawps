@@ -53,6 +53,30 @@ UIBox_init(
 }
 
 void
+UIBox_draw(
+	struct UIBox *b)
+{
+	Uint32 bg;
+	int i;
+	SDL_Rect dest = {
+		.x = 0,
+		.y = 0,
+		.w = b->rect.w / b->cols,
+		.h = b->rect.h / b->rows};
+
+	bg = SDL_MapRGBA(b->surface->format,
+	                 b->bg.r, b->bg.g, b->bg.b, b->bg.a);
+	SDL_FillRect(b->surface, NULL, bg);
+
+	for (i = 0; i < b->n_visible_tiles; i++) {
+		dest.x = dest.w * (i % b->cols);
+		dest.y = dest.h * (i / b->cols);
+
+		SDL_BlitSurface(b->visible_tiles[i], NULL, b->surface, &dest);
+	}
+}
+
+void
 UIBox_free(
 	struct UIBox *b)
 {
@@ -135,16 +159,19 @@ UI_wide_layout_init(
 	ui->world.h = win_h / 1.0 * UI_WIDE_WORLD_H;
 
 	ret = UIBox_init(ui->tools, 3, 1);
-	if (0 == ret)
+	if (0 != ret) {
 		return ret;
+	}
 
 	cols = M_COUNT / 2;
-	if (M_COUNT % 2 != 0.0)
+	if (M_COUNT % 2 != 0.0) {
 		cols++;
+	}
 
 	ret = UIBox_init(ui->mats, cols, 2);
-	if (0 == ret)
+	if (0 != ret) {
 		return ret;
+	}
 
 	return 0;
 }
@@ -154,21 +181,11 @@ UI_draw(
 	const struct UI  ui,
 	SDL_Surface     *frame)
 {
-	Uint32 col;
+	UIBox_draw(ui.tools);
+	SDL_BlitSurface(ui.tools->surface, NULL, frame, &ui.tools->rect);
 
-	col = SDL_MapRGBA(frame->format,
-	            ui.tools->bg.r,
-		    ui.tools->bg.g,
-		    ui.tools->bg.b,
-		    ui.tools->bg.a);
-	SDL_FillRect(frame, &ui.tools->rect, col);
-
-	col = SDL_MapRGBA(frame->format,
-	            ui.mats->bg.r,
-		    ui.mats->bg.g,
-		    ui.mats->bg.b,
-		    ui.mats->bg.a);
-	SDL_FillRect(frame, &ui.mats->rect, col);
+	UIBox_draw(ui.mats);
+	SDL_BlitSurface(ui.mats->surface, NULL, frame, &ui.mats->rect);
 }
 
 void

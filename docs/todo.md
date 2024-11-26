@@ -18,6 +18,8 @@ Also fix "-window" flag stopping arg parsing.
 
 - [x] add UI base
 - [x] refine UI base and add basic data structs
+- [x] add basic tile drawing
+- [ ] add tile management
 
 - [ ] add tool box functionality
 - [ ] add mat box functionality

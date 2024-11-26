@@ -35,7 +35,7 @@ struct UIBox;
 struct UI {
 	struct UIBox *tools;
 	struct UIBox *mats;
-	SDL_Rect     world;
+	SDL_Rect      world;
 };
 
 struct UI*
