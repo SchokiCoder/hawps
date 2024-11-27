@@ -19,7 +19,10 @@ Also fix "-window" flag stopping arg parsing.
 - [x] add UI base
 - [x] refine UI base and add basic data structs
 - [x] add basic tile drawing
-- [ ] add tile management
+
+- [x] nuke everything, begin again
+- [ ] readd world
+- [ ] add UI
 
 - [ ] add tool box functionality
 - [ ] add mat box functionality
@@ -30,9 +33,6 @@ Also fix "-window" flag stopping arg parsing.
 
 - [ ] add UI key binds
 - [ ] add "hold ALT key" to display what UI element uses which key bind
-
-- [ ] handle args with parameters via a function ?
-- [ ] fix window flicker after first tick
 
 - [ ] set version to 0.4
 

@@ -1,3 +1,29 @@
+# 4th rework
+
+Ah shit here we go again...  
+Golang.  
+
+C is fun, except when it's not.  
+That is what I think of networking and UI.  
+
+Networking has been removed by now. One of the reasons being security, but also
+development speed. I looked at a Go example, and it's so easy, but still,
+only after everything else has been done.  
+
+UI work gets increasingly unfun, and now that "UIBox" needs a dict for tiles
+I saw the final reason to switch back... kind of.  
+
+I can use both actually, thanks to CGo.  
+This will help avoid allocations later, keep GC low, and performance high.  
+Plus, I can finally `fmt.Printf` any data type easily again if I need to...  
+I should finish that book and learn Delve huh...  
+
+> Dipshittery is dead
+Naive me  
+
+...One more thing...  
+I'll try ebitengine.
+
 # 3rd rework
 
 So I did it in Go, but now I redid it in C anyway.  
