@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright (C) 2024  Andy Frank Schoknecht
 
-//go:generate go ./geninfo.go
 package main
 
 import (
 	"fmt"
 	"strconv"
 	"os"
+
+	"github.com/SchokiCoder/hawps/mat"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -212,6 +213,8 @@ func main(
 		winH     int = stdWinH
 		wldScale int = stdWorldScale
 	)
+
+	fmt.Printf("%v\n", mat.Hydrogen) // TODO actually use mat
 
 	ebiten.SetFullscreen(true);
 

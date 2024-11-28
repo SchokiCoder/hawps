@@ -21,7 +21,12 @@ Also fix "-window" flag stopping arg parsing.
 - [x] add basic tile drawing
 
 - [x] nuke everything, begin again
-- [ ] readd world
+- [x] rewrite world
+Also I feel very dumb for how I used to think `go:generate` works.
+Also also the chemical reactions in the C version must have been bugged,
+without me knowing it.
+The indexing was wrong, but it didn't trigger fsanitize... Too bad.
+
 - [ ] add UI
 
 - [ ] add tool box functionality

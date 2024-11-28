@@ -8,7 +8,6 @@ LICENSE_URL      :=https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone
 REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.3
 GO_COMPILE_VARS  :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
-SRC              :=hawps.go
 
 .PHONY: all build clean vet
 
@@ -20,7 +19,10 @@ clean:
 	rm -f $(APP_NAME)
 
 vet:
-	go vet
+	go vet ./main
 
-$(APP_NAME): $(SRC)
-	go build $(GO_COMPILE_VARS)
+$(APP_NAME): main/main.go mat/lib.go mat/mat_string.go
+	go build $(GO_COMPILE_VARS) ./main
+
+mat/mat_string.go: mat/lib.go
+	go generate ./mat
