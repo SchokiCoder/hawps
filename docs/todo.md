@@ -28,8 +28,10 @@ without me knowing it.
 The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 
 - [x] add tool images
+- [ ] add UI base
+	- [x] add ui tileset
+	- [ ] add ui layout
 - [ ] add material images
-- [ ] add UI base code
 
 - [ ] add tool box functionality
 - [ ] add mat box functionality

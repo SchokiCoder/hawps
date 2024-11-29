@@ -6,14 +6,15 @@ package main
 import (
 	"embed"
 	"fmt"
+	"image/color"
 	_ "image/png"
 	"strconv"
 	"os"
 
 	"github.com/SchokiCoder/hawps/mat"
+	"github.com/SchokiCoder/hawps/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -37,8 +38,8 @@ const (
 )
 
 type physGame struct {
-	pause    bool
-	Imgs  []*ebiten.Image
+	pause   bool
+	Toolbox ui.TileSet
 }
 
 func (g physGame) Draw(
@@ -46,9 +47,10 @@ func (g physGame) Draw(
 ) {
 	var opt = ebiten.DrawImageOptions{}
 
-	opt.GeoM.Translate(20, 20)
-	opt.GeoM.Scale(5, 5)
-	screen.DrawImage(g.Imgs[0], &opt)
+	g.Toolbox.Draw()
+
+	opt.GeoM.Scale(4, 4)
+	screen.DrawImage(g.Toolbox.Img, &opt)
 }
 
 func (g physGame) Layout(
@@ -226,22 +228,7 @@ func main(
 		wldScale int = stdWorldScale
 	)
 
-	imagePaths := [...]string{
-		"assets/tool_brush.png",
-		"assets/tool_eraser.png",
-		"assets/tool_spawner.png",
-	}
-
 	fmt.Printf("%v\n", mat.Hydrogen) // TODO actually use mat
-
-	for i := 0; i < len(imagePaths); i++ {
-		img, _, err := ebitenutil.NewImageFromFileSystem(pngs,
-		                                                 imagePaths[i])
-		if err != nil {
-			panic(err)
-		}
-		game.Imgs = append(game.Imgs, img)
-	}
 
 	ebiten.SetFullscreen(true);
 
@@ -253,6 +240,17 @@ func main(
 	ebiten.SetWindowSize(winW, winH)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
 	ebiten.SetTPS(tickrate)
+
+	paths := [...]string{
+		"assets/tool_brush.png",
+		"assets/tool_spawner.png",
+		"assets/tool_eraser.png",
+	}
+	// TODO manual toolbox tomfoolery
+	game.Toolbox = ui.NewTileSetFromFS(true, 3, 3 * 16, 1 * 16, paths[:], pngs)
+	game.Toolbox.Bg = color.RGBA{130, 170, 170, 255}
+	game.Toolbox.VisibleTiles = game.Toolbox.Tiles[:]
+	game.Toolbox.Cursor = 0
 
 	ebiten.RunGame(game)
 }
