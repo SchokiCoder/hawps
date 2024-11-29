@@ -18,6 +18,9 @@ build: $(APP_NAME)
 clean:
 	rm -f $(APP_NAME)
 
+run: clean build
+	./$(APP_NAME) -window
+
 vet:
 	go vet ./main
 

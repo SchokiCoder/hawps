@@ -27,7 +27,9 @@ Also also the chemical reactions in the C version must have been bugged,
 without me knowing it.
 The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 
-- [ ] add UI
+- [x] add tool images
+- [ ] add material images
+- [ ] add UI base code
 
 - [ ] add tool box functionality
 - [ ] add mat box functionality
