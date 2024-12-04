@@ -24,7 +24,7 @@ import (
 // The actual pixel size is given to "New" functions.
 type TileSet struct {
 	Bg           color.Color
-	Cursor       int
+	Cursor       uint
 	horizontal   bool
 	Img          *ebiten.Image
 	tileSetWidth int
@@ -44,7 +44,6 @@ func NewTileSetFromFS(
 	fs         embed.FS,
 ) TileSet {
 	var ret = TileSet{
-		Cursor:       -1,
 		horizontal:   horizontal,
 		tileSetWidth: tileSetW,
 		w:            w,
@@ -90,14 +89,14 @@ func (t TileSet) Draw(
 		primary = &x
 		secondary = &y
 
-		cx = t.Cursor / t.tileSetWidth
-		cy = t.Cursor % t.tileSetWidth
+		cx = int(t.Cursor) / t.tileSetWidth
+		cy = int(t.Cursor) % t.tileSetWidth
 	} else {
 		primary = &y
 		secondary = &x
 
-		cx = t.Cursor % t.tileSetWidth
-		cy = t.Cursor / t.tileSetWidth
+		cx = int(t.Cursor) % t.tileSetWidth
+		cy = int(t.Cursor) / t.tileSetWidth
 	}
 
 	for i := 0; i < len(t.VisibleTiles); i++ {
@@ -113,17 +112,19 @@ func (t TileSet) Draw(
 		}
 	}
 
-	if t.Cursor != -1 {
-		cx *= t.tileW
-		cx += t.tileW / 2
-		cy *= t.tileH
-		cy += t.tileH / 2
-		vector.StrokeCircle(t.Img,
-		                    float32(cx),
-		                    float32(cy),
-		                    float32(t.tileH / 2 - 1),
-		                    1,
-		                    image.White,
-		                    false)
-	}
+	cx *= t.tileW
+	cx += t.tileW / 2
+	cy *= t.tileH
+	cy += t.tileH / 2
+	vector.StrokeCircle(t.Img,
+	                    float32(cx),
+	                    float32(cy),
+	                    float32(t.tileH / 2 - 1),
+	                    1,
+	                    image.White,
+	                    false)
+}
+
+func (t TileSet) Size() (int, int) {
+	return t.w, t.h
 }

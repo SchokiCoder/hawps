@@ -31,33 +31,59 @@ var (
 )
 
 const (
+	pngSize       = 16
+	uiBgR         = 130
+	uiBgG         = 170
+	uiBgB         = 170
+	uiBgA         = 255
+	uiTileSetW    = 3
 	stdTickrate   = 24
 	stdWinW       = 640
 	stdWinH       = 480
-	stdWorldScale = 10
 )
 
 type physGame struct {
-	pause   bool
-	Toolbox ui.TileSet
+	FrameW     int
+	FrameH     int
+	LayoutWide bool
+	pause      bool
+	Toolbox    ui.TileSet
+	Matbox     ui.TileSet
 }
 
 func (g physGame) Draw(
 	screen *ebiten.Image,
 ) {
-	var opt = ebiten.DrawImageOptions{}
+	var (
+		opt = ebiten.DrawImageOptions{}
+		tbW, tbH int
+	)
+
+	tbW, tbH = g.Toolbox.Size()
 
 	g.Toolbox.Draw()
+	g.Matbox.Draw()
 
-	opt.GeoM.Scale(4, 4)
+	if !g.LayoutWide {
+		opt.GeoM.Translate(0, float64(g.FrameH - tbH))
+	}
+
 	screen.DrawImage(g.Toolbox.Img, &opt)
+
+	if g.LayoutWide {
+		opt.GeoM.Translate(0, float64(tbH))
+	} else {
+		opt.GeoM.Translate(float64(tbW), 0)
+	}
+
+	screen.DrawImage(g.Matbox.Img, &opt)
 }
 
 func (g physGame) Layout(
 	outsideWidth int,
 	outsideHeight int,
 ) (int, int) {
-	return stdWinW, stdWinH
+	return g.FrameW, g.FrameH
 }
 
 func (g physGame) Update(
@@ -127,10 +153,6 @@ Options:
     -window -windowed
         starts the app in windowed mode... not fullscreen
 
-    -world_scale NUMBER
-        sets the graphical scale of the physical world
-        default: %v
-
 Default keybinds:
 
     ESC
@@ -144,7 +166,6 @@ func handleArgs(
 	tickrate *int,
 	winW     *int,
 	winH     *int,
-	wldScale *int,
 ) bool {
 	argToInt := func(i int) int {
 		if len(os.Args) <= i + 1 {
@@ -180,8 +201,7 @@ func handleArgs(
 			           AppName,
 			           stdWinH,
 			           stdTickrate,
-			           stdWinW,
-			           stdWorldScale)
+			           stdWinW)
 			return false
 
 		case "-noborder":
@@ -204,10 +224,6 @@ func handleArgs(
 		case "-windowed":
 			ebiten.SetFullscreen(false)
 
-		case "-world_scale":
-			*wldScale = argToInt(i)
-			i++
-
 		default:
 			fmt.Printf("Argument \"%v\" is not recognized.\n",
 			           os.Args[i])
@@ -221,36 +237,69 @@ func handleArgs(
 func main(
 ) {
 	var (
-		game     physGame
+		g        physGame
 		tickrate int = stdTickrate
 		winW     int = stdWinW
 		winH     int = stdWinH
-		wldScale int = stdWorldScale
+		uiW      int
+		uiH      int
 	)
 
 	fmt.Printf("%v\n", mat.Hydrogen) // TODO actually use mat
 
 	ebiten.SetFullscreen(true);
 
-	if handleArgs(&tickrate, &winW, &winH, &wldScale) == false {
+	if handleArgs(&tickrate, &winW, &winH) == false {
 		return
 	}
 
-	ebiten.SetWindowTitle(AppName + " " + AppVersion)
-	ebiten.SetWindowSize(winW, winH)
-	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
-	ebiten.SetTPS(tickrate)
+	if ebiten.IsFullscreen() {
+		screenW, screenH := ebiten.Monitor().Size()
+		g.FrameW = screenW / 10
+		g.FrameH = screenH / 10
+	} else {
+		g.FrameW = winW / 4
+		g.FrameH = winH / 4
+	}
 
 	paths := [...]string{
 		"assets/tool_brush.png",
 		"assets/tool_spawner.png",
 		"assets/tool_eraser.png",
 	}
-	// TODO manual toolbox tomfoolery
-	game.Toolbox = ui.NewTileSetFromFS(true, 3, 3 * 16, 1 * 16, paths[:], pngs)
-	game.Toolbox.Bg = color.RGBA{130, 170, 170, 255}
-	game.Toolbox.VisibleTiles = game.Toolbox.Tiles[:]
-	game.Toolbox.Cursor = 0
 
-	ebiten.RunGame(game)
+	if g.FrameW >= g.FrameH {
+		g.LayoutWide = true
+		uiW = uiTileSetW * pngSize
+		uiH = pngSize
+	} else {
+		g.LayoutWide = false
+		uiW = pngSize
+		uiH = uiTileSetW * pngSize
+	}
+
+	g.Toolbox = ui.NewTileSetFromFS(g.LayoutWide,
+	                                uiTileSetW,
+	                                uiW,
+	                                uiH,
+	                                paths[:],
+	                                pngs)
+	g.Toolbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
+	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]
+
+	g.Matbox = ui.NewTileSetFromFS(g.LayoutWide,
+	                               uiTileSetW,
+	                               uiW,
+	                               uiH,
+	                               paths[:],
+	                               pngs) // TODO make the mat pngs
+	g.Matbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
+	g.Matbox.VisibleTiles = g.Toolbox.Tiles[:]
+
+	ebiten.SetWindowTitle(AppName + " " + AppVersion)
+	ebiten.SetWindowSize(winW, winH)
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
+	ebiten.SetTPS(tickrate)
+
+	ebiten.RunGame(g)
 }

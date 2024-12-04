@@ -28,9 +28,10 @@ without me knowing it.
 The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 
 - [x] add tool images
-- [ ] add UI base
+- [x] add UI base
 	- [x] add ui tileset
-	- [ ] add ui layout
+	- [x] add basic ui layout
+- [ ] calc TileSet dimension len limited by tileSetWidth automatically
 - [ ] add material images
 
 - [ ] add tool box functionality
