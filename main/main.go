@@ -32,10 +32,14 @@ var (
 
 const (
 	pngSize       = 16
-	uiBgR         = 130
-	uiBgG         = 170
-	uiBgB         = 170
-	uiBgA         = 255
+	uiToolBgR     = 130
+	uiToolBgG     = 170
+	uiToolBgB     = 170
+	uiToolBgA     = 255
+	uiMatBgR      = 125
+	uiMatBgG      = 85
+	uiMatBgB      = 85
+	uiMatBgA      = 255
 	uiTileSetW    = 3
 	stdTickrate   = 24
 	stdWinW       = 640
@@ -251,10 +255,18 @@ func main(
 		g.FrameH = winH / 4
 	}
 
-	paths := [...]string{
+	toolPaths := [...]string{
 		"assets/tool_brush.png",
 		"assets/tool_spawner.png",
 		"assets/tool_eraser.png",
+	}
+
+	matPaths := [...]string{
+		"assets/mat_sand.png",
+		"assets/mat_water.png",
+		"assets/mat_iron.png",
+		"assets/mat_oxygen.png",
+		"assets/mat_hydrogen.png",
 	}
 
 	if g.FrameW >= g.FrameH {
@@ -275,19 +287,19 @@ func main(
 	                                uiTileSetW,
 	                                tbW,
 	                                tbH,
-	                                paths[:],
+	                                toolPaths[:],
 	                                pngs)
-	g.Toolbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
+	g.Toolbox.Bg = color.RGBA{uiToolBgR, uiToolBgG, uiToolBgB, uiToolBgA}
 	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]
 
 	g.Matbox = ui.NewTileSetFromFS(layoutWide,
 	                               uiTileSetW,
 	                               mbW,
 	                               mbH,
-	                               paths[:],
-	                               pngs) // TODO make the mat pngs
-	g.Matbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
-	g.Matbox.VisibleTiles = g.Toolbox.Tiles[:]
+	                               matPaths[:],
+	                               pngs)
+	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
+	g.Matbox.VisibleTiles = g.Matbox.Tiles[:]
 
 	if layoutWide {
 		g.Matbox.GeoM.Translate(0, float64(g.Toolbox.Size().Y))
