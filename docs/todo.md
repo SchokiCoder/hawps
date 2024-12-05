@@ -31,7 +31,8 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] add UI base
 	- [x] add ui tileset
 	- [x] add basic ui layout
-- [ ] calc TileSet dimension len limited by tileSetWidth automatically
+- [x] precalculate geoMs of Tool- and Matbox
+- [ ] properly fit Matbox
 - [ ] add material images
 
 - [ ] add tool box functionality
@@ -42,6 +43,8 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [ ] add automatic world size, fitting remaining space
 
 - [ ] add UI key binds
+	- [ ] add arrow left/right for tool switching
+	- [ ] add arrow up/down for mat switching
 - [ ] add "hold ALT key" to display what UI element uses which key bind
 
 - [ ] set version to 0.4

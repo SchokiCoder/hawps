@@ -25,12 +25,12 @@ import (
 type TileSet struct {
 	Bg           color.Color
 	Cursor       uint
+	GeoM         ebiten.GeoM
 	horizontal   bool
 	Img          *ebiten.Image
 	tileSetWidth int
 	Tiles        []*ebiten.Image
 	VisibleTiles []*ebiten.Image
-	w, h         int
 	tileW, tileH int
 }
 
@@ -46,8 +46,6 @@ func NewTileSetFromFS(
 	var ret = TileSet{
 		horizontal:   horizontal,
 		tileSetWidth: tileSetW,
-		w:            w,
-		h:            h,
 	}
 
 	imgopen := func(i int) {
@@ -60,18 +58,18 @@ func NewTileSetFromFS(
 	}
 
 	imgopen(0)
-	ret.tileW = ret.Tiles[0].Bounds().Size().X
-	ret.tileH = ret.Tiles[0].Bounds().Size().Y
+	ret.tileW = ret.Tiles[0].Bounds().Dx()
+	ret.tileH = ret.Tiles[0].Bounds().Dy()
 
 	for i := 1; i < len(paths); i++ {
 		imgopen(i)
-		if ret.Tiles[i].Bounds().Size().X != ret.tileW ||
-		   ret.Tiles[i].Bounds().Size().Y != ret.tileH {
-			panic("tempt to init TileSet with heterogeneous images")
+		if ret.Tiles[i].Bounds().Dx() != ret.tileW ||
+		   ret.Tiles[i].Bounds().Dy() != ret.tileH {
+			panic("Attempt to init TileSet with heterogeneous images")
 		}
 	}
 
-	ret.Img = ebiten.NewImage(ret.w, ret.h)
+	ret.Img = ebiten.NewImage(w, h)
 
 	return ret
 }
@@ -125,6 +123,6 @@ func (t TileSet) Draw(
 	                    false)
 }
 
-func (t TileSet) Size() (int, int) {
-	return t.w, t.h
+func (t TileSet) Size() image.Point {
+	return t.Img.Bounds().Size()
 }

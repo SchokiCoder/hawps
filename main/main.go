@@ -45,7 +45,6 @@ const (
 type physGame struct {
 	FrameW     int
 	FrameH     int
-	LayoutWide bool
 	pause      bool
 	Toolbox    ui.TileSet
 	Matbox     ui.TileSet
@@ -56,26 +55,15 @@ func (g physGame) Draw(
 ) {
 	var (
 		opt = ebiten.DrawImageOptions{}
-		tbW, tbH int
 	)
-
-	tbW, tbH = g.Toolbox.Size()
 
 	g.Toolbox.Draw()
 	g.Matbox.Draw()
 
-	if !g.LayoutWide {
-		opt.GeoM.Translate(0, float64(g.FrameH - tbH))
-	}
-
+	opt.GeoM = g.Toolbox.GeoM
 	screen.DrawImage(g.Toolbox.Img, &opt)
 
-	if g.LayoutWide {
-		opt.GeoM.Translate(0, float64(tbH))
-	} else {
-		opt.GeoM.Translate(float64(tbW), 0)
-	}
-
+	opt.GeoM = g.Matbox.GeoM
 	screen.DrawImage(g.Matbox.Img, &opt)
 }
 
@@ -237,12 +225,13 @@ func handleArgs(
 func main(
 ) {
 	var (
-		g        physGame
-		tickrate int = stdTickrate
-		winW     int = stdWinW
-		winH     int = stdWinH
-		uiW      int
-		uiH      int
+		g          physGame
+		layoutWide bool
+		tickrate   int = stdTickrate
+		winW       int = stdWinW
+		winH       int = stdWinH
+		uiW        int
+		uiH        int
 	)
 
 	fmt.Printf("%v\n", mat.Hydrogen) // TODO actually use mat
@@ -269,16 +258,16 @@ func main(
 	}
 
 	if g.FrameW >= g.FrameH {
-		g.LayoutWide = true
+		layoutWide = true
 		uiW = uiTileSetW * pngSize
 		uiH = pngSize
 	} else {
-		g.LayoutWide = false
+		layoutWide = false
 		uiW = pngSize
 		uiH = uiTileSetW * pngSize
 	}
 
-	g.Toolbox = ui.NewTileSetFromFS(g.LayoutWide,
+	g.Toolbox = ui.NewTileSetFromFS(layoutWide,
 	                                uiTileSetW,
 	                                uiW,
 	                                uiH,
@@ -287,7 +276,7 @@ func main(
 	g.Toolbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
 	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]
 
-	g.Matbox = ui.NewTileSetFromFS(g.LayoutWide,
+	g.Matbox = ui.NewTileSetFromFS(layoutWide,
 	                               uiTileSetW,
 	                               uiW,
 	                               uiH,
@@ -295,6 +284,15 @@ func main(
 	                               pngs) // TODO make the mat pngs
 	g.Matbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
 	g.Matbox.VisibleTiles = g.Toolbox.Tiles[:]
+
+	if layoutWide {
+		g.Matbox.GeoM.Translate(0, float64(g.Toolbox.Size().Y))
+	} else {
+		g.Toolbox.GeoM.Translate(0,
+		                         float64(g.FrameH - g.Toolbox.Size().Y))
+		g.Matbox.GeoM.Translate(float64(g.Toolbox.Size().X),
+		                        float64(g.FrameH - g.Toolbox.Size().Y))
+	}
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
 	ebiten.SetWindowSize(winW, winH)
