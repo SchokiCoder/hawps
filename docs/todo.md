@@ -32,7 +32,7 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 	- [x] add ui tileset
 	- [x] add basic ui layout
 - [x] precalculate geoMs of Tool- and Matbox
-- [ ] properly fit Matbox
+- [x] properly fit Matbox
 - [ ] add material images
 
 - [ ] add tool box functionality

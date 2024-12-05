@@ -230,8 +230,8 @@ func main(
 		tickrate   int = stdTickrate
 		winW       int = stdWinW
 		winH       int = stdWinH
-		uiW        int
-		uiH        int
+		mbW, mbH   int
+		tbW, tbH   int
 	)
 
 	fmt.Printf("%v\n", mat.Hydrogen) // TODO actually use mat
@@ -259,18 +259,22 @@ func main(
 
 	if g.FrameW >= g.FrameH {
 		layoutWide = true
-		uiW = uiTileSetW * pngSize
-		uiH = pngSize
+		tbW = uiTileSetW * pngSize
+		tbH = pngSize
+		mbW = tbW
+		mbH = g.FrameH - tbH
 	} else {
 		layoutWide = false
-		uiW = pngSize
-		uiH = uiTileSetW * pngSize
+		tbW = pngSize
+		tbH = uiTileSetW * pngSize
+		mbW = g.FrameW - tbW
+		mbH = tbH
 	}
 
 	g.Toolbox = ui.NewTileSetFromFS(layoutWide,
 	                                uiTileSetW,
-	                                uiW,
-	                                uiH,
+	                                tbW,
+	                                tbH,
 	                                paths[:],
 	                                pngs)
 	g.Toolbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
@@ -278,8 +282,8 @@ func main(
 
 	g.Matbox = ui.NewTileSetFromFS(layoutWide,
 	                               uiTileSetW,
-	                               uiW,
-	                               uiH,
+	                               mbW,
+	                               mbH,
 	                               paths[:],
 	                               pngs) // TODO make the mat pngs
 	g.Matbox.Bg = color.RGBA{uiBgR, uiBgG, uiBgB, uiBgA}
