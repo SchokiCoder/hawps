@@ -35,7 +35,7 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] properly fit Matbox
 - [x] add material images
 - [x] add basic mat image generation
-- [ ] add color swapping to mat image generation
+- [x] add color swapping to mat image generation
 
 - [ ] add tool box functionality
 - [ ] add mat box functionality

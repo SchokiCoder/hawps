@@ -31,9 +31,9 @@ const (
 var (
 	_weights = [...]float64 {0.0,    1.5,     0.999,    7.874,    0.001323, 0.00008319} /* g/cm³ */
 	_states  = [...]State   {MsNone, MsGrain, MsLiquid, MsStatic, MsGas,    MsGas}
-	_rs      = [...]int     {0,      238,     100,      200,      5,        5}
-	_gs      = [...]int     {0,      217,     100,      200,      5,        5}
-	_bs      = [...]int     {0,      86,      255,      200,      40,       40}
+	_rs      = [...]uint8   {0,      238,     100,      200,      5,        5}
+	_gs      = [...]uint8   {0,      217,     100,      200,      5,        5}
+	_bs      = [...]uint8   {0,      86,      255,      200,      40,       40}
 )
 
 func Weights(
@@ -50,19 +50,19 @@ func States(
 
 func Rs(
 	i Mat,
-) int {
+) uint8 {
 	return _rs[i]
 }
 
 func Gs(
 	i Mat,
-) int {
+) uint8 {
 	return _gs[i]
 }
 
 func Bs(
 	i Mat,
-) int {
+) uint8 {
 	return _bs[i]
 }
 

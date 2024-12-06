@@ -188,15 +188,14 @@ func genMatImages() []*ebiten.Image {
 	for i := matsBegin; i <= matsEnd; i++ {
 		path := matPrefix + i.String() + postfix
 		matImg := imgopen(path)
-
-		// TODO matImg colorswap to negative
-
-		img := ebiten.NewImage(pngSize, pngSize)
-		img.DrawImage(bgImgs[mat.States(i) - 1], nil)
-
-		// TODO img colorswap to bg
-
 		opt := ebiten.DrawImageOptions{}
+		img := ebiten.NewImage(pngSize, pngSize)
+
+		opt.ColorM.ScaleWithColor(color.RGBA{mat.Rs(i), mat.Gs(i), mat.Bs(i), 255})
+		img.DrawImage(bgImgs[mat.States(i) - 1], &opt)
+
+		opt.ColorM.Reset()
+		opt.ColorM.ScaleWithColor(color.RGBA{255-mat.Rs(i), 255-mat.Gs(i), 255-mat.Bs(i), 255})
 		opt.GeoM.Translate(float64(pngSize - matImg.Bounds().Dx()) / 2,
 		                   float64(pngSize - matImg.Bounds().Dy() - 1))
 		img.DrawImage(matImg, &opt)
