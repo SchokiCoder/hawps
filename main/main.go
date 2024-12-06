@@ -15,6 +15,7 @@ import (
 	"github.com/SchokiCoder/hawps/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -32,13 +33,13 @@ var (
 
 const (
 	pngSize       = 16
-	uiToolBgR     = 130
-	uiToolBgG     = 170
-	uiToolBgB     = 170
+	uiToolBgR     = 80
+	uiToolBgG     = 120
+	uiToolBgB     = 120
 	uiToolBgA     = 255
-	uiMatBgR      = 125
-	uiMatBgG      = 85
-	uiMatBgB      = 85
+	uiMatBgR      = 80
+	uiMatBgG      = 110
+	uiMatBgB      = 130
 	uiMatBgA      = 255
 	uiTileSetW    = 3
 	stdTickrate   = 24
@@ -154,6 +155,57 @@ Default keybinds:
         pause world
 `;
 
+func genMatImages() []*ebiten.Image {
+	var (
+		bgImgs [mat.MsCount - 1]*ebiten.Image
+		matBgPrefix = "assets/matbg_"
+		matBgPaths = [mat.MsCount - 1]string{
+			"static",
+			"grain",
+			"liquid",
+			"gas",
+		}
+		matPrefix = "assets/mat_"
+		matsBegin = mat.Sand
+		matsEnd = mat.Hydrogen
+		postfix = ".png"
+		ret []*ebiten.Image
+	)
+
+	imgopen := func(path string) *ebiten.Image {
+		img, _, err := ebitenutil.NewImageFromFileSystem(pngs, path)
+		if err != nil {
+			panic(err)
+		}
+		return img
+	}
+
+	for i := 0; i < len(bgImgs); i++ {
+		path := matBgPrefix + matBgPaths[i] + postfix
+		bgImgs[i] = imgopen(path)
+	}
+
+	for i := matsBegin; i <= matsEnd; i++ {
+		path := matPrefix + i.String() + postfix
+		matImg := imgopen(path)
+
+		// TODO matImg colorswap to negative
+
+		img := ebiten.NewImage(pngSize, pngSize)
+		img.DrawImage(bgImgs[mat.States(i) - 1], nil)
+
+		// TODO img colorswap to bg
+
+		opt := ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(float64(pngSize - matImg.Bounds().Dx()) / 2,
+		                   float64(pngSize - matImg.Bounds().Dy() - 1))
+		img.DrawImage(matImg, &opt)
+		ret = append(ret, img)
+	}
+
+	return ret
+}
+
 func handleArgs(
 	tickrate *int,
 	winW     *int,
@@ -238,8 +290,6 @@ func main(
 		tbW, tbH   int
 	)
 
-	fmt.Printf("%v\n", mat.Hydrogen) // TODO actually use mat
-
 	ebiten.SetFullscreen(true);
 
 	if handleArgs(&tickrate, &winW, &winH) == false {
@@ -259,14 +309,6 @@ func main(
 		"assets/tool_brush.png",
 		"assets/tool_spawner.png",
 		"assets/tool_eraser.png",
-	}
-
-	matPaths := [...]string{
-		"assets/mat_sand.png",
-		"assets/mat_water.png",
-		"assets/mat_iron.png",
-		"assets/mat_oxygen.png",
-		"assets/mat_hydrogen.png",
 	}
 
 	if g.FrameW >= g.FrameH {
@@ -292,12 +334,11 @@ func main(
 	g.Toolbox.Bg = color.RGBA{uiToolBgR, uiToolBgG, uiToolBgB, uiToolBgA}
 	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]
 
-	g.Matbox = ui.NewTileSetFromFS(layoutWide,
-	                               uiTileSetW,
-	                               mbW,
-	                               mbH,
-	                               matPaths[:],
-	                               pngs)
+	g.Matbox = ui.NewTileSetFromImgs(layoutWide,
+	                                 uiTileSetW,
+	                                 mbW,
+	                                 mbH,
+	                                 genMatImages())
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
 	g.Matbox.VisibleTiles = g.Matbox.Tiles[:]
 

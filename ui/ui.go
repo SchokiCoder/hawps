@@ -34,6 +34,26 @@ type TileSet struct {
 	tileW, tileH int
 }
 
+func NewTileSetFromImgs(
+	horizontal bool,
+	tileSetW   int,
+	w, h       int,
+	imgs       []*ebiten.Image,
+) TileSet {
+	var ret = TileSet{
+		horizontal:   horizontal,
+		tileSetWidth: tileSetW,
+	}
+
+	ret.tileW = imgs[0].Bounds().Dx()
+	ret.tileH = imgs[0].Bounds().Dy()
+	ret.Tiles = imgs
+
+	ret.Img = ebiten.NewImage(w, h)
+
+	return ret
+}
+
 // This panics if tiles with varying sizes are opened.
 // By default no tiles will be saved in the "Visible" array.
 func NewTileSetFromFS(

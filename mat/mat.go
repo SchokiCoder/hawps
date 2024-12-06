@@ -23,6 +23,8 @@ const (
 	MsGrain
 	MsLiquid
 	MsGas
+
+	MsCount int = iota
 )
 
 // Don't touch that darn thing
