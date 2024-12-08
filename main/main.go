@@ -65,10 +65,11 @@ func (g physGame) Draw(
 	g.Toolbox.Draw()
 	g.Matbox.Draw()
 
-	opt.GeoM = g.Toolbox.GeoM
+	opt.GeoM.Translate(float64(g.Toolbox.X), float64(g.Toolbox.Y))
 	screen.DrawImage(g.Toolbox.Img, &opt)
 
-	opt.GeoM = g.Matbox.GeoM
+	opt.GeoM.Reset()
+	opt.GeoM.Translate(float64(g.Matbox.X), float64(g.Matbox.Y))
 	screen.DrawImage(g.Matbox.Img, &opt)
 }
 
@@ -92,6 +93,15 @@ func (g physGame) Update(
 
 		case ebiten.KeySpace:
 			g.pause = !g.pause
+		}
+	}
+
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		mX, mY := ebiten.CursorPosition()
+		clicked := g.Toolbox.HandleClick(mX, mY)
+
+		if clicked {
+			fmt.Printf("%v\n", g.Toolbox.Cursor)
 		}
 	}
 
@@ -342,12 +352,11 @@ func main(
 	g.Matbox.VisibleTiles = g.Matbox.Tiles[:]
 
 	if layoutWide {
-		g.Matbox.GeoM.Translate(0, float64(g.Toolbox.Size().Y))
+		g.Matbox.Y = g.Toolbox.Size().Y
 	} else {
-		g.Toolbox.GeoM.Translate(0,
-		                         float64(g.FrameH - g.Toolbox.Size().Y))
-		g.Matbox.GeoM.Translate(float64(g.Toolbox.Size().X),
-		                        float64(g.FrameH - g.Toolbox.Size().Y))
+		g.Toolbox.Y = g.FrameH - g.Toolbox.H
+		g.Matbox.X = g.Toolbox.W
+		g.Matbox.Y = g.FrameH - g.Toolbox.H
 	}
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)

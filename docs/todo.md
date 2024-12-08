@@ -37,12 +37,14 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] add basic mat image generation
 - [x] add color swapping to mat image generation
 
+- [x] add click handling to TileSet
+- [ ] fix TileSet cursor drawing (cursor looks like always being 0)
 - [ ] add tool box functionality
 - [ ] add mat box functionality
-- [ ] add tall UI layout and automatic layout determination
 - [ ] add arg "-wide_layout"
 - [ ] add arg "-tall_layout"
 - [ ] add automatic world size, fitting remaining space
+- [ ] is const "pngSize" necessary ?
 
 - [ ] add UI key binds
 	- [ ] add arrow left/right for tool switching

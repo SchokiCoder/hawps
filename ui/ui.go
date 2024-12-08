@@ -23,9 +23,9 @@ import (
 // you need a TileWidth of 2 and a Horizontal of true.
 // The actual pixel size is given to "New" functions.
 type TileSet struct {
+	X, Y, W, H   int
 	Bg           color.Color
-	Cursor       uint
-	GeoM         ebiten.GeoM
+	Cursor       int
 	horizontal   bool
 	Img          *ebiten.Image
 	tileSetWidth int
@@ -41,6 +41,8 @@ func NewTileSetFromImgs(
 	imgs       []*ebiten.Image,
 ) TileSet {
 	var ret = TileSet{
+		W: w,
+		H: h,
 		horizontal:   horizontal,
 		tileSetWidth: tileSetW,
 	}
@@ -64,6 +66,8 @@ func NewTileSetFromFS(
 	fs         embed.FS,
 ) TileSet {
 	var ret = TileSet{
+		W: w,
+		H: h,
 		horizontal:   horizontal,
 		tileSetWidth: tileSetW,
 	}
@@ -107,14 +111,14 @@ func (t TileSet) Draw(
 		primary = &x
 		secondary = &y
 
-		cx = int(t.Cursor) / t.tileSetWidth
-		cy = int(t.Cursor) % t.tileSetWidth
+		cx = t.Cursor / t.tileSetWidth
+		cy = t.Cursor % t.tileSetWidth
 	} else {
 		primary = &y
 		secondary = &x
 
-		cx = int(t.Cursor) % t.tileSetWidth
-		cy = int(t.Cursor) / t.tileSetWidth
+		cx = t.Cursor % t.tileSetWidth
+		cy = t.Cursor / t.tileSetWidth
 	}
 
 	for i := 0; i < len(t.VisibleTiles); i++ {
@@ -141,6 +145,33 @@ func (t TileSet) Draw(
 	                    1,
 	                    image.White,
 	                    false)
+}
+
+func (t *TileSet) HandleClick(
+	x, y int,
+) bool {
+	pointInRect := func(px, py, x, y, w, h int) bool {
+		if px > x && px < x + w &&
+		   py > y && py < y + h {
+			return true
+		}
+		return false
+	}
+
+	if pointInRect(x, y, t.X, t.Y, t.W, t.H) {
+		tx := x / t.tileW
+		ty := y / t.tileH
+
+		if t.horizontal {
+			t.Cursor = ty * t.tileSetWidth + tx
+		} else {
+			t.Cursor = tx * t.tileSetWidth + ty
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func (t TileSet) Size() image.Point {
