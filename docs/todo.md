@@ -42,12 +42,11 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] fix TileSet cursor drawing
 - [x] fix TileSet click not applying an offset for Tile determination
 - [x] fix TileSet click going past visible tiles
+- [x] add a world instance back into the whole thing
 - [ ] add tool box functionality
 - [ ] add mat box functionality
 - [ ] add arg "-wide_layout"
 - [ ] add arg "-tall_layout"
-- [ ] add automatic world size, fitting remaining space
-- [ ] is const "pngSize" necessary ?
 
 - [ ] add UI key binds
 	- [ ] add arrow left/right for tool switching

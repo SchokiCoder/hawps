@@ -53,6 +53,10 @@ type physGame struct {
 	pause      *bool
 	Toolbox    *ui.TileSet
 	Matbox     *ui.TileSet
+	World      *mat.World
+	WorldImg   *ebiten.Image
+	WorldX     int
+	WorldY     int
 }
 
 func newPhysGame(
@@ -63,6 +67,7 @@ func newPhysGame(
 		pause:   new(bool),
 		Toolbox: new(ui.TileSet),
 		Matbox:  new(ui.TileSet),
+		World:   new(mat.World),
 	}
 }
 
@@ -82,6 +87,24 @@ func (g physGame) Draw(
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.Matbox.X), float64(g.Matbox.Y))
 	screen.DrawImage(g.Matbox.Img, &opt)
+
+	// So I was initially trying to use ebiten.Image.WritePixels(),
+	// but it literally didn't do anything.
+	// Couldn't find an update-like function either.
+	// So away it went for Set().
+	for x := 0; x < g.World.W; x++ {
+		for y := 0; y < g.World.H; y++ {
+			g.WorldImg.Set(x, y,
+				color.RGBA{
+					mat.Rs(g.World.Dots[x][y]),
+					mat.Gs(g.World.Dots[x][y]),
+					mat.Bs(g.World.Dots[x][y]),
+					255})
+		}
+	}
+	opt.GeoM.Reset()
+	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
+	screen.DrawImage(g.WorldImg, &opt)
 }
 
 func (g physGame) Layout(
@@ -126,7 +149,7 @@ func (g physGame) Update(
 		return nil
 	}
 
-	// TODO world update goes here
+	g.World.Tick()
 
 	return nil
 }
@@ -314,6 +337,7 @@ func main(
 		winH       int = stdWinH
 		mbW, mbH   int
 		tbW, tbH   int
+		wW, wH     int
 	)
 
 	ebiten.SetFullscreen(true);
@@ -343,12 +367,20 @@ func main(
 		tbH = pngSize
 		mbW = tbW
 		mbH = *g.FrameH - tbH
+		wW = *g.FrameW - tbW
+		wH = *g.FrameH
+		g.WorldX = tbW
+		g.WorldY = 0
 	} else {
 		layoutWide = false
 		tbW = pngSize
 		tbH = uiTileSetW * pngSize
 		mbW = *g.FrameW - tbW
 		mbH = tbH
+		wW = *g.FrameW
+		wH = *g.FrameH - tbH
+		g.WorldX = 0
+		g.WorldY = 0
 	}
 
 	*g.Toolbox = ui.NewTileSetFromFS(layoutWide,
@@ -375,6 +407,15 @@ func main(
 		g.Matbox.X = g.Toolbox.W
 		g.Matbox.Y = *g.FrameH - g.Toolbox.H
 	}
+
+	*g.World = mat.NewWorld(wW, wH)
+	g.WorldImg = ebiten.NewImage(wW, wH)
+
+	// TODO remove one last manual erahplresd
+	g.World.Dots[8][10] = mat.Sand
+	g.World.Dots[10][10] = mat.Oxygen
+	g.World.Dots[10][5] = mat.Hydrogen
+	g.World.Dots[12][10] = mat.Sand
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
 	ebiten.SetWindowSize(winW, winH)
