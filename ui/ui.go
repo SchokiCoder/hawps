@@ -159,8 +159,8 @@ func (t *TileSet) HandleClick(
 	}
 
 	if pointInRect(x, y, t.X, t.Y, t.W, t.H) {
-		tx := x / t.tileW
-		ty := y / t.tileH
+		tx := (x - t.X) / t.tileW
+		ty := (y - t.Y) / t.tileH
 
 		if t.horizontal {
 			t.Cursor = ty * t.tileSetWidth + tx
