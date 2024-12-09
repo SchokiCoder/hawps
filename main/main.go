@@ -48,11 +48,22 @@ const (
 )
 
 type physGame struct {
-	FrameW     int
-	FrameH     int
-	pause      bool
-	Toolbox    ui.TileSet
-	Matbox     ui.TileSet
+	FrameW     *int
+	FrameH     *int
+	pause      *bool
+	Toolbox    *ui.TileSet
+	Matbox     *ui.TileSet
+}
+
+func newPhysGame(
+) physGame {
+	return physGame{
+		FrameW:  new(int),
+		FrameH:  new(int),
+		pause:   new(bool),
+		Toolbox: new(ui.TileSet),
+		Matbox:  new(ui.TileSet),
+	}
 }
 
 func (g physGame) Draw(
@@ -77,7 +88,7 @@ func (g physGame) Layout(
 	outsideWidth int,
 	outsideHeight int,
 ) (int, int) {
-	return g.FrameW, g.FrameH
+	return *g.FrameW, *g.FrameH
 }
 
 func (g physGame) Update(
@@ -92,7 +103,7 @@ func (g physGame) Update(
 			return ebiten.Termination
 
 		case ebiten.KeySpace:
-			g.pause = !g.pause
+			*g.pause = !*g.pause
 		}
 	}
 
@@ -105,7 +116,7 @@ func (g physGame) Update(
 		}
 	}
 
-	if (g.pause) {
+	if (*g.pause) {
 		return nil
 	}
 
@@ -290,7 +301,7 @@ func handleArgs(
 func main(
 ) {
 	var (
-		g          physGame
+		g          physGame = newPhysGame()
 		layoutWide bool
 		tickrate   int = stdTickrate
 		winW       int = stdWinW
@@ -307,11 +318,11 @@ func main(
 
 	if ebiten.IsFullscreen() {
 		screenW, screenH := ebiten.Monitor().Size()
-		g.FrameW = screenW / 10
-		g.FrameH = screenH / 10
+		*g.FrameW = screenW / 10
+		*g.FrameH = screenH / 10
 	} else {
-		g.FrameW = winW / 4
-		g.FrameH = winH / 4
+		*g.FrameW = winW / 4
+		*g.FrameH = winH / 4
 	}
 
 	toolPaths := [...]string{
@@ -320,21 +331,21 @@ func main(
 		"assets/tool_eraser.png",
 	}
 
-	if g.FrameW >= g.FrameH {
+	if *g.FrameW >= *g.FrameH {
 		layoutWide = true
 		tbW = uiTileSetW * pngSize
 		tbH = pngSize
 		mbW = tbW
-		mbH = g.FrameH - tbH
+		mbH = *g.FrameH - tbH
 	} else {
 		layoutWide = false
 		tbW = pngSize
 		tbH = uiTileSetW * pngSize
-		mbW = g.FrameW - tbW
+		mbW = *g.FrameW - tbW
 		mbH = tbH
 	}
 
-	g.Toolbox = ui.NewTileSetFromFS(layoutWide,
+	*g.Toolbox = ui.NewTileSetFromFS(layoutWide,
 	                                uiTileSetW,
 	                                tbW,
 	                                tbH,
@@ -343,7 +354,7 @@ func main(
 	g.Toolbox.Bg = color.RGBA{uiToolBgR, uiToolBgG, uiToolBgB, uiToolBgA}
 	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]
 
-	g.Matbox = ui.NewTileSetFromImgs(layoutWide,
+	*g.Matbox = ui.NewTileSetFromImgs(layoutWide,
 	                                 uiTileSetW,
 	                                 mbW,
 	                                 mbH,
@@ -354,9 +365,9 @@ func main(
 	if layoutWide {
 		g.Matbox.Y = g.Toolbox.Size().Y
 	} else {
-		g.Toolbox.Y = g.FrameH - g.Toolbox.H
+		g.Toolbox.Y = *g.FrameH - g.Toolbox.H
 		g.Matbox.X = g.Toolbox.W
-		g.Matbox.Y = g.FrameH - g.Toolbox.H
+		g.Matbox.Y = *g.FrameH - g.Toolbox.H
 	}
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)

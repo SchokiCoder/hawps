@@ -38,7 +38,8 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] add color swapping to mat image generation
 
 - [x] add click handling to TileSet
-- [ ] fix TileSet cursor drawing (cursor looks like always being 0)
+- [x] make game data mutable to its Update function
+- [ ] fix TileSet cursor drawing
 - [ ] add tool box functionality
 - [ ] add mat box functionality
 - [ ] add arg "-wide_layout"
