@@ -109,10 +109,16 @@ func (g physGame) Update(
 
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		mX, mY := ebiten.CursorPosition()
-		clicked := g.Toolbox.HandleClick(mX, mY)
+		boxen := [...]*ui.TileSet{ // hah!
+			g.Toolbox,
+			g.Matbox,
+		}
+		for i := 0; i < len(boxen); i++ {
+			clicked := boxen[i].HandleClick(mX, mY)
 
-		if clicked {
-			fmt.Printf("%v\n", g.Toolbox.Cursor)
+			if clicked {
+				fmt.Printf("%v\n", boxen[i].Cursor)
+			}
 		}
 	}
 

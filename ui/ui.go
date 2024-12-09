@@ -111,14 +111,14 @@ func (t TileSet) Draw(
 		primary = &x
 		secondary = &y
 
-		cx = t.Cursor / t.tileSetWidth
-		cy = t.Cursor % t.tileSetWidth
+		cx = t.Cursor % t.tileSetWidth
+		cy = t.Cursor / t.tileSetWidth
 	} else {
 		primary = &y
 		secondary = &x
 
-		cx = t.Cursor % t.tileSetWidth
-		cy = t.Cursor / t.tileSetWidth
+		cx = t.Cursor / t.tileSetWidth
+		cy = t.Cursor % t.tileSetWidth
 	}
 
 	for i := 0; i < len(t.VisibleTiles); i++ {
