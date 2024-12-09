@@ -168,6 +168,10 @@ func (t *TileSet) HandleClick(
 			t.Cursor = tx * t.tileSetWidth + ty
 		}
 
+		if t.Cursor >= len(t.VisibleTiles) {
+			t.Cursor = len(t.VisibleTiles) - 1
+		}
+
 		return true
 	}
 

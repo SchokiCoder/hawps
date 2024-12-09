@@ -41,6 +41,7 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] make game data mutable to its Update function
 - [x] fix TileSet cursor drawing
 - [x] fix TileSet click not applying an offset for Tile determination
+- [x] fix TileSet click going past visible tiles
 - [ ] add tool box functionality
 - [ ] add mat box functionality
 - [ ] add arg "-wide_layout"
