@@ -43,10 +43,13 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] fix TileSet click not applying an offset for Tile determination
 - [x] fix TileSet click going past visible tiles
 - [x] add a world instance back into the whole thing
-- [ ] add tool box functionality
-- [ ] add mat box functionality
-- [ ] add arg "-wide_layout"
+- [x] add brush tool function
+- [ ] add spawner tool function
+- [ ] add eraser tool function
+- [ ] add arg "-wide_layout" or "-wideui" ?
 - [ ] add arg "-tall_layout"
+
+- [ ] make liquid stack collapsing not ignore grains anymore
 
 - [ ] add UI key binds
 	- [ ] add arrow left/right for tool switching

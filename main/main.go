@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright (C) 2024  Andy Frank Schoknecht
 
+//go:generate stringer -type=tool
 package main
 
 import (
@@ -17,6 +18,15 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+)
+
+type tool int
+const (
+	brush tool = iota
+	spawner
+	eraser
+
+	tCount int = iota
 )
 
 //go:embed assets/*.png
@@ -116,7 +126,10 @@ func (g physGame) Layout(
 
 func (g physGame) Update(
 ) error {
-	var keys []ebiten.Key
+	var (
+		clicked bool
+		keys    []ebiten.Key
+	)
 
 	keys = inpututil.AppendPressedKeys(keys)
 
@@ -132,15 +145,33 @@ func (g physGame) Update(
 
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		mX, mY := ebiten.CursorPosition()
+
 		boxen := [...]*ui.TileSet{ // hah!
 			g.Toolbox,
 			g.Matbox,
 		}
 		for i := 0; i < len(boxen); i++ {
-			clicked := boxen[i].HandleClick(mX, mY)
+			clicked = boxen[i].HandleClick(mX, mY)
 
 			if clicked {
-				fmt.Printf("%v\n", boxen[i].Cursor)
+				break
+			}
+		}
+
+		if !clicked &&
+		   mX > g.WorldX && mX < g.WorldX + g.World.W &&
+		   mY > g.WorldY && mY < g.WorldY + g.World.H {
+			curTool := tool(g.Toolbox.Cursor)
+
+			switch curTool {
+			case brush:
+				g.World.UseBrush(
+					mat.Mat(g.Matbox.Cursor) + 1,
+					mX - g.WorldX,
+					mY - g.WorldY)
+
+			default:
+				panic("Used unknown tool " + curTool.String())
 			}
 		}
 	}
@@ -355,10 +386,9 @@ func main(
 		*g.FrameH = winH / 4
 	}
 
-	toolPaths := [...]string{
-		"assets/tool_brush.png",
-		"assets/tool_spawner.png",
-		"assets/tool_eraser.png",
+	tPaths := make([]string, tCount)
+	for i := 0; i < tCount; i++ {
+		tPaths[i] = "assets/tool_" + tool(i).String() + ".png"
 	}
 
 	if *g.FrameW >= *g.FrameH {
@@ -387,7 +417,7 @@ func main(
 	                                uiTileSetW,
 	                                tbW,
 	                                tbH,
-	                                toolPaths[:],
+	                                tPaths[:],
 	                                pngs)
 	g.Toolbox.Bg = color.RGBA{uiToolBgR, uiToolBgG, uiToolBgB, uiToolBgA}
 	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]

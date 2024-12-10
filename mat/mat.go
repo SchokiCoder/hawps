@@ -90,6 +90,39 @@ func NewWorld(
 	return ret
 }
 
+func (w *World) UseBrush(
+	material Mat,
+	xC, yC int,
+) {
+	const brushSize = 2 // radius (as addition around center)
+
+	var (
+		x1 = xC - brushSize
+		x2 = xC + brushSize
+		y1 = yC - brushSize
+		y2 = yC + brushSize
+	)
+
+	if x1 < 0 {
+		x1 = 0
+	}
+	if x2 >= w.W {
+		x2 = w.W - 1
+	}
+	if y1 < 0 {
+		y1 = 0
+	}
+	if y2 >= w.H {
+		y2 = w.H - 1
+	}
+
+	for x := x1; x <= x2; x++ {
+		for y := y1; y <= y2; y++ {
+			w.Dots[x][y] = material
+		}
+	}
+}
+
 func (w *World) Tick(
 ) {
 	w.applyChemReactions()

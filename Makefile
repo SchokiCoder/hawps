@@ -24,8 +24,11 @@ run: clean build
 vet:
 	go vet ./main
 
-$(APP_NAME): main/main.go mat/mat.go mat/mat_string.go ui/ui.go
+$(APP_NAME): main/main.go main/main_string.go mat/mat.go mat/mat_string.go ui/ui.go
 	go build $(GO_COMPILE_VARS) ./main
+
+main/main_string.go: main/main.go
+	go generate ./main
 
 mat/mat_string.go: mat/mat.go
 	go generate ./mat
