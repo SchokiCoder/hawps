@@ -50,7 +50,7 @@ Also increase eraser tool radius.
 
 - [x] add Matbox filter (depending on current tool)
 - [x] improve handling of visible tiles and mats
-- [ ] add spawner tool function
+- [x] add spawner tool function
 - [ ] add arg "-wide_layout" or "-wideui" ?
 - [ ] add arg "-tall_layout"
 

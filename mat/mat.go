@@ -69,10 +69,12 @@ func Bs(
 }
 
 type World struct {
-	W     int
-	H     int
-	_dots []Mat
-	Dots  [][]Mat
+	W        int
+	H        int
+	_dots    []Mat
+	Dots     [][]Mat
+	_spawner []Mat
+	Spawner  [][]Mat
 }
 
 func NewWorld(
@@ -83,10 +85,13 @@ func NewWorld(
 		H:     h,
 		_dots: make([]Mat, w * h),
 		Dots:  make([][]Mat, w),
+		_spawner: make([]Mat, w * h),
+		Spawner:  make([][]Mat, w),
 	}
 
 	for i := 0; i < w; i++ {
 		ret.Dots[i] = ret._dots[i * h:h + (i * h)]
+		ret.Spawner[i] = ret._spawner[i * h:h + (i * h)]
 	}
 
 	return ret
@@ -95,13 +100,13 @@ func NewWorld(
 func (w *World) UseBrush(
 	material Mat,
 	xC, yC int,
-	brushRadius int,
+	radius int,
 ) {
 	var (
-		x1 = xC - brushRadius
-		x2 = xC + brushRadius
-		y1 = yC - brushRadius
-		y2 = yC + brushRadius
+		x1 = xC - radius
+		x2 = xC + radius
+		y1 = yC - radius
+		y2 = yC + radius
 	)
 
 	if x1 < 0 {
@@ -124,10 +129,43 @@ func (w *World) UseBrush(
 	}
 }
 
+func (w *World) UseEraser(
+	xC, yC int,
+	radius int,
+) {
+	var (
+		x1 = xC - radius
+		x2 = xC + radius
+		y1 = yC - radius
+		y2 = yC + radius
+	)
+
+	if x1 < 0 {
+		x1 = 0
+	}
+	if x2 >= w.W {
+		x2 = w.W - 1
+	}
+	if y1 < 0 {
+		y1 = 0
+	}
+	if y2 >= w.H {
+		y2 = w.H - 1
+	}
+
+	for x := x1; x <= x2; x++ {
+		for y := y1; y <= y2; y++ {
+			w.Dots[x][y] = None
+			w.Spawner[x][y] = None
+		}
+	}
+}
+
 func (w *World) Tick(
 ) {
 	w.applyChemReactions()
 	w.applyGravity()
+	w.runSpawners()
 }
 
 func (w *World) applyChemReactions(
@@ -370,6 +408,17 @@ func (w *World) dropLiquid(
 
 		if States(*below) == MsStatic {
 			break
+		}
+	}
+}
+
+func (w *World) runSpawners(
+) {
+	for x := 0; x < w.W; x++ {
+		for y := 0; y < w.H; y++ {
+			if w.Spawner[x][y] != None {
+				w.Dots[x][y] = w.Spawner[x][y]
+			}
 		}
 	}
 }

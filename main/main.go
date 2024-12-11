@@ -112,6 +112,20 @@ func (g physGame) Draw(
 					255})
 		}
 	}
+
+	for x := 0; x < g.World.W; x++ {
+		for y := 0; y < g.World.H; y++ {
+			if g.World.Spawner[x][y] != mat.None {
+				g.WorldImg.Set(x, y,
+					color.RGBA{
+						255,
+						0,
+						255,
+						255})
+			}
+		}
+	}
+
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
 	screen.DrawImage(g.WorldImg, &opt)
@@ -165,14 +179,17 @@ func (g *physGame) HandleClick(
 		switch curTool {
 		case brush:
 			g.World.UseBrush(
-				mat.Mat(g.Matbox.Cursor) + 1,
+				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
 				mX - g.WorldX,
 				mY - g.WorldY,
 				2)
 
+		case spawner:
+			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] =
+				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor])
+
 		case eraser:
-			g.World.UseBrush(
-				mat.None,
+			g.World.UseEraser(
 				mX - g.WorldX,
 				mY - g.WorldY,
 				5)
