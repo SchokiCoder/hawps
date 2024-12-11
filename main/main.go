@@ -143,7 +143,7 @@ func (g physGame) Update(
 		}
 	}
 
-	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		mX, mY := ebiten.CursorPosition()
 
 		boxen := [...]*ui.TileSet{ // hah!
@@ -168,13 +168,15 @@ func (g physGame) Update(
 				g.World.UseBrush(
 					mat.Mat(g.Matbox.Cursor) + 1,
 					mX - g.WorldX,
-					mY - g.WorldY)
+					mY - g.WorldY,
+					2)
 
 			case eraser:
 				g.World.UseBrush(
 					mat.None,
 					mX - g.WorldX,
-					mY - g.WorldY)
+					mY - g.WorldY,
+					5)
 
 			default:
 				panic("Used unknown tool " + curTool.String())
@@ -446,12 +448,6 @@ func main(
 
 	*g.World = mat.NewWorld(wW, wH)
 	g.WorldImg = ebiten.NewImage(wW, wH)
-
-	// TODO remove one last manual erahplresd
-	g.World.Dots[8][10] = mat.Sand
-	g.World.Dots[10][10] = mat.Oxygen
-	g.World.Dots[10][5] = mat.Hydrogen
-	g.World.Dots[12][10] = mat.Sand
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
 	ebiten.SetWindowSize(winW, winH)

@@ -93,14 +93,13 @@ func NewWorld(
 func (w *World) UseBrush(
 	material Mat,
 	xC, yC int,
+	brushRadius int,
 ) {
-	const brushSize = 2 // radius (as addition around center)
-
 	var (
-		x1 = xC - brushSize
-		x2 = xC + brushSize
-		y1 = yC - brushSize
-		y2 = yC + brushSize
+		x1 = xC - brushRadius
+		x2 = xC + brushRadius
+		y1 = yC - brushRadius
+		y2 = yC + brushRadius
 	)
 
 	if x1 < 0 {
