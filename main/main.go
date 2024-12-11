@@ -117,6 +117,69 @@ func (g physGame) Draw(
 	screen.DrawImage(g.WorldImg, &opt)
 }
 
+func (g *physGame) HandleClick(
+) {
+	var (
+		clicked bool
+		mX, mY  int
+	)
+
+	mX, mY = ebiten.CursorPosition()
+
+	clicked = g.Toolbox.HandleClick(mX, mY)
+	if clicked {
+		g.Matbox.Cursor = 0
+
+		switch(tool(g.Toolbox.Cursor)) {
+		case brush:
+			g.Matbox.VisibleTiles = g.Matbox.Tiles[:]
+
+		case spawner:
+			filteredTiles := make([]*ebiten.Image, 0)
+			for i := 0; i < len(g.Matbox.Tiles); i++ {
+				if mat.States(mat.Mat(i + 1)) != mat.MsStatic {
+					filteredTiles = append(filteredTiles,
+							       g.Matbox.Tiles[i])
+				}
+			}
+			g.Matbox.VisibleTiles = filteredTiles
+
+		case eraser:
+			g.Matbox.VisibleTiles = nil
+			g.Matbox.Cursor = -1
+		}
+	}
+
+	if !clicked {
+		clicked = g.Matbox.HandleClick(mX, mY)
+	}
+
+	if !clicked &&
+	   mX > g.WorldX && mX < g.WorldX + g.World.W &&
+	   mY > g.WorldY && mY < g.WorldY + g.World.H {
+		curTool := tool(g.Toolbox.Cursor)
+
+		switch curTool {
+		case brush:
+			g.World.UseBrush(
+				mat.Mat(g.Matbox.Cursor) + 1,
+				mX - g.WorldX,
+				mY - g.WorldY,
+				2)
+
+		case eraser:
+			g.World.UseBrush(
+				mat.None,
+				mX - g.WorldX,
+				mY - g.WorldY,
+				5)
+
+		default:
+			panic("Used unknown tool " + curTool.String())
+		}
+	}
+}
+
 func (g physGame) Layout(
 	outsideWidth int,
 	outsideHeight int,
@@ -127,7 +190,6 @@ func (g physGame) Layout(
 func (g physGame) Update(
 ) error {
 	var (
-		clicked bool
 		keys    []ebiten.Key
 	)
 
@@ -144,44 +206,7 @@ func (g physGame) Update(
 	}
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		mX, mY := ebiten.CursorPosition()
-
-		boxen := [...]*ui.TileSet{ // hah!
-			g.Toolbox,
-			g.Matbox,
-		}
-		for i := 0; i < len(boxen); i++ {
-			clicked = boxen[i].HandleClick(mX, mY)
-
-			if clicked {
-				break
-			}
-		}
-
-		if !clicked &&
-		   mX > g.WorldX && mX < g.WorldX + g.World.W &&
-		   mY > g.WorldY && mY < g.WorldY + g.World.H {
-			curTool := tool(g.Toolbox.Cursor)
-
-			switch curTool {
-			case brush:
-				g.World.UseBrush(
-					mat.Mat(g.Matbox.Cursor) + 1,
-					mX - g.WorldX,
-					mY - g.WorldY,
-					2)
-
-			case eraser:
-				g.World.UseBrush(
-					mat.None,
-					mX - g.WorldX,
-					mY - g.WorldY,
-					5)
-
-			default:
-				panic("Used unknown tool " + curTool.String())
-			}
-		}
+		g.HandleClick()
 	}
 
 	if (*g.pause) {

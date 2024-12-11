@@ -48,12 +48,13 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] change mouse input to be instant and perpetual
 Also increase eraser tool radius.
 
-- [ ] add Matbox filter (depending on current tool)
+- [x] add Matbox filter (depending on current tool)
 - [ ] add spawner tool function
 - [ ] add arg "-wide_layout" or "-wideui" ?
 - [ ] add arg "-tall_layout"
 
 - [ ] make liquid stack collapsing not ignore grains anymore
+- [ ] fix grain stack collapsing teleporting grains to the bottom on the right
 
 - [ ] add UI key binds
 	- [ ] add arrow left/right for tool switching
