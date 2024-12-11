@@ -44,8 +44,10 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 - [x] fix TileSet click going past visible tiles
 - [x] add a world instance back into the whole thing
 - [x] add brush tool function
+- [x] add eraser tool function
+- [ ] add Matbox filter (depending on current tool)
 - [ ] add spawner tool function
-- [ ] add eraser tool function
+- [ ] make brush and eraser use perpetual (mouse1 hold rather than click)
 - [ ] add arg "-wide_layout" or "-wideui" ?
 - [ ] add arg "-tall_layout"
 

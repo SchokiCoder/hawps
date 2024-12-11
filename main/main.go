@@ -170,6 +170,12 @@ func (g physGame) Update(
 					mX - g.WorldX,
 					mY - g.WorldY)
 
+			case eraser:
+				g.World.UseBrush(
+					mat.None,
+					mX - g.WorldX,
+					mY - g.WorldY)
+
 			default:
 				panic("Used unknown tool " + curTool.String())
 			}
