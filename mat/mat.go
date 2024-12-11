@@ -12,6 +12,8 @@ const (
 	Iron
 	Oxygen
 	Hydrogen
+	FirstReal = Sand
+	Last = Hydrogen
 
 	Count int = iota
 )

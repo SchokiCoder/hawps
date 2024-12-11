@@ -30,7 +30,7 @@ type TileSet struct {
 	Img          *ebiten.Image
 	tileSetWidth int
 	Tiles        []*ebiten.Image
-	VisibleTiles []*ebiten.Image
+	VisibleTiles []int
 	tileW, tileH int
 }
 
@@ -124,7 +124,7 @@ func (t TileSet) Draw(
 	for i := 0; i < len(t.VisibleTiles); i++ {
 		opt := ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(float64(x * t.tileW), float64(y * t.tileH))
-		t.Img.DrawImage(t.VisibleTiles[i], &opt)
+		t.Img.DrawImage(t.Tiles[t.VisibleTiles[i]], &opt)
 
 		*primary++
 

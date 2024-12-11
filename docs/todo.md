@@ -49,6 +49,7 @@ The indexing was wrong, but it didn't trigger fsanitize... Too bad.
 Also increase eraser tool radius.
 
 - [x] add Matbox filter (depending on current tool)
+- [x] improve handling of visible tiles and mats
 - [ ] add spawner tool function
 - [ ] add arg "-wide_layout" or "-wideui" ?
 - [ ] add arg "-tall_layout"

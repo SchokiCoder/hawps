@@ -128,21 +128,24 @@ func (g *physGame) HandleClick(
 
 	clicked = g.Toolbox.HandleClick(mX, mY)
 	if clicked {
+		tiles := make([]int, 0)
+
 		g.Matbox.Cursor = 0
 
 		switch(tool(g.Toolbox.Cursor)) {
 		case brush:
-			g.Matbox.VisibleTiles = g.Matbox.Tiles[:]
+			for i := mat.FirstReal; i <= mat.Last; i++ {
+				tiles = append(tiles, int(i))
+			}
+			g.Matbox.VisibleTiles = tiles
 
 		case spawner:
-			filteredTiles := make([]*ebiten.Image, 0)
-			for i := 0; i < len(g.Matbox.Tiles); i++ {
-				if mat.States(mat.Mat(i + 1)) != mat.MsStatic {
-					filteredTiles = append(filteredTiles,
-							       g.Matbox.Tiles[i])
+			for i := mat.FirstReal; i <= mat.Last; i++ {
+				if mat.States(mat.Mat(i)) != mat.MsStatic {
+					tiles = append(tiles, int(i))
 				}
 			}
-			g.Matbox.VisibleTiles = filteredTiles
+			g.Matbox.VisibleTiles = tiles
 
 		case eraser:
 			g.Matbox.VisibleTiles = nil
@@ -280,11 +283,13 @@ func genMatImages() []*ebiten.Image {
 			"gas",
 		}
 		matPrefix = "assets/mat_"
-		matsBegin = mat.Sand
-		matsEnd = mat.Hydrogen
 		postfix = ".png"
 		ret []*ebiten.Image
 	)
+
+	img := ebiten.NewImage(pngSize, pngSize)
+	img.Fill(color.RGBA{255, 0, 255, 255})
+	ret = append(ret, img)
 
 	imgopen := func(path string) *ebiten.Image {
 		img, _, err := ebitenutil.NewImageFromFileSystem(pngs, path)
@@ -299,7 +304,7 @@ func genMatImages() []*ebiten.Image {
 		bgImgs[i] = imgopen(path)
 	}
 
-	for i := matsBegin; i <= matsEnd; i++ {
+	for i := mat.FirstReal; i <= mat.Last; i++ {
 		path := matPrefix + i.String() + postfix
 		matImg := imgopen(path)
 		opt := ebiten.DrawImageOptions{}
@@ -397,6 +402,7 @@ func main(
 		g          physGame = newPhysGame()
 		layoutWide bool
 		tickrate   int = stdTickrate
+		tiles      []int
 		winW       int = stdWinW
 		winH       int = stdWinH
 		mbW, mbH   int
@@ -453,7 +459,11 @@ func main(
 	                                tPaths[:],
 	                                pngs)
 	g.Toolbox.Bg = color.RGBA{uiToolBgR, uiToolBgG, uiToolBgB, uiToolBgA}
-	g.Toolbox.VisibleTiles = g.Toolbox.Tiles[:]
+
+	for i := 0; i < len(g.Toolbox.Tiles); i++ {
+		tiles = append(tiles, i)
+	}
+	g.Toolbox.VisibleTiles = tiles
 
 	*g.Matbox = ui.NewTileSetFromImgs(layoutWide,
 	                                 uiTileSetW,
@@ -461,7 +471,12 @@ func main(
 	                                 mbH,
 	                                 genMatImages())
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
-	g.Matbox.VisibleTiles = g.Matbox.Tiles[:]
+
+	tiles = nil
+	for i := mat.FirstReal; i <= mat.Last; i++ {
+		tiles = append(tiles, int(i))
+	}
+	g.Matbox.VisibleTiles = tiles
 
 	if layoutWide {
 		g.Matbox.Y = g.Toolbox.Size().Y
