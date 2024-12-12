@@ -142,29 +142,7 @@ func (g *physGame) HandleClick(
 
 	clicked = g.Toolbox.HandleClick(mX, mY)
 	if clicked {
-		tiles := make([]int, 0)
-
-		g.Matbox.Cursor = 0
-
-		switch(tool(g.Toolbox.Cursor)) {
-		case brush:
-			for i := mat.FirstReal; i <= mat.Last; i++ {
-				tiles = append(tiles, int(i))
-			}
-			g.Matbox.VisibleTiles = tiles
-
-		case spawner:
-			for i := mat.FirstReal; i <= mat.Last; i++ {
-				if mat.States(mat.Mat(i)) != mat.MsStatic {
-					tiles = append(tiles, int(i))
-				}
-			}
-			g.Matbox.VisibleTiles = tiles
-
-		case eraser:
-			g.Matbox.VisibleTiles = nil
-			g.Matbox.Cursor = -1
-		}
+		g.UpdateTool()
 	}
 
 	if !clicked {
@@ -213,7 +191,7 @@ func (g physGame) Update(
 		keys    []ebiten.Key
 	)
 
-	keys = inpututil.AppendPressedKeys(keys)
+	keys = inpututil.AppendJustPressedKeys(keys)
 
 	for i := 0; i < len(keys); i++ {
 		switch (keys[i]) {
@@ -222,6 +200,28 @@ func (g physGame) Update(
 
 		case ebiten.KeySpace:
 			*g.pause = !*g.pause
+
+		case ebiten.KeyLeft:
+			if g.Toolbox.Cursor > 0 {
+				g.Toolbox.Cursor--
+				g.UpdateTool()
+			}
+
+		case ebiten.KeyRight:
+			if g.Toolbox.Cursor < len(g.Toolbox.VisibleTiles) - 1 {
+				g.Toolbox.Cursor++
+				g.UpdateTool()
+			}
+
+		case ebiten.KeyUp:
+			if g.Matbox.Cursor > 0 {
+				g.Matbox.Cursor--
+			}
+
+		case ebiten.KeyDown:
+			if g.Matbox.Cursor < len(g.Matbox.VisibleTiles) - 1 {
+				g.Matbox.Cursor++
+			}
 		}
 	}
 
@@ -236,6 +236,33 @@ func (g physGame) Update(
 	g.World.Tick()
 
 	return nil
+}
+
+func (g physGame) UpdateTool(
+) {
+	var tiles = make([]int, 0)
+
+	g.Matbox.Cursor = 0
+
+	switch(tool(g.Toolbox.Cursor)) {
+	case brush:
+		for i := mat.FirstReal; i <= mat.Last; i++ {
+			tiles = append(tiles, int(i))
+		}
+		g.Matbox.VisibleTiles = tiles
+
+	case spawner:
+		for i := mat.FirstReal; i <= mat.Last; i++ {
+			if mat.States(mat.Mat(i)) != mat.MsStatic {
+				tiles = append(tiles, int(i))
+			}
+		}
+		g.Matbox.VisibleTiles = tiles
+
+	case eraser:
+		g.Matbox.VisibleTiles = nil
+		g.Matbox.Cursor = -1
+	}
 }
 
 const appAbout = `The source code of "%v" aka %v %v is available,

@@ -51,15 +51,16 @@ Also increase eraser tool radius.
 - [x] add Matbox filter (depending on current tool)
 - [x] improve handling of visible tiles and mats
 - [x] add spawner tool function
+
+- [x] add arrow keys to control tool and mat switching
+
 - [ ] add arg "-wide_layout" or "-wideui" ?
 - [ ] add arg "-tall_layout"
 
+- [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
 - [ ] make liquid stack collapsing not ignore grains anymore
 - [ ] fix grain stack collapsing teleporting grains to the bottom on the right
 
-- [ ] add UI key binds
-	- [ ] add arrow left/right for tool switching
-	- [ ] add arrow up/down for mat switching
 - [ ] add "hold ALT key" to display what UI element uses which key bind
 
 - [ ] set version to 0.4
