@@ -20,6 +20,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+type uiLayout int
+const (
+	automatic uiLayout = iota
+	tall
+	wide
+)
+
 type tool int
 const (
 	brush tool = iota
@@ -293,12 +300,18 @@ Options:
     -noborder
         removes window decoration from window
 
+    -tallui
+        overrides automatic layout determination, and sets tall ui
+
     -tickrate NUMBER
         sets the tickrate (ticks per second), which effects visible speed
         default: %v
 
     -v -version
         prints version information then exits
+
+    -wideui
+        overrides automatic layout determination, and sets wide ui
 
     -W -width NUMBER
         sets the window width
@@ -314,6 +327,12 @@ Default keybinds:
 
     Space
         pause world
+
+    Arrow Left and Right
+        switch tool
+
+    Arrow Up and Down
+        switch material
 `;
 
 func genMatImages() []*ebiten.Image {
@@ -369,6 +388,7 @@ func genMatImages() []*ebiten.Image {
 }
 
 func handleArgs(
+	layout   *uiLayout,
 	tickrate *int,
 	winW     *int,
 	winH     *int,
@@ -413,6 +433,9 @@ func handleArgs(
 		case "-noborder":
 			ebiten.SetWindowDecorated(false)
 
+		case "-tallui":
+			*layout = tall
+
 		case "-tickrate":
 			*tickrate = argToInt(i)
 			i++
@@ -420,6 +443,9 @@ func handleArgs(
 		case "-v": fallthrough
 		case "-version":
 			fmt.Printf("%v: version %v\n", AppName, AppVersion)
+
+		case "-wideui":
+			*layout = wide
 
 		case "-W": fallthrough
 		case "-width":
@@ -444,9 +470,10 @@ func main(
 ) {
 	var (
 		g          physGame = newPhysGame()
-		layoutWide bool
+		layout     uiLayout
 		tickrate   int = stdTickrate
 		tiles      []int
+		tsWide     bool
 		winW       int = stdWinW
 		winH       int = stdWinH
 		mbW, mbH   int
@@ -456,7 +483,7 @@ func main(
 
 	ebiten.SetFullscreen(true);
 
-	if handleArgs(&tickrate, &winW, &winH) == false {
+	if handleArgs(&layout, &tickrate, &winW, &winH) == false {
 		return
 	}
 
@@ -474,8 +501,19 @@ func main(
 		tPaths[i] = "assets/tool_" + tool(i).String() + ".png"
 	}
 
-	if *g.FrameW >= *g.FrameH {
-		layoutWide = true
+	switch layout {
+	case automatic:
+		if *g.FrameW >= *g.FrameH {
+			tsWide = true
+		} else {
+			tsWide = false
+		}
+
+	case wide:
+		tsWide = true
+	}
+
+	if true == tsWide {
 		tbW = uiTileSetW * pngSize
 		tbH = pngSize
 		mbW = tbW
@@ -485,7 +523,6 @@ func main(
 		g.WorldX = tbW
 		g.WorldY = 0
 	} else {
-		layoutWide = false
 		tbW = pngSize
 		tbH = uiTileSetW * pngSize
 		mbW = *g.FrameW - tbW
@@ -496,7 +533,7 @@ func main(
 		g.WorldY = 0
 	}
 
-	*g.Toolbox = ui.NewTileSetFromFS(layoutWide,
+	*g.Toolbox = ui.NewTileSetFromFS(tsWide,
 	                                uiTileSetW,
 	                                tbW,
 	                                tbH,
@@ -509,7 +546,7 @@ func main(
 	}
 	g.Toolbox.VisibleTiles = tiles
 
-	*g.Matbox = ui.NewTileSetFromImgs(layoutWide,
+	*g.Matbox = ui.NewTileSetFromImgs(tsWide,
 	                                 uiTileSetW,
 	                                 mbW,
 	                                 mbH,
@@ -522,7 +559,7 @@ func main(
 	}
 	g.Matbox.VisibleTiles = tiles
 
-	if layoutWide {
+	if true == tsWide {
 		g.Matbox.Y = g.Toolbox.Size().Y
 	} else {
 		g.Toolbox.Y = *g.FrameH - g.Toolbox.H

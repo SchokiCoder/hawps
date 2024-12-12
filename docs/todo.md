@@ -1,9 +1,9 @@
 - [ ] test android build
 `sudo apt install google-android-ndk-r26d-installer or newer version`
 
-- [ ] fix liquids running past grains ?
+- [ ] add "hold ALT key" to display what UI element uses which key bind
 
-# UI update
+# Solid Update
 
 - [x] remove world size args
 - [x] make all args single hyphen
@@ -54,14 +54,12 @@ Also increase eraser tool radius.
 
 - [x] add arrow keys to control tool and mat switching
 
-- [ ] add arg "-wide_layout" or "-wideui" ?
-- [ ] add arg "-tall_layout"
+- [x] add arg "-wideui" and "-tallui" and update help
+Also add missing help text for arrow keys.
 
 - [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
 - [ ] make liquid stack collapsing not ignore grains anymore
 - [ ] fix grain stack collapsing teleporting grains to the bottom on the right
-
-- [ ] add "hold ALT key" to display what UI element uses which key bind
 
 - [ ] set version to 0.4
 
