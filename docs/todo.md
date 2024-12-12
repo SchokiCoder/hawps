@@ -7,6 +7,8 @@
 - [ ] make liquid stack collapsing not ignore grains anymore
 - [ ] fix grain stack collapsing teleporting grains to the bottom on the right
 
+-----
+
 # Solid Update
 
 - [x] remove world size args
@@ -63,9 +65,7 @@ Also add missing help text for arrow keys.
 
 - [x] fix args "-v" "-version" not cancelling further execution
 
-- [ ] set version to 0.4
-
------
+- [x] set version to 0.4
 
 # Gasy Update
 
