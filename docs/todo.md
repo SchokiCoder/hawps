@@ -3,6 +3,10 @@
 
 - [ ] add "hold ALT key" to display what UI element uses which key bind
 
+- [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
+- [ ] make liquid stack collapsing not ignore grains anymore
+- [ ] fix grain stack collapsing teleporting grains to the bottom on the right
+
 # Solid Update
 
 - [x] remove world size args
@@ -57,9 +61,7 @@ Also increase eraser tool radius.
 - [x] add arg "-wideui" and "-tallui" and update help
 Also add missing help text for arrow keys.
 
-- [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
-- [ ] make liquid stack collapsing not ignore grains anymore
-- [ ] fix grain stack collapsing teleporting grains to the bottom on the right
+- [x] fix args "-v" "-version" not cancelling further execution
 
 - [ ] set version to 0.4
 

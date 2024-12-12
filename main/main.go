@@ -443,6 +443,7 @@ func handleArgs(
 		case "-v": fallthrough
 		case "-version":
 			fmt.Printf("%v: version %v\n", AppName, AppVersion)
+			return false
 
 		case "-wideui":
 			*layout = wide
