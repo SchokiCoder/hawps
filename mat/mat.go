@@ -272,7 +272,8 @@ func (w *World) dropGas(
 			return
 		}
 
-		if States(*below) == MsStatic {
+		if States(*below) == MsStatic ||
+		   States(*below) == MsGrain {
 			break
 		}
 	}
@@ -285,7 +286,8 @@ func (w *World) dropGas(
 			return
 		}
 
-		if States(*below) == MsStatic {
+		if States(*below) == MsStatic ||
+		   States(*below) == MsGrain {
 			break
 		}
 	}
@@ -393,7 +395,8 @@ func (w *World) dropLiquid(
 			return
 		}
 
-		if (States(*below) == MsStatic) {
+		if States(*below) == MsStatic ||
+		   States(*below) == MsGrain {
 			break
 		}
 	}
@@ -406,7 +409,8 @@ func (w *World) dropLiquid(
 			return
 		}
 
-		if States(*below) == MsStatic {
+		if States(*below) == MsStatic ||
+		   States(*below) == MsGrain {
 			break
 		}
 	}

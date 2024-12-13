@@ -3,9 +3,24 @@
 
 - [ ] add "hold ALT key" to display what UI element uses which key bind
 
-- [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
-- [ ] make liquid stack collapsing not ignore grains anymore
+# Pyro Update
+
+- fire :O
+
+- [ ] set version to 0.6
+
+# Thermo Update
+
+- [x] make liquid and gas stack collapsing not ignore grains anymore
 - [ ] fix grain stack collapsing teleporting grains to the bottom on the right
+- [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
+
+- [ ] add temperature to live dots
+- [ ] add tool to manipulate temperature of target mass
+- [ ] add aggregate state variation to live dots
+- [ ] add a thermal vision switch
+
+- [ ] set version to 0.5
 
 -----
 
