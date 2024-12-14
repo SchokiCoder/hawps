@@ -75,10 +75,13 @@ type World struct {
 	Dots     [][]Mat
 	_spawner []Mat
 	Spawner  [][]Mat
+	_thermo  []int
+	Thermo   [][]int
 }
 
 func NewWorld(
 	w, h int,
+	temperature int,
 ) World {
 	var ret = World{
 		W:     w,
@@ -87,11 +90,18 @@ func NewWorld(
 		Dots:  make([][]Mat, w),
 		_spawner: make([]Mat, w * h),
 		Spawner:  make([][]Mat, w),
+		_thermo: make([]int, w * h),
+		Thermo:  make([][]int, w),
 	}
 
-	for i := 0; i < w; i++ {
-		ret.Dots[i] = ret._dots[i * h:h + (i * h)]
-		ret.Spawner[i] = ret._spawner[i * h:h + (i * h)]
+	for x := 0; x < w; x++ {
+		ret.Dots[x] = ret._dots[x * h:h + (x * h)]
+		ret.Spawner[x] = ret._spawner[x * h:h + (x * h)]
+		ret.Thermo[x] = ret._thermo[x * h:h + (x * h)]
+
+		for y := 0; y < h; y++ {
+			ret.Thermo[x][y] = temperature
+		}
 	}
 
 	return ret
@@ -233,17 +243,14 @@ func (w *World) dropGas(
 	x, y int,
 ) {
 	var (
-		bx     int
-		below *Mat
-		cur   *Mat
-		tmp    Mat
+		dx, dy int
 	)
 
-	canGasDisplace := func(src, dest Mat) bool {
-		switch (States(dest)) {
+	canGasDisplace := func(x, y, dx, dy int) bool {
+		switch States(w.Dots[dx][dy]) {
 		case MsNone: fallthrough
 		case MsGas:
-			if (Weights(dest) < Weights(src)) {
+			if Weights(w.Dots[dx][dy]) < Weights(w.Dots[x][y]) {
 				return true
 			}
 
@@ -253,41 +260,37 @@ func (w *World) dropGas(
 		return false
 	}
 
-	cur = &w.Dots[x][y]
-	below = &w.Dots[x][y + 1]
-
-	if canGasDisplace(*cur, *below) {
-		tmp = *below
-		*below = *cur
-		*cur = tmp
+	dx = x
+	dy = y + 1
+	if canGasDisplace(x, y, dx, dy) {
+		w.swapDots(x, y, dx, dy)
 		return
 	}
 
-	for bx = x - 1; bx >= 0; bx-- {
-		below = &w.Dots[bx][y + 1]
-		if canGasDisplace(*cur, *below) {
-			tmp = *below
-			*below = *cur
-			*cur = tmp
-			return
+	stackCollapse := func(
+		x, y, dx, dy int,
+	) bool {
+		if canGasDisplace(x, y, dx, dy) {
+			w.swapDots(x, y, dx, dy)
+			return false
 		}
 
-		if States(*below) == MsStatic ||
-		   States(*below) == MsGrain {
+		if States(w.Dots[dx][dy]) == MsStatic ||
+		   States(w.Dots[dx][dy]) == MsGrain {
+			return true
+		}
+
+		return false
+	}
+
+	dy = y + 1
+	for dx = x - 1; dx >= 0; dx-- {
+		if stackCollapse(x, y, dx, dy) {
 			break
 		}
 	}
-	for bx = x + 1; bx < w.W; bx++ {
-		below = &w.Dots[bx][y + 1]
-		if canGasDisplace(*cur, *below) {
-			tmp = *below
-			*below = *cur
-			*cur = tmp
-			return
-		}
-
-		if States(*below) == MsStatic ||
-		   States(*below) == MsGrain {
+	for dx = x + 1; dx < w.W; dx++ {
+		if stackCollapse(x, y, dx, dy) {
 			break
 		}
 	}
@@ -297,19 +300,17 @@ func (w *World) dropGrain(
 	x, y int,
 ) {
 	var (
-		below *Mat
-		cur *Mat
-		tmp Mat
+		dx, dy int
 	)
 
-	canGrainDisplace := func(src, dest Mat) bool {
-		switch (States(dest)) {
+	canGrainDisplace := func(x, y, dx, dy int) bool {
+		switch (States(w.Dots[dx][dy])) {
 		case MsNone: fallthrough
 		case MsGas:
 			return true
 
 		case MsLiquid:
-			if (Weights(dest) < Weights(src)) {
+			if Weights(w.Dots[dx][dy]) < Weights(w.Dots[x][y]) {
 				return true
 			}
 
@@ -319,33 +320,28 @@ func (w *World) dropGrain(
 		return false
 	}
 
-	cur = &w.Dots[x][y]
-	below = &w.Dots[x][y + 1]
-
-	if canGrainDisplace(*cur, *below) {
-		tmp = *below
-		*below = *cur
-		*cur = tmp
+	dx = x
+	dy = y + 1
+	if canGrainDisplace(x, y, dx, dy) {
+		w.swapDots(x, y, dx, dy)
 		return
 	}
 
 	if x - 1 >= 0 {
-		below = &w.Dots[x - 1][y + 1]
+		dx = x - 1
+		dy = y + 1
 
-		if canGrainDisplace(*cur, *below) {
-			tmp = *below
-			*below = *cur
-			*cur = tmp
+		if canGrainDisplace(x, y, dx, dy) {
+			w.swapDots(x, y, dx, dy)
 			return
 		}
 	}
 	if x + 1 < w.W {
-		below = &w.Dots[x + 1][y + 1]
+		dx = x + 1
+		dy = y + 1
 
-		if canGrainDisplace(*cur, *below) {
-			tmp = *below
-			*below = *cur
-			*cur = tmp
+		if canGrainDisplace(x, y, dx, dy) {
+			w.swapDots(x, y, dx, dy)
 			return
 		}
 	}
@@ -355,20 +351,17 @@ func (w *World) dropLiquid(
 	x, y int,
 ) {
 	var (
-		bx int
-		below *Mat
-		cur *Mat
-		tmp Mat
+		dx, dy int
 	)
 
-	canLiquidDisplace := func(src, dest Mat) bool {
-		switch States(dest) {
+	canLiquidDisplace := func(x, y, dx, dy int) bool {
+		switch States(w.Dots[dx][dy]) {
 		case MsNone: fallthrough
 		case MsGas:
 			return true
 
 		default:
-			if (Weights(dest) < Weights(src)) {
+			if Weights(w.Dots[dx][dy]) < Weights(w.Dots[x][y]) {
 				return true
 			}
 		}
@@ -376,41 +369,37 @@ func (w *World) dropLiquid(
 		return false
 	}
 
-	cur = &w.Dots[x][y]
-	below = &w.Dots[x][y + 1]
-
-	if canLiquidDisplace(*cur, *below) {
-		tmp = *below
-		*below = *cur
-		*cur = tmp
+	dx = x
+	dy = y + 1
+	if canLiquidDisplace(x, y, dx, dy) {
+		w.swapDots(x, y, dx, dy)
 		return
 	}
 
-	for bx = x - 1; bx >= 0; bx-- {
-		below = &w.Dots[bx][y + 1]
-		if canLiquidDisplace(*cur, *below) {
-			tmp = *below
-			*below = *cur
-			*cur = tmp
-			return
+	stackCollapse := func(
+		x, y, dx, dy int,
+	) bool {
+		if canLiquidDisplace(x, y, dx, dy) {
+			w.swapDots(x, y, dx, dy)
+			return false
 		}
 
-		if States(*below) == MsStatic ||
-		   States(*below) == MsGrain {
+		if States(w.Dots[dx][dy]) == MsStatic ||
+		   States(w.Dots[dx][dy]) == MsGrain {
+			return true
+		}
+
+		return false
+	}
+
+	dy = y + 1
+	for dx = x - 1; dx >= 0; dx-- {
+		if stackCollapse(x, y, dx, dy) {
 			break
 		}
 	}
-	for bx = x + 1; bx < w.W; bx++ {
-		below = &w.Dots[bx][y + 1]
-		if canLiquidDisplace(*cur, *below) {
-			tmp = *below
-			*below = *cur
-			*cur = tmp
-			return
-		}
-
-		if States(*below) == MsStatic ||
-		   States(*below) == MsGrain {
+	for dx = x + 1; dx < w.W; dx++ {
+		if stackCollapse(x, y, dx, dy) {
 			break
 		}
 	}
@@ -425,4 +414,21 @@ func (w *World) runSpawners(
 			}
 		}
 	}
+}
+
+// Swaps all properties of two coordinates.
+func (w *World) swapDots(
+	x, y int,
+	x2, y2 int,
+) {
+	var (
+		tmpM = w.Dots[x][y]
+		tmpT = w.Thermo[x][y]
+	)
+
+	w.Dots[x][y] = w.Dots[x2][y2]
+	w.Thermo[x][y] = w.Thermo[x2][y2]
+
+	w.Dots[x2][y2] = tmpM
+	w.Thermo[x2][y2] = tmpT
 }

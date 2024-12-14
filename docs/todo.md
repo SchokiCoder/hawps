@@ -21,15 +21,15 @@ thus teleporting grains to the bottom right of the stack.
 
 - [x] add + and - keybinds to change tickrate
 
+- [x] add temperature to live dots
+- [ ] add aggregate state variation to live dots
+- [ ] add tool to manipulate temperature of target mass
+- [ ] add a thermal vision switch
+
 - [ ] fix stack collapsing displacing dots to the top of the stack
 This causes dots to be deleted when spawners are at the top.
 
 - [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
-
-- [ ] add temperature to live dots
-- [ ] add tool to manipulate temperature of target mass
-- [ ] add aggregate state variation to live dots
-- [ ] add a thermal vision switch
 
 - [ ] set version to 0.5
 

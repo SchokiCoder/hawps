@@ -49,21 +49,22 @@ var (
 )
 
 const (
-	maxTickrate   = stdTickrate * 2
-	minTickrate   = 1
-	pngSize       = 16
-	uiToolBgR     = 80
-	uiToolBgG     = 120
-	uiToolBgB     = 120
-	uiToolBgA     = 255
-	uiMatBgR      = 80
-	uiMatBgG      = 110
-	uiMatBgB      = 130
-	uiMatBgA      = 255
-	uiTileSetW    = 3
-	stdTickrate   = 24
-	stdWinW       = 640
-	stdWinH       = 480
+	maxTickrate    = stdTickrate * 2
+	minTickrate    = 1
+	pngSize        = 16
+	uiToolBgR      = 80
+	uiToolBgG      = 120
+	uiToolBgB      = 120
+	uiToolBgA      = 255
+	uiMatBgR       = 80
+	uiMatBgG       = 110
+	uiMatBgB       = 130
+	uiMatBgA       = 255
+	uiTileSetW     = 3
+	stdTemperature = 20
+	stdTickrate    = 24
+	stdWinW        = 640
+	stdWinH        = 480
 )
 
 type physGame struct {
@@ -593,7 +594,7 @@ func main(
 		g.Matbox.Y = *g.FrameH - g.Toolbox.H
 	}
 
-	*g.World = mat.NewWorld(wW, wH)
+	*g.World = mat.NewWorld(wW, wH, stdTemperature)
 	g.WorldImg = ebiten.NewImage(wW, wH)
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
