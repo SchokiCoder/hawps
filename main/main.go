@@ -49,6 +49,8 @@ var (
 )
 
 const (
+	maxTickrate   = stdTickrate * 2
+	minTickrate   = 1
 	pngSize       = 16
 	uiToolBgR     = 80
 	uiToolBgG     = 120
@@ -68,6 +70,7 @@ type physGame struct {
 	FrameW     *int
 	FrameH     *int
 	pause      *bool
+	Tickrate   *int
 	Toolbox    *ui.TileSet
 	Matbox     *ui.TileSet
 	World      *mat.World
@@ -78,14 +81,18 @@ type physGame struct {
 
 func newPhysGame(
 ) physGame {
-	return physGame{
-		FrameW:  new(int),
-		FrameH:  new(int),
-		pause:   new(bool),
-		Toolbox: new(ui.TileSet),
-		Matbox:  new(ui.TileSet),
-		World:   new(mat.World),
+	var ret = physGame{
+		FrameW:   new(int),
+		FrameH:   new(int),
+		pause:    new(bool),
+		Tickrate: new(int),
+		Toolbox:  new(ui.TileSet),
+		Matbox:   new(ui.TileSet),
+		World:    new(mat.World),
 	}
+	*ret.Tickrate = stdTickrate
+
+	return ret
 }
 
 func (g physGame) Draw(
@@ -229,6 +236,18 @@ func (g physGame) Update(
 			if g.Matbox.Cursor < len(g.Matbox.VisibleTiles) - 1 {
 				g.Matbox.Cursor++
 			}
+
+		case ebiten.KeyNumpadAdd:
+			if *g.Tickrate < maxTickrate {
+				*g.Tickrate *= 2
+				ebiten.SetTPS(*g.Tickrate)
+			}
+
+		case ebiten.KeyNumpadSubtract:
+			if *g.Tickrate > minTickrate {
+				*g.Tickrate /= 2
+				ebiten.SetTPS(*g.Tickrate)
+			}
 		}
 	}
 
@@ -333,6 +352,11 @@ Default keybinds:
 
     Arrow Up and Down
         switch material
+
+    Plus and Minus
+        Increase and decrease the tickrate respectively
+        min: %v
+        max: %v
 `;
 
 func genMatImages() []*ebiten.Image {
@@ -427,7 +451,9 @@ func handleArgs(
 			           AppName,
 			           stdWinH,
 			           stdTickrate,
-			           stdWinW)
+			           stdWinW,
+			           minTickrate,
+			           maxTickrate)
 			return false
 
 		case "-noborder":
@@ -472,7 +498,6 @@ func main(
 	var (
 		g          physGame = newPhysGame()
 		layout     uiLayout
-		tickrate   int = stdTickrate
 		tiles      []int
 		tsWide     bool
 		winW       int = stdWinW
@@ -484,7 +509,7 @@ func main(
 
 	ebiten.SetFullscreen(true);
 
-	if handleArgs(&layout, &tickrate, &winW, &winH) == false {
+	if handleArgs(&layout, g.Tickrate, &winW, &winH) == false {
 		return
 	}
 
@@ -574,7 +599,7 @@ func main(
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
 	ebiten.SetWindowSize(winW, winH)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
-	ebiten.SetTPS(tickrate)
+	ebiten.SetTPS(*g.Tickrate)
 
 	ebiten.RunGame(g)
 }

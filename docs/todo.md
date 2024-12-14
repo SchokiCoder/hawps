@@ -5,6 +5,9 @@ S- [ ] test android build
 
 # Pyro Update
 
+- [ ] find out how to make ebiten not use keyboard scancodes
+- [ ] add non-numpad plus/minus to tickrate keybinds
+
 - fire :O
 
 - [ ] set version to 0.6
@@ -16,8 +19,12 @@ S- [ ] test android build
 This showed most obviously in grain stack collapsing,
 thus teleporting grains to the bottom right of the stack.
 
-- [ ] fix grain stack collapsing deleting other dots
-- [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
+- [x] add + and - keybinds to change tickrate
+
+- [ ] fix stack collapsing displacing dots to the top of the stack
+This causes dots to be deleted when spawners are at the top.
+
+- [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
 
 - [ ] add temperature to live dots
 - [ ] add tool to manipulate temperature of target mass
