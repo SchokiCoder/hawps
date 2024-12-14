@@ -215,24 +215,24 @@ func (g physGame) Update(
 		case ebiten.KeySpace:
 			*g.pause = !*g.pause
 
-		case ebiten.KeyLeft:
+		case ebiten.KeyArrowLeft:
 			if g.Toolbox.Cursor > 0 {
 				g.Toolbox.Cursor--
 				g.UpdateTool()
 			}
 
-		case ebiten.KeyRight:
+		case ebiten.KeyArrowRight:
 			if g.Toolbox.Cursor < len(g.Toolbox.VisibleTiles) - 1 {
 				g.Toolbox.Cursor++
 				g.UpdateTool()
 			}
 
-		case ebiten.KeyUp:
+		case ebiten.KeyArrowUp:
 			if g.Matbox.Cursor > 0 {
 				g.Matbox.Cursor--
 			}
 
-		case ebiten.KeyDown:
+		case ebiten.KeyArrowDown:
 			if g.Matbox.Cursor < len(g.Matbox.VisibleTiles) - 1 {
 				g.Matbox.Cursor++
 			}
