@@ -1,4 +1,4 @@
-- [ ] test android build
+S- [ ] test android build
 `sudo apt install google-android-ndk-r26d-installer or newer version`
 
 - [ ] add "hold ALT key" to display what UI element uses which key bind
@@ -12,7 +12,11 @@
 # Thermo Update
 
 - [x] make liquid and gas stack collapsing not ignore grains anymore
-- [ ] fix grain stack collapsing teleporting grains to the bottom on the right
+- [x] fix phys updates going from left to right instead of bottom to top
+This showed most obviously in grain stack collapsing,
+thus teleporting grains to the bottom right of the stack.
+
+- [ ] fix grain stack collapsing deleting other dots
 - [ ] increase global tickrate (for ui), decouple world updates from that tickrate ?
 
 - [ ] add temperature to live dots

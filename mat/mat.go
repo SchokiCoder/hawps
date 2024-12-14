@@ -211,8 +211,8 @@ func (w *World) applyChemReactions(
 
 func (w *World) applyGravity(
 ) {
-	for x := 0; x < w.W; x++ {
-		for y := w.H - 2; y >= 0; y-- {
+	for y := w.H - 2; y >= 0; y-- {
+		for x := 0; x < w.W; x++ {
 			switch (States(w.Dots[x][y])) {
 			case MsGas:
 				w.dropGas(x, y)
