@@ -221,19 +221,29 @@ func (w *World) applyChemReactions(
 
 func (w *World) applyGravity(
 ) {
+	action := func(x, y int) {
+		switch (States(w.Dots[x][y])) {
+		case MsGas:
+			w.dropGas(x, y)
+
+		case MsGrain:
+			w.dropGrain(x, y)
+
+		case MsLiquid:
+			w.dropLiquid(x, y)
+
+		default:
+		}
+	}
+
 	for y := w.H - 2; y >= 0; y-- {
-		for x := 0; x < w.W; x++ {
-			switch (States(w.Dots[x][y])) {
-			case MsGas:
-				w.dropGas(x, y)
-
-			case MsGrain:
-				w.dropGrain(x, y)
-
-			case MsLiquid:
-				w.dropLiquid(x, y)
-
-			default:
+		if y % 2 == 0 {
+			for x := 0; x < w.W; x++ {
+				action(x, y)
+			}
+		} else {
+			for x := w.W - 1; x > 0; x-- {
+				action(x, y)
 			}
 		}
 	}

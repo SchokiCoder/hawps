@@ -22,6 +22,11 @@ thus teleporting grains to the bottom right of the stack.
 - [x] add + and - keybinds to change tickrate
 
 - [x] add temperature to live dots
+
+- [x] fix grain stack collapsing bias
+It was following the horizontal "applyGravity" loop, which it still does,
+but now the direction of which gets shuffled.
+
 - [ ] add aggregate state variation to live dots
 - [ ] add tool to manipulate temperature of target mass
 - [ ] add a thermal vision switch
