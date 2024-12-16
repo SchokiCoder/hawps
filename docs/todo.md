@@ -7,6 +7,8 @@ S- [ ] test android build
 
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
+- [ ] fix stack collapsing displacing dots to the top of the stack
+This causes dots to be deleted when spawners are at the top.
 
 - fire :O
 
@@ -27,12 +29,12 @@ thus teleporting grains to the bottom right of the stack.
 It was following the horizontal "applyGravity" loop, which it still does,
 but now the direction of which gets shuffled.
 
-- [ ] add aggregate state variation to live dots
+- [x] add aggregate state variation to live dots
+- [ ] add thermal conduction
 - [ ] add tool to manipulate temperature of target mass
 - [ ] add a thermal vision switch
 
-- [ ] fix stack collapsing displacing dots to the top of the stack
-This causes dots to be deleted when spawners are at the top.
+- [ ] fix left border gravity reluctance
 
 - [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
 

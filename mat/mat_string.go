@@ -10,15 +10,16 @@ func _() {
 	var x [1]struct{}
 	_ = x[None-0]
 	_ = x[Sand-1]
-	_ = x[Water-2]
-	_ = x[Iron-3]
-	_ = x[Oxygen-4]
-	_ = x[Hydrogen-5]
+	_ = x[Glass-2]
+	_ = x[Water-3]
+	_ = x[Iron-4]
+	_ = x[Oxygen-5]
+	_ = x[Hydrogen-6]
 }
 
-const _Mat_name = "NoneSandWaterIronOxygenHydrogen"
+const _Mat_name = "NoneSandGlassWaterIronOxygenHydrogen"
 
-var _Mat_index = [...]uint8{0, 4, 8, 13, 17, 23, 31}
+var _Mat_index = [...]uint8{0, 4, 8, 13, 18, 22, 28, 36}
 
 func (i Mat) String() string {
 	if i < 0 || i >= Mat(len(_Mat_index)-1) {

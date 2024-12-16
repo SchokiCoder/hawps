@@ -8,6 +8,7 @@ type Mat int
 const (
 	None Mat = iota
 	Sand
+	Glass
 	Water
 	Iron
 	Oxygen
@@ -29,13 +30,23 @@ const (
 	MsCount int = iota
 )
 
-// Don't touch that darn thing
 var (
-	_weights = [...]float64 {0.0,    1.5,     0.999,    7.874,    0.001323, 0.00008319} /* g/cm³ */
-	_states  = [...]State   {MsNone, MsGrain, MsLiquid, MsStatic, MsGas,    MsGas}
-	_rs      = [...]uint8   {0,      238,     100,      200,      5,        5}
-	_gs      = [...]uint8   {0,      217,     100,      200,      5,        5}
-	_bs      = [...]uint8   {0,      86,      255,      200,      40,       40}
+	_weights = [...]float64 {0.0,    1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319} /* g/cm³ */
+	_boilPs  = [...]int     {0,      2950,    2950,     100,      2861,     -183,     -252}       /* °C */
+	_meltPs  = [...]int     {0,      1713,    1713,     0,        1538,     -219,     -259}       /* °C */
+	_solidSs = [...]State   {MsNone, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic}   /* state when solid */
+
+	_solRs   = [...]uint8   {0,      238,     237,      150,      200,      45,       45}
+	_solGs   = [...]uint8   {0,      217,     237,      150,      200,      45,       45}
+	_solBs   = [...]uint8   {0,      86,      237,      255,      200,      80,       80}
+
+	_liqRs   = [...]uint8   {0,      255,     255,      100,      255,      25,       25}
+	_liqGs   = [...]uint8   {0,      110,     110,      100,      25,       25,       25}
+	_liqBs   = [...]uint8   {0,      56,      56,       255,      25,       60,       60}
+
+	_gasRs   = [...]uint8   {0,      255,     255,      50,       255,      5,        5}
+	_gasGs   = [...]uint8   {0,      0,       0,        50,       0,        5,        5}
+	_gasBs   = [...]uint8   {0,      0,       0,        255,      0,        40,       40}
 )
 
 func Weights(
@@ -44,37 +55,93 @@ func Weights(
 	return _weights[i]
 }
 
-func States(
+func BoilPs(
+	i Mat,
+) int {
+	return _boilPs[i]
+}
+
+func MeltPs(
+	i Mat,
+) int {
+	return _meltPs[i]
+}
+
+func SolidSs(
 	i Mat,
 ) State {
-	return _states[i]
+	return _solidSs[i]
 }
 
-func Rs(
+func SolRs(
 	i Mat,
 ) uint8 {
-	return _rs[i]
+	return _solRs[i]
 }
 
-func Gs(
+func SolGs(
 	i Mat,
 ) uint8 {
-	return _gs[i]
+	return _solGs[i]
 }
 
-func Bs(
+func SolBs(
 	i Mat,
 ) uint8 {
-	return _bs[i]
+	return _solBs[i]
+}
+
+func LiqRs(
+	i Mat,
+) uint8 {
+	return _liqRs[i]
+}
+
+func LiqGs(
+	i Mat,
+) uint8 {
+	return _liqGs[i]
+}
+
+func LiqBs(
+	i Mat,
+) uint8 {
+	return _liqBs[i]
+}
+
+func GasRs(
+	i Mat,
+) uint8 {
+	return _gasRs[i]
+}
+
+func GasGs(
+	i Mat,
+) uint8 {
+	return _gasGs[i]
+}
+
+func GasBs(
+	i Mat,
+) uint8 {
+	return _gasBs[i]
 }
 
 type World struct {
 	W        int
 	H        int
+	_rs      []uint8
+	Rs       [][]uint8
+	_gs      []uint8
+	Gs       [][]uint8
+	_bs      []uint8
+	Bs       [][]uint8
 	_dots    []Mat
 	Dots     [][]Mat
 	_spawner []Mat
 	Spawner  [][]Mat
+	_states  []State
+	States   [][]State
 	_thermo  []int
 	Thermo   [][]int
 }
@@ -84,19 +151,31 @@ func NewWorld(
 	temperature int,
 ) World {
 	var ret = World{
-		W:     w,
-		H:     h,
-		_dots: make([]Mat, w * h),
-		Dots:  make([][]Mat, w),
+		W:        w,
+		H:        h,
+		_rs:      make([]uint8, w * h),
+		Rs:       make([][]uint8, w),
+		_gs:      make([]uint8, w * h),
+		Gs:       make([][]uint8, w),
+		_bs:      make([]uint8, w * h),
+		Bs:       make([][]uint8, w),
+		_dots:    make([]Mat, w * h),
+		Dots:     make([][]Mat, w),
 		_spawner: make([]Mat, w * h),
 		Spawner:  make([][]Mat, w),
-		_thermo: make([]int, w * h),
-		Thermo:  make([][]int, w),
+		_states:  make([]State, w * h),
+		States:   make([][]State, w),
+		_thermo:  make([]int, w * h),
+		Thermo:   make([][]int, w),
 	}
 
 	for x := 0; x < w; x++ {
+		ret.Rs[x] = ret._rs[x * h:h + (x * h)]
+		ret.Gs[x] = ret._gs[x * h:h + (x * h)]
+		ret.Bs[x] = ret._bs[x * h:h + (x * h)]
 		ret.Dots[x] = ret._dots[x * h:h + (x * h)]
 		ret.Spawner[x] = ret._spawner[x * h:h + (x * h)]
+		ret.States[x] = ret._states[x * h:h + (x * h)]
 		ret.Thermo[x] = ret._thermo[x * h:h + (x * h)]
 
 		for y := 0; y < h; y++ {
@@ -173,6 +252,35 @@ func (w *World) UseEraser(
 
 func (w *World) Tick(
 ) {
+	for x := 0; x < w.W; x++ {
+		for y := 0; y < w.H; y++ {
+			if w.Dots[x][y] == None {
+				continue
+			}
+
+			if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
+				w.States[x][y] = SolidSs(w.Dots[x][y])
+				w.Rs[x][y] = SolRs(w.Dots[x][y])
+				w.Gs[x][y] = SolGs(w.Dots[x][y])
+				w.Bs[x][y] = SolBs(w.Dots[x][y])
+			} else if w.Thermo[x][y] < BoilPs(w.Dots[x][y]) {
+				w.States[x][y] = MsLiquid
+
+				if w.Dots[x][y] == Sand {
+					w.Dots[x][y] = Glass
+				}
+				w.Rs[x][y] = LiqRs(w.Dots[x][y])
+				w.Gs[x][y] = LiqGs(w.Dots[x][y])
+				w.Bs[x][y] = LiqBs(w.Dots[x][y])
+			} else {
+				w.States[x][y] = MsGas
+				w.Rs[x][y] = GasRs(w.Dots[x][y])
+				w.Gs[x][y] = GasGs(w.Dots[x][y])
+				w.Bs[x][y] = GasBs(w.Dots[x][y])
+			}
+		}
+	}
+
 	w.applyChemReactions()
 	w.applyGravity()
 	w.runSpawners()
@@ -222,7 +330,7 @@ func (w *World) applyChemReactions(
 func (w *World) applyGravity(
 ) {
 	action := func(x, y int) {
-		switch (States(w.Dots[x][y])) {
+		switch w.States[x][y] {
 		case MsGas:
 			w.dropGas(x, y)
 
@@ -257,7 +365,7 @@ func (w *World) dropGas(
 	)
 
 	canGasDisplace := func(x, y, dx, dy int) bool {
-		switch States(w.Dots[dx][dy]) {
+		switch w.States[dx][dy] {
 		case MsNone: fallthrough
 		case MsGas:
 			if Weights(w.Dots[dx][dy]) < Weights(w.Dots[x][y]) {
@@ -285,8 +393,8 @@ func (w *World) dropGas(
 			return false
 		}
 
-		if States(w.Dots[dx][dy]) == MsStatic ||
-		   States(w.Dots[dx][dy]) == MsGrain {
+		if w.States[dx][dy] == MsStatic ||
+		   w.States[dx][dy] == MsGrain {
 			return true
 		}
 
@@ -314,7 +422,7 @@ func (w *World) dropGrain(
 	)
 
 	canGrainDisplace := func(x, y, dx, dy int) bool {
-		switch (States(w.Dots[dx][dy])) {
+		switch w.States[dx][dy] {
 		case MsNone: fallthrough
 		case MsGas:
 			return true
@@ -365,7 +473,7 @@ func (w *World) dropLiquid(
 	)
 
 	canLiquidDisplace := func(x, y, dx, dy int) bool {
-		switch States(w.Dots[dx][dy]) {
+		switch w.States[dx][dy] {
 		case MsNone: fallthrough
 		case MsGas:
 			return true
@@ -394,8 +502,8 @@ func (w *World) dropLiquid(
 			return false
 		}
 
-		if States(w.Dots[dx][dy]) == MsStatic ||
-		   States(w.Dots[dx][dy]) == MsGrain {
+		if w.States[dx][dy] == MsStatic ||
+		   w.States[dx][dy] == MsGrain {
 			return true
 		}
 
@@ -432,13 +540,25 @@ func (w *World) swapDots(
 	x2, y2 int,
 ) {
 	var (
+		tmpR = w.Rs[x][y]
+		tmpG = w.Gs[x][y]
+		tmpB = w.Bs[x][y]
 		tmpM = w.Dots[x][y]
+		tmpS = w.States[x][y]
 		tmpT = w.Thermo[x][y]
 	)
 
+	w.Rs[x][y] = w.Rs[x2][y2]
+	w.Gs[x][y] = w.Gs[x2][y2]
+	w.Bs[x][y] = w.Bs[x2][y2]
 	w.Dots[x][y] = w.Dots[x2][y2]
+	w.States[x][y] = w.States[x2][y2]
 	w.Thermo[x][y] = w.Thermo[x2][y2]
 
+	w.Rs[x2][y2] = tmpR
+	w.Gs[x2][y2] = tmpG
+	w.Bs[x2][y2] = tmpB
 	w.Dots[x2][y2] = tmpM
+	w.States[x2][y2] = tmpS
 	w.Thermo[x2][y2] = tmpT
 }

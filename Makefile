@@ -11,12 +11,14 @@ GO_COMPILE_VARS  :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameForma
 
 .PHONY: all build clean vet
 
-all: vet build
+all: generate vet build
 
 build: $(APP_NAME)
 
 clean:
-	rm -f $(APP_NAME)
+	rm -f $(APP_NAME) main/main_string.go mat/mat_string.go
+
+generate: main/main_string.go mat/mat_string.go
 
 run: clean all
 	./$(APP_NAME) -window

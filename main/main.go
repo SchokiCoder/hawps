@@ -61,7 +61,7 @@ const (
 	uiMatBgB       = 130
 	uiMatBgA       = 255
 	uiTileSetW     = 3
-	stdTemperature = 20
+	stdTemperature = -253
 	stdTickrate    = 24
 	stdWinW        = 640
 	stdWinH        = 480
@@ -121,9 +121,9 @@ func (g physGame) Draw(
 		for y := 0; y < g.World.H; y++ {
 			g.WorldImg.Set(x, y,
 				color.RGBA{
-					mat.Rs(g.World.Dots[x][y]),
-					mat.Gs(g.World.Dots[x][y]),
-					mat.Bs(g.World.Dots[x][y]),
+					g.World.Rs[x][y],
+					g.World.Gs[x][y],
+					g.World.Bs[x][y],
 					255})
 		}
 	}
@@ -280,7 +280,8 @@ func (g physGame) UpdateTool(
 
 	case spawner:
 		for i := mat.FirstReal; i <= mat.Last; i++ {
-			if mat.States(mat.Mat(i)) != mat.MsStatic {
+			state := tempMatToState(stdTemperature, i)
+			if state != mat.MsStatic {
 				tiles = append(tiles, int(i))
 			}
 		}
@@ -398,11 +399,31 @@ func genMatImages() []*ebiten.Image {
 		opt := ebiten.DrawImageOptions{}
 		img := ebiten.NewImage(pngSize, pngSize)
 
-		opt.ColorM.ScaleWithColor(color.RGBA{mat.Rs(i), mat.Gs(i), mat.Bs(i), 255})
-		img.DrawImage(bgImgs[mat.States(i) - 1], &opt)
+		state := tempMatToState(stdTemperature, i)
+		var r, g, b uint8
+		switch state {
+		case mat.MsGrain:  fallthrough
+		case mat.MsStatic:
+			r = mat.SolRs(i)
+			g = mat.SolGs(i)
+			b = mat.SolBs(i)
+
+		case mat.MsLiquid:
+			r = mat.LiqRs(i)
+			g = mat.LiqGs(i)
+			b = mat.LiqBs(i)
+
+		case mat.MsGas:
+			r = mat.GasRs(i)
+			g = mat.GasGs(i)
+			b = mat.GasBs(i)
+		}
+
+		opt.ColorM.ScaleWithColor(color.RGBA{r, g, b, 255})
+		img.DrawImage(bgImgs[state - 1], &opt)
 
 		opt.ColorM.Reset()
-		opt.ColorM.ScaleWithColor(color.RGBA{255-mat.Rs(i), 255-mat.Gs(i), 255-mat.Bs(i), 255})
+		opt.ColorM.ScaleWithColor(color.RGBA{255-r, 255-g, 255-b, 255})
 		opt.GeoM.Translate(float64(pngSize - matImg.Bounds().Dx()) / 2,
 		                   float64(pngSize - matImg.Bounds().Dy() - 1))
 		img.DrawImage(matImg, &opt)
@@ -492,6 +513,23 @@ func handleArgs(
 	}
 
 	return true
+}
+
+func tempMatToState(
+	t int,
+	m mat.Mat,
+) mat.State {
+	var ret mat.State
+
+	if t < mat.MeltPs(m) {
+		ret = mat.SolidSs(m)
+	} else if t < mat.BoilPs(m) {
+		ret = mat.MsLiquid
+	} else {
+		ret = mat.MsGas
+	}
+
+	return ret
 }
 
 func main(
