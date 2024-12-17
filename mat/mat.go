@@ -186,6 +186,17 @@ func NewWorld(
 	return ret
 }
 
+func (w *World) clearDot(
+	x, y int,
+) {
+	w.Rs[x][y] = 0
+	w.Gs[x][y] = 0
+	w.Bs[x][y] = 0
+	w.Dots[x][y] = None
+	w.States[x][y] = MsNone
+	w.Thermo[x][y] = 0
+}
+
 func (w *World) UseBrush(
 	m Mat,
 	t float64,
@@ -246,7 +257,7 @@ func (w *World) UseEraser(
 
 	for x := x1; x <= x2; x++ {
 		for y := y1; y <= y2; y++ {
-			w.Dots[x][y] = None
+			w.clearDot(x, y)
 			w.Spawner[x][y] = None
 		}
 	}
@@ -295,12 +306,12 @@ func (w *World) applyChemReactions(
 ) {
 	var x, y int
 
-	react := func(src, dest *Mat) {
-		switch *src {
+	react := func(x, y, dx, dy int) {
+		switch w.Dots[x][y] {
 		case Oxygen:
-			if Hydrogen == *dest {
-				*src = None
-				*dest = Water
+			if Hydrogen == w.Dots[dx][dy] {
+				w.clearDot(x, y)
+				w.Dots[dx][dy] = Water
 			}
 
 		default:
@@ -309,26 +320,26 @@ func (w *World) applyChemReactions(
 
 	y = w.H - 1;
 	for x = 1; x < w.W - 2; x++ {
-		react(&w.Dots[x][y], &w.Dots[x - 1][y])
-		react(&w.Dots[x][y], &w.Dots[x + 1][y])
+		react(x, y, x - 1, y)
+		react(x, y, x + 1, y)
 	}
 
 	for x = 1; x < w.W - 2; x++ {
 		for y = w.H - 2; y >= 0; y-- {
-			react(&w.Dots[x][y], &w.Dots[x][y + 1])
-			react(&w.Dots[x][y], &w.Dots[x - 1][y])
-			react(&w.Dots[x][y], &w.Dots[x + 1][y])
+			react(x, y, x, y + 1)
+			react(x, y, x - 1, y)
+			react(x, y, x + 1, y)
 		}
 	}
 
 	x = 0
 	for y = w.H - 2; y >= 0; y-- {
-		react(&w.Dots[x][y], &w.Dots[x][y + 1])
+		react(x, y, x, y + 1)
 	}
 
 	x = w.W - 1;
 	for y = w.H - 2; y >= 0; y-- {
-		react(&w.Dots[x][y], &w.Dots[x][y + 1])
+		react(x, y, x, y + 1)
 	}
 }
 

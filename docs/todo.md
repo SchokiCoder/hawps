@@ -33,7 +33,7 @@ but now the direction of which gets shuffled.
 
 - [x] add basic thermal conduction
 
-- [ ] fix chemical reactions, eraser tool leaving colors behind
+- [x] fix improper dot clear on chemical reactions and erasing
 
 - [ ] add a thermal vision switch
 - [ ] add thermal conductivity values to material properties and calculation
