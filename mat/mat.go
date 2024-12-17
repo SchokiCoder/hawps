@@ -32,8 +32,8 @@ const (
 
 var (
 	_weights = [...]float64 {0.0,    1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319} /* g/cm³ */
-	_boilPs  = [...]int     {0,      2950,    2950,     100,      2861,     -183,     -252}       /* °C */
-	_meltPs  = [...]int     {0,      1713,    1713,     0,        1538,     -219,     -259}       /* °C */
+	_boilPs  = [...]float64 {0,      2950,    2950,     100,      2861,     -182.96,  -252.88}    /* °C */
+	_meltPs  = [...]float64 {0,      1713,    1713,     0,        1538,     -218.79,  -259.16}    /* °C */
 	_solidSs = [...]State   {MsNone, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic}   /* state when solid */
 
 	_solRs   = [...]uint8   {0,      238,     237,      150,      200,      45,       45}
@@ -57,13 +57,13 @@ func Weights(
 
 func BoilPs(
 	i Mat,
-) int {
+) float64 {
 	return _boilPs[i]
 }
 
 func MeltPs(
 	i Mat,
-) int {
+) float64 {
 	return _meltPs[i]
 }
 
@@ -142,13 +142,13 @@ type World struct {
 	Spawner  [][]Mat
 	_states  []State
 	States   [][]State
-	_thermo  []int
-	Thermo   [][]int
+	_thermo  []float64
+	Thermo   [][]float64
 }
 
 func NewWorld(
 	w, h int,
-	temperature int,
+	temperature float64,
 ) World {
 	var ret = World{
 		W:        w,
@@ -165,8 +165,8 @@ func NewWorld(
 		Spawner:  make([][]Mat, w),
 		_states:  make([]State, w * h),
 		States:   make([][]State, w),
-		_thermo:  make([]int, w * h),
-		Thermo:   make([][]int, w),
+		_thermo:  make([]float64, w * h),
+		Thermo:   make([][]float64, w),
 	}
 
 	for x := 0; x < w; x++ {
@@ -187,7 +187,8 @@ func NewWorld(
 }
 
 func (w *World) UseBrush(
-	material Mat,
+	m Mat,
+	t float64,
 	xC, yC int,
 	radius int,
 ) {
@@ -213,7 +214,8 @@ func (w *World) UseBrush(
 
 	for x := x1; x <= x2; x++ {
 		for y := y1; y <= y2; y++ {
-			w.Dots[x][y] = material
+			w.Dots[x][y] = m
+			w.Thermo[x][y] = t
 		}
 	}
 }
@@ -251,7 +253,10 @@ func (w *World) UseEraser(
 }
 
 func (w *World) Tick(
+	spawnerTemperature float64,
 ) {
+	w.applyThermalConduction()
+
 	for x := 0; x < w.W; x++ {
 		for y := 0; y < w.H; y++ {
 			if w.Dots[x][y] == None {
@@ -283,7 +288,7 @@ func (w *World) Tick(
 
 	w.applyChemReactions()
 	w.applyGravity()
-	w.runSpawners()
+	w.runSpawners(spawnerTemperature)
 }
 
 func (w *World) applyChemReactions(
@@ -354,6 +359,36 @@ func (w *World) applyGravity(
 				action(x, y)
 			}
 		}
+	}
+}
+
+func (w *World) applyThermalConduction(
+) {
+	conduct := func(
+		x, y, x2, y2 int,
+	) {
+		if MsNone == w.States[x][y] ||
+		   MsNone == w.States[x2][y2] {
+			return
+		}
+
+		tmp := (w.Thermo[x][y] + w.Thermo[x2][y2]) / 2.0
+		w.Thermo[x][y] = tmp
+		w.Thermo[x2][y2] = tmp
+	}
+
+	for y := 0; y < w.H - 1; y++ {
+		for x := 0; x < w.W - 1; x++ {
+			conduct(x, y, x + 1, y)
+			conduct(x, y, x, y + 1)
+		}
+		x := w.W - 1
+		conduct(x, y, x, y + 1)
+	}
+
+	y := w.H - 1
+	for x := 0; x < w.W - 1; x++ {
+		conduct(x, y, x + 1, y)
 	}
 }
 
@@ -524,11 +559,13 @@ func (w *World) dropLiquid(
 }
 
 func (w *World) runSpawners(
+	t float64,
 ) {
 	for x := 0; x < w.W; x++ {
 		for y := 0; y < w.H; y++ {
 			if w.Spawner[x][y] != None {
 				w.Dots[x][y] = w.Spawner[x][y]
+				w.Thermo[x][y] = t
 			}
 		}
 	}

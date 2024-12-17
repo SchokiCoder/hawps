@@ -30,9 +30,14 @@ It was following the horizontal "applyGravity" loop, which it still does,
 but now the direction of which gets shuffled.
 
 - [x] add aggregate state variation to live dots
-- [ ] add thermal conduction
-- [ ] add tool to manipulate temperature of target mass
+
+- [x] add basic thermal conduction
+
+- [ ] fix chemical reactions, eraser tool leaving colors behind
+
 - [ ] add a thermal vision switch
+- [ ] add thermal conductivity values to material properties and calculation
+- [ ] add tool to manipulate temperature of target mass
 
 - [ ] fix left border gravity reluctance
 

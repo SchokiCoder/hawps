@@ -61,7 +61,7 @@ const (
 	uiMatBgB       = 130
 	uiMatBgA       = 255
 	uiTileSetW     = 3
-	stdTemperature = -253
+	stdTemperature = 1000
 	stdTickrate    = 24
 	stdWinW        = 640
 	stdWinH        = 480
@@ -173,6 +173,7 @@ func (g *physGame) HandleClick(
 		case brush:
 			g.World.UseBrush(
 				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
+				stdTemperature,
 				mX - g.WorldX,
 				mY - g.WorldY,
 				2)
@@ -260,7 +261,7 @@ func (g physGame) Update(
 		return nil
 	}
 
-	g.World.Tick()
+	g.World.Tick(stdTemperature)
 
 	return nil
 }
@@ -516,7 +517,7 @@ func handleArgs(
 }
 
 func tempMatToState(
-	t int,
+	t float64,
 	m mat.Mat,
 ) mat.State {
 	var ret mat.State
