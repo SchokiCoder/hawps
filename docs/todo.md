@@ -35,8 +35,9 @@ but now the direction of which gets shuffled.
 
 - [x] fix improper dot clear on chemical reactions and erasing
 
+- [x] add thermal conductivity values to material properties and calculation
 - [ ] add a thermal vision switch
-- [ ] add thermal conductivity values to material properties and calculation
+      (C: -20° to 200°) -> (HSV-color: 260 to 0) or (GRAY: 0 to 255)
 - [ ] add tool to manipulate temperature of target mass
 
 - [ ] fix left border gravity reluctance

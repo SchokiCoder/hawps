@@ -35,6 +35,7 @@ var (
 	_boilPs  = [...]float64 {0,      2950,    2950,     100,      2861,     -182.96,  -252.88}    /* °C */
 	_meltPs  = [...]float64 {0,      1713,    1713,     0,        1538,     -218.79,  -259.16}    /* °C */
 	_solidSs = [...]State   {MsNone, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic}   /* state when solid */
+	_thCond  = [...]float64 {0.0,    0.00673, 0.00673,  0.00061,  0.084,    0.0002,   0.00018}    /* W/(m⋅K)/1000 */
 
 	_solRs   = [...]uint8   {0,      238,     237,      150,      200,      45,       45}
 	_solGs   = [...]uint8   {0,      217,     237,      150,      200,      45,       45}
@@ -65,6 +66,12 @@ func MeltPs(
 	i Mat,
 ) float64 {
 	return _meltPs[i]
+}
+
+func ThCond(
+	i Mat,
+) float64 {
+	return _thCond[i]
 }
 
 func SolidSs(
@@ -383,9 +390,12 @@ func (w *World) applyThermalConduction(
 			return
 		}
 
-		tmp := (w.Thermo[x][y] + w.Thermo[x2][y2]) / 2.0
-		w.Thermo[x][y] = tmp
-		w.Thermo[x2][y2] = tmp
+		combCond := ((ThCond(w.Dots[x][y]) + ThCond(w.Dots[x2][y2])) / 2)
+		c1 := (w.Thermo[x2][y2] - w.Thermo[x][y]) * combCond
+		c2 := (w.Thermo[x][y] - w.Thermo[x2][y2]) * combCond
+
+		w.Thermo[x][y] += c1
+		w.Thermo[x2][y2] += c2
 	}
 
 	for y := 0; y < w.H - 1; y++ {
