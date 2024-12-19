@@ -250,6 +250,9 @@ func (g physGame) Update(
 				*g.Tickrate /= 2
 				ebiten.SetTPS(*g.Tickrate)
 			}
+
+		case ebiten.KeyT:
+			g.World.ThVision = !g.World.ThVision
 		}
 	}
 
@@ -360,6 +363,9 @@ Default keybinds:
         Increase and decrease the tickrate respectively
         min: %v
         max: %v
+
+    T
+        Toggle thermal vision (grayscale displaying %v to %v degree C)
 `;
 
 func genMatImages() []*ebiten.Image {
@@ -476,7 +482,9 @@ func handleArgs(
 			           stdTickrate,
 			           stdWinW,
 			           minTickrate,
-			           maxTickrate)
+			           maxTickrate,
+			           mat.ThermalVisionMinT,
+			           mat.ThermalVisionMinT+255)
 			return false
 
 		case "-noborder":

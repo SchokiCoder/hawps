@@ -30,6 +30,10 @@ const (
 	MsCount int = iota
 )
 
+const (
+	ThermalVisionMinT = -75
+)
+
 var (
 	_weights = [...]float64 {0.0,    1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319} /* g/cm³ */
 	_boilPs  = [...]float64 {0,      2950,    2950,     100,      2861,     -182.96,  -252.88}    /* °C */
@@ -137,12 +141,15 @@ func GasBs(
 type World struct {
 	W        int
 	H        int
+
 	_rs      []uint8
 	Rs       [][]uint8
 	_gs      []uint8
 	Gs       [][]uint8
 	_bs      []uint8
 	Bs       [][]uint8
+	ThVision bool
+
 	_dots    []Mat
 	Dots     [][]Mat
 	_spawner []Mat
@@ -273,6 +280,30 @@ func (w *World) UseEraser(
 func (w *World) Tick(
 	spawnerTemperature float64,
 ) {
+	var rgbOverride func(int, int)
+
+	doThVision := func(
+		x, y int,
+	) {
+		visT := w.Thermo[x][y]
+		if visT > ThermalVisionMinT + 255 {
+			visT = ThermalVisionMinT + 255
+		} else if visT < ThermalVisionMinT {
+			visT = ThermalVisionMinT
+		}
+
+		gray := uint8(visT - ThermalVisionMinT)
+		w.Rs[x][y] = gray
+		w.Gs[x][y] = gray
+		w.Bs[x][y] = gray
+	}
+
+	if w.ThVision {
+		rgbOverride = doThVision
+	} else {
+		rgbOverride = func(int, int){}
+	}
+
 	w.applyThermalConduction()
 
 	for x := 0; x < w.W; x++ {
@@ -301,6 +332,8 @@ func (w *World) Tick(
 				w.Gs[x][y] = GasGs(w.Dots[x][y])
 				w.Bs[x][y] = GasBs(w.Dots[x][y])
 			}
+
+			rgbOverride(x, y)
 		}
 	}
 
