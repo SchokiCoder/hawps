@@ -61,10 +61,19 @@ const (
 	uiMatBgB       = 130
 	uiMatBgA       = 255
 	uiTileSetW     = 3
-	stdTemperature = 1000
+	spawnerR       = 255
+	spawnerG       = 0
+	spawnerB       = 255
+	stdTemperature = -10
 	stdTickrate    = 24
 	stdWinW        = 640
 	stdWinH        = 480
+	wBgR           = 0
+	wBgG           = 0
+	wBgB           = 0
+	wThBgR         = 100
+	wThBgG         = 0
+	wThBgB         = 0
 )
 
 type physGame struct {
@@ -119,25 +128,22 @@ func (g physGame) Draw(
 	// So away it went for Set().
 	for x := 0; x < g.World.W; x++ {
 		for y := 0; y < g.World.H; y++ {
+			if g.World.Spawner[x][y] != mat.None {
+				g.WorldImg.Set(x, y,
+					color.RGBA{
+						spawnerR,
+						spawnerG,
+						spawnerB,
+						255})
+				continue
+			}
+
 			g.WorldImg.Set(x, y,
 				color.RGBA{
 					g.World.Rs[x][y],
 					g.World.Gs[x][y],
 					g.World.Bs[x][y],
 					255})
-		}
-	}
-
-	for x := 0; x < g.World.W; x++ {
-		for y := 0; y < g.World.H; y++ {
-			if g.World.Spawner[x][y] != mat.None {
-				g.WorldImg.Set(x, y,
-					color.RGBA{
-						255,
-						0,
-						255,
-						255})
-			}
 		}
 	}
 
@@ -253,6 +259,15 @@ func (g physGame) Update(
 
 		case ebiten.KeyT:
 			g.World.ThVision = !g.World.ThVision
+			if true == g.World.ThVision {
+				g.World.BgR = wThBgR
+				g.World.BgG = wThBgG
+				g.World.BgB = wThBgB
+			} else {
+				g.World.BgR = wBgR
+				g.World.BgG = wBgG
+				g.World.BgB = wBgB
+			}
 		}
 	}
 
@@ -264,7 +279,8 @@ func (g physGame) Update(
 		return nil
 	}
 
-	g.World.Tick(stdTemperature)
+	// TODO remove manual tomfoolery
+	g.World.Tick(stdTemperature * 0 + 120)
 
 	return nil
 }

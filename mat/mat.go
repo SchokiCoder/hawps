@@ -142,6 +142,9 @@ type World struct {
 	W        int
 	H        int
 
+	BgR      uint8
+	BgG      uint8
+	BgB      uint8
 	_rs      []uint8
 	Rs       [][]uint8
 	_gs      []uint8
@@ -203,9 +206,9 @@ func NewWorld(
 func (w *World) clearDot(
 	x, y int,
 ) {
-	w.Rs[x][y] = 0
-	w.Gs[x][y] = 0
-	w.Bs[x][y] = 0
+	w.Rs[x][y] = w.BgR
+	w.Gs[x][y] = w.BgG
+	w.Bs[x][y] = w.BgB
 	w.Dots[x][y] = None
 	w.States[x][y] = MsNone
 	w.Thermo[x][y] = 0
@@ -308,7 +311,10 @@ func (w *World) Tick(
 
 	for x := 0; x < w.W; x++ {
 		for y := 0; y < w.H; y++ {
-			if w.Dots[x][y] == None {
+			if None == w.Dots[x][y] {
+				w.Rs[x][y] = w.BgR
+				w.Gs[x][y] = w.BgG
+				w.Bs[x][y] = w.BgB
 				continue
 			}
 

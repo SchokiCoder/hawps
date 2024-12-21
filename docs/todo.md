@@ -38,6 +38,8 @@ but now the direction of which gets shuffled.
 - [x] add thermal conductivity values to material properties and calculation
 - [x] add thermal vision
 
+- [x] add world bg sys and specific thermal vision bg
+
 - [ ] add tool to manipulate temperature of target mass
 
 - [ ] fix left border gravity reluctance
