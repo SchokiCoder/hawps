@@ -412,7 +412,7 @@ func (w *World) applyGravity(
 				action(x, y)
 			}
 		} else {
-			for x := w.W - 1; x > 0; x-- {
+			for x := w.W - 1; x >= 0; x-- {
 				action(x, y)
 			}
 		}

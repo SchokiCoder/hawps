@@ -1,4 +1,4 @@
-S- [ ] test android build
+- [ ] test android build
 `sudo apt install google-android-ndk-r26d-installer or newer version`
 
 - [ ] add "hold ALT key" to display what UI element uses which key bind
@@ -40,9 +40,9 @@ but now the direction of which gets shuffled.
 
 - [x] add world bg sys and specific thermal vision bg
 
-- [ ] add tool to manipulate temperature of target mass
+- [x] fix non-gravity on every 2nd row of left border
 
-- [ ] fix left border gravity reluctance
+- [ ] add tool to manipulate temperature of target mass
 
 - [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
 
