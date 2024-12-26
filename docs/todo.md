@@ -5,6 +5,8 @@
 
 # Pyro Update
 
+- [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
+
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
 - [ ] fix stack collapsing displacing dots to the top of the stack
@@ -42,9 +44,11 @@ but now the direction of which gets shuffled.
 
 - [x] fix non-gravity on every 2nd row of left border
 
-- [ ] add tool to manipulate temperature of target mass
+- [x] add preview for tool hoverzone
 
-- [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
+- [ ] fix pause causing invisible brush usages
+
+- [ ] add tool to manipulate temperature of target mass? too much ui complexity?
 
 - [ ] set version to 0.5
 

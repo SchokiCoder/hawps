@@ -49,6 +49,8 @@ var (
 )
 
 const (
+	brushRadius    = 2
+	eraserRadius   = 5
 	maxTickrate    = stdTickrate * 2
 	minTickrate    = 1
 	pngSize        = 16
@@ -68,6 +70,9 @@ const (
 	stdTickrate    = 24
 	stdWinW        = 640
 	stdWinH        = 480
+	toolHoverR     = 0
+	toolHoverG     = 255
+	toolHoverB     = 0
 	wBgR           = 0
 	wBgG           = 0
 	wBgB           = 0
@@ -147,6 +152,30 @@ func (g physGame) Draw(
 		}
 	}
 
+	radius := 0
+	switch g.Toolbox.Cursor {
+	case 0:
+		radius = brushRadius
+	case 2:
+		radius = eraserRadius
+	}
+
+	thX, thY := ebiten.CursorPosition()
+	thX -= radius + g.WorldX
+	thY -= radius + g.WorldY
+	thX2 := thX + radius * 2 + 1
+	thY2 := thY + radius * 2 + 1
+	for x := thX; x < thX2; x++ {
+		for y := thY; y < thY2; y++ {
+			g.WorldImg.Set(x, y,
+				color.RGBA{
+					toolHoverR,
+					toolHoverG,
+					toolHoverB,
+					255})
+		}
+	}
+
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
 	screen.DrawImage(g.WorldImg, &opt)
@@ -182,7 +211,7 @@ func (g *physGame) HandleClick(
 				stdTemperature,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				2)
+				brushRadius)
 
 		case spawner:
 			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] =
@@ -192,7 +221,7 @@ func (g *physGame) HandleClick(
 			g.World.UseEraser(
 				mX - g.WorldX,
 				mY - g.WorldY,
-				5)
+				eraserRadius)
 
 		default:
 			panic("Used unknown tool " + curTool.String())
