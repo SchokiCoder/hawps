@@ -141,6 +141,7 @@ func GasBs(
 type World struct {
 	W        int
 	H        int
+	Paused   bool
 
 	BgR      uint8
 	BgG      uint8
@@ -341,6 +342,10 @@ func (w *World) Tick(
 
 			rgbOverride(x, y)
 		}
+	}
+
+	if w.Paused {
+		return
 	}
 
 	w.applyChemReactions()

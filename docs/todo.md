@@ -46,7 +46,7 @@ but now the direction of which gets shuffled.
 
 - [x] add preview for tool hoverzone
 
-- [ ] fix pause causing invisible brush usages
+- [x] fix pause skipping dot color updates
 
 - [ ] add tool to manipulate temperature of target mass? too much ui complexity?
 

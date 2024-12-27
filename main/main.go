@@ -84,7 +84,6 @@ const (
 type physGame struct {
 	FrameW     *int
 	FrameH     *int
-	pause      *bool
 	Tickrate   *int
 	Toolbox    *ui.TileSet
 	Matbox     *ui.TileSet
@@ -99,7 +98,6 @@ func newPhysGame(
 	var ret = physGame{
 		FrameW:   new(int),
 		FrameH:   new(int),
-		pause:    new(bool),
 		Tickrate: new(int),
 		Toolbox:  new(ui.TileSet),
 		Matbox:   new(ui.TileSet),
@@ -250,7 +248,7 @@ func (g physGame) Update(
 			return ebiten.Termination
 
 		case ebiten.KeySpace:
-			*g.pause = !*g.pause
+			g.World.Paused = !g.World.Paused
 
 		case ebiten.KeyArrowLeft:
 			if g.Toolbox.Cursor > 0 {
@@ -302,10 +300,6 @@ func (g physGame) Update(
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		g.HandleClick()
-	}
-
-	if (*g.pause) {
-		return nil
 	}
 
 	// TODO remove manual tomfoolery
