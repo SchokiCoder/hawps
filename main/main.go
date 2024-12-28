@@ -198,8 +198,8 @@ func (g *physGame) HandleClick(
 	}
 
 	if !clicked &&
-	   mX > g.WorldX && mX < g.WorldX + g.World.W &&
-	   mY > g.WorldY && mY < g.WorldY + g.World.H {
+	   mX >= g.WorldX && mX < g.WorldX + g.World.W &&
+	   mY >= g.WorldY && mY < g.WorldY + g.World.H {
 		curTool := tool(g.Toolbox.Cursor)
 
 		switch curTool {

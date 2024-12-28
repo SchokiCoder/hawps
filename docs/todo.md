@@ -48,7 +48,12 @@ but now the direction of which gets shuffled.
 
 - [x] fix pause skipping dot color updates
 
+- [x] fix clicks on world's first col and row not doing anything
+
+- [ ] add None to spawner mats
+
 - [ ] add tool to manipulate temperature of target mass? too much ui complexity?
+      and wrap things up regarding the default temperatures of spawned mats
 
 - [ ] set version to 0.5
 
