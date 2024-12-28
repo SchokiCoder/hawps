@@ -308,8 +308,6 @@ func (w *World) Tick(
 		rgbOverride = func(int, int){}
 	}
 
-	w.applyThermalConduction()
-
 	for x := 0; x < w.W; x++ {
 		for y := 0; y < w.H; y++ {
 			if None == w.Dots[x][y] {
@@ -348,6 +346,7 @@ func (w *World) Tick(
 		return
 	}
 
+	w.applyThermalConduction()
 	w.applyChemReactions()
 	w.applyGravity()
 	w.runSpawners(spawnerTemperature)

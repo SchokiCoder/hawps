@@ -50,6 +50,8 @@ but now the direction of which gets shuffled.
 
 - [x] fix clicks on world's first col and row not doing anything
 
+- [x] fix pause not effecting thermal conduction
+
 - [ ] add None to spawner mats
 
 - [ ] add tool to manipulate temperature of target mass? too much ui complexity?
