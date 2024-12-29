@@ -131,7 +131,7 @@ func (g physGame) Draw(
 	// So away it went for Set().
 	for x := 0; x < g.World.W; x++ {
 		for y := 0; y < g.World.H; y++ {
-			if g.World.Spawner[x][y] != mat.None {
+			if true == g.World.Spawner[x][y] {
 				g.WorldImg.Set(x, y,
 					color.RGBA{
 						spawnerR,
@@ -212,7 +212,8 @@ func (g *physGame) HandleClick(
 				brushRadius)
 
 		case spawner:
-			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] =
+			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] = true
+			g.World.SpwnMat[mX - g.WorldX][mY - g.WorldY] =
 				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor])
 
 		case eraser:
@@ -322,6 +323,7 @@ func (g physGame) UpdateTool(
 		g.Matbox.VisibleTiles = tiles
 
 	case spawner:
+		tiles = append(tiles, int(mat.None))
 		for i := mat.FirstReal; i <= mat.Last; i++ {
 			state := tempMatToState(stdTemperature, i)
 			if state != mat.MsStatic {
@@ -409,9 +411,9 @@ Default keybinds:
 
 func genMatImages() []*ebiten.Image {
 	var (
-		bgImgs [mat.MsCount - 1]*ebiten.Image
+		bgImgs [mat.MsCount]*ebiten.Image
 		matBgPrefix = "assets/matbg_"
-		matBgPaths = [mat.MsCount - 1]string{
+		matBgPaths = [mat.MsCount]string{
 			"static",
 			"grain",
 			"liquid",
@@ -421,10 +423,6 @@ func genMatImages() []*ebiten.Image {
 		postfix = ".png"
 		ret []*ebiten.Image
 	)
-
-	img := ebiten.NewImage(pngSize, pngSize)
-	img.Fill(color.RGBA{255, 0, 255, 255})
-	ret = append(ret, img)
 
 	imgopen := func(path string) *ebiten.Image {
 		img, _, err := ebitenutil.NewImageFromFileSystem(pngs, path)
@@ -439,7 +437,7 @@ func genMatImages() []*ebiten.Image {
 		bgImgs[i] = imgopen(path)
 	}
 
-	for i := mat.FirstReal; i <= mat.Last; i++ {
+	for i := mat.None; i <= mat.Last; i++ {
 		path := matPrefix + i.String() + postfix
 		matImg := imgopen(path)
 		opt := ebiten.DrawImageOptions{}
@@ -466,7 +464,7 @@ func genMatImages() []*ebiten.Image {
 		}
 
 		opt.ColorM.ScaleWithColor(color.RGBA{r, g, b, 255})
-		img.DrawImage(bgImgs[state - 1], &opt)
+		img.DrawImage(bgImgs[state], &opt)
 
 		opt.ColorM.Reset()
 		opt.ColorM.ScaleWithColor(color.RGBA{255-r, 255-g, 255-b, 255})
@@ -666,11 +664,7 @@ func main(
 	                                 genMatImages())
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
 
-	tiles = nil
-	for i := mat.FirstReal; i <= mat.Last; i++ {
-		tiles = append(tiles, int(i))
-	}
-	g.Matbox.VisibleTiles = tiles
+	g.UpdateTool()
 
 	if true == tsWide {
 		g.Matbox.Y = g.Toolbox.Size().Y

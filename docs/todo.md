@@ -52,7 +52,14 @@ but now the direction of which gets shuffled.
 
 - [x] fix pause not effecting thermal conduction
 
-- [ ] add None to spawner mats
+- [x] add None to spawner mats
+This also lead to the removal of the MsNone state,
+which since dynamic temperatures got too error prone anyway.
+
+- [ ] generalize displacement checks (if it's lighter and not static, displace)
+
+- [ ] maybe changing all functions like applyThermalConduction to be per dot,
+then putting them all in Tick increases performance
 
 - [ ] add tool to manipulate temperature of target mass? too much ui complexity?
       and wrap things up regarding the default temperatures of spawned mats
