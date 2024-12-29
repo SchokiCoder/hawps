@@ -7,6 +7,9 @@
 
 - [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
 
+- [ ] change mat weight loss to be gradual across the state,
+instead of instant upon state change
+
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
 - [ ] fix stack collapsing displacing dots to the top of the stack
@@ -56,7 +59,8 @@ but now the direction of which gets shuffled.
 This also lead to the removal of the MsNone state,
 which since dynamic temperatures got too error prone anyway.
 
-- [ ] generalize displacement checks (if it's lighter and not static, displace)
+- [x] add weight loss for warmer materials, upon state change
+This comes with generalized displacement checks.
 
 - [ ] maybe changing all functions like applyThermalConduction to be per dot,
 then putting them all in Tick increases performance
