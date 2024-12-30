@@ -62,8 +62,9 @@ which since dynamic temperatures got too error prone anyway.
 - [x] add weight loss for warmer materials, upon state change
 This comes with generalized displacement checks.
 
-- [ ] maybe changing all functions like applyThermalConduction to be per dot,
-then putting them all in Tick increases performance
+- [x] unify dot updates into world.Tick
+This causes a reduction of individual loops, thus reducing None checks,
+theoretically improving performance.
 
 - [ ] add tool to manipulate temperature of target mass? too much ui complexity?
       and wrap things up regarding the default temperatures of spawned mats

@@ -30,7 +30,9 @@ const (
 )
 
 const (
-	ThermalVisionMinT = -75
+	ThermalVisionMinT  = -75
+	WeightFactorLiquid = 0.95
+	WeightFactorGas    = 0.90
 )
 
 var (
@@ -142,9 +144,6 @@ type World struct {
 	H        int
 	Paused   bool
 
-	BgR      uint8
-	BgG      uint8
-	BgB      uint8
 	_rs      []uint8
 	Rs       [][]uint8
 	_gs      []uint8
@@ -233,9 +232,9 @@ func (w World) CanDisplace(x, y, dx, dy int) bool {
 func (w *World) clearDot(
 	x, y int,
 ) {
-	w.Rs[x][y] = w.BgR
-	w.Gs[x][y] = w.BgG
-	w.Bs[x][y] = w.BgB
+	w.Rs[x][y] = 0
+	w.Gs[x][y] = 0
+	w.Bs[x][y] = 0
 	w.Dots[x][y] = None
 	w.States[x][y] = MsStatic
 	w.Thermo[x][y] = 0
@@ -310,83 +309,12 @@ func (w *World) UseEraser(
 func (w *World) Tick(
 	spawnerTemperature float64,
 ) {
-	var rgbOverride func(int, int)
+	var (
+		rgbOverride func(int, int)
+		x, y int
+	)
 
-	doThVision := func(
-		x, y int,
-	) {
-		visT := w.Thermo[x][y]
-		if visT > ThermalVisionMinT + 255 {
-			visT = ThermalVisionMinT + 255
-		} else if visT < ThermalVisionMinT {
-			visT = ThermalVisionMinT
-		}
-
-		gray := uint8(visT - ThermalVisionMinT)
-		w.Rs[x][y] = gray
-		w.Gs[x][y] = gray
-		w.Bs[x][y] = gray
-	}
-
-	if w.ThVision {
-		rgbOverride = doThVision
-	} else {
-		rgbOverride = func(int, int){}
-	}
-
-	for x := 0; x < w.W; x++ {
-		for y := 0; y < w.H; y++ {
-			if None == w.Dots[x][y] {
-				w.Rs[x][y] = w.BgR
-				w.Gs[x][y] = w.BgG
-				w.Bs[x][y] = w.BgB
-				continue
-			}
-
-			if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
-				w.States[x][y] = SolidSs(w.Dots[x][y])
-				w.Weights[x][y] = SolidWeights(w.Dots[x][y])
-				w.Rs[x][y] = SolRs(w.Dots[x][y])
-				w.Gs[x][y] = SolGs(w.Dots[x][y])
-				w.Bs[x][y] = SolBs(w.Dots[x][y])
-			} else if w.Thermo[x][y] < BoilPs(w.Dots[x][y]) {
-				w.States[x][y] = MsLiquid
-
-				if w.Dots[x][y] == Sand {
-					w.Dots[x][y] = Glass
-				}
-
-				w.Weights[x][y] = SolidWeights(w.Dots[x][y]) * 0.95
-				w.Rs[x][y] = LiqRs(w.Dots[x][y])
-				w.Gs[x][y] = LiqGs(w.Dots[x][y])
-				w.Bs[x][y] = LiqBs(w.Dots[x][y])
-			} else {
-				w.States[x][y] = MsGas
-				w.Weights[x][y] = SolidWeights(w.Dots[x][y]) * 0.9
-				w.Rs[x][y] = GasRs(w.Dots[x][y])
-				w.Gs[x][y] = GasGs(w.Dots[x][y])
-				w.Bs[x][y] = GasBs(w.Dots[x][y])
-			}
-
-			rgbOverride(x, y)
-		}
-	}
-
-	if w.Paused {
-		return
-	}
-
-	w.applyThermalConduction()
-	w.applyChemReactions()
-	w.applyGravity()
-	w.runSpawners(spawnerTemperature)
-}
-
-func (w *World) applyChemReactions(
-) {
-	var x, y int
-
-	react := func(x, y, dx, dy int) {
+	doChemicalReaction := func(x, y, dx, dy int) {
 		switch w.Dots[x][y] {
 		case Oxygen:
 			if Hydrogen == w.Dots[dx][dy] {
@@ -398,38 +326,7 @@ func (w *World) applyChemReactions(
 		}
 	}
 
-	y = w.H - 1;
-	for x = 1; x < w.W - 2; x++ {
-		react(x, y, x - 1, y)
-		react(x, y, x + 1, y)
-	}
-
-	for x = 1; x < w.W - 2; x++ {
-		for y = w.H - 2; y >= 0; y-- {
-			react(x, y, x, y + 1)
-			react(x, y, x - 1, y)
-			react(x, y, x + 1, y)
-		}
-	}
-
-	x = 0
-	for y = w.H - 2; y >= 0; y-- {
-		react(x, y, x, y + 1)
-	}
-
-	x = w.W - 1;
-	for y = w.H - 2; y >= 0; y-- {
-		react(x, y, x, y + 1)
-	}
-}
-
-func (w *World) applyGravity(
-) {
-	action := func(x, y int) {
-		if None == w.Dots[x][y] {
-			return
-		}
-
+	doGravity := func(x, y int) {
 		switch w.States[x][y] {
 		case MsGas:
 			w.dropGas(x, y)
@@ -444,26 +341,10 @@ func (w *World) applyGravity(
 		}
 	}
 
-	for y := w.H - 2; y >= 0; y-- {
-		if y % 2 == 0 {
-			for x := 0; x < w.W; x++ {
-				action(x, y)
-			}
-		} else {
-			for x := w.W - 1; x >= 0; x-- {
-				action(x, y)
-			}
-		}
-	}
-}
-
-func (w *World) applyThermalConduction(
-) {
-	conduct := func(
+	doThConduction := func(
 		x, y, x2, y2 int,
 	) {
-		if None == w.Dots[x][y] ||
-		   None == w.Dots[x2][y2] {
+		if None == w.Dots[x2][y2] {
 			return
 		}
 
@@ -475,18 +356,144 @@ func (w *World) applyThermalConduction(
 		w.Thermo[x2][y2] += c2
 	}
 
-	for y := 0; y < w.H - 1; y++ {
-		for x := 0; x < w.W - 1; x++ {
-			conduct(x, y, x + 1, y)
-			conduct(x, y, x, y + 1)
+	doThVision := func(
+		x, y int,
+	) {
+		if None == w.Dots[x][y] {
+			return
 		}
-		x := w.W - 1
-		conduct(x, y, x, y + 1)
+
+		visT := w.Thermo[x][y]
+		if visT > ThermalVisionMinT + 255 {
+			visT = ThermalVisionMinT + 255
+		} else if visT < ThermalVisionMinT {
+			visT = ThermalVisionMinT
+		}
+
+		gray := uint8(visT - ThermalVisionMinT)
+		w.Rs[x][y] = gray
+		w.Gs[x][y] = gray
+		w.Bs[x][y] = gray
 	}
 
-	y := w.H - 1
-	for x := 0; x < w.W - 1; x++ {
-		conduct(x, y, x + 1, y)
+	updateDotFromThermo := func(
+		x, y int,
+	) {
+		if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
+			w.States[x][y] = SolidSs(w.Dots[x][y])
+			w.Weights[x][y] = SolidWeights(w.Dots[x][y])
+			w.Rs[x][y] = SolRs(w.Dots[x][y])
+			w.Gs[x][y] = SolGs(w.Dots[x][y])
+			w.Bs[x][y] = SolBs(w.Dots[x][y])
+		} else if w.Thermo[x][y] < BoilPs(w.Dots[x][y]) {
+			w.States[x][y] = MsLiquid
+
+			if w.Dots[x][y] == Sand {
+				w.Dots[x][y] = Glass
+			}
+
+			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
+				WeightFactorLiquid
+			w.Rs[x][y] = LiqRs(w.Dots[x][y])
+			w.Gs[x][y] = LiqGs(w.Dots[x][y])
+			w.Bs[x][y] = LiqBs(w.Dots[x][y])
+		} else {
+			w.States[x][y] = MsGas
+			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
+				WeightFactorGas
+			w.Rs[x][y] = GasRs(w.Dots[x][y])
+			w.Gs[x][y] = GasGs(w.Dots[x][y])
+			w.Bs[x][y] = GasBs(w.Dots[x][y])
+		}
+	}
+
+	if w.ThVision {
+		rgbOverride = doThVision
+	} else {
+		rgbOverride = func(int, int){}
+	}
+
+	for x = 0; x < w.W; x++ {
+		for y = 0; y < w.H; y++ {
+			if w.Spawner[x][y] {
+				w.Dots[x][y] = w.SpwnMat[x][y]
+				w.Thermo[x][y] = spawnerTemperature
+			}
+
+			updateDotFromThermo(x, y)
+
+			rgbOverride(x, y)
+		}
+	}
+
+	if w.Paused {
+		return
+	}
+
+	y = w.H - 1;
+	for x = 1; x < w.W - 2; x++ {
+		if None == w.Dots[x][y] {
+			continue
+		}
+
+		doThConduction(x, y, x - 1, y)
+		doThConduction(x, y, x + 1, y)
+		doChemicalReaction(x, y, x - 1, y)
+		doChemicalReaction(x, y, x + 1, y)
+	}
+
+	for y = w.H - 2; y >= 0; y-- {
+		if y % 2 == 0 {
+			for x = 1; x <= w.W - 2; x++ {
+				if None == w.Dots[x][y] {
+					continue
+				}
+
+				doThConduction(x, y, x, y + 1)
+				doThConduction(x, y, x - 1, y)
+				doThConduction(x, y, x + 1, y)
+				doChemicalReaction(x, y, x, y + 1)
+				doChemicalReaction(x, y, x - 1, y)
+				doChemicalReaction(x, y, x + 1, y)
+				doGravity(x, y)
+			}
+		} else {
+			for x = w.W - 2; x >= 1; x-- {
+				if None == w.Dots[x][y] {
+					continue
+				}
+
+				doThConduction(x, y, x, y + 1)
+				doThConduction(x, y, x - 1, y)
+				doThConduction(x, y, x + 1, y)
+				doChemicalReaction(x, y, x, y + 1)
+				doChemicalReaction(x, y, x - 1, y)
+				doChemicalReaction(x, y, x + 1, y)
+				doGravity(x, y)
+			}
+		}
+	}
+
+	x = 0
+	for y = w.H - 2; y >= 0; y-- {
+		if None == w.Dots[x][y] {
+			continue
+		}
+
+		doThConduction(x, y, x, y + 1)
+		doChemicalReaction(x, y, x, y + 1)
+		doGravity(x, y)
+	}
+
+	x = w.W - 1;
+	for y = w.H - 2; y >= 0; y-- {
+		if None == w.Dots[x][y] {
+			continue
+		}
+
+		doThConduction(x, y, x, y + 1)
+		doChemicalReaction(x, y, x, y + 1)
+		doGravity(x, y)
 	}
 }
 
@@ -610,19 +617,6 @@ func (w *World) dropLiquid(
 	}
 }
 
-func (w *World) runSpawners(
-	t float64,
-) {
-	for x := 0; x < w.W; x++ {
-		for y := 0; y < w.H; y++ {
-			if w.Spawner[x][y] {
-				w.Dots[x][y] = w.SpwnMat[x][y]
-				w.Thermo[x][y] = t
-			}
-		}
-	}
-}
-
 // Swaps all properties of two coordinates.
 func (w *World) swapDots(
 	x, y int,
@@ -650,4 +644,19 @@ func (w *World) swapDots(
 	w.Dots[x2][y2] = tmpM
 	w.States[x2][y2] = tmpS
 	w.Thermo[x2][y2] = tmpT
+}
+
+func ChangeBgColor(
+	r, g, b uint8,
+) {
+	// change the color of mat None
+	_solRs[0] = r
+	_solGs[0] = g
+	_solBs[0] = b
+	_liqRs[0] = r
+	_liqGs[0] = g
+	_liqBs[0] = b
+	_gasRs[0] = r
+	_gasGs[0] = g
+	_gasBs[0] = b
 }

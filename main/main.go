@@ -288,13 +288,9 @@ func (g physGame) Update(
 		case ebiten.KeyT:
 			g.World.ThVision = !g.World.ThVision
 			if true == g.World.ThVision {
-				g.World.BgR = wThBgR
-				g.World.BgG = wThBgG
-				g.World.BgB = wThBgB
+				mat.ChangeBgColor(wThBgR, wThBgG, wThBgB)
 			} else {
-				g.World.BgR = wBgR
-				g.World.BgG = wBgG
-				g.World.BgB = wBgB
+				mat.ChangeBgColor(wBgR, wBgG, wBgB)
 			}
 		}
 	}
