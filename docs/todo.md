@@ -76,10 +76,11 @@ This comes with generalized displacement checks.
 This causes a reduction of individual loops, thus reducing None checks,
 theoretically improving performance.
 
-- [ ] add tool to manipulate temperature of target mass? too much ui complexity?
-      and wrap things up regarding the default temperatures of spawned mats
-      remove manual tomfoolery!
-      add a "-temperature" arg ?
+- [x] add tool to manipulate temperature of dots
+
+- [ ] add a "-temperature" arg
+
+- [ ] add tool icon bg
 
 - [ ] set version to 0.5
 

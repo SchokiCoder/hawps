@@ -306,6 +306,38 @@ func (w *World) UseEraser(
 	}
 }
 
+func (w *World) UseThermoChanger(
+	delta float64,
+	xC, yC int,
+	radius int,
+) {
+	var (
+		x1 = xC - radius
+		x2 = xC + radius
+		y1 = yC - radius
+		y2 = yC + radius
+	)
+
+	if x1 < 0 {
+		x1 = 0
+	}
+	if x2 >= w.W {
+		x2 = w.W - 1
+	}
+	if y1 < 0 {
+		y1 = 0
+	}
+	if y2 >= w.H {
+		y2 = w.H - 1
+	}
+
+	for x := x1; x <= x2; x++ {
+		for y := y1; y <= y2; y++ {
+			w.Thermo[x][y] += delta
+		}
+	}
+}
+
 func (w *World) Tick(
 	spawnerTemperature float64,
 ) {

@@ -32,6 +32,8 @@ const (
 	brush tool = iota
 	spawner
 	eraser
+	heater
+	cooler
 
 	tCount int = iota
 )
@@ -51,9 +53,14 @@ var (
 const (
 	brushRadius    = 2
 	eraserRadius   = 5
+	thermoRadius   = brushRadius
+
 	maxTickrate    = stdTickrate * 2
 	minTickrate    = 1
+	heaterDelta    = 10
+
 	pngSize        = 16
+
 	uiToolBgR      = 80
 	uiToolBgG      = 120
 	uiToolBgB      = 120
@@ -63,16 +70,20 @@ const (
 	uiMatBgB       = 130
 	uiMatBgA       = 255
 	uiTileSetW     = 3
+
 	spawnerR       = 255
 	spawnerG       = 0
 	spawnerB       = 255
-	stdTemperature = -10
+
+	stdTemperature = 20
 	stdTickrate    = 24
 	stdWinW        = 640
 	stdWinH        = 480
+
 	toolHoverR     = 0
 	toolHoverG     = 255
 	toolHoverB     = 0
+
 	wBgR           = 0
 	wBgG           = 0
 	wBgB           = 0
@@ -151,11 +162,14 @@ func (g physGame) Draw(
 	}
 
 	radius := 0
-	switch g.Toolbox.Cursor {
-	case 0:
+	switch tool(g.Toolbox.Cursor) {
+	case brush:
 		radius = brushRadius
-	case 2:
+	case eraser:
 		radius = eraserRadius
+	case heater: fallthrough
+	case cooler:
+		radius = thermoRadius
 	}
 
 	thX, thY := ebiten.CursorPosition()
@@ -221,6 +235,20 @@ func (g *physGame) HandleClick(
 				mX - g.WorldX,
 				mY - g.WorldY,
 				eraserRadius)
+
+		case heater:
+			g.World.UseThermoChanger(
+				heaterDelta,
+				mX - g.WorldX,
+				mY - g.WorldY,
+				thermoRadius)
+
+		case cooler:
+			g.World.UseThermoChanger(
+				heaterDelta * -1,
+				mX - g.WorldX,
+				mY - g.WorldY,
+				thermoRadius)
 
 		default:
 			panic("Used unknown tool " + curTool.String())
@@ -299,8 +327,7 @@ func (g physGame) Update(
 		g.HandleClick()
 	}
 
-	// TODO remove manual tomfoolery
-	g.World.Tick(stdTemperature * 0 + 120)
+	g.World.Tick(stdTemperature)
 
 	return nil
 }
@@ -328,7 +355,9 @@ func (g physGame) UpdateTool(
 		}
 		g.Matbox.VisibleTiles = tiles
 
-	case eraser:
+	case eraser: fallthrough
+	case heater: fallthrough
+	case cooler:
 		g.Matbox.VisibleTiles = nil
 		g.Matbox.Cursor = -1
 	}
@@ -622,7 +651,7 @@ func main(
 
 	if true == tsWide {
 		tbW = uiTileSetW * pngSize
-		tbH = pngSize
+		tbH = pngSize * 2
 		mbW = tbW
 		mbH = *g.FrameH - tbH
 		wW = *g.FrameW - tbW
@@ -630,7 +659,7 @@ func main(
 		g.WorldX = tbW
 		g.WorldY = 0
 	} else {
-		tbW = pngSize
+		tbW = pngSize * 2
 		tbH = uiTileSetW * pngSize
 		mbW = *g.FrameW - tbW
 		mbH = tbH

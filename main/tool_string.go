@@ -11,11 +11,13 @@ func _() {
 	_ = x[brush-0]
 	_ = x[spawner-1]
 	_ = x[eraser-2]
+	_ = x[heater-3]
+	_ = x[cooler-4]
 }
 
-const _tool_name = "brushspawnereraser"
+const _tool_name = "brushspawnereraserheatercooler"
 
-var _tool_index = [...]uint8{0, 5, 12, 18}
+var _tool_index = [...]uint8{0, 5, 12, 18, 24, 30}
 
 func (i tool) String() string {
 	if i < 0 || i >= tool(len(_tool_index)-1) {
