@@ -93,27 +93,30 @@ const (
 )
 
 type physGame struct {
-	FrameW     *int
-	FrameH     *int
-	Tickrate   *int
-	Toolbox    *ui.TileSet
-	Matbox     *ui.TileSet
-	World      *mat.World
-	WorldImg   *ebiten.Image
-	WorldX     int
-	WorldY     int
+	FrameW      *int
+	FrameH      *int
+	Temperature *float64
+	Tickrate    *int
+	Toolbox     *ui.TileSet
+	Matbox      *ui.TileSet
+	World       *mat.World
+	WorldImg    *ebiten.Image
+	WorldX      int
+	WorldY      int
 }
 
 func newPhysGame(
 ) physGame {
 	var ret = physGame{
-		FrameW:   new(int),
-		FrameH:   new(int),
-		Tickrate: new(int),
-		Toolbox:  new(ui.TileSet),
-		Matbox:   new(ui.TileSet),
-		World:    new(mat.World),
+		FrameW:      new(int),
+		FrameH:      new(int),
+		Temperature: new(float64),
+		Tickrate:    new(int),
+		Toolbox:     new(ui.TileSet),
+		Matbox:      new(ui.TileSet),
+		World:       new(mat.World),
 	}
+	*ret.Temperature = stdTemperature
 	*ret.Tickrate = stdTickrate
 
 	return ret
@@ -220,7 +223,7 @@ func (g *physGame) HandleClick(
 		case brush:
 			g.World.UseBrush(
 				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
-				stdTemperature,
+				*g.Temperature,
 				mX - g.WorldX,
 				mY - g.WorldY,
 				brushRadius)
@@ -327,7 +330,7 @@ func (g physGame) Update(
 		g.HandleClick()
 	}
 
-	g.World.Tick(stdTemperature)
+	g.World.Tick(*g.Temperature)
 
 	return nil
 }
@@ -348,7 +351,7 @@ func (g physGame) UpdateTool(
 	case spawner:
 		tiles = append(tiles, int(mat.None))
 		for i := mat.FirstReal; i <= mat.Last; i++ {
-			state := tempMatToState(stdTemperature, i)
+			state := tempMatToState(*g.Temperature, i)
 			if state != mat.MsStatic {
 				tiles = append(tiles, int(i))
 			}
@@ -394,6 +397,10 @@ Options:
     -tallui
         overrides automatic layout determination, and sets tall ui
 
+    -temperature
+        sets the temperature of every new dot
+        default: %v
+
     -tickrate NUMBER
         sets the tickrate (ticks per second), which effects visible speed
         default: %v
@@ -434,7 +441,7 @@ Default keybinds:
         Toggle thermal vision (grayscale displaying %v to %v degree C)
 `;
 
-func genMatImages() []*ebiten.Image {
+func genMatImages(t float64) []*ebiten.Image {
 	var (
 		bgImgs [mat.MsCount]*ebiten.Image
 		matBgPrefix = "assets/matbg_"
@@ -468,7 +475,7 @@ func genMatImages() []*ebiten.Image {
 		opt := ebiten.DrawImageOptions{}
 		img := ebiten.NewImage(pngSize, pngSize)
 
-		state := tempMatToState(stdTemperature, i)
+		state := tempMatToState(t, i)
 		var r, g, b uint8
 		switch state {
 		case mat.MsGrain:  fallthrough
@@ -503,10 +510,11 @@ func genMatImages() []*ebiten.Image {
 }
 
 func handleArgs(
-	layout   *uiLayout,
-	tickrate *int,
-	winW     *int,
-	winH     *int,
+	layout      *uiLayout,
+	temperature *float64,
+	tickrate    *int,
+	winW        *int,
+	winH        *int,
 ) bool {
 	argToInt := func(i int) int {
 		if len(os.Args) <= i + 1 {
@@ -541,6 +549,7 @@ func handleArgs(
 			fmt.Printf(appHelp,
 			           AppName,
 			           stdWinH,
+			           stdTemperature,
 			           stdTickrate,
 			           stdWinW,
 			           minTickrate,
@@ -554,6 +563,10 @@ func handleArgs(
 
 		case "-tallui":
 			*layout = tall
+
+		case "-temperature":
+			*temperature = float64(argToInt(i))
+			i++
 
 		case "-tickrate":
 			*tickrate = argToInt(i)
@@ -619,7 +632,13 @@ func main(
 
 	ebiten.SetFullscreen(true);
 
-	if handleArgs(&layout, g.Tickrate, &winW, &winH) == false {
+	if handleArgs(
+		&layout,
+		g.Temperature,
+		g.Tickrate,
+		&winW,
+		&winH,
+	) == false {
 		return
 	}
 
@@ -686,7 +705,7 @@ func main(
 	                                 uiTileSetW,
 	                                 mbW,
 	                                 mbH,
-	                                 genMatImages())
+	                                 genMatImages(*g.Temperature))
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
 
 	g.UpdateTool()
@@ -699,7 +718,7 @@ func main(
 		g.Matbox.Y = *g.FrameH - g.Toolbox.H
 	}
 
-	*g.World = mat.NewWorld(wW, wH, stdTemperature)
+	*g.World = mat.NewWorld(wW, wH, *g.Temperature)
 	g.WorldImg = ebiten.NewImage(wW, wH)
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)

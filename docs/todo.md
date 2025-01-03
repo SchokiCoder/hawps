@@ -78,7 +78,7 @@ theoretically improving performance.
 
 - [x] add tool to manipulate temperature of dots
 
-- [ ] add a "-temperature" arg
+- [x] add arg "-temperature"
 
 - [ ] add tool icon bg
 
