@@ -29,6 +29,8 @@ This causes dots to be deleted when spawners are at the top.
 
 - [ ] set version to 0.6
 
+-----
+
 # Thermo Update
 
 - [x] make liquid and gas stack collapsing not ignore grains anymore
@@ -82,9 +84,8 @@ theoretically improving performance.
 
 - [x] add tool tile bg
 
-- [ ] set version to 0.5
-
------
+- [x] set version to 0.5
+Also add a new demo image.
 
 # Solid Update
 

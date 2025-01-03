@@ -4,7 +4,7 @@ Half assed wannabe physics simulator.
 The name is the game.  
 I just want to have fun writing something dumb.  
 
-![hawps demonstrational image sequence](demo.gif)
+![boiling and condensing water](demo.gif)
 
 # Dev dependencies
 
