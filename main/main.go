@@ -7,6 +7,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"image"
 	"image/color"
 	_ "image/png"
 	"strconv"
@@ -18,6 +19,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type uiLayout int
@@ -509,6 +511,40 @@ func genMatImages(t float64) []*ebiten.Image {
 	return ret
 }
 
+func genToolImages() []*ebiten.Image {
+	var (
+		prefix = "assets/tool_"
+		postfix = ".png"
+		ret = make([]*ebiten.Image, tCount)
+	)
+
+	imgopenAndDraw := func(path string, dest *ebiten.Image) {
+		img, _, err := ebitenutil.NewImageFromFileSystem(pngs, path)
+		if err != nil {
+			panic(err)
+		}
+		dest.DrawImage(img, nil)
+	}
+
+	for i := 0; i < tCount; i++ {
+		ret[i] = ebiten.NewImage(pngSize, pngSize)
+
+		vector.DrawFilledCircle(
+			ret[i],
+			float32(pngSize / 2),
+			float32(pngSize / 2),
+			float32(pngSize / 2) + 2,
+			image.Black,
+			false)
+
+		path := prefix + tool(i).String() + postfix
+
+		imgopenAndDraw(path, ret[i])
+	}
+
+	return ret
+}
+
 func handleArgs(
 	layout      *uiLayout,
 	temperature *float64,
@@ -651,11 +687,6 @@ func main(
 		*g.FrameH = winH / 4
 	}
 
-	tPaths := make([]string, tCount)
-	for i := 0; i < tCount; i++ {
-		tPaths[i] = "assets/tool_" + tool(i).String() + ".png"
-	}
-
 	switch layout {
 	case automatic:
 		if *g.FrameW >= *g.FrameH {
@@ -688,12 +719,12 @@ func main(
 		g.WorldY = 0
 	}
 
-	*g.Toolbox = ui.NewTileSetFromFS(tsWide,
-	                                uiTileSetW,
-	                                tbW,
-	                                tbH,
-	                                tPaths[:],
-	                                pngs)
+	*g.Toolbox = ui.NewTileSetFromImgs(
+		tsWide,
+		uiTileSetW,
+		tbW,
+		tbH,
+		genToolImages())
 	g.Toolbox.Bg = color.RGBA{uiToolBgR, uiToolBgG, uiToolBgB, uiToolBgA}
 
 	for i := 0; i < len(g.Toolbox.Tiles); i++ {
@@ -701,11 +732,12 @@ func main(
 	}
 	g.Toolbox.VisibleTiles = tiles
 
-	*g.Matbox = ui.NewTileSetFromImgs(tsWide,
-	                                 uiTileSetW,
-	                                 mbW,
-	                                 mbH,
-	                                 genMatImages(*g.Temperature))
+	*g.Matbox = ui.NewTileSetFromImgs(
+		tsWide,
+		uiTileSetW,
+		mbW,
+		mbH,
+		genMatImages(*g.Temperature))
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
 
 	g.UpdateTool()

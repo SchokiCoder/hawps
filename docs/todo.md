@@ -80,7 +80,7 @@ theoretically improving performance.
 
 - [x] add arg "-temperature"
 
-- [ ] add tool icon bg
+- [x] add tool tile bg
 
 - [ ] set version to 0.5
 
