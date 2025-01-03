@@ -1,3 +1,5 @@
 hawps
 hawpsds
 *.o
+*.prof
+*.test

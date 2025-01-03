@@ -5,6 +5,16 @@
 
 # Pyro Update
 
+- [ ] replace current arg handling with flag std lib package (https://pkg.go.dev/flag)
+
+- [ ] add scrollwheel to scroll ui.TileSet (ebiten.Wheel)
+- [ ] add scrollwheel to increase/decrease tool radius
+
+- rewrite mat in C ?
+  "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
+
+- consider oxygen/air to be always there (not None) ?
+
 - [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
 
 - [ ] change mat weight loss to be gradual across the state,
@@ -68,6 +78,8 @@ theoretically improving performance.
 
 - [ ] add tool to manipulate temperature of target mass? too much ui complexity?
       and wrap things up regarding the default temperatures of spawned mats
+      remove manual tomfoolery!
+      add a "-temperature" arg ?
 
 - [ ] set version to 0.5
 

@@ -9,7 +9,7 @@ REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.4
 GO_COMPILE_VARS  :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
 
-.PHONY: all build clean vet
+.PHONY: all build clean test vet
 
 all: generate vet build
 
@@ -22,6 +22,9 @@ generate: main/main_string.go mat/mat_string.go
 
 run: clean all
 	./$(APP_NAME) -window
+
+test:
+	go test ./mat -cpuprofile cpu.prof -memprofile mem.prof -bench ./mat
 
 vet:
 	go vet ./main
