@@ -8,6 +8,7 @@ import (
 	"embed"
 	"image"
 	"image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -28,6 +29,7 @@ type TileSet struct {
 	Cursor       int
 	horizontal   bool
 	Img          *ebiten.Image
+	Scroll       int
 	tileSetWidth int
 	Tiles        []*ebiten.Image
 	VisibleTiles []int
@@ -113,15 +115,17 @@ func (t TileSet) Draw(
 
 		cx = t.Cursor % t.tileSetWidth
 		cy = t.Cursor / t.tileSetWidth
+		cy -= t.Scroll
 	} else {
 		primary = &y
 		secondary = &x
 
 		cx = t.Cursor / t.tileSetWidth
 		cy = t.Cursor % t.tileSetWidth
+		cx -= t.Scroll
 	}
 
-	for i := 0; i < len(t.VisibleTiles); i++ {
+	for i := t.Scroll * t.tileSetWidth; i < len(t.VisibleTiles); i++ {
 		opt := ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(float64(x * t.tileW), float64(y * t.tileH))
 		t.Img.DrawImage(t.Tiles[t.VisibleTiles[i]], &opt)
@@ -150,34 +154,55 @@ func (t TileSet) Draw(
 func (t *TileSet) HandleClick(
 	x, y int,
 ) bool {
-	pointInRect := func(px, py, x, y, w, h int) bool {
-		if px > x && px < x + w &&
-		   py > y && py < y + h {
-			return true
-		}
+	if !pointInRect(x, y, t.X, t.Y, t.W, t.H) {
 		return false
 	}
 
-	if pointInRect(x, y, t.X, t.Y, t.W, t.H) {
-		tx := (x - t.X) / t.tileW
-		ty := (y - t.Y) / t.tileH
+	tx := (x - t.X) / t.tileW
+	ty := (y - t.Y) / t.tileH
 
-		if t.horizontal {
-			t.Cursor = ty * t.tileSetWidth + tx
-		} else {
-			t.Cursor = tx * t.tileSetWidth + ty
-		}
-
-		if t.Cursor >= len(t.VisibleTiles) {
-			t.Cursor = len(t.VisibleTiles) - 1
-		}
-
-		return true
+	if t.horizontal {
+		t.Cursor = (ty + t.Scroll) * t.tileSetWidth + tx
+	} else {
+		t.Cursor = (tx + t.Scroll) * t.tileSetWidth + ty
 	}
 
-	return false
+	if t.Cursor >= len(t.VisibleTiles) {
+		t.Cursor = len(t.VisibleTiles) - 1
+	}
+
+	return true
+}
+
+func (t *TileSet) HandleWheel(
+	x, y int,
+	delta int,
+) bool {
+	if !pointInRect(x, y, t.X, t.Y, t.W, t.H) {
+		return false
+	}
+
+	t.Scroll -= delta
+
+	rows := int(math.Ceil(float64(len(t.VisibleTiles)) / float64(t.tileSetWidth)))
+
+	if t.Scroll < 0 {
+		t.Scroll = 0
+	} else if t.Scroll >= rows {
+		t.Scroll = rows - 1
+	}
+
+	return true
 }
 
 func (t TileSet) Size() image.Point {
 	return t.Img.Bounds().Size()
+}
+
+func pointInRect(px, py, x, y, w, h int) bool {
+	if px > x && px < x + w &&
+	   py > y && py < y + h {
+		return true
+	}
+	return false
 }

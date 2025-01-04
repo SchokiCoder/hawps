@@ -5,9 +5,10 @@
 
 # Pyro Update
 
-- [ ] replace current arg handling with flag std lib package (https://pkg.go.dev/flag)
+- replace current arg handling with flag std lib package ?
+No. Makes having shortcuts very weird. Doesn't decrease complexity. Too stiff.  
 
-- [ ] add scrollwheel to scroll ui.TileSet (ebiten.Wheel)
+- [x] add scrollwheel to scroll ui.TileSet
 - [ ] add scrollwheel to increase/decrease tool radius
 
 - rewrite mat in C ?

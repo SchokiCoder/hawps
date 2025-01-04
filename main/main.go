@@ -209,7 +209,7 @@ func (g *physGame) HandleClick(
 
 	clicked = g.Toolbox.HandleClick(mX, mY)
 	if clicked {
-		g.UpdateTool()
+		g.UpdateMatbox()
 	}
 
 	if !clicked {
@@ -261,6 +261,29 @@ func (g *physGame) HandleClick(
 	}
 }
 
+func (g *physGame) HandleWheel(
+) {
+	var (
+		mX, mY int
+		delta int
+	)
+
+	mX, mY = ebiten.CursorPosition()
+	_, tmp := ebiten.Wheel()
+	delta = int(tmp)
+
+	if 0 == delta {
+		return
+	}
+
+	if g.Toolbox.HandleWheel(mX, mY, delta) {
+		return
+	}
+	if g.Matbox.HandleWheel(mX, mY, delta) {
+		return
+	}
+}
+
 func (g physGame) Layout(
 	outsideWidth int,
 	outsideHeight int,
@@ -287,13 +310,13 @@ func (g physGame) Update(
 		case ebiten.KeyArrowLeft:
 			if g.Toolbox.Cursor > 0 {
 				g.Toolbox.Cursor--
-				g.UpdateTool()
+				g.UpdateMatbox()
 			}
 
 		case ebiten.KeyArrowRight:
 			if g.Toolbox.Cursor < len(g.Toolbox.VisibleTiles) - 1 {
 				g.Toolbox.Cursor++
-				g.UpdateTool()
+				g.UpdateMatbox()
 			}
 
 		case ebiten.KeyArrowUp:
@@ -332,16 +355,19 @@ func (g physGame) Update(
 		g.HandleClick()
 	}
 
+	g.HandleWheel()
+
 	g.World.Tick(*g.Temperature)
 
 	return nil
 }
 
-func (g physGame) UpdateTool(
+func (g physGame) UpdateMatbox(
 ) {
 	var tiles = make([]int, 0)
 
 	g.Matbox.Cursor = 0
+	g.Matbox.Scroll = 0
 
 	switch(tool(g.Toolbox.Cursor)) {
 	case brush:
@@ -740,7 +766,7 @@ func main(
 		genMatImages(*g.Temperature))
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
 
-	g.UpdateTool()
+	g.UpdateMatbox()
 
 	if true == tsWide {
 		g.Matbox.Y = g.Toolbox.Size().Y
