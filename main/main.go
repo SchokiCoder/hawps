@@ -96,16 +96,16 @@ const (
 )
 
 type physGame struct {
-	BrushRadius  *int
-	EraserRadius *int
-	ThermoRadius *int
-	FrameW       *int
-	FrameH       *int
-	Temperature  *float64
-	Tickrate     *int
-	Toolbox      *ui.TileSet
-	Matbox       *ui.TileSet
-	World        *mat.World
+	BrushRadius  int
+	EraserRadius int
+	ThermoRadius int
+	FrameW       int
+	FrameH       int
+	Temperature  float64
+	Tickrate     int
+	Toolbox      ui.TileSet
+	Matbox       ui.TileSet
+	World        mat.World
 	WorldImg     *ebiten.Image
 	WorldX       int
 	WorldY       int
@@ -114,22 +114,12 @@ type physGame struct {
 func newPhysGame(
 ) physGame {
 	var ret = physGame{
-		BrushRadius:  new(int),
-		EraserRadius: new(int),
-		ThermoRadius: new(int),
-		FrameW:       new(int),
-		FrameH:       new(int),
-		Temperature:  new(float64),
-		Tickrate:     new(int),
-		Toolbox:      new(ui.TileSet),
-		Matbox:       new(ui.TileSet),
-		World:        new(mat.World),
+		BrushRadius:  stdBrushRadius,
+		EraserRadius: stdEraserRadius,
+		ThermoRadius: stdThermoRadius,
+		Temperature:  stdTemperature,
+		Tickrate:     stdTickrate,
 	}
-	*ret.BrushRadius = stdBrushRadius
-	*ret.EraserRadius = stdEraserRadius
-	*ret.ThermoRadius = stdThermoRadius
-	*ret.Temperature = stdTemperature
-	*ret.Tickrate = stdTickrate
 
 	return ret
 }
@@ -179,12 +169,12 @@ func (g physGame) Draw(
 	radius := 0
 	switch tool(g.Toolbox.Cursor) {
 	case brush:
-		radius = *g.BrushRadius
+		radius = g.BrushRadius
 	case eraser:
-		radius = *g.EraserRadius
+		radius = g.EraserRadius
 	case heater: fallthrough
 	case cooler:
-		radius = *g.ThermoRadius
+		radius = g.ThermoRadius
 	}
 
 	thX, thY := ebiten.CursorPosition()
@@ -235,10 +225,10 @@ func (g *physGame) HandleClick(
 		case brush:
 			g.World.UseBrush(
 				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
-				*g.Temperature,
+				g.Temperature,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				*g.BrushRadius)
+				g.BrushRadius)
 
 		case spawner:
 			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] = true
@@ -249,21 +239,21 @@ func (g *physGame) HandleClick(
 			g.World.UseEraser(
 				mX - g.WorldX,
 				mY - g.WorldY,
-				*g.EraserRadius)
+				g.EraserRadius)
 
 		case heater:
 			g.World.UseThermoChanger(
 				heaterDelta,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				*g.ThermoRadius)
+				g.ThermoRadius)
 
 		case cooler:
 			g.World.UseThermoChanger(
 				heaterDelta * -1,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				*g.ThermoRadius)
+				g.ThermoRadius)
 
 		default:
 			panic("Used unknown tool " + curTool.String())
@@ -297,12 +287,12 @@ func (g *physGame) HandleWheel(
 	   mY >= g.WorldY && mY < g.WorldY + g.World.H {
 		switch tool(g.Toolbox.Cursor) {
 		case brush:
-			target = g.BrushRadius
+			target = &g.BrushRadius
 		case eraser:
-			target = g.EraserRadius
+			target = &g.EraserRadius
 		case heater: fallthrough
 		case cooler:
-			target = g.ThermoRadius
+			target = &g.ThermoRadius
 		default:
 			return
 		}
@@ -320,10 +310,10 @@ func (g physGame) Layout(
 	outsideWidth int,
 	outsideHeight int,
 ) (int, int) {
-	return *g.FrameW, *g.FrameH
+	return g.FrameW, g.FrameH
 }
 
-func (g physGame) Update(
+func (g *physGame) Update(
 ) error {
 	var (
 		keys    []ebiten.Key
@@ -362,15 +352,15 @@ func (g physGame) Update(
 			}
 
 		case ebiten.KeyNumpadAdd:
-			if *g.Tickrate < maxTickrate {
-				*g.Tickrate *= 2
-				ebiten.SetTPS(*g.Tickrate)
+			if g.Tickrate < maxTickrate {
+				g.Tickrate *= 2
+				ebiten.SetTPS(g.Tickrate)
 			}
 
 		case ebiten.KeyNumpadSubtract:
-			if *g.Tickrate > minTickrate {
-				*g.Tickrate /= 2
-				ebiten.SetTPS(*g.Tickrate)
+			if g.Tickrate > minTickrate {
+				g.Tickrate /= 2
+				ebiten.SetTPS(g.Tickrate)
 			}
 
 		case ebiten.KeyT:
@@ -389,12 +379,12 @@ func (g physGame) Update(
 
 	g.HandleWheel()
 
-	g.World.Tick(*g.Temperature)
+	g.World.Tick(g.Temperature)
 
 	return nil
 }
 
-func (g physGame) UpdateMatbox(
+func (g *physGame) UpdateMatbox(
 ) {
 	var tiles = make([]int, 0)
 
@@ -411,7 +401,7 @@ func (g physGame) UpdateMatbox(
 	case spawner:
 		tiles = append(tiles, int(mat.None))
 		for i := mat.FirstReal; i <= mat.Last; i++ {
-			state := tempMatToState(*g.Temperature, i)
+			state := tempMatToState(g.Temperature, i)
 			if state != mat.MsStatic {
 				tiles = append(tiles, int(i))
 			}
@@ -732,8 +722,8 @@ func main(
 
 	if handleArgs(
 		&layout,
-		g.Temperature,
-		g.Tickrate,
+		&g.Temperature,
+		&g.Tickrate,
 		&winW,
 		&winH,
 	) == false {
@@ -742,16 +732,16 @@ func main(
 
 	if ebiten.IsFullscreen() {
 		screenW, screenH := ebiten.Monitor().Size()
-		*g.FrameW = screenW / 10
-		*g.FrameH = screenH / 10
+		g.FrameW = screenW / 10
+		g.FrameH = screenH / 10
 	} else {
-		*g.FrameW = winW / 4
-		*g.FrameH = winH / 4
+		g.FrameW = winW / 4
+		g.FrameH = winH / 4
 	}
 
 	switch layout {
 	case automatic:
-		if *g.FrameW >= *g.FrameH {
+		if g.FrameW >= g.FrameH {
 			tsWide = true
 		} else {
 			tsWide = false
@@ -765,23 +755,23 @@ func main(
 		tbW = uiTileSetW * pngSize
 		tbH = pngSize * 2
 		mbW = tbW
-		mbH = *g.FrameH - tbH
-		wW = *g.FrameW - tbW
-		wH = *g.FrameH
+		mbH = g.FrameH - tbH
+		wW = g.FrameW - tbW
+		wH = g.FrameH
 		g.WorldX = tbW
 		g.WorldY = 0
 	} else {
 		tbW = pngSize * 2
 		tbH = uiTileSetW * pngSize
-		mbW = *g.FrameW - tbW
+		mbW = g.FrameW - tbW
 		mbH = tbH
-		wW = *g.FrameW
-		wH = *g.FrameH - tbH
+		wW = g.FrameW
+		wH = g.FrameH - tbH
 		g.WorldX = 0
 		g.WorldY = 0
 	}
 
-	*g.Toolbox = ui.NewTileSetFromImgs(
+	g.Toolbox = ui.NewTileSetFromImgs(
 		tsWide,
 		uiTileSetW,
 		tbW,
@@ -794,12 +784,12 @@ func main(
 	}
 	g.Toolbox.VisibleTiles = tiles
 
-	*g.Matbox = ui.NewTileSetFromImgs(
+	g.Matbox = ui.NewTileSetFromImgs(
 		tsWide,
 		uiTileSetW,
 		mbW,
 		mbH,
-		genMatImages(*g.Temperature))
+		genMatImages(g.Temperature))
 	g.Matbox.Bg = color.RGBA{uiMatBgR, uiMatBgG, uiMatBgB, uiMatBgA}
 
 	g.UpdateMatbox()
@@ -807,18 +797,18 @@ func main(
 	if true == tsWide {
 		g.Matbox.Y = g.Toolbox.Size().Y
 	} else {
-		g.Toolbox.Y = *g.FrameH - g.Toolbox.H
+		g.Toolbox.Y = g.FrameH - g.Toolbox.H
 		g.Matbox.X = g.Toolbox.W
-		g.Matbox.Y = *g.FrameH - g.Toolbox.H
+		g.Matbox.Y = g.FrameH - g.Toolbox.H
 	}
 
-	*g.World = mat.NewWorld(wW, wH, *g.Temperature)
+	g.World = mat.NewWorld(wW, wH, g.Temperature)
 	g.WorldImg = ebiten.NewImage(wW, wH)
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
 	ebiten.SetWindowSize(winW, winH)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeDisabled)
-	ebiten.SetTPS(*g.Tickrate)
+	ebiten.SetTPS(g.Tickrate)
 
-	ebiten.RunGame(g)
+	ebiten.RunGame(&g)
 }
