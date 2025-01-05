@@ -9,7 +9,7 @@
 No. Makes having shortcuts very weird. Doesn't decrease complexity. Too stiff.  
 
 - [x] add scrollwheel to scroll ui.TileSet
-- [ ] add scrollwheel to increase/decrease tool radius
+- [x] add scrollwheel to increase/decrease tool radius
 
 - rewrite mat in C ?
   "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?

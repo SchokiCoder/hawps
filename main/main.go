@@ -53,9 +53,10 @@ var (
 )
 
 const (
-	brushRadius    = 2
-	eraserRadius   = 5
-	thermoRadius   = brushRadius
+	stdBrushRadius  = 2
+	stdEraserRadius = 5
+	stdThermoRadius = stdBrushRadius
+	maxRadius = 32
 
 	maxTickrate    = stdTickrate * 2
 	minTickrate    = 1
@@ -95,29 +96,38 @@ const (
 )
 
 type physGame struct {
-	FrameW      *int
-	FrameH      *int
-	Temperature *float64
-	Tickrate    *int
-	Toolbox     *ui.TileSet
-	Matbox      *ui.TileSet
-	World       *mat.World
-	WorldImg    *ebiten.Image
-	WorldX      int
-	WorldY      int
+	BrushRadius  *int
+	EraserRadius *int
+	ThermoRadius *int
+	FrameW       *int
+	FrameH       *int
+	Temperature  *float64
+	Tickrate     *int
+	Toolbox      *ui.TileSet
+	Matbox       *ui.TileSet
+	World        *mat.World
+	WorldImg     *ebiten.Image
+	WorldX       int
+	WorldY       int
 }
 
 func newPhysGame(
 ) physGame {
 	var ret = physGame{
-		FrameW:      new(int),
-		FrameH:      new(int),
-		Temperature: new(float64),
-		Tickrate:    new(int),
-		Toolbox:     new(ui.TileSet),
-		Matbox:      new(ui.TileSet),
-		World:       new(mat.World),
+		BrushRadius:  new(int),
+		EraserRadius: new(int),
+		ThermoRadius: new(int),
+		FrameW:       new(int),
+		FrameH:       new(int),
+		Temperature:  new(float64),
+		Tickrate:     new(int),
+		Toolbox:      new(ui.TileSet),
+		Matbox:       new(ui.TileSet),
+		World:        new(mat.World),
 	}
+	*ret.BrushRadius = stdBrushRadius
+	*ret.EraserRadius = stdEraserRadius
+	*ret.ThermoRadius = stdThermoRadius
 	*ret.Temperature = stdTemperature
 	*ret.Tickrate = stdTickrate
 
@@ -169,12 +179,12 @@ func (g physGame) Draw(
 	radius := 0
 	switch tool(g.Toolbox.Cursor) {
 	case brush:
-		radius = brushRadius
+		radius = *g.BrushRadius
 	case eraser:
-		radius = eraserRadius
+		radius = *g.EraserRadius
 	case heater: fallthrough
 	case cooler:
-		radius = thermoRadius
+		radius = *g.ThermoRadius
 	}
 
 	thX, thY := ebiten.CursorPosition()
@@ -228,7 +238,7 @@ func (g *physGame) HandleClick(
 				*g.Temperature,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				brushRadius)
+				*g.BrushRadius)
 
 		case spawner:
 			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] = true
@@ -239,21 +249,21 @@ func (g *physGame) HandleClick(
 			g.World.UseEraser(
 				mX - g.WorldX,
 				mY - g.WorldY,
-				eraserRadius)
+				*g.EraserRadius)
 
 		case heater:
 			g.World.UseThermoChanger(
 				heaterDelta,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				thermoRadius)
+				*g.ThermoRadius)
 
 		case cooler:
 			g.World.UseThermoChanger(
 				heaterDelta * -1,
 				mX - g.WorldX,
 				mY - g.WorldY,
-				thermoRadius)
+				*g.ThermoRadius)
 
 		default:
 			panic("Used unknown tool " + curTool.String())
@@ -266,6 +276,7 @@ func (g *physGame) HandleWheel(
 	var (
 		mX, mY int
 		delta int
+		target *int
 	)
 
 	mX, mY = ebiten.CursorPosition()
@@ -280,6 +291,27 @@ func (g *physGame) HandleWheel(
 		return
 	}
 	if g.Matbox.HandleWheel(mX, mY, delta) {
+		return
+	}
+	if mX >= g.WorldX && mX < g.WorldX + g.World.W &&
+	   mY >= g.WorldY && mY < g.WorldY + g.World.H {
+		switch tool(g.Toolbox.Cursor) {
+		case brush:
+			target = g.BrushRadius
+		case eraser:
+			target = g.EraserRadius
+		case heater: fallthrough
+		case cooler:
+			target = g.ThermoRadius
+		default:
+			return
+		}
+		*target += delta
+		if *target > maxRadius {
+			*target = maxRadius
+		} else if *target < 0 {
+			*target = 0
+		}
 		return
 	}
 }
@@ -467,6 +499,10 @@ Default keybinds:
 
     T
         Toggle thermal vision (grayscale displaying %v to %v degree C)
+
+    Wheel Up and Down
+        Scrolls a TileSet or increases/decreases the tool radius,
+        depending on where the mouse is at the time
 `;
 
 func genMatImages(t float64) []*ebiten.Image {
