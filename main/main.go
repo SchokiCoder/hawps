@@ -58,9 +58,9 @@ const (
 	stdThermoRadius = stdBrushRadius
 	maxRadius = 32
 
-	maxTickrate    = stdTickrate * 2
-	minTickrate    = 1
-	heaterDelta    = 10
+	stdTickrate     = 120
+	stdWldTRateFrac = 0.25
+	heaterDelta     = 1
 
 	pngSize        = 16
 
@@ -79,7 +79,6 @@ const (
 	spawnerB       = 255
 
 	stdTemperature = 20
-	stdTickrate    = 24
 	stdWinW        = 640
 	stdWinH        = 480
 
@@ -104,7 +103,10 @@ type physGame struct {
 	Temperature  float64
 	Tickrate     int
 	Toolbox      ui.TileSet
+	// ticks since world tick
+	TsSinceWldT  int
 	Matbox       ui.TileSet
+	WldTRateFrac float64
 	World        mat.World
 	WorldImg     *ebiten.Image
 	WorldX       int
@@ -119,6 +121,8 @@ func newPhysGame(
 		ThermoRadius: stdThermoRadius,
 		Temperature:  stdTemperature,
 		Tickrate:     stdTickrate,
+		TsSinceWldT:  9999,
+		WldTRateFrac: stdWldTRateFrac,
 	}
 
 	return ret
@@ -352,15 +356,13 @@ func (g *physGame) Update(
 			}
 
 		case ebiten.KeyNumpadAdd:
-			if g.Tickrate < maxTickrate {
-				g.Tickrate *= 2
-				ebiten.SetTPS(g.Tickrate)
+			if g.WldTRateFrac < 1.0 {
+				g.WldTRateFrac *= 2
 			}
 
 		case ebiten.KeyNumpadSubtract:
-			if g.Tickrate > minTickrate {
-				g.Tickrate /= 2
-				ebiten.SetTPS(g.Tickrate)
+			if g.WldTRateFrac * float64(g.Tickrate) > 1.0 {
+				g.WldTRateFrac /= 2
 			}
 
 		case ebiten.KeyT:
@@ -379,7 +381,12 @@ func (g *physGame) Update(
 
 	g.HandleWheel()
 
-	g.World.Tick(g.Temperature)
+	if g.TsSinceWldT >= int(1.0 / g.WldTRateFrac) {
+		g.World.Tick(g.Temperature)
+		g.TsSinceWldT = 0
+	} else {
+		g.TsSinceWldT++
+	}
 
 	return nil
 }
@@ -452,7 +459,9 @@ Options:
         default: %v
 
     -tickrate NUMBER
-        sets the tickrate (ticks per second), which effects visible speed
+        sets the tickrate (ticks per second),
+        which also effects simulation speed
+        only use when otherwise performance problems occur
         default: %v
 
     -v -version
@@ -483,9 +492,8 @@ Default keybinds:
         switch material
 
     Plus and Minus
-        Increase and decrease the tickrate respectively
-        min: %v
-        max: %v
+        Increase and decrease the simulation speed respectively
+        default: %v updates per second
 
     T
         Toggle thermal vision (grayscale displaying %v to %v degree C)
@@ -640,8 +648,7 @@ func handleArgs(
 			           stdTemperature,
 			           stdTickrate,
 			           stdWinW,
-			           minTickrate,
-			           maxTickrate,
+			           stdTickrate * stdWldTRateFrac,
 			           mat.ThermalVisionMinT,
 			           mat.ThermalVisionMinT+255)
 			return false

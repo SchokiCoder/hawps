@@ -11,12 +11,18 @@ No. Makes having shortcuts very weird. Doesn't decrease complexity. Too stiff.
 - [x] add scrollwheel to scroll ui.TileSet
 - [x] add scrollwheel to increase/decrease tool radius
 
-- rewrite mat in C ?
-  "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
+- [x] decouple world updates from general app updates
+I want the ui to have at least 120 updates. This way brushe usages are nicer.
+This also comes with a speed up of the default world update rate from 24 to 30.
+This is done to keep the world update a fraction with the factor of 2.
+Otherwise things aren't properly timed.
 
-- consider oxygen/air to be always there (not None) ?
+- [ ] split World.Tick, one for color update, one for simulation
+which also allows to put the pause sys back into main (where it belongs)
 
-- [ ] increase global tickrate (for ui and keyboard), decouple world updates from that tickrate
+- [ ] consider oxygen/air to be always there (not None) ?
+But only for chemical reactions,
+because otherwise displacement and thermal conduction would have to permanently run.
 
 - [ ] change mat weight loss to be gradual across the state,
 instead of instant upon state change
@@ -27,6 +33,9 @@ instead of instant upon state change
 This causes dots to be deleted when spawners are at the top.
 
 - fire :O
+
+- [ ] rewrite mat in C ?
+  "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
 
 - [ ] set version to 0.6
 
