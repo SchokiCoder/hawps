@@ -17,8 +17,10 @@ This also comes with a speed up of the default world update rate from 24 to 30.
 This is done to keep the world update a fraction with the factor of 2.
 Otherwise things aren't properly timed.
 
-- [ ] split World.Tick, one for color update, one for simulation
-which also allows to put the pause sys back into main (where it belongs)
+- [x] split World.Tick, into one for essential updates, one for simulation
+Also put the pause sys back into main.
+This also resolves some minor visual lag on low tickrates,
+since World's color updates now match the ui updates.
 
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,

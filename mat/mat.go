@@ -142,7 +142,6 @@ func GasBs(
 type World struct {
 	W        int
 	H        int
-	Paused   bool
 
 	_rs      []uint8
 	Rs       [][]uint8
@@ -238,6 +237,86 @@ func (w *World) clearDot(
 	w.Dots[x][y] = None
 	w.States[x][y] = MsStatic
 	w.Thermo[x][y] = 0
+}
+
+// You may want to call World.Simulate() after this.
+func (w *World) Update(
+	spawnerTemperature float64,
+) {
+	var (
+		rgbOverride func(int, int)
+		x, y int
+	)
+
+	doThVision := func(
+		x, y int,
+	) {
+		if None == w.Dots[x][y] {
+			return
+		}
+
+		visT := w.Thermo[x][y]
+		if visT > ThermalVisionMinT + 255 {
+			visT = ThermalVisionMinT + 255
+		} else if visT < ThermalVisionMinT {
+			visT = ThermalVisionMinT
+		}
+
+		gray := uint8(visT - ThermalVisionMinT)
+		w.Rs[x][y] = gray
+		w.Gs[x][y] = gray
+		w.Bs[x][y] = gray
+	}
+
+	updateDotFromThermo := func(
+		x, y int,
+	) {
+		if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
+			w.States[x][y] = SolidSs(w.Dots[x][y])
+			w.Weights[x][y] = SolidWeights(w.Dots[x][y])
+			w.Rs[x][y] = SolRs(w.Dots[x][y])
+			w.Gs[x][y] = SolGs(w.Dots[x][y])
+			w.Bs[x][y] = SolBs(w.Dots[x][y])
+		} else if w.Thermo[x][y] < BoilPs(w.Dots[x][y]) {
+			w.States[x][y] = MsLiquid
+
+			if w.Dots[x][y] == Sand {
+				w.Dots[x][y] = Glass
+			}
+
+			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
+				WeightFactorLiquid
+			w.Rs[x][y] = LiqRs(w.Dots[x][y])
+			w.Gs[x][y] = LiqGs(w.Dots[x][y])
+			w.Bs[x][y] = LiqBs(w.Dots[x][y])
+		} else {
+			w.States[x][y] = MsGas
+			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
+				WeightFactorGas
+			w.Rs[x][y] = GasRs(w.Dots[x][y])
+			w.Gs[x][y] = GasGs(w.Dots[x][y])
+			w.Bs[x][y] = GasBs(w.Dots[x][y])
+		}
+	}
+
+	if w.ThVision {
+		rgbOverride = doThVision
+	} else {
+		rgbOverride = func(int, int){}
+	}
+
+	for x = 0; x < w.W; x++ {
+		for y = 0; y < w.H; y++ {
+			if w.Spawner[x][y] {
+				w.Dots[x][y] = w.SpwnMat[x][y]
+				w.Thermo[x][y] = spawnerTemperature
+			}
+
+			updateDotFromThermo(x, y)
+
+			rgbOverride(x, y)
+		}
+	}
 }
 
 func (w *World) UseBrush(
@@ -338,11 +417,10 @@ func (w *World) UseThermoChanger(
 	}
 }
 
-func (w *World) Tick(
-	spawnerTemperature float64,
+// You SHOULD call World.Update() before this.
+func (w *World) Simulate(
 ) {
 	var (
-		rgbOverride func(int, int)
 		x, y int
 	)
 
@@ -386,80 +464,6 @@ func (w *World) Tick(
 
 		w.Thermo[x][y] += c1
 		w.Thermo[x2][y2] += c2
-	}
-
-	doThVision := func(
-		x, y int,
-	) {
-		if None == w.Dots[x][y] {
-			return
-		}
-
-		visT := w.Thermo[x][y]
-		if visT > ThermalVisionMinT + 255 {
-			visT = ThermalVisionMinT + 255
-		} else if visT < ThermalVisionMinT {
-			visT = ThermalVisionMinT
-		}
-
-		gray := uint8(visT - ThermalVisionMinT)
-		w.Rs[x][y] = gray
-		w.Gs[x][y] = gray
-		w.Bs[x][y] = gray
-	}
-
-	updateDotFromThermo := func(
-		x, y int,
-	) {
-		if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
-			w.States[x][y] = SolidSs(w.Dots[x][y])
-			w.Weights[x][y] = SolidWeights(w.Dots[x][y])
-			w.Rs[x][y] = SolRs(w.Dots[x][y])
-			w.Gs[x][y] = SolGs(w.Dots[x][y])
-			w.Bs[x][y] = SolBs(w.Dots[x][y])
-		} else if w.Thermo[x][y] < BoilPs(w.Dots[x][y]) {
-			w.States[x][y] = MsLiquid
-
-			if w.Dots[x][y] == Sand {
-				w.Dots[x][y] = Glass
-			}
-
-			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
-				WeightFactorLiquid
-			w.Rs[x][y] = LiqRs(w.Dots[x][y])
-			w.Gs[x][y] = LiqGs(w.Dots[x][y])
-			w.Bs[x][y] = LiqBs(w.Dots[x][y])
-		} else {
-			w.States[x][y] = MsGas
-			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
-				WeightFactorGas
-			w.Rs[x][y] = GasRs(w.Dots[x][y])
-			w.Gs[x][y] = GasGs(w.Dots[x][y])
-			w.Bs[x][y] = GasBs(w.Dots[x][y])
-		}
-	}
-
-	if w.ThVision {
-		rgbOverride = doThVision
-	} else {
-		rgbOverride = func(int, int){}
-	}
-
-	for x = 0; x < w.W; x++ {
-		for y = 0; y < w.H; y++ {
-			if w.Spawner[x][y] {
-				w.Dots[x][y] = w.SpwnMat[x][y]
-				w.Thermo[x][y] = spawnerTemperature
-			}
-
-			updateDotFromThermo(x, y)
-
-			rgbOverride(x, y)
-		}
-	}
-
-	if w.Paused {
-		return
 	}
 
 	y = w.H - 1;

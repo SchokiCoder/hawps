@@ -100,6 +100,7 @@ type physGame struct {
 	ThermoRadius int
 	FrameW       int
 	FrameH       int
+	Paused       bool
 	Temperature  float64
 	Tickrate     int
 	Toolbox      ui.TileSet
@@ -331,7 +332,7 @@ func (g *physGame) Update(
 			return ebiten.Termination
 
 		case ebiten.KeySpace:
-			g.World.Paused = !g.World.Paused
+			g.Paused = !g.Paused
 
 		case ebiten.KeyArrowLeft:
 			if g.Toolbox.Cursor > 0 {
@@ -381,11 +382,15 @@ func (g *physGame) Update(
 
 	g.HandleWheel()
 
-	if g.TsSinceWldT >= int(1.0 / g.WldTRateFrac) {
-		g.World.Tick(g.Temperature)
-		g.TsSinceWldT = 0
-	} else {
-		g.TsSinceWldT++
+	g.World.Update(g.Temperature)
+
+	if !g.Paused {
+		if g.TsSinceWldT >= int(1.0 / g.WldTRateFrac) {
+			g.World.Simulate()
+			g.TsSinceWldT = 0
+		} else {
+			g.TsSinceWldT++
+		}
 	}
 
 	return nil
