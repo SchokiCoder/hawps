@@ -33,6 +33,7 @@ const (
 	ThermalVisionMinT  = -75
 	WeightFactorLiquid = 0.95
 	WeightFactorGas    = 0.90
+	WeightLossLimitGas = 5000.0
 )
 
 var (
@@ -293,6 +294,9 @@ func (w *World) Update(
 			w.States[x][y] = MsGas
 			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
 				WeightFactorGas
+			w.Weights[x][y] -= w.Weights[x][y] *
+				(w.Thermo[x][y] - BoilPs(w.Dots[x][y])) /
+				WeightLossLimitGas
 			w.Rs[x][y] = GasRs(w.Dots[x][y])
 			w.Gs[x][y] = GasGs(w.Dots[x][y])
 			w.Bs[x][y] = GasBs(w.Dots[x][y])

@@ -22,12 +22,15 @@ Also put the pause sys back into main.
 This also resolves some minor visual lag on low tickrates,
 since World's color updates now match the ui updates.
 
+- [x] add further mat weight loss for gases being heated up
+Huzzah! Another fictional formula.
+This one can even cause gases with negative weight,
+if the temperature reaches the 5000C region.
+It doesn't cause anti-gravity. So clearly it's fine.
+
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
-
-- [ ] change mat weight loss to be gradual across the state,
-instead of instant upon state change
 
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
