@@ -62,6 +62,7 @@ const (
 	stdWldTRateFrac = 0.25
 	heaterDelta     = 1
 
+	firstRealMat   = mat.Sand
 	pngSize        = 16
 
 	uiToolBgR      = 80
@@ -405,14 +406,14 @@ func (g *physGame) UpdateMatbox(
 
 	switch(tool(g.Toolbox.Cursor)) {
 	case brush:
-		for i := mat.FirstReal; i <= mat.Last; i++ {
+		for i := firstRealMat; i < mat.Mat(mat.Count); i++ {
 			tiles = append(tiles, int(i))
 		}
 		g.Matbox.VisibleTiles = tiles
 
 	case spawner:
 		tiles = append(tiles, int(mat.None))
-		for i := mat.FirstReal; i <= mat.Last; i++ {
+		for i := firstRealMat; i < mat.Mat(mat.Count); i++ {
 			state := tempMatToState(g.Temperature, i)
 			if state != mat.MsStatic {
 				tiles = append(tiles, int(i))
@@ -536,7 +537,7 @@ func genMatImages(t float64) []*ebiten.Image {
 		bgImgs[i] = imgopen(path)
 	}
 
-	for i := mat.None; i <= mat.Last; i++ {
+	for i := mat.None; i < mat.Mat(mat.Count); i++ {
 		path := matPrefix + i.String() + postfix
 		matImg := imgopen(path)
 		opt := ebiten.DrawImageOptions{}

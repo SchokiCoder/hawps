@@ -13,8 +13,8 @@ const (
 	Iron
 	Oxygen
 	Hydrogen
-	FirstReal = Sand
-	Last = Hydrogen
+	CarbonDioxide
+	Methane
 
 	Count int = iota
 )
@@ -37,23 +37,26 @@ const (
 )
 
 var (
-	_weights = [...]float64 {0.0,      1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319} /* g/cm³ */
-	_boilPs  = [...]float64 {0,        2950,    2950,     100,      2861,     -182.96,  -252.88}    /* °C */
-	_meltPs  = [...]float64 {0,        1713,    1713,     0,        1538,     -218.79,  -259.16}    /* °C */
-	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic}   /* state when solid */
-	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.00061,  0.084,    0.0002,   0.00018}    /* W/(m⋅K)/1000 */
+	_weights = [...]float64 {0.0,      1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319, 0.001977,   0.000657} /* g/cm³ */
+	_boilPs  = [...]float64 {0,        2950,    2950,     100,      2861,     -182.96,  -252.88,    -78.464,    -182.50}  /* °C */
+	_ignPs   = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          580.0}    /* °C */
+	_meltPs  = [...]float64 {0,        1713,    1713,     0,        1538,     -218.79,  -259.16,    -56.561,    -161.5}   /* °C */
+	_oxidTh  = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* °C released on oxidation */
+	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
+	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
+	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.00061,  0.084,    0.000002, 0.00018,    0.00000146, 0.000003} /* W/(m⋅K)/1000 */
 
-	_solRs   = [...]uint8   {0,        238,     237,      150,      200,      45,       45}
-	_solGs   = [...]uint8   {0,        217,     237,      150,      200,      45,       45}
-	_solBs   = [...]uint8   {0,        86,      237,      255,      200,      80,       80}
+	_solRs   = [...]uint8   {0,        238,     237,      150,      200,      45,       45,         45,         65}
+	_solGs   = [...]uint8   {0,        217,     237,      150,      200,      45,       45,         45,         65}
+	_solBs   = [...]uint8   {0,        86,      237,      255,      200,      80,       80,         80,         65}
 
-	_liqRs   = [...]uint8   {0,        255,     255,      100,      255,      25,       25}
-	_liqGs   = [...]uint8   {0,        110,     110,      100,      25,       25,       25}
-	_liqBs   = [...]uint8   {0,        56,      56,       255,      25,       60,       60}
+	_liqRs   = [...]uint8   {0,        255,     255,      100,      255,      25,       25,         25,         45}
+	_liqGs   = [...]uint8   {0,        110,     110,      100,      25,       25,       25,         25,         45}
+	_liqBs   = [...]uint8   {0,        56,      56,       255,      25,       60,       60,         60,         45}
 
-	_gasRs   = [...]uint8   {0,        255,     255,      200,      255,      5,        5}
-	_gasGs   = [...]uint8   {0,        0,       0,        200,      0,        5,        5}
-	_gasBs   = [...]uint8   {0,        0,       0,        255,      0,        40,       40}
+	_gasRs   = [...]uint8   {0,        255,     255,      200,      255,      5,        5,          5,          25}
+	_gasGs   = [...]uint8   {0,        0,       0,        200,      0,        5,        5,          5,          25}
+	_gasBs   = [...]uint8   {0,        0,       0,        255,      0,        40,       40,         40,         25}
 )
 
 func SolidWeights(
@@ -68,10 +71,28 @@ func BoilPs(
 	return _boilPs[i]
 }
 
+func IgnPs(
+	i Mat,
+) float64 {
+	return _ignPs[i]
+}
+
 func MeltPs(
 	i Mat,
 ) float64 {
 	return _meltPs[i]
+}
+
+func OxidSpd(
+	i Mat,
+) float64 {
+	return _oxidSpd[i]
+}
+
+func OxidTh(
+	i Mat,
+) float64 {
+	return _oxidTh[i]
 }
 
 func ThCond(
@@ -159,6 +180,8 @@ type World struct {
 
 	_dots    []Mat
 	Dots     [][]Mat
+	_oxid    []float64
+	Oxid     [][]float64
 	_states  []State
 	States   [][]State
 	_thermo  []float64
@@ -182,6 +205,8 @@ func NewWorld(
 		Bs:       make([][]uint8, w),
 		_dots:    make([]Mat, w * h),
 		Dots:     make([][]Mat, w),
+		_oxid:    make([]float64, w * h),
+		Oxid:     make([][]float64, w),
 		_spawner: make([]bool, w * h),
 		Spawner:  make([][]bool, w),
 		_spwnMat: make([]Mat, w * h),
@@ -199,6 +224,7 @@ func NewWorld(
 		ret.Gs[x] = ret._gs[x * h:h + (x * h)]
 		ret.Bs[x] = ret._bs[x * h:h + (x * h)]
 		ret.Dots[x] = ret._dots[x * h:h + (x * h)]
+		ret.Oxid[x] = ret._oxid[x * h:h + (x * h)]
 		ret.Spawner[x] = ret._spawner[x * h:h + (x * h)]
 		ret.SpwnMat[x] = ret._spwnMat[x * h:h + (x * h)]
 		ret.States[x] = ret._states[x * h:h + (x * h)]
@@ -431,9 +457,23 @@ func (w *World) Simulate(
 	doChemicalReaction := func(x, y, dx, dy int) {
 		switch w.Dots[x][y] {
 		case Oxygen:
-			if Hydrogen == w.Dots[dx][dy] {
+			switch w.Dots[dx][dy] {
+			case Hydrogen:
 				w.clearDot(x, y)
 				w.Dots[dx][dy] = Water
+
+			case Methane:
+				if w.Thermo[dx][dy] > IgnPs(w.Dots[dx][dy]) {
+					w.Oxid[dx][dy] += OxidSpd(w.Dots[dx][dy])
+					w.Thermo[x][y] += OxidTh(w.Dots[dx][dy]) *
+						OxidSpd(w.Dots[dx][dy])
+
+					if w.Oxid[dx][dy] >= 1.0 {
+						w.Dots[x][y] = CarbonDioxide
+						w.Dots[dx][dy] = Water
+						w.Oxid[dx][dy] = 0.0
+					}
+				}
 			}
 
 		default:
@@ -480,9 +520,10 @@ func (w *World) Simulate(
 		doThConduction(x, y, x + 1, y)
 		doChemicalReaction(x, y, x - 1, y)
 		doChemicalReaction(x, y, x + 1, y)
+		doChemicalReaction(x, y, x, y - 1)
 	}
 
-	for y = w.H - 2; y >= 0; y-- {
+	for y = w.H - 2; y > 0; y-- {
 		if y % 2 == 0 {
 			for x = 1; x <= w.W - 2; x++ {
 				if None == w.Dots[x][y] {
@@ -493,6 +534,7 @@ func (w *World) Simulate(
 				doThConduction(x, y, x - 1, y)
 				doThConduction(x, y, x + 1, y)
 				doChemicalReaction(x, y, x, y + 1)
+				doChemicalReaction(x, y, x, y - 1)
 				doChemicalReaction(x, y, x - 1, y)
 				doChemicalReaction(x, y, x + 1, y)
 				doGravity(x, y)
@@ -507,11 +549,27 @@ func (w *World) Simulate(
 				doThConduction(x, y, x - 1, y)
 				doThConduction(x, y, x + 1, y)
 				doChemicalReaction(x, y, x, y + 1)
+				doChemicalReaction(x, y, x, y - 1)
 				doChemicalReaction(x, y, x - 1, y)
 				doChemicalReaction(x, y, x + 1, y)
 				doGravity(x, y)
 			}
 		}
+	}
+
+	y = 0;
+	for x = 1; x < w.W - 2; x++ {
+		if None == w.Dots[x][y] {
+			continue
+		}
+
+		doThConduction(x, y, x, y + 1)
+		doThConduction(x, y, x - 1, y)
+		doThConduction(x, y, x + 1, y)
+		doChemicalReaction(x, y, x, y + 1)
+		doChemicalReaction(x, y, x - 1, y)
+		doChemicalReaction(x, y, x + 1, y)
+		doGravity(x, y)
 	}
 
 	x = 0
@@ -522,6 +580,8 @@ func (w *World) Simulate(
 
 		doThConduction(x, y, x, y + 1)
 		doChemicalReaction(x, y, x, y + 1)
+		doChemicalReaction(x, y, x, y - 1)
+		doChemicalReaction(x, y, x + 1, y)
 		doGravity(x, y)
 	}
 
@@ -533,6 +593,8 @@ func (w *World) Simulate(
 
 		doThConduction(x, y, x, y + 1)
 		doChemicalReaction(x, y, x, y + 1)
+		doChemicalReaction(x, y, x, y - 1)
+		doChemicalReaction(x, y, x - 1, y)
 		doGravity(x, y)
 	}
 }
@@ -667,6 +729,7 @@ func (w *World) swapDots(
 		tmpG = w.Gs[x][y]
 		tmpB = w.Bs[x][y]
 		tmpM = w.Dots[x][y]
+		tmpO = w.Oxid[x][y]
 		tmpS = w.States[x][y]
 		tmpT = w.Thermo[x][y]
 	)
@@ -675,6 +738,7 @@ func (w *World) swapDots(
 	w.Gs[x][y] = w.Gs[x2][y2]
 	w.Bs[x][y] = w.Bs[x2][y2]
 	w.Dots[x][y] = w.Dots[x2][y2]
+	w.Oxid[x][y] = w.Oxid[x2][y2]
 	w.States[x][y] = w.States[x2][y2]
 	w.Thermo[x][y] = w.Thermo[x2][y2]
 
@@ -682,6 +746,7 @@ func (w *World) swapDots(
 	w.Gs[x2][y2] = tmpG
 	w.Bs[x2][y2] = tmpB
 	w.Dots[x2][y2] = tmpM
+	w.Oxid[x2][y2] = tmpO
 	w.States[x2][y2] = tmpS
 	w.Thermo[x2][y2] = tmpT
 }

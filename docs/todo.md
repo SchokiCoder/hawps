@@ -28,16 +28,27 @@ This one can even cause gases with negative weight,
 if the temperature reaches the 5000C region.
 It doesn't cause anti-gravity. So clearly it's fine.
 
+- [x] add experimental fire
+Also fix an issue with one-way chemical reactions.
+Also add methane and carbon dioxide.
+Fire still lacks visuals and reliability.
+
+- [ ] thermal conduction needs to be quicker for a reliable fire chain reaction
+Since thCond is a fictional formula, the real numbers don't make too much sense.
+Change formula or values.
+- [ ] add fire visuals
+(the Oxygen going into a plasma state?)
+- [ ] make flammability a declarative property of mats
+(adding the oxidation products as such too) ?
+
+- [ ] find suitable font or make bitmap font
+
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
-- [ ] fix stack collapsing displacing dots to the top of the stack
-This causes dots to be deleted when spawners are at the top.
-
-- fire :O
 
 - [ ] rewrite mat in C ?
   "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
