@@ -44,7 +44,7 @@ var (
 	_oxidTh  = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* °C released on oxidation */
 	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
 	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
-	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.00061,  0.084,    0.000002, 0.00018,    0.00000146, 0.000003} /* W/(m⋅K)/1000 */
+	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003} /* W/(m⋅K) but flattened so that at most two zeroes are after the dot */
 
 	_solRs   = [...]uint8   {0,        238,     237,      150,      200,      45,       45,         45,         65}
 	_solGs   = [...]uint8   {0,        217,     237,      150,      200,      45,       45,         45,         65}

@@ -33,9 +33,12 @@ Also fix an issue with one-way chemical reactions.
 Also add methane and carbon dioxide.
 Fire still lacks visuals and reliability.
 
-- [ ] thermal conduction needs to be quicker for a reliable fire chain reaction
-Since thCond is a fictional formula, the real numbers don't make too much sense.
-Change formula or values.
+- [x] flatten conduction values
+This mostly affects what is a gas under room temperature and pressure.
+This brings them into the
+"I can see heat exchange happen before I need to go to bed" realm,
+and brings a much more realistic looking burning speed and consistency.
+
 - [ ] add fire visuals
 (the Oxygen going into a plasma state?)
 - [ ] make flammability a declarative property of mats
