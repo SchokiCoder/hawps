@@ -545,23 +545,9 @@ func genMatImages(t float64) []*ebiten.Image {
 
 		state := tempMatToState(t, i)
 		var r, g, b uint8
-		switch state {
-		case mat.MsGrain:  fallthrough
-		case mat.MsStatic:
-			r = mat.SolRs(i)
-			g = mat.SolGs(i)
-			b = mat.SolBs(i)
-
-		case mat.MsLiquid:
-			r = mat.LiqRs(i)
-			g = mat.LiqGs(i)
-			b = mat.LiqBs(i)
-
-		case mat.MsGas:
-			r = mat.GasRs(i)
-			g = mat.GasGs(i)
-			b = mat.GasBs(i)
-		}
+		r = mat.Rs(i)
+		g = mat.Gs(i)
+		b = mat.Bs(i)
 
 		opt.ColorM.ScaleWithColor(color.RGBA{r, g, b, 255})
 		img.DrawImage(bgImgs[state], &opt)

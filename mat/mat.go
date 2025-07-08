@@ -45,18 +45,9 @@ var (
 	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
 	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
 	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003}    /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-
-	_solRs   = [...]uint8   {0,        238,     237,      150,      200,      45,       45,         45,         65}
-	_solGs   = [...]uint8   {0,        217,     237,      150,      200,      45,       45,         45,         65}
-	_solBs   = [...]uint8   {0,        86,      237,      255,      200,      80,       80,         80,         65}
-
-	_liqRs   = [...]uint8   {0,        255,     255,      100,      255,      25,       25,         25,         45}
-	_liqGs   = [...]uint8   {0,        110,     110,      100,      25,       25,       25,         25,         45}
-	_liqBs   = [...]uint8   {0,        56,      56,       255,      25,       60,       60,         60,         45}
-
-	_gasRs   = [...]uint8   {0,        255,     255,      200,      255,      5,        5,          5,          25}
-	_gasGs   = [...]uint8   {0,        0,       0,        200,      0,        5,        5,          5,          25}
-	_gasBs   = [...]uint8   {0,        0,       0,        255,      0,        40,       40,         40,         25}
+	_rs      = [...]uint8   {0,        238,     237,      150,      200,      45,       45,         45,         65}
+	_gs      = [...]uint8   {0,        217,     237,      150,      200,      45,       45,         45,         65}
+	_bs      = [...]uint8   {0,        86,      237,      255,      200,      80,       80,         80,         65}
 )
 
 func SolidWeights(
@@ -107,58 +98,22 @@ func SolidSs(
 	return _solidSs[i]
 }
 
-func SolRs(
+func Rs(
 	i Mat,
 ) uint8 {
-	return _solRs[i]
+	return _rs[i]
 }
 
-func SolGs(
+func Gs(
 	i Mat,
 ) uint8 {
-	return _solGs[i]
+	return _gs[i]
 }
 
-func SolBs(
+func Bs(
 	i Mat,
 ) uint8 {
-	return _solBs[i]
-}
-
-func LiqRs(
-	i Mat,
-) uint8 {
-	return _liqRs[i]
-}
-
-func LiqGs(
-	i Mat,
-) uint8 {
-	return _liqGs[i]
-}
-
-func LiqBs(
-	i Mat,
-) uint8 {
-	return _liqBs[i]
-}
-
-func GasRs(
-	i Mat,
-) uint8 {
-	return _gasRs[i]
-}
-
-func GasGs(
-	i Mat,
-) uint8 {
-	return _gasGs[i]
-}
-
-func GasBs(
-	i Mat,
-) uint8 {
-	return _gasBs[i]
+	return _bs[i]
 }
 
 type World struct {
@@ -298,12 +253,14 @@ func (w *World) Update(
 	updateDotFromThermo := func(
 		x, y int,
 	) {
+		// TODO add wiens displacement here
+		w.Rs[x][y] = Rs(w.Dots[x][y])
+		w.Gs[x][y] = Gs(w.Dots[x][y])
+		w.Bs[x][y] = Bs(w.Dots[x][y])
+
 		if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
 			w.States[x][y] = SolidSs(w.Dots[x][y])
 			w.Weights[x][y] = SolidWeights(w.Dots[x][y])
-			w.Rs[x][y] = SolRs(w.Dots[x][y])
-			w.Gs[x][y] = SolGs(w.Dots[x][y])
-			w.Bs[x][y] = SolBs(w.Dots[x][y])
 		} else if w.Thermo[x][y] < BoilPs(w.Dots[x][y]) {
 			w.States[x][y] = MsLiquid
 
@@ -313,9 +270,6 @@ func (w *World) Update(
 
 			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
 				WeightFactorLiquid
-			w.Rs[x][y] = LiqRs(w.Dots[x][y])
-			w.Gs[x][y] = LiqGs(w.Dots[x][y])
-			w.Bs[x][y] = LiqBs(w.Dots[x][y])
 		} else {
 			w.States[x][y] = MsGas
 			w.Weights[x][y] = SolidWeights(w.Dots[x][y]) *
@@ -323,9 +277,6 @@ func (w *World) Update(
 			w.Weights[x][y] -= w.Weights[x][y] *
 				(w.Thermo[x][y] - BoilPs(w.Dots[x][y])) /
 				WeightLossLimitGas
-			w.Rs[x][y] = GasRs(w.Dots[x][y])
-			w.Gs[x][y] = GasGs(w.Dots[x][y])
-			w.Bs[x][y] = GasBs(w.Dots[x][y])
 		}
 	}
 
@@ -379,6 +330,9 @@ func (w *World) UseBrush(
 		for y := y1; y <= y2; y++ {
 			w.Dots[x][y] = m
 			w.Thermo[x][y] = t
+			w.Rs[x][y] = Rs(m)
+			w.Gs[x][y] = Gs(m)
+			w.Bs[x][y] = Bs(m)
 		}
 	}
 }
@@ -755,13 +709,7 @@ func ChangeBgColor(
 	r, g, b uint8,
 ) {
 	// change the color of mat None
-	_solRs[0] = r
-	_solGs[0] = g
-	_solBs[0] = b
-	_liqRs[0] = r
-	_liqGs[0] = g
-	_liqBs[0] = b
-	_gasRs[0] = r
-	_gasGs[0] = g
-	_gasBs[0] = b
+	_rs[0] = r
+	_gs[0] = g
+	_bs[0] = b
 }
