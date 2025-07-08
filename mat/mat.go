@@ -30,7 +30,6 @@ const (
 )
 
 const (
-	ThermalVisionMinT  = -75
 	WeightFactorLiquid = 0.95
 	WeightFactorGas    = 0.90
 	WeightLossLimitGas = 5000.0
@@ -45,9 +44,9 @@ var (
 	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
 	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
 	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003}    /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-	_rs      = [...]uint8   {0,        238,     237,      150,      200,      45,       45,         45,         65}
-	_gs      = [...]uint8   {0,        217,     237,      150,      200,      45,       45,         45,         65}
-	_bs      = [...]uint8   {0,        86,      237,      255,      200,      80,       80,         80,         65}
+	Rs       = [...]uint8   {0,        238,     237,      150,      200,      45,       45,         45,         65}
+	Gs       = [...]uint8   {0,        217,     237,      150,      200,      45,       45,         45,         65}
+	Bs       = [...]uint8   {0,        86,      237,      255,      200,      80,       80,         80,         65}
 )
 
 func SolidWeights(
@@ -98,35 +97,9 @@ func SolidSs(
 	return _solidSs[i]
 }
 
-func Rs(
-	i Mat,
-) uint8 {
-	return _rs[i]
-}
-
-func Gs(
-	i Mat,
-) uint8 {
-	return _gs[i]
-}
-
-func Bs(
-	i Mat,
-) uint8 {
-	return _bs[i]
-}
-
 type World struct {
 	W        int
 	H        int
-
-	_rs      []uint8
-	Rs       [][]uint8
-	_gs      []uint8
-	Gs       [][]uint8
-	_bs      []uint8
-	Bs       [][]uint8
-	ThVision bool
 
 	_spawner []bool
 	Spawner  [][]bool
@@ -152,12 +125,6 @@ func NewWorld(
 	var ret = World{
 		W:        w,
 		H:        h,
-		_rs:      make([]uint8, w * h),
-		Rs:       make([][]uint8, w),
-		_gs:      make([]uint8, w * h),
-		Gs:       make([][]uint8, w),
-		_bs:      make([]uint8, w * h),
-		Bs:       make([][]uint8, w),
 		_dots:    make([]Mat, w * h),
 		Dots:     make([][]Mat, w),
 		_oxid:    make([]float64, w * h),
@@ -175,9 +142,6 @@ func NewWorld(
 	}
 
 	for x := 0; x < w; x++ {
-		ret.Rs[x] = ret._rs[x * h:h + (x * h)]
-		ret.Gs[x] = ret._gs[x * h:h + (x * h)]
-		ret.Bs[x] = ret._bs[x * h:h + (x * h)]
 		ret.Dots[x] = ret._dots[x * h:h + (x * h)]
 		ret.Oxid[x] = ret._oxid[x * h:h + (x * h)]
 		ret.Spawner[x] = ret._spawner[x * h:h + (x * h)]
@@ -213,9 +177,6 @@ func (w World) CanDisplace(x, y, dx, dy int) bool {
 func (w *World) clearDot(
 	x, y int,
 ) {
-	w.Rs[x][y] = 0
-	w.Gs[x][y] = 0
-	w.Bs[x][y] = 0
 	w.Dots[x][y] = None
 	w.States[x][y] = MsStatic
 	w.Thermo[x][y] = 0
@@ -226,38 +187,12 @@ func (w *World) Update(
 	spawnerTemperature float64,
 ) {
 	var (
-		rgbOverride func(int, int)
 		x, y int
 	)
-
-	doThVision := func(
-		x, y int,
-	) {
-		if None == w.Dots[x][y] {
-			return
-		}
-
-		visT := w.Thermo[x][y]
-		if visT > ThermalVisionMinT + 255 {
-			visT = ThermalVisionMinT + 255
-		} else if visT < ThermalVisionMinT {
-			visT = ThermalVisionMinT
-		}
-
-		gray := uint8(visT - ThermalVisionMinT)
-		w.Rs[x][y] = gray
-		w.Gs[x][y] = gray
-		w.Bs[x][y] = gray
-	}
 
 	updateDotFromThermo := func(
 		x, y int,
 	) {
-		// TODO add wiens displacement here
-		w.Rs[x][y] = Rs(w.Dots[x][y])
-		w.Gs[x][y] = Gs(w.Dots[x][y])
-		w.Bs[x][y] = Bs(w.Dots[x][y])
-
 		if w.Thermo[x][y] < MeltPs(w.Dots[x][y]) {
 			w.States[x][y] = SolidSs(w.Dots[x][y])
 			w.Weights[x][y] = SolidWeights(w.Dots[x][y])
@@ -280,12 +215,6 @@ func (w *World) Update(
 		}
 	}
 
-	if w.ThVision {
-		rgbOverride = doThVision
-	} else {
-		rgbOverride = func(int, int){}
-	}
-
 	for x = 0; x < w.W; x++ {
 		for y = 0; y < w.H; y++ {
 			if w.Spawner[x][y] {
@@ -294,8 +223,6 @@ func (w *World) Update(
 			}
 
 			updateDotFromThermo(x, y)
-
-			rgbOverride(x, y)
 		}
 	}
 }
@@ -330,9 +257,6 @@ func (w *World) UseBrush(
 		for y := y1; y <= y2; y++ {
 			w.Dots[x][y] = m
 			w.Thermo[x][y] = t
-			w.Rs[x][y] = Rs(m)
-			w.Gs[x][y] = Gs(m)
-			w.Bs[x][y] = Bs(m)
 		}
 	}
 }
@@ -679,37 +603,19 @@ func (w *World) swapDots(
 	x2, y2 int,
 ) {
 	var (
-		tmpR = w.Rs[x][y]
-		tmpG = w.Gs[x][y]
-		tmpB = w.Bs[x][y]
 		tmpM = w.Dots[x][y]
 		tmpO = w.Oxid[x][y]
 		tmpS = w.States[x][y]
 		tmpT = w.Thermo[x][y]
 	)
 
-	w.Rs[x][y] = w.Rs[x2][y2]
-	w.Gs[x][y] = w.Gs[x2][y2]
-	w.Bs[x][y] = w.Bs[x2][y2]
 	w.Dots[x][y] = w.Dots[x2][y2]
 	w.Oxid[x][y] = w.Oxid[x2][y2]
 	w.States[x][y] = w.States[x2][y2]
 	w.Thermo[x][y] = w.Thermo[x2][y2]
 
-	w.Rs[x2][y2] = tmpR
-	w.Gs[x2][y2] = tmpG
-	w.Bs[x2][y2] = tmpB
 	w.Dots[x2][y2] = tmpM
 	w.Oxid[x2][y2] = tmpO
 	w.States[x2][y2] = tmpS
 	w.Thermo[x2][y2] = tmpT
-}
-
-func ChangeBgColor(
-	r, g, b uint8,
-) {
-	// change the color of mat None
-	_rs[0] = r
-	_gs[0] = g
-	_bs[0] = b
 }

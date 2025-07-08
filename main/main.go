@@ -57,6 +57,7 @@ const (
 	stdEraserRadius = 5
 	stdThermoRadius = stdBrushRadius
 	maxRadius = 32
+	thermalVisionMinT  = -75
 
 	stdTickrate     = 120
 	stdWldTRateFrac = 0.25
@@ -103,6 +104,7 @@ type physGame struct {
 	FrameH       int
 	Paused       bool
 	Temperature  float64
+	ThVision     bool
 	Tickrate     int
 	Toolbox      ui.TileSet
 	// ticks since world tick
@@ -133,7 +135,35 @@ func newPhysGame(
 func (g physGame) Draw(
 	screen *ebiten.Image,
 ) {
+	getNormalDotColor := func(
+		x, y int,
+	) color.Color {
+		return color.RGBA{
+			mat.Rs[g.World.Dots[x][y]],
+			mat.Gs[g.World.Dots[x][y]],
+			mat.Bs[g.World.Dots[x][y]],
+			255}
+	}
+
+	getThermalDotColor := func(
+		x, y int,
+	) color.Color {
+		if mat.None == g.World.Dots[x][y] {
+			return getNormalDotColor(x, y)
+		}
+
+		visT := g.World.Thermo[x][y]
+		if visT > thermalVisionMinT + 255 {
+			visT = thermalVisionMinT + 255
+		} else if visT < thermalVisionMinT {
+			visT = thermalVisionMinT
+		}
+
+		return color.Gray{uint8(visT - thermalVisionMinT)}
+	}
+
 	var (
+		getDotColor func(int, int) color.Color
 		opt = ebiten.DrawImageOptions{}
 	)
 
@@ -146,6 +176,12 @@ func (g physGame) Draw(
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.Matbox.X), float64(g.Matbox.Y))
 	screen.DrawImage(g.Matbox.Img, &opt)
+
+	if g.ThVision {
+		getDotColor = getThermalDotColor
+	} else {
+		getDotColor = getNormalDotColor
+	}
 
 	// So I was initially trying to use ebiten.Image.WritePixels(),
 	// but it literally didn't do anything.
@@ -163,12 +199,7 @@ func (g physGame) Draw(
 				continue
 			}
 
-			g.WorldImg.Set(x, y,
-				color.RGBA{
-					g.World.Rs[x][y],
-					g.World.Gs[x][y],
-					g.World.Bs[x][y],
-					255})
+			g.WorldImg.Set(x, y, getDotColor(x, y))
 		}
 	}
 
@@ -368,11 +399,15 @@ func (g *physGame) Update(
 			}
 
 		case ebiten.KeyT:
-			g.World.ThVision = !g.World.ThVision
-			if true == g.World.ThVision {
-				mat.ChangeBgColor(wThBgR, wThBgG, wThBgB)
+			g.ThVision = !g.ThVision
+			if true == g.ThVision {
+				mat.Rs[mat.None] = wThBgR
+				mat.Gs[mat.None] = wThBgG
+				mat.Bs[mat.None] = wThBgB
 			} else {
-				mat.ChangeBgColor(wBgR, wBgG, wBgB)
+				mat.Rs[mat.None] = wBgR
+				mat.Gs[mat.None] = wBgG
+				mat.Bs[mat.None] = wBgB
 			}
 		}
 	}
@@ -545,9 +580,9 @@ func genMatImages(t float64) []*ebiten.Image {
 
 		state := tempMatToState(t, i)
 		var r, g, b uint8
-		r = mat.Rs(i)
-		g = mat.Gs(i)
-		b = mat.Bs(i)
+		r = mat.Rs[i]
+		g = mat.Gs[i]
+		b = mat.Bs[i]
 
 		opt.ColorM.ScaleWithColor(color.RGBA{r, g, b, 255})
 		img.DrawImage(bgImgs[state], &opt)
@@ -641,8 +676,8 @@ func handleArgs(
 			           stdTickrate,
 			           stdWinW,
 			           stdTickrate * stdWldTRateFrac,
-			           mat.ThermalVisionMinT,
-			           mat.ThermalVisionMinT+255)
+			           thermalVisionMinT,
+			           thermalVisionMinT+255)
 			return false
 
 		case "-noborder":

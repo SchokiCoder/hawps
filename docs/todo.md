@@ -40,18 +40,20 @@ This brings them into the
 and brings a much more realistic looking burning speed and consistency.
 
 - [ ] add fire visuals
-  Replace solid, liquid, and gas RGBs with a generic glow by temperature system
-  draper point = 798 K = temperature at which things start to glow
-  wiens displacement law = 2898000 / Kelvin = function to determine wavelength in nm
-  violet 380 - 440 nm
-  blue   440 - 485 nm
-  cyan   485 - 510 nm
-  green  510 - 565 nm
-  yellow 565 - 590 nm
-  orange 590 - 625 nm
-  red    625 - 740 nm
+Replace solid, liquid, and gas RGBs with a generic glow by temperature system
+Draper point = 798 K = temperature at which things start to glow
+Wiens displacement law = 2898000 / Kelvin = function to determine wavelength in nm
+violet 380 - 440 nm
+blue   440 - 485 nm
+cyan   485 - 510 nm
+green  510 - 565 nm
+yellow 565 - 590 nm
+orange 590 - 625 nm
+red    625 - 740 nm
 
 - [ ] update copyright
+
+- [ ] add actual background drawing and remove mat.None drawing
 
 - [ ] add shader that uses the temperature glow to emit light around the glowing object
 
