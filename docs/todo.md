@@ -54,8 +54,11 @@ Instead of doing expensive HSV stuff for temperature based glowing,
 we prepare an array of glow colors,
 which we then iterate through based on dot temperature.
 
+- [x] fix glow far below draper point
+Technically it's just working around ebitengine,
+blending colors that have 0 alpha.
+
 - [ ] use Kelvin instead of C (and add check to cool brush against negative values)
-- [ ] fix everything being tinted red by glow even when far below draper point
 - [ ] fix tool hover zone being drawn over by glow
 
 - [ ] update copyright

@@ -140,7 +140,7 @@ func newPhysGame(
 	 * which we then iterate through based on dot temperature.
 	 */
 	for i := 0; i < noGlowRange; i++ {
-		ret.GlowColors[i] = color.RGBA{255, 0, 0, 0}
+		ret.GlowColors[i] = color.RGBA{0, 0, 0, 0}
 	}
 	for i := noGlowRange; i < dimGlowRange; i++ {
 		ret.GlowColors[i] = color.RGBA{255, 0, 0,
