@@ -94,6 +94,10 @@ const (
 	wThBgR         = 100
 	wThBgG         = 0
 	wThBgB         = 0
+
+	glowRange    = 77
+	noGlowRange  = 7  // draper point
+	dimGlowRange = 40
 )
 
 type physGame struct {
@@ -102,6 +106,8 @@ type physGame struct {
 	ThermoRadius int
 	FrameW       int
 	FrameH       int
+	GlowColors   [glowRange]color.RGBA
+	GlowImg      *ebiten.Image
 	Paused       bool
 	Temperature  float64
 	ThVision     bool
@@ -127,6 +133,71 @@ func newPhysGame(
 		Tickrate:     stdTickrate,
 		TsSinceWldT:  9999,
 		WldTRateFrac: stdWldTRateFrac,
+	}
+
+	/* Instead of doing expensive HSV stuff for temperature based glowing,
+	 * we prepare an array of glow colors,
+	 * which we then iterate through based on dot temperature.
+	 */
+	for i := 0; i < noGlowRange; i++ {
+		ret.GlowColors[i] = color.RGBA{255, 0, 0, 0}
+	}
+	for i := noGlowRange; i < dimGlowRange; i++ {
+		ret.GlowColors[i] = color.RGBA{255, 0, 0,
+			uint8(255.0 /
+				100.0 *
+				(100.0 /
+					float64(dimGlowRange - noGlowRange) *
+					float64(i - noGlowRange)))}
+	}
+	chromaGlow := [...]color.RGBA{
+		color.RGBA{255, 0, 0, 255},
+		color.RGBA{255, 0, 0, 255},
+		color.RGBA{255, 0, 0, 255},
+		color.RGBA{255, 0, 0, 255},
+		color.RGBA{255, 0, 0, 255},
+
+		color.RGBA{255, 63, 0, 255},
+		color.RGBA{255, 127, 0, 255},
+		color.RGBA{255, 127, 0, 255},
+		color.RGBA{255, 190, 0, 255},
+
+		color.RGBA{255, 127, 0, 255},
+		color.RGBA{255, 255, 0, 255},
+		color.RGBA{127, 255, 0, 255},
+
+		color.RGBA{0, 255, 0, 255},
+		color.RGBA{0, 255, 0, 255},
+		color.RGBA{0, 255, 0, 255},
+		color.RGBA{0, 255, 85, 255},
+		color.RGBA{0, 255, 170, 255},
+
+		color.RGBA{0, 255, 255, 255},
+		color.RGBA{0, 255, 255, 255},
+		color.RGBA{0, 170, 255, 255},
+
+		color.RGBA{0, 85, 255, 255},
+		color.RGBA{0, 0, 255, 255},
+		color.RGBA{0, 0, 255, 255},
+		color.RGBA{0, 0, 255, 255},
+		color.RGBA{0, 0, 255, 255},
+		color.RGBA{0, 0, 255, 255},
+		color.RGBA{19, 0, 255, 255},
+		color.RGBA{37, 0, 255, 255},
+		color.RGBA{55, 0, 255, 255},
+
+		color.RGBA{73, 0, 255, 255},
+		color.RGBA{91, 0, 255, 255},
+		color.RGBA{109, 0, 255, 255},
+		color.RGBA{127, 0, 255, 255},
+		color.RGBA{127, 0, 255, 255},
+		color.RGBA{127, 0, 255, 255},
+		color.RGBA{127, 0, 255, 255},
+		color.RGBA{127, 0, 255, 170},
+		color.RGBA{127, 0, 255, 85},
+	}
+	for i := dimGlowRange; i < glowRange; i++ {
+		ret.GlowColors[i] = chromaGlow[i - dimGlowRange]
 	}
 
 	return ret
@@ -162,8 +233,28 @@ func (g physGame) Draw(
 		return color.Gray{uint8(visT - thermalVisionMinT)}
 	}
 
+	getGlowColor := func(
+		x, y int,
+	) color.Color {
+		var glowIndex int
+
+		if mat.None == g.World.Dots[x][y] {
+			return color.RGBA{0, 0, 0, 0}
+		}
+
+		glowIndex = int((g.World.Thermo[x][y] + 273.15) / 100)
+		if glowIndex < 0 ||
+		   glowIndex >= glowRange {
+			return color.RGBA{0, 0, 0, 0}
+		}
+
+		return g.GlowColors[glowIndex]
+	}
+
 	var (
 		getDotColor func(int, int) color.Color
+		drawDotGlow func(x, y int)
+		drawGlowImg func()
 		opt = ebiten.DrawImageOptions{}
 	)
 
@@ -179,8 +270,14 @@ func (g physGame) Draw(
 
 	if g.ThVision {
 		getDotColor = getThermalDotColor
+		drawDotGlow = func(x, y int) {}
+		drawGlowImg = func() {}
 	} else {
 		getDotColor = getNormalDotColor
+		drawDotGlow = func(x, y int) {g.GlowImg.Set(x, y, getGlowColor(x, y))}
+		drawGlowImg = func() {
+			screen.DrawImage(g.GlowImg, &opt)
+		}
 	}
 
 	// So I was initially trying to use ebiten.Image.WritePixels(),
@@ -200,6 +297,7 @@ func (g physGame) Draw(
 			}
 
 			g.WorldImg.Set(x, y, getDotColor(x, y))
+			drawDotGlow(x, y)
 		}
 	}
 
@@ -233,6 +331,7 @@ func (g physGame) Draw(
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
 	screen.DrawImage(g.WorldImg, &opt)
+	drawGlowImg()
 }
 
 func (g *physGame) HandleClick(
@@ -838,6 +937,7 @@ func main(
 
 	g.World = mat.NewWorld(wW, wH, g.Temperature)
 	g.WorldImg = ebiten.NewImage(wW, wH)
+	g.GlowImg = ebiten.NewImage(wW, wH)
 
 	ebiten.SetWindowTitle(AppName + " " + AppVersion)
 	ebiten.SetWindowSize(winW, winH)

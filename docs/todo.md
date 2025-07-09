@@ -39,17 +39,24 @@ This brings them into the
 "I can see heat exchange happen before I need to go to bed" realm,
 and brings a much more realistic looking burning speed and consistency.
 
-- [ ] add fire visuals
+- [x] add glow via temperature system
 Replace solid, liquid, and gas RGBs with a generic glow by temperature system
 Draper point = 798 K = temperature at which things start to glow
 Wiens displacement law = 2898000 / Kelvin = function to determine wavelength in nm
-violet 380 - 440 nm
-blue   440 - 485 nm
-cyan   485 - 510 nm
-green  510 - 565 nm
-yellow 565 - 590 nm
-orange 590 - 625 nm
-red    625 - 740 nm
+violet 380 - 440 nm | 7626.32 - 6586.36 K
+blue   440 - 485 nm | 6586.36 - 5975.26 K
+cyan   485 - 510 nm | 5975.26 - 5682.35 K
+green  510 - 565 nm | 5682.35 - 5129.20 K
+yellow 565 - 590 nm | 5129.20 - 4911.86 K
+orange 590 - 625 nm | 4911.86 - 4636.80 K
+red    625 - 740 nm | 4636.80 - 3916.22 K
+Instead of doing expensive HSV stuff for temperature based glowing,
+we prepare an array of glow colors,
+which we then iterate through based on dot temperature.
+
+- [ ] use Kelvin instead of C (and add check to cool brush against negative values)
+- [ ] fix everything being tinted red by glow even when far below draper point
+- [ ] fix tool hover zone being drawn over by glow
 
 - [ ] update copyright
 
