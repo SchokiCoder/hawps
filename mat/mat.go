@@ -293,7 +293,49 @@ func (w *World) UseEraser(
 	}
 }
 
-func (w *World) UseThermoChanger(
+// Using this to increase temperature, by giving a negative delta,
+// is inefficient. Cooling requires an additional check.
+// To heat, see UseHeater
+func (w *World) UseCooler(
+	delta float64,
+	xC, yC int,
+	radius int,
+) {
+	var (
+		x1 = xC - radius
+		x2 = xC + radius
+		y1 = yC - radius
+		y2 = yC + radius
+	)
+
+	if x1 < 0 {
+		x1 = 0
+	}
+	if x2 >= w.W {
+		x2 = w.W - 1
+	}
+	if y1 < 0 {
+		y1 = 0
+	}
+	if y2 >= w.H {
+		y2 = w.H - 1
+	}
+
+	for x := x1; x <= x2; x++ {
+		for y := y1; y <= y2; y++ {
+			w.Thermo[x][y] -= delta
+
+			if w.Thermo[x][y] < 0.0 {
+				w.Thermo[x][y] = 0.0
+			}
+		}
+	}
+}
+
+// Using this to decrease temperature, by giving a negative delta,
+// may cause issues, as soon as the temperature of a dot goes negative.
+// To cool, see UseCooler
+func (w *World) UseHeater(
 	delta float64,
 	xC, yC int,
 	radius int,

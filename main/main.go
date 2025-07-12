@@ -246,8 +246,7 @@ func (g physGame) Draw(
 		}
 
 		glowIndex = int(g.World.Thermo[x][y] / 100.0)
-		if glowIndex < 0 ||
-		   glowIndex >= glowRange {
+		if glowIndex >= glowRange {
 			return color.RGBA{0, 0, 0, 0}
 		}
 
@@ -381,15 +380,15 @@ func (g *physGame) HandleClick(
 				g.EraserRadius)
 
 		case heater:
-			g.World.UseThermoChanger(
+			g.World.UseHeater(
 				heaterDelta,
 				mX - g.WorldX,
 				mY - g.WorldY,
 				g.ThermoRadius)
 
 		case cooler:
-			g.World.UseThermoChanger(
-				heaterDelta * -1,
+			g.World.UseCooler(
+				heaterDelta,
 				mX - g.WorldX,
 				mY - g.WorldY,
 				g.ThermoRadius)

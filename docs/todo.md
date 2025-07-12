@@ -59,11 +59,14 @@ Technically it's just working around ebitengine,
 blending colors that have 0 alpha.
 
 - [x] use Kelvin instead of Celsius in mat math
-- [ ] add check to cool brush against negative values
+- [x] add check to cool brush against negative values
+This replaces a check against negative glow colors.
+
+- [ ] update copyright
 
 - [ ] fix tool hover zone being drawn over by glow
 
-- [ ] update copyright
+- [ ] fix panic when oxygen is in the upper corners
 
 - [ ] add actual background drawing and remove mat.None drawing
 
