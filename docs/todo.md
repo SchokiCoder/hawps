@@ -58,7 +58,9 @@ which we then iterate through based on dot temperature.
 Technically it's just working around ebitengine,
 blending colors that have 0 alpha.
 
-- [ ] use Kelvin instead of C (and add check to cool brush against negative values)
+- [x] use Kelvin instead of Celsius in mat math
+- [ ] add check to cool brush against negative values
+
 - [ ] fix tool hover zone being drawn over by glow
 
 - [ ] update copyright

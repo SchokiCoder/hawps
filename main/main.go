@@ -53,11 +53,13 @@ var (
 )
 
 const (
+	celsiusToKelvin = 273.15
+
 	stdBrushRadius  = 2
 	stdEraserRadius = 5
 	stdThermoRadius = stdBrushRadius
 	maxRadius = 32
-	thermalVisionMinT  = -75
+	thermalVisionMinT  = -75 + celsiusToKelvin
 
 	stdTickrate     = 120
 	stdWldTRateFrac = 0.25
@@ -80,7 +82,7 @@ const (
 	spawnerG       = 0
 	spawnerB       = 255
 
-	stdTemperature = 20
+	stdTemperature = 20 + celsiusToKelvin
 	stdWinW        = 640
 	stdWinH        = 480
 
@@ -95,6 +97,7 @@ const (
 	wThBgG         = 0
 	wThBgB         = 0
 
+	// Kelvin / 100
 	glowRange    = 77
 	noGlowRange  = 7  // draper point
 	dimGlowRange = 40
@@ -242,7 +245,7 @@ func (g physGame) Draw(
 			return color.RGBA{0, 0, 0, 0}
 		}
 
-		glowIndex = int((g.World.Thermo[x][y] + 273.15) / 100)
+		glowIndex = int(g.World.Thermo[x][y] / 100.0)
 		if glowIndex < 0 ||
 		   glowIndex >= glowRange {
 			return color.RGBA{0, 0, 0, 0}
@@ -595,7 +598,7 @@ Options:
         overrides automatic layout determination, and sets tall ui
 
     -temperature
-        sets the temperature of every new dot
+        sets the temperature of every new dot in degree Celsius
         default: %v
 
     -tickrate NUMBER
@@ -636,7 +639,7 @@ Default keybinds:
         default: %v updates per second
 
     T
-        Toggle thermal vision (grayscale displaying %v to %v degree C)
+        Toggle thermal vision (grayscale displaying %v to %v degree Celsius)
 
     Wheel Up and Down
         Scrolls a TileSet or increases/decreases the tool radius,
@@ -740,12 +743,16 @@ func handleArgs(
 ) bool {
 	argToInt := func(i int) int {
 		if len(os.Args) <= i + 1 {
-			panic("The argument \"" + os.Args[i] + "\" needs to be followed by a value");
+			panic("The argument \"" +
+				os.Args[i] +
+				"\" needs to be followed by a value");
 		}
 		i++
 		n, err := strconv.Atoi(os.Args[i])
 		if err != nil {
-			panic("\"" + os.Args[i - 1] + "\" could not be converted to a int");
+			panic("\"" +
+				os.Args[i - 1] +
+				"\" could not be converted to a int");
 		}
 		return n
 	}
@@ -771,12 +778,12 @@ func handleArgs(
 			fmt.Printf(appHelp,
 			           AppName,
 			           stdWinH,
-			           stdTemperature,
+			           stdTemperature - celsiusToKelvin,
 			           stdTickrate,
 			           stdWinW,
 			           stdTickrate * stdWldTRateFrac,
-			           thermalVisionMinT,
-			           thermalVisionMinT+255)
+			           thermalVisionMinT - celsiusToKelvin,
+			           thermalVisionMinT - celsiusToKelvin + 255)
 			return false
 
 		case "-noborder":
@@ -786,7 +793,7 @@ func handleArgs(
 			*layout = tall
 
 		case "-temperature":
-			*temperature = float64(argToInt(i))
+			*temperature = float64(argToInt(i)) + celsiusToKelvin
 			i++
 
 		case "-tickrate":

@@ -37,10 +37,10 @@ const (
 
 var (
 	_weights = [...]float64 {0.0,      1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319, 0.001977,   0.000657} /* g/cm³ */
-	_boilPs  = [...]float64 {0,        2950,    2950,     100,      2861,     -182.96,  -252.88,    -78.464,    -182.50}  /* °C */
-	_ignPs   = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          580.0}    /* °C */
-	_meltPs  = [...]float64 {0,        1713,    1713,     0,        1538,     -218.79,  -259.16,    -56.561,    -161.5}   /* °C */
-	_oxidTh  = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* °C released on oxidation */
+	_boilPs  = [...]float64 {0,        3223.15, 3223.15,  373.15,   3134.15,  90.19,    20.27,      194.686,    90.65}    /* °K */
+	_ignPs   = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          853.15}   /* °K */
+	_meltPs  = [...]float64 {0,        1985.15, 1985.15,  0,        1811.15,  54.36,    13.99,      216.589,    111.65}   /* °K */
+	_oxidTh  = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* °K released on oxidation */
 	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
 	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
 	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003}    /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
