@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-2.1-only
-// Copyright (C) 2024  Andy Frank Schoknecht
+// Copyright (C) 2024 - 2025  Andy Frank Schoknecht
 
 // hawps UI elements
 package ui

@@ -62,7 +62,7 @@ blending colors that have 0 alpha.
 - [x] add check to cool brush against negative values
 This replaces a check against negative glow colors.
 
-- [ ] update copyright
+- [x] update copyright
 
 - [ ] fix tool hover zone being drawn over by glow
 
