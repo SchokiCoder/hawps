@@ -81,6 +81,7 @@ const (
 	spawnerR       = 255
 	spawnerG       = 0
 	spawnerB       = 255
+	spawnerA       = 10
 
 	stdTemperature = 20 + celsiusToKelvin
 	stdWinW        = 640
@@ -89,6 +90,7 @@ const (
 	toolHoverR     = 0
 	toolHoverG     = 255
 	toolHoverB     = 0
+	toolHoverA     = spawnerA
 
 	wBgR           = 0
 	wBgG           = 0
@@ -119,6 +121,7 @@ type physGame struct {
 	// ticks since world tick
 	TsSinceWldT  int
 	Matbox       ui.TileSet
+	ToolImg      *ebiten.Image
 	WldTRateFrac float64
 	World        mat.World
 	WorldImg     *ebiten.Image
@@ -260,6 +263,10 @@ func (g physGame) Draw(
 		opt = ebiten.DrawImageOptions{}
 	)
 
+	g.GlowImg.Clear()
+	g.ToolImg.Clear()
+	g.WorldImg.Clear()
+
 	g.Toolbox.Draw()
 	g.Matbox.Draw()
 
@@ -289,12 +296,12 @@ func (g physGame) Draw(
 	for x := 0; x < g.World.W; x++ {
 		for y := 0; y < g.World.H; y++ {
 			if true == g.World.Spawner[x][y] {
-				g.WorldImg.Set(x, y,
+				g.ToolImg.Set(x, y,
 					color.RGBA{
 						spawnerR,
 						spawnerG,
 						spawnerB,
-						255})
+						spawnerA})
 				continue
 			}
 
@@ -321,19 +328,22 @@ func (g physGame) Draw(
 	thY2 := thY + radius * 2 + 1
 	for x := thX; x < thX2; x++ {
 		for y := thY; y < thY2; y++ {
-			g.WorldImg.Set(x, y,
+			g.ToolImg.Set(x, y,
 				color.RGBA{
 					toolHoverR,
 					toolHoverG,
 					toolHoverB,
-					255})
+					toolHoverA})
 		}
 	}
 
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
 	screen.DrawImage(g.WorldImg, &opt)
+
 	drawGlowImg()
+
+	screen.DrawImage(g.ToolImg, &opt)
 }
 
 func (g *physGame) HandleClick(
@@ -942,6 +952,7 @@ func main(
 	}
 
 	g.World = mat.NewWorld(wW, wH, g.Temperature)
+	g.ToolImg = ebiten.NewImage(wW, wH)
 	g.WorldImg = ebiten.NewImage(wW, wH)
 	g.GlowImg = ebiten.NewImage(wW, wH)
 

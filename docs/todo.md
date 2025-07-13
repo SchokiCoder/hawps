@@ -64,7 +64,11 @@ This replaces a check against negative glow colors.
 
 - [x] update copyright
 
-- [ ] fix tool hover zone being drawn over by glow
+- [x] seperate tool hover drawing into own layer
+Fixes tool hover zone being drawn over by glow.
+Also adding transparency to tool hover draw.
+
+- [ ] fix no gravity near upper right corner (WorldWidth - 2)
 
 - [ ] fix panic when oxygen is in the upper corners
 
