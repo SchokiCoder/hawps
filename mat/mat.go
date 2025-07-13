@@ -372,6 +372,7 @@ func (w *World) Simulate(
 ) {
 	var (
 		x, y int
+		bodySim, bodySimToRight, bodySimToLeft func()
 	)
 
 	doChemicalReaction := func(x, y, dx, dy int) {
@@ -430,6 +431,42 @@ func (w *World) Simulate(
 		w.Thermo[x2][y2] += c2
 	}
 
+	bodySimToRight = func() {
+		for x = 1; x <= w.W - 2; x++ {
+			if None == w.Dots[x][y] {
+				continue
+			}
+
+			doThConduction(x, y, x, y + 1)
+			doThConduction(x, y, x - 1, y)
+			doThConduction(x, y, x + 1, y)
+			doChemicalReaction(x, y, x, y + 1)
+			doChemicalReaction(x, y, x, y - 1)
+			doChemicalReaction(x, y, x - 1, y)
+			doChemicalReaction(x, y, x + 1, y)
+			doGravity(x, y)
+		}
+		bodySim = bodySimToLeft
+	}
+
+	bodySimToLeft = func() {
+		for x = w.W - 2; x >= 1; x-- {
+			if None == w.Dots[x][y] {
+				continue
+			}
+
+			doThConduction(x, y, x, y + 1)
+			doThConduction(x, y, x - 1, y)
+			doThConduction(x, y, x + 1, y)
+			doChemicalReaction(x, y, x, y + 1)
+			doChemicalReaction(x, y, x, y - 1)
+			doChemicalReaction(x, y, x - 1, y)
+			doChemicalReaction(x, y, x + 1, y)
+			doGravity(x, y)
+		}
+		bodySim = bodySimToRight
+	}
+
 	y = w.H - 1;
 	for x = 1; x <= w.W - 2; x++ {
 		if None == w.Dots[x][y] {
@@ -443,38 +480,9 @@ func (w *World) Simulate(
 		doChemicalReaction(x, y, x, y - 1)
 	}
 
+	bodySim = bodySimToRight
 	for y = w.H - 2; y > 0; y-- {
-		if y % 2 == 0 {
-			for x = 1; x <= w.W - 2; x++ {
-				if None == w.Dots[x][y] {
-					continue
-				}
-
-				doThConduction(x, y, x, y + 1)
-				doThConduction(x, y, x - 1, y)
-				doThConduction(x, y, x + 1, y)
-				doChemicalReaction(x, y, x, y + 1)
-				doChemicalReaction(x, y, x, y - 1)
-				doChemicalReaction(x, y, x - 1, y)
-				doChemicalReaction(x, y, x + 1, y)
-				doGravity(x, y)
-			}
-		} else {
-			for x = w.W - 2; x >= 1; x-- {
-				if None == w.Dots[x][y] {
-					continue
-				}
-
-				doThConduction(x, y, x, y + 1)
-				doThConduction(x, y, x - 1, y)
-				doThConduction(x, y, x + 1, y)
-				doChemicalReaction(x, y, x, y + 1)
-				doChemicalReaction(x, y, x, y - 1)
-				doChemicalReaction(x, y, x - 1, y)
-				doChemicalReaction(x, y, x + 1, y)
-				doGravity(x, y)
-			}
-		}
+		bodySim()
 	}
 
 	y = 0;

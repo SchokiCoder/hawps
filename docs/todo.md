@@ -70,6 +70,8 @@ Also adding transparency to tool hover draw.
 
 - [x] fix world simulation zone size
 
+- [x] optimize the row direction switch of world simulation
+
 - [ ] fix panic when oxygen is in the upper corners
 
 - [ ] add actual background drawing and remove mat.None drawing

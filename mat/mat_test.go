@@ -21,6 +21,7 @@ func TestBench(
 	w.UseBrush(Hydrogen, 70, W / 3 * 2, H / 2, W / 3)
 
 	for i := 0; i < 200; i++ {
-		w.Tick(20)
+		w.Update(20)
+		w.Simulate()
 	}
 }
