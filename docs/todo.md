@@ -68,7 +68,7 @@ This replaces a check against negative glow colors.
 Fixes tool hover zone being drawn over by glow.
 Also adding transparency to tool hover draw.
 
-- [ ] fix no gravity near upper right corner (WorldWidth - 2)
+- [x] fix world simulation zone size
 
 - [ ] fix panic when oxygen is in the upper corners
 
