@@ -431,7 +431,7 @@ func (w *World) Simulate(
 	}
 
 	y = w.H - 1;
-	for x = 1; x < w.W - 2; x++ {
+	for x = 1; x <= w.W - 2; x++ {
 		if None == w.Dots[x][y] {
 			continue
 		}
