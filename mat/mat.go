@@ -508,7 +508,6 @@ func (w *World) Simulate(
 
 		doThConduction(x, y, x, y + 1)
 		doChemicalReaction(x, y, x, y + 1)
-		doChemicalReaction(x, y, x, y - 1)
 		doChemicalReaction(x, y, x + 1, y)
 		doGravity(x, y)
 	}
@@ -521,7 +520,6 @@ func (w *World) Simulate(
 
 		doThConduction(x, y, x, y + 1)
 		doChemicalReaction(x, y, x, y + 1)
-		doChemicalReaction(x, y, x, y - 1)
 		doChemicalReaction(x, y, x - 1, y)
 		doGravity(x, y)
 	}

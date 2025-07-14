@@ -72,7 +72,7 @@ Also adding transparency to tool hover draw.
 
 - [x] optimize the row direction switch of world simulation
 
-- [ ] fix panic when oxygen is in the upper corners
+- [x] fix chemical reaction overreach
 
 - [ ] add actual background drawing and remove mat.None drawing
 
