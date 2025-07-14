@@ -74,6 +74,12 @@ Also adding transparency to tool hover draw.
 
 - [x] fix chemical reaction overreach
 
+- [x] fix negative temperature given via flag
+This also changes the interpreted temperature unit to Kelvin.
+
+- [ ] unify approach to flag error prints
+Some are panics, despite a graceful shutdown being implemented
+
 - [ ] add actual background drawing and remove mat.None drawing
 
 - [ ] add shader that uses the temperature glow to emit light around the glowing object

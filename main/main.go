@@ -607,7 +607,8 @@ Options:
         overrides automatic layout determination, and sets tall ui
 
     -temperature
-        sets the temperature of every new dot in degree Celsius
+        sets the temperature of every new dot in Kelvin
+        0 °C == %v K
         default: %v
 
     -tickrate NUMBER
@@ -787,7 +788,8 @@ func handleArgs(
 			fmt.Printf(appHelp,
 			           AppName,
 			           stdWinH,
-			           stdTemperature - celsiusToKelvin,
+			           celsiusToKelvin,
+			           stdTemperature,
 			           stdTickrate,
 			           stdWinW,
 			           stdTickrate * stdWldTRateFrac,
@@ -802,7 +804,12 @@ func handleArgs(
 			*layout = tall
 
 		case "-temperature":
-			*temperature = float64(argToInt(i)) + celsiusToKelvin
+			*temperature = float64(argToInt(i))
+			if *temperature < 0 {
+				panic("The value for \"" +
+					os.Args[i] +
+					"\" must not be negative")
+			}
 			i++
 
 		case "-tickrate":
