@@ -87,8 +87,10 @@ To demonstrate and increase visuals the colors have been adjusted here.
 Most gases had been a hard coded dark blue so far, assuming a black background.
 Now that the background could change so should the gases look.
 
-- [ ] add generic alpha change for aggregate state change
-(-20% per heat up ?)
+- [x] add dot alpha loss for aggregate state change
+Plus adjusting dot colors once more.
+
+- some melt / boil temperature values are wrong
 
 - [ ] reconsider dot colors
 
@@ -113,6 +115,8 @@ because otherwise displacement and thermal conduction would have to permanently 
 
 - [ ] rewrite mat in C ?
   "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
+
+- [ ] update demo.gif
 
 - [ ] set version to 0.6
 

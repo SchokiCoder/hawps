@@ -53,6 +53,8 @@ var (
 )
 
 const (
+	aLossPerState = 0.2
+
 	celsiusToKelvin = 273.15
 
 	stdBrushRadius  = 2
@@ -218,18 +220,29 @@ func (g physGame) Draw(
 	getNormalDotColor := func(
 		x, y int,
 	) color.Color {
+		var aLossFactor float64
+
+		switch g.World.States[x][y] {
+			case mat.MsGas:
+				aLossFactor = 2.0
+			case mat.MsLiquid:
+				aLossFactor = 1.0
+		}
+
 		return color.RGBA{
 			mat.Rs[g.World.Dots[x][y]],
 			mat.Gs[g.World.Dots[x][y]],
 			mat.Bs[g.World.Dots[x][y]],
-			mat.As[g.World.Dots[x][y]]}
+			mat.As[g.World.Dots[x][y]] -
+				uint8(float64(mat.As[g.World.Dots[x][y]]) *
+					(aLossPerState * aLossFactor))}
 	}
 
 	getThermalDotColor := func(
 		x, y int,
 	) color.Color {
 		if mat.None == g.World.Dots[x][y] {
-			return getNormalDotColor(x, y)
+			return color.RGBA{}
 		}
 
 		visT := g.World.Thermo[x][y]

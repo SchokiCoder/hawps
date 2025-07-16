@@ -44,10 +44,10 @@ var (
 	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
 	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
 	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003}    /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-	Rs       = [...]uint8   {0,        238,     237,      150,      200,      0,        0,          0,          65}
-	Gs       = [...]uint8   {0,        217,     237,      150,      200,      0,        0,          0,          65}
+	Rs       = [...]uint8   {0,        238,     237,      150,      200,      200,      200,        200,        65}
+	Gs       = [...]uint8   {0,        217,     237,      150,      200,      200,      200,        200,        65}
 	Bs       = [...]uint8   {0,        86,      237,      255,      200,      255,      255,        255,        65}
-	As       = [...]uint8   {0,        255,     128,      205,      255,      50,       50,         50,         75}
+	As       = [...]uint8   {0,        255,     128,      205,      255,      100,      100,        100,        150}
 )
 
 func SolidWeights(
