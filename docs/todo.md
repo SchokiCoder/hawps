@@ -82,6 +82,11 @@ This also changes the interpreted temperature unit to Kelvin.
 - [x] decrease max alpha of glow
 This greatly helps with visual distinction.
 
+- [x] adjust blend factor for world image layers
+To demonstrate and increase visuals the colors have been adjusted here.
+Most gases had been a hard coded dark blue so far, assuming a black background.
+Now that the background could change so should the gases look.
+
 - [ ] add generic alpha change for aggregate state change
 (-20% per heat up ?)
 

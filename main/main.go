@@ -81,15 +81,15 @@ const (
 	spawnerR       = 255
 	spawnerG       = 0
 	spawnerB       = 255
-	spawnerA       = 10
+	spawnerA       = 128
 
 	stdTemperature = 20 + celsiusToKelvin
 	stdWinW        = 640
 	stdWinH        = 480
 
-	toolHoverR     = 0
+	toolHoverR     = 175
 	toolHoverG     = 255
-	toolHoverB     = 0
+	toolHoverB     = 175
 	toolHoverA     = spawnerA
 
 	wBgR           = 0
@@ -99,7 +99,7 @@ const (
 	wThBgG         = 0
 	wThBgB         = 0
 
-	glowMaxAlpha   = 128
+	glowMaxAlpha   = 200
 	// Kelvin / 100
 	glowRange    = 77
 	noGlowRange  = 7  // draper point
@@ -343,6 +343,7 @@ func (g physGame) Draw(
 
 	opt.GeoM.Reset()
 	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
+	opt.Blend.BlendFactorSourceRGB = ebiten.BlendFactorSourceAlpha
 	screen.DrawImage(g.WorldImg, &opt)
 
 	drawGlowImg()
