@@ -99,6 +99,7 @@ const (
 	wThBgG         = 0
 	wThBgB         = 0
 
+	glowMaxAlpha   = 128
 	// Kelvin / 100
 	glowRange    = 77
 	noGlowRange  = 7  // draper point
@@ -152,57 +153,57 @@ func newPhysGame(
 	}
 	for i := noGlowRange; i < dimGlowRange; i++ {
 		ret.GlowColors[i] = color.RGBA{255, 0, 0,
-			uint8(255.0 /
+			uint8(glowMaxAlpha /
 				100.0 *
 				(100.0 /
 					float64(dimGlowRange - noGlowRange) *
 					float64(i - noGlowRange)))}
 	}
 	chromaGlow := [...]color.RGBA{
-		color.RGBA{255, 0, 0, 255},
-		color.RGBA{255, 0, 0, 255},
-		color.RGBA{255, 0, 0, 255},
-		color.RGBA{255, 0, 0, 255},
-		color.RGBA{255, 0, 0, 255},
+		color.RGBA{255, 0, 0, glowMaxAlpha},
+		color.RGBA{255, 0, 0, glowMaxAlpha},
+		color.RGBA{255, 0, 0, glowMaxAlpha},
+		color.RGBA{255, 0, 0, glowMaxAlpha},
+		color.RGBA{255, 0, 0, glowMaxAlpha},
 
-		color.RGBA{255, 63, 0, 255},
-		color.RGBA{255, 127, 0, 255},
-		color.RGBA{255, 127, 0, 255},
-		color.RGBA{255, 190, 0, 255},
+		color.RGBA{255, 63, 0, glowMaxAlpha},
+		color.RGBA{255, 127, 0, glowMaxAlpha},
+		color.RGBA{255, 127, 0, glowMaxAlpha},
+		color.RGBA{255, 190, 0, glowMaxAlpha},
 
-		color.RGBA{255, 127, 0, 255},
-		color.RGBA{255, 255, 0, 255},
-		color.RGBA{127, 255, 0, 255},
+		color.RGBA{255, 127, 0, glowMaxAlpha},
+		color.RGBA{255, 255, 0, glowMaxAlpha},
+		color.RGBA{127, 255, 0, glowMaxAlpha},
 
-		color.RGBA{0, 255, 0, 255},
-		color.RGBA{0, 255, 0, 255},
-		color.RGBA{0, 255, 0, 255},
-		color.RGBA{0, 255, 85, 255},
-		color.RGBA{0, 255, 170, 255},
+		color.RGBA{0, 255, 0, glowMaxAlpha},
+		color.RGBA{0, 255, 0, glowMaxAlpha},
+		color.RGBA{0, 255, 0, glowMaxAlpha},
+		color.RGBA{0, 255, 85, glowMaxAlpha},
+		color.RGBA{0, 255, 170, glowMaxAlpha},
 
-		color.RGBA{0, 255, 255, 255},
-		color.RGBA{0, 255, 255, 255},
-		color.RGBA{0, 170, 255, 255},
+		color.RGBA{0, 255, 255, glowMaxAlpha},
+		color.RGBA{0, 255, 255, glowMaxAlpha},
+		color.RGBA{0, 170, 255, glowMaxAlpha},
 
-		color.RGBA{0, 85, 255, 255},
-		color.RGBA{0, 0, 255, 255},
-		color.RGBA{0, 0, 255, 255},
-		color.RGBA{0, 0, 255, 255},
-		color.RGBA{0, 0, 255, 255},
-		color.RGBA{0, 0, 255, 255},
-		color.RGBA{19, 0, 255, 255},
-		color.RGBA{37, 0, 255, 255},
-		color.RGBA{55, 0, 255, 255},
+		color.RGBA{0, 85, 255, glowMaxAlpha},
+		color.RGBA{0, 0, 255, glowMaxAlpha},
+		color.RGBA{0, 0, 255, glowMaxAlpha},
+		color.RGBA{0, 0, 255, glowMaxAlpha},
+		color.RGBA{0, 0, 255, glowMaxAlpha},
+		color.RGBA{0, 0, 255, glowMaxAlpha},
+		color.RGBA{19, 0, 255, glowMaxAlpha},
+		color.RGBA{37, 0, 255, glowMaxAlpha},
+		color.RGBA{55, 0, 255, glowMaxAlpha},
 
-		color.RGBA{73, 0, 255, 255},
-		color.RGBA{91, 0, 255, 255},
-		color.RGBA{109, 0, 255, 255},
-		color.RGBA{127, 0, 255, 255},
-		color.RGBA{127, 0, 255, 255},
-		color.RGBA{127, 0, 255, 255},
-		color.RGBA{127, 0, 255, 255},
-		color.RGBA{127, 0, 255, 170},
-		color.RGBA{127, 0, 255, 85},
+		color.RGBA{73, 0, 255, glowMaxAlpha},
+		color.RGBA{91, 0, 255, glowMaxAlpha},
+		color.RGBA{109, 0, 255, glowMaxAlpha},
+		color.RGBA{127, 0, 255, glowMaxAlpha},
+		color.RGBA{127, 0, 255, glowMaxAlpha},
+		color.RGBA{127, 0, 255, glowMaxAlpha},
+		color.RGBA{127, 0, 255, glowMaxAlpha},
+		color.RGBA{127, 0, 255, glowMaxAlpha / 3 * 2},
+		color.RGBA{127, 0, 255, glowMaxAlpha / 3 * 1},
 	}
 	for i := dimGlowRange; i < glowRange; i++ {
 		ret.GlowColors[i] = chromaGlow[i - dimGlowRange]

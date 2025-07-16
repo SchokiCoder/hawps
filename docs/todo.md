@@ -79,7 +79,8 @@ This also changes the interpreted temperature unit to Kelvin.
 
 - [x] replace mat.None drawing with an actual background
 
-- [ ] decrease max alpha of glow
+- [x] decrease max alpha of glow
+This greatly helps with visual distinction.
 
 - [ ] add generic alpha change for aggregate state change
 (-20% per heat up ?)
