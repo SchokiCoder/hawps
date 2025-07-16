@@ -77,10 +77,19 @@ Also adding transparency to tool hover draw.
 - [x] fix negative temperature given via flag
 This also changes the interpreted temperature unit to Kelvin.
 
+- [x] replace mat.None drawing with an actual background
+
+- [ ] decrease max alpha of glow
+
+- [ ] add generic alpha change for aggregate state change
+(-20% per heat up ?)
+
+- [ ] reconsider dot colors
+
+- [ ] scrolling down on an empty ui.TileSet panics
+
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented
-
-- [ ] add actual background drawing and remove mat.None drawing
 
 - [ ] add shader that uses the temperature glow to emit light around the glowing object
 

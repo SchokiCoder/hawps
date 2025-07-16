@@ -106,6 +106,7 @@ const (
 )
 
 type physGame struct {
+	BgColor      color.RGBA
 	BrushRadius  int
 	EraserRadius int
 	ThermoRadius int
@@ -132,6 +133,7 @@ type physGame struct {
 func newPhysGame(
 ) physGame {
 	var ret = physGame{
+		BgColor:      color.RGBA{R: wBgR, G: wBgG, B: wBgB, A: 255},
 		BrushRadius:  stdBrushRadius,
 		EraserRadius: stdEraserRadius,
 		ThermoRadius: stdThermoRadius,
@@ -219,7 +221,7 @@ func (g physGame) Draw(
 			mat.Rs[g.World.Dots[x][y]],
 			mat.Gs[g.World.Dots[x][y]],
 			mat.Bs[g.World.Dots[x][y]],
-			255}
+			mat.As[g.World.Dots[x][y]]}
 	}
 
 	getThermalDotColor := func(
@@ -263,6 +265,7 @@ func (g physGame) Draw(
 		opt = ebiten.DrawImageOptions{}
 	)
 
+	screen.Fill(g.BgColor)
 	g.GlowImg.Clear()
 	g.ToolImg.Clear()
 	g.WorldImg.Clear()
@@ -512,13 +515,13 @@ func (g *physGame) Update(
 		case ebiten.KeyT:
 			g.ThVision = !g.ThVision
 			if true == g.ThVision {
-				mat.Rs[mat.None] = wThBgR
-				mat.Gs[mat.None] = wThBgG
-				mat.Bs[mat.None] = wThBgB
+				g.BgColor.R = wThBgR
+				g.BgColor.G = wThBgG
+				g.BgColor.B = wThBgB
 			} else {
-				mat.Rs[mat.None] = wBgR
-				mat.Gs[mat.None] = wBgG
-				mat.Bs[mat.None] = wBgB
+				g.BgColor.R = wBgR
+				g.BgColor.G = wBgG
+				g.BgColor.B = wBgB
 			}
 		}
 	}
@@ -691,16 +694,22 @@ func genMatImages(t float64) []*ebiten.Image {
 		img := ebiten.NewImage(pngSize, pngSize)
 
 		state := tempMatToState(t, i)
-		var r, g, b uint8
-		r = mat.Rs[i]
-		g = mat.Gs[i]
-		b = mat.Bs[i]
+		c := color.RGBA{
+			R: mat.Rs[i],
+			G: mat.Gs[i],
+			B: mat.Bs[i],
+			A: mat.As[i],
+		}
 
-		opt.ColorM.ScaleWithColor(color.RGBA{r, g, b, 255})
+		opt.ColorM.ScaleWithColor(c)
 		img.DrawImage(bgImgs[state], &opt)
 
 		opt.ColorM.Reset()
-		opt.ColorM.ScaleWithColor(color.RGBA{255-r, 255-g, 255-b, 255})
+		opt.ColorM.ScaleWithColor(color.RGBA{
+			R: 255 - c.R,
+			G: 255 - c.G,
+			B: 255 - c.B,
+			A: 255})
 		opt.GeoM.Translate(float64(pngSize - matImg.Bounds().Dx()) / 2,
 		                   float64(pngSize - matImg.Bounds().Dy() - 1))
 		img.DrawImage(matImg, &opt)
