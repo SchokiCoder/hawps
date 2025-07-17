@@ -90,7 +90,7 @@ Now that the background could change so should the gases look.
 - [x] add dot alpha loss for aggregate state change
 Plus adjusting dot colors once more.
 
-- some melt / boil temperature values are wrong
+- [x] fix some wrong melt- and boilpoints
 
 - [ ] reconsider dot colors
 

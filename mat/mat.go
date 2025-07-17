@@ -37,9 +37,9 @@ const (
 
 var (
 	_weights = [...]float64 {0.0,      1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319, 0.001977,   0.000657} /* g/cm³ */
-	_boilPs  = [...]float64 {0,        3223.15, 3223.15,  373.15,   3134.15,  90.19,    20.27,      194.686,    90.65}    /* K */
+	_boilPs  = [...]float64 {0,        3223.15, 3223.15,  373.15,   3134.15,  90.19,    20.27,      194.686,    111.65}   /* K */
 	_ignPs   = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          853.15}   /* K */
-	_meltPs  = [...]float64 {0,        1985.15, 1985.15,  0,        1811.15,  54.36,    13.99,      216.589,    111.65}   /* K */
+	_meltPs  = [...]float64 {0,        1985.15, 1985.15,  273.15,   1811.15,  54.36,    13.99,      216.589,    90.55}    /* K */
 	_oxidTh  = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* K released on oxidation */
 	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
 	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
