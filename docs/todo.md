@@ -92,9 +92,7 @@ Plus adjusting dot colors once more.
 
 - [x] fix some wrong melt- and boilpoints
 
-- [ ] reconsider dot colors
-
-- [ ] scrolling down on an empty ui.TileSet panics
+- [x] fix panic when scrolling down on an empty ui.TileSet
 
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented

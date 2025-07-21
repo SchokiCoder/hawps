@@ -186,10 +186,11 @@ func (t *TileSet) HandleWheel(
 
 	rows := int(math.Ceil(float64(len(t.VisibleTiles)) / float64(t.tileSetWidth)))
 
+	if t.Scroll >= rows {
+		t.Scroll = rows - 1
+	}
 	if t.Scroll < 0 {
 		t.Scroll = 0
-	} else if t.Scroll >= rows {
-		t.Scroll = rows - 1
 	}
 
 	return true
