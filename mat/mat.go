@@ -36,18 +36,20 @@ const (
 )
 
 var (
-	_weights = [...]float64 {0.0,      1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319, 0.001977,   0.000657} /* g/cm³ */
-	_boilPs  = [...]float64 {0,        3223.15, 3223.15,  373.15,   3134.15,  90.19,    20.27,      194.686,    111.65}   /* K */
-	_ignPs   = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          853.15}   /* K */
-	_meltPs  = [...]float64 {0,        1985.15, 1985.15,  273.15,   1811.15,  54.36,    13.99,      216.589,    90.55}    /* K */
-	_oxidTh  = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* K released on oxidation */
-	_oxidSpd = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
-	_solidSs = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
-	_thCond  = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003}    /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-	Rs       = [...]uint8   {0,        238,     237,      150,      200,      200,      200,        200,        65}
-	Gs       = [...]uint8   {0,        217,     237,      150,      200,      200,      200,        200,        65}
-	Bs       = [...]uint8   {0,        86,      237,      255,      200,      255,      255,        255,        65}
-	As       = [...]uint8   {0,        255,     128,      205,      255,      100,      100,        100,        150}
+	_weights    = [...]float64 {0.0,      1.5,     1.5,      0.999,    7.874,    0.001323, 0.00008319, 0.001977,   0.000657} /* g/cm³ */
+	_boilPs     = [...]float64 {0,        3223.15, 3223.15,  373.15,   3134.15,  90.19,    20.27,      194.686,    111.65}   /* K */
+	_ignPs      = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          853.15}   /* K */
+	_meltPs     = [...]float64 {0,        1985.15, 1985.15,  273.15,   1811.15,  54.36,    13.99,      216.589,    90.55}    /* K */
+	_oxidPrdcts = [...][2]Mat  {{},       {},      {},       {},       {},       {},       {},         {},         {Water,
+	                                                                                                                CarbonDioxide}}
+	_oxidTh     = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          1963.0}   /* K released on oxidation */
+	_oxidSpd    = [...]float64 {0,        0,       0,        0,        0,        0,        0,          0,          0.2}      /* fraction per tick */
+	_solidSs    = [...]State   {MsStatic, MsGrain, MsStatic, MsStatic, MsStatic, MsStatic, MsStatic,   MsStatic,   MsStatic} /* state when solid */
+	_thCond     = [...]float64 {0.0,      0.00673, 0.00673,  0.0061,   0.084,    0.002,    0.0018,     0.00146,    0.003}    /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
+	Rs          = [...]uint8   {0,        238,     237,      150,      200,      200,      200,        200,        65}
+	Gs          = [...]uint8   {0,        217,     237,      150,      200,      200,      200,        200,        65}
+	Bs          = [...]uint8   {0,        86,      237,      255,      200,      255,      255,        255,        65}
+	As          = [...]uint8   {0,        255,     128,      205,      255,      100,      100,        100,        150}
 )
 
 func SolidWeights(
@@ -72,6 +74,12 @@ func MeltPs(
 	i Mat,
 ) float64 {
 	return _meltPs[i]
+}
+
+func OxidPrdcts(
+	i Mat,
+) []Mat {
+	return _oxidPrdcts[i][:]
 }
 
 func OxidSpd(
@@ -377,28 +385,26 @@ func (w *World) Simulate(
 	)
 
 	doChemicalReaction := func(x, y, dx, dy int) {
-		switch w.Dots[x][y] {
-		case Oxygen:
-			switch w.Dots[dx][dy] {
-			case Hydrogen:
-				w.clearDot(x, y)
-				w.Dots[dx][dy] = Water
+		if OxidTh(w.Dots[x][y]) > 0.0 {
+			if Oxygen == w.Dots[dx][dy] {
+				if w.Thermo[x][y] > IgnPs(w.Dots[x][y]) {
+					th := OxidTh(w.Dots[x][y]) *
+						OxidSpd(w.Dots[x][y]) /
+						2.0
 
-			case Methane:
-				if w.Thermo[dx][dy] > IgnPs(w.Dots[dx][dy]) {
-					w.Oxid[dx][dy] += OxidSpd(w.Dots[dx][dy])
-					w.Thermo[x][y] += OxidTh(w.Dots[dx][dy]) *
-						OxidSpd(w.Dots[dx][dy])
+					w.Oxid[x][y] += OxidSpd(w.Dots[x][y])
+					w.Thermo[x][y] += th
+					w.Thermo[dx][dy] += th
 
-					if w.Oxid[dx][dy] >= 1.0 {
-						w.Dots[x][y] = CarbonDioxide
-						w.Dots[dx][dy] = Water
-						w.Oxid[dx][dy] = 0.0
+					if w.Oxid[x][y] >= 1.0 {
+						op := OxidPrdcts(w.Dots[x][y])
+
+						w.Dots[x][y] = op[0]
+						w.Dots[dx][dy] = op[1]
+						w.Oxid[x][y] = 0.0
 					}
 				}
 			}
-
-		default:
 		}
 	}
 

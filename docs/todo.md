@@ -94,19 +94,29 @@ Plus adjusting dot colors once more.
 
 - [x] fix panic when scrolling down on an empty ui.TileSet
 
+- [x] generalize mat's oxidation reaction code
+This allows for oxidation to be a declarative property.
+This also removes Hydrogen's incorrect oxidation for now.
+
+- [ ] fix Hydrogen oxidation
+
+- [ ] use actual values for energy released on oxidation
+
+- [ ] fix grain stack collapse bleeding through diagonal surfaces
+
+- move below to next update ?
+
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented
 
 - [ ] add shader that uses the temperature glow to emit light around the glowing object
-
-- [ ] make flammability a declarative property of mats
-(adding the oxidation products as such too) ?
 
 - [ ] find suitable font or make bitmap font
 
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
+Add a roomtemperature?
 
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
