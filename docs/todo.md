@@ -3,6 +3,17 @@
 
 - [ ] add "hold ALT key" to display what UI element uses which key bind
 
+- [ ] unify approach to flag error prints
+Some are panics, despite a graceful shutdown being implemented
+
+- [ ] find suitable font or make bitmap font
+
+- [ ] find out how to make ebiten not use keyboard scancodes
+- [ ] add non-numpad plus/minus to tickrate keybinds
+
+- [ ] rewrite mat in C ?
+  "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
+
 # Pyro Update
 
 - replace current arg handling with flag std lib package ?
@@ -98,31 +109,22 @@ Plus adjusting dot colors once more.
 This allows for oxidation to be a declarative property.
 This also removes Hydrogen's incorrect oxidation for now.
 
+- CANCELLED: fix stack collapse bleeding through diagonal surfaces
+Changing the stack collapse to move sideways then fall,
+with more ifs solve the problem, but decrease performance.
+The fix also differs quite a bit per aggregate state. This is annoying.
+Just canonically accept diagonal surfaces to be open.
+
 - [ ] fix Hydrogen oxidation
 
-- [ ] use actual values for energy released on oxidation
-
-- [ ] fix grain stack collapse bleeding through diagonal surfaces
-
-- move below to next update ?
-
-- [ ] unify approach to flag error prints
-Some are panics, despite a graceful shutdown being implemented
+- [ ] use actual values for oxidation speed
 
 - [ ] add shader that uses the temperature glow to emit light around the glowing object
-
-- [ ] find suitable font or make bitmap font
 
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
-
-- [ ] find out how to make ebiten not use keyboard scancodes
-- [ ] add non-numpad plus/minus to tickrate keybinds
-
-- [ ] rewrite mat in C ?
-  "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
 
 - [ ] update demo.gif
 
