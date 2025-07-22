@@ -115,7 +115,7 @@ with more ifs solve the problem, but decrease performance.
 The fix also differs quite a bit per aggregate state. This is annoying.
 Just canonically accept diagonal surfaces to be open.
 
-- [ ] fix Hydrogen oxidation
+- [x] add proper hydrogen oxidation
 
 - [ ] use actual values for oxidation speed
 
