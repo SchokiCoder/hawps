@@ -6,7 +6,7 @@ APP_NAME_FORMAL  :=Half Assed Wannabe Physics Simulator
 LICENSE          :=LGPL-2.1-only
 LICENSE_URL      :=https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
 REPOSITORY       :=https://github.com/SchokiCoder/hawps
-VERSION          :=v0.5
+VERSION          :=v0.6
 GO_COMPILE_VARS  :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
 
 .PHONY: all build clean test vet

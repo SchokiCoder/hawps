@@ -19,10 +19,31 @@ But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
 
+# Material Update ?
+
 - [ ] find suitable font or make bitmap font
 - [ ] replace image embedded texts
 - [ ] rework UI to have more options and also display information on current state
 - [ ] old UI scaled too big on screen with lower resolutions
+
+- [ ] add Dirt
+- [ ] add Ironoxide
+- [ ] add Aluminum
+- [ ] add Aluminumoxide
+- [ ] add some Rocks lol
+- [ ] add Coal
+- [ ] add Sulfur
+- [ ] add Gunpowder
+- [ ] add Thermite
+
+- [ ] add Sulfur and Coal collision, creating Gunpowder
+- [ ] add Oxygen and Iron collision, creating Ironoxide
+- [ ] add Oxygen and Aluminum collision, creating Aluminumoxide
+- [ ] add Ironoxide and Aluminumoxide collision, creating Thermite
+
+- [ ] set version to 0.7
+
+-----
 
 # Pyro Update
 
@@ -132,9 +153,7 @@ Couldn't find data.
 
 - [x] update demo.gif and description in README
 
-- [ ] set version to 0.6
-
------
+- [x] set version to 0.6
 
 # Thermo Update
 
