@@ -4,7 +4,7 @@ Half assed wannabe physics simulator.
 The name is the game.  
 I just want to have fun writing something dumb.  
 
-![boiling and condensing water](demo.gif)
+![heating a metal bowl and releasing an oxygen-methane mix into it](demo.gif)
 
 # Build dependencies
 

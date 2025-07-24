@@ -1,3 +1,5 @@
+- [ ] add shader that uses the temperature glow to emit light around the glowing object
+
 - [ ] test android build
 `sudo apt install google-android-ndk-r26d-installer or newer version`
 
@@ -6,13 +8,21 @@
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented
 
-- [ ] find suitable font or make bitmap font
-
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
 
 - [ ] rewrite mat in C ?
   "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
+
+- [ ] consider oxygen/air to be always there (not None) ?
+But only for chemical reactions,
+because otherwise displacement and thermal conduction would have to permanently run.
+Add a roomtemperature?
+
+- [ ] find suitable font or make bitmap font
+- [ ] replace image embedded texts
+- [ ] rework UI to have more options and also display information on current state
+- [ ] old UI scaled too big on screen with lower resolutions
 
 # Pyro Update
 
@@ -117,16 +127,10 @@ Just canonically accept diagonal surfaces to be open.
 
 - [x] add proper hydrogen oxidation
 
-- [ ] use actual values for oxidation speed
+- CANCELLED: use actual values for oxidation speed
+Couldn't find data.
 
-- [ ] add shader that uses the temperature glow to emit light around the glowing object
-
-- [ ] consider oxygen/air to be always there (not None) ?
-But only for chemical reactions,
-because otherwise displacement and thermal conduction would have to permanently run.
-Add a roomtemperature?
-
-- [ ] update demo.gif
+- [x] update demo.gif and description in README
 
 - [ ] set version to 0.6
 
