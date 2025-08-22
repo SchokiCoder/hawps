@@ -23,7 +23,9 @@ Add a roomtemperature?
 
 - [x] add some missing phonies to Makefile
 
+- [ ] create mock up of final UI
 - [ ] new UI based on Nuklear, Tk, Fyne, or Qt
+- [ ] update README build dependencies
 
 - [ ] add Dirt
 - [ ] add Ironoxide

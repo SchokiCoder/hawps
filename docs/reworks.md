@@ -1,3 +1,21 @@
+# 5th rework
+
+Still Go, don't worry.  
+However... ebitengine, I am afraid, needs to go.  
+While it worked mostly just fine, UI is kind of a concern,
+and that is currently very... barebones.  
+Some might say, "Just grab ebitenui!"
+There are some issues with it. Firstly it is currently v0.7.0,
+aka not production ready.  
+Secondly it seems to be an unofficial thing,
+which is not an actual part of the engine.  
+I got a bit wary of 3rd party dependencies.  
+So I will be playing with actual UI libs.
+This might cause very real, serious issues for Android compatibility though.
+This may lead to the omission of that goal,
+because I will not maintain multiple different clients. No sir.  
+Ebiten, so long, partner.  
+
 # 4th rework
 
 Ah shit here we go again...  
