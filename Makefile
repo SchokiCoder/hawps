@@ -9,7 +9,7 @@ REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
 GO_COMPILE_VARS  :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
 
-.PHONY: all build clean test vet
+.PHONY: all build clean generate run test vet
 
 all: generate vet build
 

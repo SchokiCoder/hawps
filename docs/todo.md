@@ -19,12 +19,11 @@ But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
 
-# Material Update ?
+# Material Me Update
 
-- [ ] find suitable font or make bitmap font
-- [ ] replace image embedded texts
-- [ ] rework UI to have more options and also display information on current state
-- [ ] old UI scaled too big on screen with lower resolutions
+- [x] add some missing phonies to Makefile
+
+- [ ] new UI based on Nuklear, Tk, Fyne, or Qt
 
 - [ ] add Dirt
 - [ ] add Ironoxide
