@@ -22,6 +22,7 @@ Add a roomtemperature?
 # Material Me Update
 
 - [x] add some missing phonies to Makefile
+- [x] unify critical errors into panics
 
 - [ ] create mock up of final UI
 - [ ] new UI based on Nuklear, Tk, Fyne, or Qt

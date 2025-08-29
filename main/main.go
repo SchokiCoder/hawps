@@ -858,9 +858,7 @@ func handleArgs(
 			ebiten.SetFullscreen(false)
 
 		default:
-			fmt.Printf("Argument \"%v\" is not recognized.\n",
-			           os.Args[i])
-			return false
+			panic(`Argument "` + os.Args[i] + `" is not recognized`)
 		}
 	}
 
