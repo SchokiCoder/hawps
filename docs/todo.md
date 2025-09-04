@@ -26,16 +26,26 @@ Add a roomtemperature?
 
 - [x] move glow colors to a new extra package
 - [x] rename mat to core
-- [ ] rename main to desktop
+- [x] rename main to cross_platform and move ui into there
 - [ ] replace manual values with generation for glow color in-betweens
+- [ ] copy go's build architecture?
+Has one go.mod, go.work, no Makefile.
 
 - [ ] change mat.TestBench into a real Benchmark
 - [ ] move mat.Simulate into seperate file and move closures to functions
 This is done so that `go tool pprof` prints something other than Simulate.func3
 - [ ] add varying temperatures and reactions into the benchmark
 
-- [ ] create mock up of final UI
-- [ ] new UI based on Nuklear, Tk, Fyne, or Qt
+- [ ] add core test against gravity
+- [ ] add core test against grain stack collapse
+- [ ] add core test against liquid stack collapse
+- [ ] add core test against gas stack collapse
+- [ ] add core test against chemical reactions
+- [ ] add core test against loss of mass upon heat up
+- [ ] add core test against spawners
+
+- [ ] create mock up of desktop UI
+- [ ] new UI based on Nuklear, Tk, Fyne, or Qt in a "desktop" package
 - [ ] update README build dependencies
 
 - [ ] add per spawner temperature

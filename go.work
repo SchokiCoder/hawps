@@ -1,8 +1,7 @@
-go 1.22.2
+go 1.22
 
 use (
 	./core
 	./extra
-	./main
-	./ui
+	./cross_platform
 )

@@ -2,7 +2,7 @@
 // Copyright (C) 2024 - 2025  Andy Frank Schoknecht
 
 //go:generate stringer -type=tool
-package main
+package cross_platform
 
 import (
 	"embed"
@@ -15,7 +15,7 @@ import (
 
 	"github.com/SchokiCoder/hawps/core"
 	"github.com/SchokiCoder/hawps/extra"
-	"github.com/SchokiCoder/hawps/ui"
+	"github.com/SchokiCoder/hawps/cross_platform/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
