@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright (C) 2024 - 2025  Andy Frank Schoknecht
 
-package mat
+package core
 
 import "testing"
 

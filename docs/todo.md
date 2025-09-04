@@ -25,7 +25,7 @@ Add a roomtemperature?
 - [x] unify critical errors into panics
 
 - [x] move glow colors to a new extra package
-- [ ] rename mat to core
+- [x] rename mat to core
 - [ ] rename main to desktop
 - [ ] replace manual values with generation for glow color in-betweens
 

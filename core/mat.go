@@ -2,7 +2,7 @@
 // Copyright (C) 2024 - 2025  Andy Frank Schoknecht
 
 //go:generate stringer -type=Mat
-package mat
+package core
 
 type Mat int
 const (

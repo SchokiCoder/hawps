@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"os"
 
+	"github.com/SchokiCoder/hawps/core"
 	"github.com/SchokiCoder/hawps/extra"
-	"github.com/SchokiCoder/hawps/mat"
 	"github.com/SchokiCoder/hawps/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -68,7 +68,7 @@ const (
 	stdWldTRateFrac = 0.25
 	heaterDelta     = 1
 
-	firstRealMat   = mat.Sand
+	firstRealMat   = core.Sand
 	pngSize        = 16
 
 	uiToolBgR      = 80
@@ -121,7 +121,7 @@ type physGame struct {
 	Matbox       ui.TileSet
 	ToolImg      *ebiten.Image
 	WldTRateFrac float64
-	World        mat.World
+	World        core.World
 	WorldImg     *ebiten.Image
 	WorldX       int
 	WorldY       int
@@ -152,25 +152,25 @@ func (g physGame) Draw(
 		var aLossFactor float64
 
 		switch g.World.States[x][y] {
-			case mat.MsGas:
+			case core.MsGas:
 				aLossFactor = 2.0
-			case mat.MsLiquid:
+			case core.MsLiquid:
 				aLossFactor = 1.0
 		}
 
 		return color.RGBA{
-			mat.Rs[g.World.Dots[x][y]],
-			mat.Gs[g.World.Dots[x][y]],
-			mat.Bs[g.World.Dots[x][y]],
-			mat.As[g.World.Dots[x][y]] -
-				uint8(float64(mat.As[g.World.Dots[x][y]]) *
+			core.Rs[g.World.Dots[x][y]],
+			core.Gs[g.World.Dots[x][y]],
+			core.Bs[g.World.Dots[x][y]],
+			core.As[g.World.Dots[x][y]] -
+				uint8(float64(core.As[g.World.Dots[x][y]]) *
 					(aLossPerState * aLossFactor))}
 	}
 
 	getThermalDotColor := func(
 		x, y int,
 	) color.Color {
-		if mat.None == g.World.Dots[x][y] {
+		if core.None == g.World.Dots[x][y] {
 			return color.RGBA{}
 		}
 
@@ -187,7 +187,7 @@ func (g physGame) Draw(
 	getGlowColor := func(
 		x, y int,
 	) color.Color {
-		if mat.None == g.World.Dots[x][y] {
+		if core.None == g.World.Dots[x][y] {
 			return color.RGBA{0, 0, 0, 0}
 		}
 
@@ -312,7 +312,7 @@ func (g *physGame) HandleClick(
 		switch curTool {
 		case brush:
 			g.World.UseBrush(
-				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
+				core.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
 				g.Temperature,
 				mX - g.WorldX,
 				mY - g.WorldY,
@@ -321,7 +321,7 @@ func (g *physGame) HandleClick(
 		case spawner:
 			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] = true
 			g.World.SpwnMat[mX - g.WorldX][mY - g.WorldY] =
-				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor])
+				core.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor])
 
 		case eraser:
 			g.World.UseEraser(
@@ -492,16 +492,16 @@ func (g *physGame) UpdateMatbox(
 
 	switch(tool(g.Toolbox.Cursor)) {
 	case brush:
-		for i := firstRealMat; i < mat.Mat(mat.Count); i++ {
+		for i := firstRealMat; i < core.Mat(core.Count); i++ {
 			tiles = append(tiles, int(i))
 		}
 		g.Matbox.VisibleTiles = tiles
 
 	case spawner:
-		tiles = append(tiles, int(mat.None))
-		for i := firstRealMat; i < mat.Mat(mat.Count); i++ {
+		tiles = append(tiles, int(core.None))
+		for i := firstRealMat; i < core.Mat(core.Count); i++ {
 			state := tempMatToState(g.Temperature, i)
-			if state != mat.MsStatic {
+			if state != core.MsStatic {
 				tiles = append(tiles, int(i))
 			}
 		}
@@ -598,9 +598,9 @@ Default keybinds:
 
 func genMatImages(t float64) []*ebiten.Image {
 	var (
-		bgImgs [mat.MsCount]*ebiten.Image
+		bgImgs [core.MsCount]*ebiten.Image
 		matBgPrefix = "assets/matbg_"
-		matBgPaths = [mat.MsCount]string{
+		matBgPaths = [core.MsCount]string{
 			"static",
 			"grain",
 			"liquid",
@@ -624,7 +624,7 @@ func genMatImages(t float64) []*ebiten.Image {
 		bgImgs[i] = imgopen(path)
 	}
 
-	for i := mat.None; i < mat.Mat(mat.Count); i++ {
+	for i := core.None; i < core.Mat(core.Count); i++ {
 		path := matPrefix + i.String() + postfix
 		matImg := imgopen(path)
 		opt := ebiten.DrawImageOptions{}
@@ -632,10 +632,10 @@ func genMatImages(t float64) []*ebiten.Image {
 
 		state := tempMatToState(t, i)
 		c := color.RGBA{
-			R: mat.Rs[i],
-			G: mat.Gs[i],
-			B: mat.Bs[i],
-			A: mat.As[i],
+			R: core.Rs[i],
+			G: core.Gs[i],
+			B: core.Bs[i],
+			A: core.As[i],
 		}
 
 		opt.ColorM.ScaleWithColor(c)
@@ -789,16 +789,16 @@ func handleArgs(
 
 func tempMatToState(
 	t float64,
-	m mat.Mat,
-) mat.State {
-	var ret mat.State
+	m core.Mat,
+) core.State {
+	var ret core.State
 
-	if t < mat.MeltPs(m) {
-		ret = mat.SolidSs(m)
-	} else if t < mat.BoilPs(m) {
-		ret = mat.MsLiquid
+	if t < core.MeltPs(m) {
+		ret = core.SolidSs(m)
+	} else if t < core.BoilPs(m) {
+		ret = core.MsLiquid
 	} else {
-		ret = mat.MsGas
+		ret = core.MsGas
 	}
 
 	return ret
@@ -902,7 +902,7 @@ func main(
 		g.Matbox.Y = g.FrameH - g.Toolbox.H
 	}
 
-	g.World = mat.NewWorld(wW, wH, g.Temperature)
+	g.World = core.NewWorld(wW, wH, g.Temperature)
 	g.ToolImg = ebiten.NewImage(wW, wH)
 	g.WorldImg = ebiten.NewImage(wW, wH)
 	g.GlowImg = ebiten.NewImage(wW, wH)
