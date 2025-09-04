@@ -16,9 +16,9 @@ all: generate vet build
 build: $(APP_NAME)
 
 clean:
-	rm -f $(APP_NAME) main/main_string.go mat/mat_string.go
+	rm -f $(APP_NAME) main/tool_string.go mat/mat_string.go
 
-generate: main/main_string.go mat/mat_string.go
+generate: main/tool_string.go mat/mat_string.go
 
 run: clean all
 	./$(APP_NAME) -window
@@ -29,10 +29,10 @@ test:
 vet:
 	go vet ./main
 
-$(APP_NAME): main/main.go main/main_string.go extra/glowcolor.go mat/mat.go mat/mat_string.go ui/ui.go
+$(APP_NAME): main/main.go main/tool_string.go extra/glowcolor.go mat/mat.go mat/mat_string.go ui/ui.go
 	go build $(GO_COMPILE_VARS) ./main
 
-main/main_string.go: main/main.go
+main/tool_string.go: main/main.go
 	go generate ./main
 
 mat/mat_string.go: mat/mat.go
