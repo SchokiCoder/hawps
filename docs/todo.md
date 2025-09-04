@@ -24,9 +24,22 @@ Add a roomtemperature?
 - [x] add some missing phonies to Makefile
 - [x] unify critical errors into panics
 
+- [x] move glow colors to a new extra package
+- [ ] rename mat to core
+- [ ] rename main to desktop
+- [ ] replace manual values with generation for glow color in-betweens
+
+- [ ] change mat.TestBench into a real Benchmark
+- [ ] move mat.Simulate into seperate file and move closures to functions
+This is done so that `go tool pprof` prints something other than Simulate.func3
+- [ ] add varying temperatures and reactions into the benchmark
+
 - [ ] create mock up of final UI
 - [ ] new UI based on Nuklear, Tk, Fyne, or Qt
 - [ ] update README build dependencies
+
+- [ ] add per spawner temperature
+- [ ] add temperature setting for new spawners
 
 - [ ] add Dirt
 - [ ] add Ironoxide

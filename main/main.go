@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"os"
 
+	"github.com/SchokiCoder/hawps/extra"
 	"github.com/SchokiCoder/hawps/mat"
 	"github.com/SchokiCoder/hawps/ui"
 
@@ -100,12 +101,6 @@ const (
 	wThBgR         = 100
 	wThBgG         = 0
 	wThBgB         = 0
-
-	glowMaxAlpha   = 200
-	// Kelvin / 100
-	glowRange    = 77
-	noGlowRange  = 7  // draper point
-	dimGlowRange = 40
 )
 
 type physGame struct {
@@ -115,7 +110,6 @@ type physGame struct {
 	ThermoRadius int
 	FrameW       int
 	FrameH       int
-	GlowColors   [glowRange]color.RGBA
 	GlowImg      *ebiten.Image
 	Paused       bool
 	Temperature  float64
@@ -144,71 +138,6 @@ func newPhysGame(
 		Tickrate:     stdTickrate,
 		TsSinceWldT:  9999,
 		WldTRateFrac: stdWldTRateFrac,
-	}
-
-	/* Instead of doing expensive HSV stuff for temperature based glowing,
-	 * we prepare an array of glow colors,
-	 * which we then iterate through based on dot temperature.
-	 */
-	for i := 0; i < noGlowRange; i++ {
-		ret.GlowColors[i] = color.RGBA{0, 0, 0, 0}
-	}
-	for i := noGlowRange; i < dimGlowRange; i++ {
-		ret.GlowColors[i] = color.RGBA{255, 0, 0,
-			uint8(glowMaxAlpha /
-				100.0 *
-				(100.0 /
-					float64(dimGlowRange - noGlowRange) *
-					float64(i - noGlowRange)))}
-	}
-	chromaGlow := [...]color.RGBA{
-		color.RGBA{255, 0, 0, glowMaxAlpha},
-		color.RGBA{255, 0, 0, glowMaxAlpha},
-		color.RGBA{255, 0, 0, glowMaxAlpha},
-		color.RGBA{255, 0, 0, glowMaxAlpha},
-		color.RGBA{255, 0, 0, glowMaxAlpha},
-
-		color.RGBA{255, 63, 0, glowMaxAlpha},
-		color.RGBA{255, 127, 0, glowMaxAlpha},
-		color.RGBA{255, 127, 0, glowMaxAlpha},
-		color.RGBA{255, 190, 0, glowMaxAlpha},
-
-		color.RGBA{255, 127, 0, glowMaxAlpha},
-		color.RGBA{255, 255, 0, glowMaxAlpha},
-		color.RGBA{127, 255, 0, glowMaxAlpha},
-
-		color.RGBA{0, 255, 0, glowMaxAlpha},
-		color.RGBA{0, 255, 0, glowMaxAlpha},
-		color.RGBA{0, 255, 0, glowMaxAlpha},
-		color.RGBA{0, 255, 85, glowMaxAlpha},
-		color.RGBA{0, 255, 170, glowMaxAlpha},
-
-		color.RGBA{0, 255, 255, glowMaxAlpha},
-		color.RGBA{0, 255, 255, glowMaxAlpha},
-		color.RGBA{0, 170, 255, glowMaxAlpha},
-
-		color.RGBA{0, 85, 255, glowMaxAlpha},
-		color.RGBA{0, 0, 255, glowMaxAlpha},
-		color.RGBA{0, 0, 255, glowMaxAlpha},
-		color.RGBA{0, 0, 255, glowMaxAlpha},
-		color.RGBA{0, 0, 255, glowMaxAlpha},
-		color.RGBA{0, 0, 255, glowMaxAlpha},
-		color.RGBA{19, 0, 255, glowMaxAlpha},
-		color.RGBA{37, 0, 255, glowMaxAlpha},
-		color.RGBA{55, 0, 255, glowMaxAlpha},
-
-		color.RGBA{73, 0, 255, glowMaxAlpha},
-		color.RGBA{91, 0, 255, glowMaxAlpha},
-		color.RGBA{109, 0, 255, glowMaxAlpha},
-		color.RGBA{127, 0, 255, glowMaxAlpha},
-		color.RGBA{127, 0, 255, glowMaxAlpha},
-		color.RGBA{127, 0, 255, glowMaxAlpha},
-		color.RGBA{127, 0, 255, glowMaxAlpha},
-		color.RGBA{127, 0, 255, glowMaxAlpha / 3 * 2},
-		color.RGBA{127, 0, 255, glowMaxAlpha / 3 * 1},
-	}
-	for i := dimGlowRange; i < glowRange; i++ {
-		ret.GlowColors[i] = chromaGlow[i - dimGlowRange]
 	}
 
 	return ret
@@ -258,18 +187,11 @@ func (g physGame) Draw(
 	getGlowColor := func(
 		x, y int,
 	) color.Color {
-		var glowIndex int
-
 		if mat.None == g.World.Dots[x][y] {
 			return color.RGBA{0, 0, 0, 0}
 		}
 
-		glowIndex = int(g.World.Thermo[x][y] / 100.0)
-		if glowIndex >= glowRange {
-			return color.RGBA{0, 0, 0, 0}
-		}
-
-		return g.GlowColors[glowIndex]
+		return extra.ThermoToColor(g.World.Thermo[x][y])
 	}
 
 	var (
