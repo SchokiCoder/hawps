@@ -11,9 +11,6 @@ Some are panics, despite a graceful shutdown being implemented
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
 
-- [ ] rewrite mat in C ?
-  "oh god, we're getting slower with time ?!" Go gc issue? Skill issue?
-
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
