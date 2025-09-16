@@ -2,7 +2,7 @@
 // Copyright (C) 2024 - 2025  Andy Frank Schoknecht
 
 //go:generate stringer -type=tool
-package cross_platform
+package main
 
 import (
 	"embed"
