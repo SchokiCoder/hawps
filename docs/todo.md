@@ -26,10 +26,25 @@ Add a roomtemperature?
 - [x] rename main to cross_platform and move ui into there
 
 - [x] replace manual values with generation for glow color in-betweens
+
+- [x] add mock up of desktop UI
+This is a glade project file, which is for GTK3,
+but if a switch to a different toolkit is desired,
+this should still be used as reference then.
+
+- [ ] try out gtk3 for UI (hook up glade file with go)
+- [ ] draw world
+- [ ] add per spawner temperature
+- [ ] add temperature setting for new spawners
+- [ ] hook up buttons
+- [ ] use statusbar
+- [ ] hook up menubar
+
+- [ ] update README build dependencies
+
 - [ ] fix temperature glow (see black body radiation)
 The visible result maybe different due to the colors mixing,
 becoming a white eventually
-
 - [ ] increase the resolution of available glow colors ?
 
 - [ ] change mat.TestBench into a real Benchmark
@@ -41,16 +56,10 @@ This is done so that `go tool pprof` prints something other than Simulate.func3
 - [ ] add core test against grain stack collapse
 - [ ] add core test against liquid stack collapse
 - [ ] add core test against gas stack collapse
+- [ ] add core test against thermal conduction
 - [ ] add core test against chemical reactions
 - [ ] add core test against loss of mass upon heat up
 - [ ] add core test against spawners
-
-- [ ] create mock up of desktop UI
-- [ ] new UI based on Nuklear, Tk, Fyne, or Qt in a "desktop" package
-- [ ] update README build dependencies
-
-- [ ] add per spawner temperature
-- [ ] add temperature setting for new spawners
 
 - [ ] add Dirt
 - [ ] add Ironoxide
