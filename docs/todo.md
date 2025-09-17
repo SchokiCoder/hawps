@@ -24,9 +24,13 @@ Add a roomtemperature?
 - [x] move glow colors to a new extra package
 - [x] rename mat to core
 - [x] rename main to cross_platform and move ui into there
-- [ ] replace manual values with generation for glow color in-betweens
-- [ ] copy go's build architecture?
-Has one go.mod, go.work, no Makefile.
+
+- [x] replace manual values with generation for glow color in-betweens
+- [ ] fix temperature glow (see black body radiation)
+The visible result maybe different due to the colors mixing,
+becoming a white eventually
+
+- [ ] increase the resolution of available glow colors ?
 
 - [ ] change mat.TestBench into a real Benchmark
 - [ ] move mat.Simulate into seperate file and move closures to functions
