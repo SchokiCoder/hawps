@@ -29,11 +29,14 @@ test:
 vet:
 	go vet ./cross_platform
 
-$(APP_NAME): cross_platform/main.go cross_platform/tool_string.go cross_platform/ui/ui.go core/mat.go core/mat_string.go extra/glowcolor.go
-	go build $(GO_COMPILE_VARS) -o $(APP_NAME) ./cross_platform
+$(APP_NAME)_cross: cross_platform/*.go cross_platform/ui/*.go core/*.go extra/*.go
+	go build $(GO_COMPILE_VARS) -o $@ ./cross_platform
 
 cross_platform/tool_string.go: cross_platform/main.go
 	go generate ./cross_platform
 
 core/mat_string.go: core/mat.go
 	go generate ./core
+
+$(APP_NAME)_desktop: desktop/*.go core/*.go extra/*.go
+	go build -o $@ ./desktop

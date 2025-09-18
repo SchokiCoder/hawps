@@ -32,8 +32,8 @@ This is a glade project file, which is for GTK3,
 but if a switch to a different toolkit is desired,
 this should still be used as reference then.
 
-- [ ] try out gtk3 for UI (hook up glade file with go)
-- [ ] draw world
+- [x] add desktop client base
+- [ ] add world draw to desktop client
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
 - [ ] hook up buttons
