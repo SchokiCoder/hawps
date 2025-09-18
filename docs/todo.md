@@ -33,6 +33,9 @@ but if a switch to a different toolkit is desired,
 this should still be used as reference then.
 
 - [x] add desktop client base
+- [x] add proper window close
+- [ ] remove glade handlers
+I thought they were necessary to connect a function to a signal.
 - [ ] add world draw to desktop client
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners

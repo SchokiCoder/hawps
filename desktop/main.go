@@ -46,6 +46,10 @@ func main(
 		panic("Invalid window in glade file")
 	}
 
+	win.Connect("destroy", func() {
+		gtk.MainQuit()
+	})
+
 	win.ShowAll()
 	gtk.Main()
 }

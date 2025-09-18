@@ -16,7 +16,7 @@ all: generate vet build
 build: $(APP_NAME)
 
 clean:
-	rm -f $(APP_NAME) cross_platform/tool_string.go core/mat_string.go
+	rm -f $(APP_NAME)_* cross_platform/tool_string.go core/mat_string.go
 
 generate: cross_platform/tool_string.go core/mat_string.go
 
