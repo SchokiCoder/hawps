@@ -9,6 +9,8 @@ REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
 GO_COMPILE_VARS  :=-ldflags "-X 'cross_platform.AppName=$(APP_NAME)' -X 'cross_platform.AppNameFormal=$(APP_NAME_FORMAL)' -X 'cross_platform.AppLicense=$(LICENSE)' -X 'cross_platform.AppLicenseUrl=$(LICENSE_URL)' -X 'cross_platform.AppRepository=$(REPOSITORY)' -X 'cross_platform.AppVersion=$(VERSION)'"
 
+CC :=cc
+
 .PHONY: all build clean generate run test vet
 
 all: generate vet build
@@ -16,7 +18,7 @@ all: generate vet build
 build: $(APP_NAME)
 
 clean:
-	rm -f $(APP_NAME)_* cross_platform/tool_string.go core/mat_string.go
+	rm -f $(APP_NAME)_* cross_platform/tool_string.go core/mat_string.go desktop/embedded_glade.h
 
 generate: cross_platform/tool_string.go core/mat_string.go
 
@@ -38,5 +40,11 @@ cross_platform/tool_string.go: cross_platform/main.go
 core/mat_string.go: core/mat.go
 	go generate ./core
 
-$(APP_NAME)_desktop: desktop/*.go core/*.go extra/*.go
-	go build -o $@ ./desktop
+$(APP_NAME)_desktop: desktop/embedded_glade.h desktop/* core/* extra/*
+	$(CC) $$(pkg-config --cflags gtk+-3.0) -o $@ ./desktop/*.c $$(pkg-config --libs gtk+-3.0)
+
+desktop/embedded_glade.h: desktop/desktop.glade
+	cat $< > EMBEDDED_GLADE
+	printf "\0" >> EMBEDDED_GLADE
+	xxd -i EMBEDDED_GLADE > $@
+	rm -f EMBEDDED_GLADE

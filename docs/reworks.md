@@ -16,6 +16,15 @@ This may lead to the omission of that goal,
 because I will not maintain multiple different clients. No sir.  
 Ebiten, so long, partner.  
 
+## Go goes too.
+
+Since GTK, the programming is mostly just simulation math,
+and gluing that to a client. Anything CGO has performance hits,
+and it's simply not worth that.
+Drawing the world will need a new dependency.
+Using C, I can cut gogtk and whatever will be needed for that.
+You were good, son, real good, maybe even the best.
+
 # 4th rework
 
 Ah shit here we go again...  
