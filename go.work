@@ -1,8 +1,0 @@
-go 1.22
-
-use (
-	./core
-	./extra
-	./cross_platform
-	./desktop
-)

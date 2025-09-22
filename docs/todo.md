@@ -38,7 +38,7 @@ this should still be used as reference then.
 - [x] rewrite desktop in C
 Why C again? See docs/reworks.md.
 
-- [ ] rewrite core and extra in C
+- [x] rewrite core and extra in C
 Why C again? See docs/reworks.md.
 
 - [ ] remove cross_platform
