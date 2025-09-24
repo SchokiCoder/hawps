@@ -41,11 +41,6 @@ Why C again? See docs/reworks.md.
 - [x] rewrite core and extra in C
 Why C again? See docs/reworks.md.
 
-- [ ] remove cross_platform
-Removing cross_platform is done because it's obsolete.
-With core and extra being in C now, it would need more CGO,
-taking performance hits. That I don't want to bind that.
-
 - [ ] remove glade handlers
 I thought they were necessary to connect a function to a signal.
 - [ ] add world draw to desktop client
@@ -54,6 +49,11 @@ I thought they were necessary to connect a function to a signal.
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] hook up menubar
+
+- [ ] remove cross_platform
+Removing cross_platform is done because it's obsolete.
+With core and extra being in C now, it would need more CGO,
+taking performance hits. That, and I don't want to bind that.
 
 - [ ] update README build dependencies
 

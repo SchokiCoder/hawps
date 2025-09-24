@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
 	gtk_init(&argc, &argv);
 
-	builder = gtk_builder_new_from_string(EMBEDDED_GLADE, EMBEDDED_GLADE_len - 1);
+	builder = gtk_builder_new_from_string((char*) EMBEDDED_GLADE, EMBEDDED_GLADE_len - 1);
 	if (NULL == builder) {
 		printf("Could not make builder\n");
 		exit(1);
