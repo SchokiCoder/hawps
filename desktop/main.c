@@ -8,10 +8,18 @@
 
 #include "embedded_glade.h"
 
-#define TEMPERATURE 293.15
-#define WORLD_SCALE 10
-#define WORLD_W     40
-#define WORLD_H     30
+#define TEMPERATURE    293.15
+#define WORLD_SIM_RATE 24
+#define WORLD_SCALE    10
+#define WORLD_W        40
+#define WORLD_H        30
+
+struct AppData {
+	int           active;
+	GMutex        mutex;
+	struct World *world;
+	GtkWidget    *worldbox;
+};
 
 void
 set_worldbox_size(GtkWidget *worldbox,
@@ -33,6 +41,37 @@ set_worldbox_size(GtkWidget *worldbox,
 
 	g_value_unset(&gw);
 	g_value_unset(&gh);
+}
+
+void
+tick(gpointer user_data)
+{
+	struct AppData *a = user_data;
+	float           lasttick = 0.0;
+	float           now = 0.0;
+	GTimer         *timer;
+
+	timer = g_timer_new();
+
+	while (1) {
+		now = g_timer_elapsed(timer, NULL);
+		if (now - lasttick > 1.0 / WORLD_SIM_RATE) {
+			lasttick = now;
+
+			g_mutex_lock(&a->mutex);
+			if (!a->active) {
+				break;
+			}
+
+			world_update(a->world, TEMPERATURE);
+			world_sim(a->world);
+			g_mutex_unlock(&a->mutex);
+
+			gtk_widget_queue_draw(a->worldbox);
+		}
+	}
+
+	g_thread_exit(NULL);
 }
 
 gboolean
@@ -66,10 +105,12 @@ int
 main(int argc,
      char **argv)
 {
-	GtkBuilder   *builder;
-	GtkWidget    *win;
-	GtkWidget    *worldbox;
-	struct World  world;
+	struct AppData  a;
+	GtkBuilder     *builder;
+	GtkWidget      *win;
+	GtkWidget      *worldbox;
+	GThread        *worldloop;
+	struct World    world;
 
 	gtk_init(&argc, &argv);
 
@@ -100,6 +141,12 @@ main(int argc,
 	                 "draw",
 	                 (GCallback) worldbox_draw_cb,
 	                 &world);
+	worldloop = g_thread_new("worldloop", (GThreadFunc) tick, &a);
+
+	a.active = 1;
+	g_mutex_init(&a.mutex);
+	a.world = &world;
+	a.worldbox = worldbox;
 
 	world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
 	set_worldbox_size(worldbox,
@@ -112,6 +159,11 @@ main(int argc,
 	gtk_widget_show_all(win);
 	gtk_main();
 
+	g_mutex_lock(&a.mutex);
+	a.active = 0;
+	g_mutex_unlock(&a.mutex);
+
+	g_thread_join(worldloop);
 	world_free(&world);
 
 	return 0;

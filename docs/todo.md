@@ -51,7 +51,7 @@ Therefore it needs to go again.
 
 - [x] add world_free and use it
 
-- [ ] add world simulation loop (in a separate thread?)
+- [x] add world simulation loop
 - [ ] add glowcolor draw to desktop
 - [ ] add brush hover draw
 

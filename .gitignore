@@ -6,3 +6,4 @@ hawps_*
 *.prof
 *.test
 *.glade~
+*.glade#
