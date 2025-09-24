@@ -49,7 +49,7 @@ This also undid glade handlers.
 AND overrides all custom connections, which I did for draw.
 Therefore it needs to go again.
 
-- [ ] add world_free() and use it
+- [x] add world_free and use it
 
 - [ ] add world simulation loop (in a separate thread?)
 - [ ] add glowcolor draw to desktop

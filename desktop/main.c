@@ -112,5 +112,7 @@ main(int argc,
 	gtk_widget_show_all(win);
 	gtk_main();
 
+	world_free(&world);
+
 	return 0;
 }

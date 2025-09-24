@@ -130,4 +130,7 @@ world_use_heater(struct World *w,
 void
 world_sim(struct World *w);
 
+void
+world_free(struct World *w);
+
 #endif /* _MAT_H */

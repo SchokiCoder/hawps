@@ -684,3 +684,77 @@ world_swap_dots(struct World *w,
 	w->states[x2][y2] = tmpS;
 	w->thermo[x2][y2] = tmpT;
 }
+
+void
+world_free(struct World *w)
+{
+	if (w->dots != NULL) {
+		free(w->dots);
+		w->dots = NULL;
+	}
+
+	if (w->_dots != NULL) {
+		free(w->_dots);
+		w->_dots = NULL;
+	}
+
+	if (w->oxid != NULL) {
+		free(w->oxid);
+		w->oxid = NULL;
+	}
+
+	if (w->_oxid != NULL) {
+		free(w->_oxid);
+		w->_oxid = NULL;
+	}
+
+	if (w->spawner != NULL) {
+		free(w->spawner);
+		w->spawner = NULL;
+	}
+
+	if (w->_spawner != NULL) {
+		free(w->_spawner);
+		w->_spawner = NULL;
+	}
+
+	if (w->spawner_mat != NULL) {
+		free(w->spawner_mat);
+		w->spawner_mat = NULL;
+	}
+
+	if (w->_spawner_mat != NULL) {
+		free(w->_spawner_mat);
+		w->_spawner_mat = NULL;
+	}
+
+	if (w->states != NULL) {
+		free(w->states);
+		w->states = NULL;
+	}
+
+	if (w->_states != NULL) {
+		free(w->_states);
+		w->_states = NULL;
+	}
+
+	if (w->thermo != NULL) {
+		free(w->thermo);
+		w->thermo = NULL;
+	}
+
+	if (w->_thermo != NULL) {
+		free(w->_thermo);
+		w->_thermo = NULL;
+	}
+
+	if (w->weights != NULL) {
+		free(w->weights);
+		w->weights = NULL;
+	}
+
+	if (w->_weights != NULL) {
+		free(w->_weights);
+		w->_weights = NULL;
+	}
+}
