@@ -42,7 +42,7 @@ core/mat_string.go: core/mat.go
 	go generate ./core
 
 $(APP_NAME)_desktop: desktop/embedded_glade.h desktop/* core/* extra/*
-	$(CC) $$(pkg-config --cflags gtk+-3.0) $(CFLAGS) -o $@ ./desktop/*.c $$(pkg-config --libs gtk+-3.0)
+	$(CC) $$(pkg-config --cflags gtk+-3.0) $(CFLAGS) -rdynamic -o $@ ./desktop/*.c $$(pkg-config --libs gtk+-3.0)
 
 desktop/embedded_glade.h: desktop/desktop.glade
 	cat $< > EMBEDDED_GLADE

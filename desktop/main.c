@@ -29,7 +29,7 @@ main(int argc,
 		exit(1);
 	}
 
-	g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	gtk_builder_connect_signals(builder, NULL);
 
 	gtk_widget_show_all(win);
 	gtk_main();

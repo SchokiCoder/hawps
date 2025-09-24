@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkWindow" id="main">
     <property name="can-focus">False</property>
+    <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child>
       <object class="GtkBox" id="mainbox">
         <property name="visible">True</property>
@@ -181,8 +182,8 @@
                 <property name="tooltip-text" translatable="yes">Slows down the simulation</property>
                 <property name="use-underline">True</property>
                 <signal name="clicked" handler="speeddown_clicked_cb" swapped="no"/>
-                <accelerator key="KP_Subtract" signal="clicked"/>
                 <accelerator key="minus" signal="clicked"/>
+                <accelerator key="KP_Subtract" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -232,8 +233,8 @@
                 <property name="tooltip-text" translatable="yes">Speeds up the simulation</property>
                 <property name="use-underline">True</property>
                 <signal name="clicked" handler="speedup_clicked_cb" swapped="no"/>
-                <accelerator key="KP_Add" signal="clicked"/>
                 <accelerator key="plus" signal="clicked"/>
+                <accelerator key="KP_Add" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>

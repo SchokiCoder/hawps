@@ -41,8 +41,8 @@ Why C again? See docs/reworks.md.
 - [x] rewrite core and extra in C
 Why C again? See docs/reworks.md.
 
-- [ ] remove glade handlers
-I thought they were necessary to connect a function to a signal.
+- [x] change signals being connected using glade handlers, not manually
+
 - [ ] add world draw to desktop client
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
