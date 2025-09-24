@@ -23,8 +23,8 @@ clean:
 
 generate: cross_platform/tool_string.go core/mat_string.go
 
-run: clean all
-	./$(APP_NAME) -window
+run: clean $(APP_NAME)_desktop
+	./$(APP_NAME)_desktop
 
 test:
 	go test ./core -cpuprofile cpu.prof -memprofile mem.prof -bench ./core
@@ -42,7 +42,9 @@ core/mat_string.go: core/mat.go
 	go generate ./core
 
 $(APP_NAME)_desktop: desktop/embedded_glade.h desktop/* core/* extra/*
-	$(CC) $$(pkg-config --cflags gtk+-3.0) $(CFLAGS) -rdynamic -o $@ ./desktop/*.c $$(pkg-config --libs gtk+-3.0)
+	$(CC) $$(pkg-config --cflags gtk+-3.0) $(CFLAGS) -o $@ \
+		-I . \
+		./desktop/*.c $$(pkg-config --libs gtk+-3.0) core/mat.c
 
 desktop/embedded_glade.h: desktop/desktop.glade
 	cat $< > EMBEDDED_GLADE

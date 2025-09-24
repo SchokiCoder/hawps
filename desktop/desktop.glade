@@ -181,7 +181,6 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Slows down the simulation</property>
                 <property name="use-underline">True</property>
-                <signal name="clicked" handler="speeddown_clicked_cb" swapped="no"/>
                 <accelerator key="minus" signal="clicked"/>
                 <accelerator key="KP_Subtract" signal="clicked"/>
               </object>
@@ -198,7 +197,6 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Resumes the simulation</property>
                 <property name="use-underline">True</property>
-                <signal name="clicked" handler="play_clicked_cb" swapped="no"/>
                 <accelerator key="space" signal="clicked"/>
               </object>
               <packing>
@@ -215,7 +213,6 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Pauses the simulation</property>
                 <property name="use-underline">True</property>
-                <signal name="clicked" handler="pause_clicked_cb" swapped="no"/>
                 <accelerator key="space" signal="clicked"/>
               </object>
               <packing>
@@ -232,7 +229,6 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Speeds up the simulation</property>
                 <property name="use-underline">True</property>
-                <signal name="clicked" handler="speedup_clicked_cb" swapped="no"/>
                 <accelerator key="plus" signal="clicked"/>
                 <accelerator key="KP_Add" signal="clicked"/>
               </object>
@@ -250,7 +246,6 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Toggles the termoview</property>
                 <property name="use-underline">True</property>
-                <signal name="clicked" handler="thermalvision_clicked_cb" swapped="no"/>
                 <accelerator key="t" signal="clicked"/>
               </object>
               <packing>
@@ -397,11 +392,35 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkDrawingArea" id="worldbox">
+                  <object class="GtkFrame" id="worldframe">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-top">48</property>
-                    <signal name="scroll-event" handler="worldbox_scroll_event_cb" swapped="no"/>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">etched-out</property>
+                    <child>
+                      <object class="GtkAlignment">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="top-padding">2</property>
+                        <property name="bottom-padding">2</property>
+                        <property name="left-padding">2</property>
+                        <property name="right-padding">2</property>
+                        <child>
+                          <object class="GtkDrawingArea" id="worldbox">
+                            <property name="visible">True</property>
+                            <property name="app-paintable">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">World</property>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>

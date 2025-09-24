@@ -43,12 +43,24 @@ Why C again? See docs/reworks.md.
 
 - [x] change signals being connected using glade handlers, not manually
 
-- [ ] add world draw to desktop client
-- [ ] add per spawner temperature
-- [ ] add temperature setting for new spawners
+- [x] add basic world draw to desktop client
+This also undid glade handlers.
+`gtk_builder_connect_signals` doesn't pass custom data, which I need for draw,
+AND overrides all custom connections, which I did for draw.
+Therefore it needs to go again.
+
+- [ ] add world_free() and use it
+
+- [ ] add world simulation loop (in a separate thread?)
+- [ ] add glowcolor draw to desktop
+- [ ] add brush hover draw
+
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] hook up menubar
+
+- [ ] add per spawner temperature
+- [ ] add temperature setting for new spawners
 
 - [ ] remove cross_platform
 Removing cross_platform is done because it's obsolete.
