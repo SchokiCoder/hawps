@@ -98,22 +98,22 @@ world_new(const int w,
 	int y;
 
 	struct World ret = {
-		w:            w,
-		h:            h,
-		dots:         calloc(w, sizeof(enum Mat*)),
-		_dots:        calloc(w * h, sizeof(enum Mat)),
-		oxid:         calloc(w, sizeof(float*)),
-		_oxid:        calloc(w * h, sizeof(float)),
-		spawner:      calloc(w, sizeof(int*)),
-		_spawner:     calloc(w * h, sizeof(int)),
-		spawner_mat:  calloc(w, sizeof(enum Mat*)),
-		_spawner_mat: calloc(w * h, sizeof(enum Mat)),
-		states:       calloc(w, sizeof(enum MatState*)),
-		_states:      calloc(w * h, sizeof(enum MatState)),
-		thermo:       calloc(w, sizeof(float*)),
-		_thermo:      calloc(w * h, sizeof(float)),
-		weights:      calloc(w, sizeof(float*)),
-		_weights:     calloc(w * h, sizeof(float))
+		.w =            w,
+		.h =            h,
+		.dots =         calloc(w, sizeof(enum Mat*)),
+		._dots =        calloc(w * h, sizeof(enum Mat)),
+		.oxid =         calloc(w, sizeof(float*)),
+		._oxid =        calloc(w * h, sizeof(float)),
+		.spawner =      calloc(w, sizeof(int*)),
+		._spawner =     calloc(w * h, sizeof(int)),
+		.spawner_mat =  calloc(w, sizeof(enum Mat*)),
+		._spawner_mat = calloc(w * h, sizeof(enum Mat)),
+		.states =       calloc(w, sizeof(enum MatState*)),
+		._states =      calloc(w * h, sizeof(enum MatState)),
+		.thermo =       calloc(w, sizeof(float*)),
+		._thermo =      calloc(w * h, sizeof(float)),
+		.weights =      calloc(w, sizeof(float*)),
+		._weights =     calloc(w * h, sizeof(float))
 	};
 
 	for (x = 0; x < w; x++) {
@@ -417,7 +417,7 @@ world_sim_to_right(struct World *w,
                    int *x,
                    const int y)
 {
-	for (*x = 1; *x <= w->w - 2; *x++) {
+	for (*x = 1; *x <= w->w - 2; *x += 1) {
 		if (MAT_NONE == w->dots[*x][y]) {
 			continue;
 		}
@@ -439,7 +439,7 @@ world_sim_to_left(struct World *w,
                   int *x,
                   const int y)
 {
-	for (*x = w->w - 2; *x >= 1; *x--) {
+	for (*x = w->w - 2; *x >= 1; *x -= 1) {
 		if (MAT_NONE == w->dots[*x][y]) {
 			continue;
 		}

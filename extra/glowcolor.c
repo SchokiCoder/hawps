@@ -36,23 +36,23 @@ glow_range_def_to_glow_color_step(const float i1,
 
 struct Rgba glow_colors[GLOW_RANGE];
 
-static struct GlowRangeDef glow_ranges[] = {
-	{i: 0,  r: 0,   g: 0,   b: 0,   a: 0},
-	{i: 7,  r: 255, g: 0,   b: 0,   a: 0}, // draper point
-	{i: 40, r: 255, g: 0,   b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 44, r: 255, g: 0,   b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 46, r: 255, g: 127, b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 48, r: 255, g: 190, b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 50, r: 255, g: 255, b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 52, r: 0,   g: 255, b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 54, r: 0,   g: 255, b: 0,   a: GLOW_MAX_ALPHA},
-	{i: 57, r: 0,   g: 255, b: 255, a: GLOW_MAX_ALPHA},
-	{i: 58, r: 0,   g: 255, b: 255, a: GLOW_MAX_ALPHA},
-	{i: 61, r: 0,   g: 0,   b: 255, a: GLOW_MAX_ALPHA},
-	{i: 65, r: 0,   g: 0,   b: 255, a: GLOW_MAX_ALPHA},
-	{i: 72, r: 127, g: 0,   b: 255, a: GLOW_MAX_ALPHA},
-	{i: 75, r: 127, g: 0,   b: 255, a: GLOW_MAX_ALPHA},
-	{i: 78, r: 127, g: 0,   b: 255, a: 0}
+static const struct GlowRangeDef glow_ranges[] = {
+	{.i = 0, .r = 0, .g = 0, .b = 0, .a = 0},
+	{.i = 7,  .r = 255, .g = 0,   .b = 0,   .a = 0}, // draper point
+	{.i = 40, .r = 255, .g = 0,   .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 44, .r = 255, .g = 0,   .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 46, .r = 255, .g = 127, .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 48, .r = 255, .g = 190, .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 50, .r = 255, .g = 255, .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 52, .r = 0,   .g = 255, .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 54, .r = 0,   .g = 255, .b = 0,   .a = GLOW_MAX_ALPHA},
+	{.i = 57, .r = 0,   .g = 255, .b = 255, .a = GLOW_MAX_ALPHA},
+	{.i = 58, .r = 0,   .g = 255, .b = 255, .a = GLOW_MAX_ALPHA},
+	{.i = 61, .r = 0,   .g = 0,   .b = 255, .a = GLOW_MAX_ALPHA},
+	{.i = 65, .r = 0,   .g = 0,   .b = 255, .a = GLOW_MAX_ALPHA},
+	{.i = 72, .r = 127, .g = 0,   .b = 255, .a = GLOW_MAX_ALPHA},
+	{.i = 75, .r = 127, .g = 0,   .b = 255, .a = GLOW_MAX_ALPHA},
+	{.i = 78, .r = 127, .g = 0,   .b = 255, .a = 0}
 };
 
 void
@@ -118,7 +118,7 @@ glow_range_def_to_glow_color_step(const float i1,
 struct Rgba
 thermo_to_color(const float thermo)
 {
-	struct Rgba ret = {r: 0, g: 0, b: 0, a: 0};
+	struct Rgba ret = {.r = 0, .g = 0, .b = 0, .a = 0};
 	int glow_index;
 
 	glow_index = (int)(thermo / 100.0);

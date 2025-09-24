@@ -7,14 +7,17 @@
 
 #include "embedded_glade.h"
 
-int main(int argc, char **argv)
+int
+main(int argc,
+     char **argv)
 {
 	GtkBuilder *builder;
 	GtkWidget  *win;
 
 	gtk_init(&argc, &argv);
 
-	builder = gtk_builder_new_from_string((char*) EMBEDDED_GLADE, EMBEDDED_GLADE_len - 1);
+	builder = gtk_builder_new_from_string((char*) EMBEDDED_GLADE,
+	                                      EMBEDDED_GLADE_len - 1);
 	if (NULL == builder) {
 		printf("Could not make builder\n");
 		exit(1);
