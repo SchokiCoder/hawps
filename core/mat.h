@@ -71,6 +71,9 @@ static const float MAT_G[]               = {0,         217,      237,       150,
 static const float MAT_B[]               = {0,         86,       237,       255,       200,       255,       255,        255,        65};
 static const float MAT_A[]               = {0,         255,      128,       205,       255,       100,       100,        100,        150};
 
+float
+color_int8_to_float(const int color);
+
 struct World
 world_new(const int w,
           const int h,

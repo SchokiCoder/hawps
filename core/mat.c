@@ -89,6 +89,12 @@ world_swap_dots(struct World *w,
                 const int x2,
                 const int y2);
 
+float
+color_int8_to_float(const int color)
+{
+	return (float) color / 255.0;
+}
+
 struct World
 world_new(const int w,
           const int h,

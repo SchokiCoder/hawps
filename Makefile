@@ -14,7 +14,7 @@ CFLAGS :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=
 
 .PHONY: all build clean generate run test vet
 
-all: generate vet build
+all: $(APP_NAME)_desktop
 
 build: $(APP_NAME)
 
@@ -44,7 +44,8 @@ core/mat_string.go: core/mat.go
 $(APP_NAME)_desktop: desktop/embedded_glade.h desktop/* core/* extra/*
 	$(CC) $$(pkg-config --cflags gtk+-3.0) $(CFLAGS) -o $@ \
 		-I . \
-		./desktop/*.c $$(pkg-config --libs gtk+-3.0) core/mat.c
+		./desktop/*.c $$(pkg-config --libs gtk+-3.0) \
+		core/mat.c extra/glowcolor.c
 
 desktop/embedded_glade.h: desktop/desktop.glade
 	cat $< > EMBEDDED_GLADE

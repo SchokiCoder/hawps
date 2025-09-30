@@ -52,11 +52,14 @@ Therefore it needs to go again.
 - [x] add world_free and use it
 
 - [x] add world simulation loop
-- [ ] add glowcolor draw to desktop
+- [x] add glowcolor draw to desktop
 - [ ] add brush hover draw
 
+- [ ] add content of brush- and materiallist
+- [ ] add click event of worldbox
 - [ ] hook up buttons
 - [ ] use statusbar
+- [ ] add world scale slider
 - [ ] hook up menubar
 
 - [ ] add per spawner temperature

@@ -3,6 +3,7 @@
  */
 
 #include <core/mat.h>
+#include <extra/glowcolor.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <stdio.h>
 
@@ -80,15 +81,33 @@ worldbox_draw_cb(GtkWidget *worldbox,
                  gpointer   user_data)
 {
 	struct World *world = user_data;
+	struct Rgba glowc;
 	int x, y;
 
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
 			cairo_set_source_rgba(cr,
-			                      MAT_R[world->dots[x][y]] / 255,
-			                      MAT_G[world->dots[x][y]] / 255,
-			                      MAT_B[world->dots[x][y]] / 255,
+			                      color_int8_to_float(MAT_R[world->dots[x][y]]),
+			                      color_int8_to_float(MAT_G[world->dots[x][y]]),
+			                      color_int8_to_float(MAT_B[world->dots[x][y]]),
 			                      1.0);
+			cairo_rectangle(cr,
+			                x * WORLD_SCALE,
+			                y * WORLD_SCALE,
+			                WORLD_SCALE,
+			                WORLD_SCALE);
+			cairo_fill(cr);
+
+			if (MAT_NONE == world->dots[x][y]) {
+				continue;
+			}
+
+			glowc = thermo_to_color(world->thermo[x][y]);
+			cairo_set_source_rgba(cr,
+			                      color_int8_to_float(glowc.r),
+			                      color_int8_to_float(glowc.g),
+			                      color_int8_to_float(glowc.b),
+			                      color_int8_to_float(glowc.a));
 			cairo_rectangle(cr,
 			                x * WORLD_SCALE,
 			                y * WORLD_SCALE,
@@ -113,6 +132,7 @@ main(int argc,
 	struct World    world;
 
 	gtk_init(&argc, &argv);
+	glowcolor_init();
 
 	builder = gtk_builder_new_from_string((char*) EMBEDDED_GLADE,
 	                                      EMBEDDED_GLADE_len - 1);
@@ -153,8 +173,11 @@ main(int argc,
 	                  WORLD_W * WORLD_SCALE,
 	                  WORLD_H * WORLD_SCALE);
 
-	world.dots[WORLD_W / 2][0] = MAT_SAND;
+	world.dots[WORLD_W / 2 - 1][0] = MAT_SAND;
+	world.dots  [WORLD_W / 2][0] = MAT_SAND;
+	world.thermo[WORLD_W / 2][0] = 7000;
 	world.dots[WORLD_W / 2 + 1][1] = MAT_WATER;
+	world.dots[WORLD_W / 2][1] = MAT_WATER;
 
 	gtk_widget_show_all(win);
 	gtk_main();
