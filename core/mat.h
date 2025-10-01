@@ -5,8 +5,6 @@
 #ifndef _MAT_H
 #define _MAT_H
 
-#define ARRSIZE(a) (sizeof(a) / sizeof(*(a)))
-
 enum Mat {
 	MAT_NONE,
 	MAT_SAND,
@@ -30,34 +28,6 @@ enum MatState {
 	MS_COUNT
 };
 
-struct Rgba {
-	int r;
-	int g;
-	int b;
-	int a;
-};
-
-struct World {
-	int w;
-	int h;
-
-	int       *_spawner;
-	int      **spawner;
-	enum Mat  *_spawner_mat;
-	enum Mat **spawner_mat;
-
-	enum Mat       *_dots;
-	enum Mat      **dots;
-	float          *_oxid;
-	float         **oxid;
-	enum MatState  *_states;
-	enum MatState **states;
-	float          *_thermo;
-	float         **thermo;
-	float          *_weights;
-	float         **weights;
-};
-
 static const char *MAT_NAME[]            = {"None",    "Sand",   "Glass",   "Water",   "Iron",    "Oxygen",  "Hydrogen", "Carbon Dioxide", "Methane"};
 static const float MAT_FULL_WEIGHT[]     = {0.0,       1.5,      1.5,       0.999,     7.874,     0.001323,  0.00008319, 0.001977,         0.000657};  /* g/cm³ */
 static const float MAT_BOIL_P[]          = {0,         3223.15,  3223.15,   373.15,    3134.15,   90.19,     27.20,      194.686,          111.65};    /* K */
@@ -73,70 +43,5 @@ static const float MAT_R[]               = {0,         238,      237,       150,
 static const float MAT_G[]               = {0,         217,      237,       150,       200,       200,       200,        200,              65};
 static const float MAT_B[]               = {0,         86,       237,       255,       200,       255,       255,        255,              65};
 static const float MAT_A[]               = {0,         255,      128,       205,       255,       100,       100,        100,              150};
-
-float
-color_int8_to_float(const int color);
-
-struct World
-world_new(const int w,
-          const int h,
-          const float temperature);
-
-int
-world_can_displace(struct World *w,
-                   const int x,
-                   const int y,
-                   const int dx,
-                   const int dy);
-
-/* You may want to call world_sim after this.
- */
-void
-world_update(struct World *w,
-             const float spawner_temperature);
-
-void
-world_use_brush(struct World *w,
-                const enum Mat m,
-                const float t,
-                const int x_c,
-                const int y_c,
-                const int radius);
-
-void
-world_use_eraser(struct World *w,
-                 const int x_c,
-                 const int y_c,
-                 const int radius);
-
-/* Using this to increase temperature, by giving a negative delta,
- * is inefficient. Cooling requires an additional check.
- * To heat, see world_use_heater
- */
-void
-world_use_cooler(struct World *w,
-                 const float delta,
-                 const int x_c,
-                 const int y_c,
-                 const int radius);
-
-/* Using this to decrease temperature, by giving a negative delta,
- * may cause issues, as soon as the temperature of a dot goes negative.
- * To cool, see world_use_cooler
- */
-void
-world_use_heater(struct World *w,
-                 const float delta,
-                 const int x_c,
-                 const int y_c,
-                 const int radius);
-
-/* You SHOULD call world_update before this.
- */
-void
-world_sim(struct World *w);
-
-void
-world_free(struct World *w);
 
 #endif /* _MAT_H */

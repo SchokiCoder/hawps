@@ -5,7 +5,7 @@
 #ifndef _GLOWCOLOR_H
 #define _GLOWCOLOR_H
 
-#include "core/mat.h"
+#include "core/core.h"
 
 void
 glowcolor_init(void);

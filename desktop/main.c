@@ -2,7 +2,7 @@
  * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
  */
 
-#include <core/mat.h>
+#include <core/core.h>
 #include <extra/glowcolor.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <stdio.h>
@@ -166,6 +166,20 @@ worldbox_draw_cb(GtkWidget *worldbox,
 	return 0;
 }
 
+GtkWidget*
+get_widget(GtkBuilder *builder, char *name)
+{
+	GtkWidget *ret;
+
+	ret = GTK_WIDGET(gtk_builder_get_object(builder, name));
+	if (NULL == ret) {
+		printf("No %s in glade file\n", name);
+		exit(1);
+	}
+
+	return ret;
+}
+
 int
 main(int argc,
      char **argv)
@@ -199,29 +213,10 @@ main(int argc,
 		exit(1);
 	}
 
-	ad.win = GTK_WIDGET(gtk_builder_get_object(builder, "main"));
-	if (NULL == ad.win) {
-		printf("No window in glade file\n");
-		exit(1);
-	}
-
-	ad.toollist = GTK_WIDGET(gtk_builder_get_object(builder, "toollist"));
-	if (NULL == ad.toollist) {
-		printf("No toollist in glade file\n");
-		exit(1);
-	}
-
-	ad.materiallist = GTK_WIDGET(gtk_builder_get_object(builder, "materiallist"));
-	if (NULL == ad.toollist) {
-		printf("No materiallist in glade file\n");
-		exit(1);
-	}
-
-	ad.worldbox = GTK_WIDGET(gtk_builder_get_object(builder, "worldbox"));
-	if (NULL == ad.worldbox) {
-		printf("No worldbox in glade file\n");
-		exit(1);
-	}
+	ad.win = get_widget(builder, "main");
+	ad.toollist = get_widget(builder, "toollist");
+	ad.materiallist = get_widget(builder, "materiallist");
+	ad.worldbox = get_widget(builder, "worldbox");
 
 	g_signal_connect((GObject*) ad.win,
 	                 "destroy",

@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-#include "mat.h"
+#include "world.h"
 
 #define WEIGHT_FACTOR_LIQUID 0.95
 #define WEIGHT_FACTOR_GAS    0.90
@@ -88,12 +88,6 @@ world_swap_dots(struct World *w,
                 const int y,
                 const int x2,
                 const int y2);
-
-float
-color_int8_to_float(const int color)
-{
-	return (float) color / 255.0;
-}
 
 struct World
 world_new(const int w,
