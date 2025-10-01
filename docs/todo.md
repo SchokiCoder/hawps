@@ -53,10 +53,11 @@ Therefore it needs to go again.
 
 - [x] add world simulation loop
 - [x] add glowcolor draw to desktop
-- [ ] add brush hover draw
+- [x] add brush hover draw
 
 - [ ] add content of brush- and materiallist
 - [ ] add click event of worldbox
+- [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] add world scale slider

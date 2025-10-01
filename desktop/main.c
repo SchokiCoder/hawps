@@ -9,7 +9,16 @@
 
 #include "embedded_glade.h"
 
+#define BRUSH_RADIUS   2
+#define SPAWNER_R      255
+#define SPAWNER_G      0
+#define SPAWNER_B      255
+#define SPAWNER_A      128
 #define TEMPERATURE    293.15
+#define TOOL_HOVER_R   175
+#define TOOL_HOVER_G   255
+#define TOOL_HOVER_B   175
+#define TOOL_HOVER_A   SPAWNER_A
 #define WORLD_SIM_RATE 24
 #define WORLD_SCALE    10
 #define WORLD_W        40
@@ -17,8 +26,12 @@
 
 struct AppData {
 	int           active;
+	GdkDisplay   *display;
 	GMutex        mutex;
-	struct World *world;
+	GdkDevice    *pointer;
+	GdkSeat      *seat;
+	struct World  world;
+	GtkWidget    *win;
 	GtkWidget    *worldbox;
 };
 
@@ -47,7 +60,7 @@ set_worldbox_size(GtkWidget *worldbox,
 void
 tick(gpointer user_data)
 {
-	struct AppData *a = user_data;
+	struct AppData *ad = user_data;
 	float           lasttick = 0.0;
 	float           now = 0.0;
 	GTimer         *timer;
@@ -59,16 +72,16 @@ tick(gpointer user_data)
 		if (now - lasttick > 1.0 / WORLD_SIM_RATE) {
 			lasttick = now;
 
-			g_mutex_lock(&a->mutex);
-			if (!a->active) {
+			g_mutex_lock(&ad->mutex);
+			if (!ad->active) {
 				break;
 			}
 
-			world_update(a->world, TEMPERATURE);
-			world_sim(a->world);
-			g_mutex_unlock(&a->mutex);
+			world_update(&ad->world, TEMPERATURE);
+			world_sim(&ad->world);
+			g_mutex_unlock(&ad->mutex);
 
-			gtk_widget_queue_draw(a->worldbox);
+			gtk_widget_queue_draw(ad->worldbox);
 		}
 	}
 
@@ -80,17 +93,20 @@ worldbox_draw_cb(GtkWidget *worldbox,
                  cairo_t   *cr,
                  gpointer   user_data)
 {
-	struct World *world = user_data;
+	struct AppData *ad = user_data;
 	struct Rgba glowc;
+	gint mx, my;
+	float r, g, b, a;
+	GtkAllocation worldbox_rect;
 	int x, y;
 
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
-			cairo_set_source_rgba(cr,
-			                      color_int8_to_float(MAT_R[world->dots[x][y]]),
-			                      color_int8_to_float(MAT_G[world->dots[x][y]]),
-			                      color_int8_to_float(MAT_B[world->dots[x][y]]),
-			                      1.0);
+			r = color_int8_to_float(MAT_R[ad->world.dots[x][y]]);
+			g = color_int8_to_float(MAT_G[ad->world.dots[x][y]]);
+			b = color_int8_to_float(MAT_B[ad->world.dots[x][y]]);
+			a = 1.0;
+			cairo_set_source_rgba(cr, r, g, b, a);
 			cairo_rectangle(cr,
 			                x * WORLD_SCALE,
 			                y * WORLD_SCALE,
@@ -98,16 +114,16 @@ worldbox_draw_cb(GtkWidget *worldbox,
 			                WORLD_SCALE);
 			cairo_fill(cr);
 
-			if (MAT_NONE == world->dots[x][y]) {
+			if (MAT_NONE == ad->world.dots[x][y]) {
 				continue;
 			}
 
-			glowc = thermo_to_color(world->thermo[x][y]);
-			cairo_set_source_rgba(cr,
-			                      color_int8_to_float(glowc.r),
-			                      color_int8_to_float(glowc.g),
-			                      color_int8_to_float(glowc.b),
-			                      color_int8_to_float(glowc.a));
+			glowc = thermo_to_color(ad->world.thermo[x][y]);
+			r = color_int8_to_float(glowc.r);
+			g = color_int8_to_float(glowc.g);
+			b = color_int8_to_float(glowc.b);
+			a = color_int8_to_float(glowc.a);
+			cairo_set_source_rgba(cr, r, g, b, a);
 			cairo_rectangle(cr,
 			                x * WORLD_SCALE,
 			                y * WORLD_SCALE,
@@ -117,6 +133,25 @@ worldbox_draw_cb(GtkWidget *worldbox,
 		}
 	}
 
+	gdk_window_get_device_position(gtk_widget_get_window(ad->win),
+	                               ad->pointer,
+	                               &mx,
+	                               &my,
+	                               NULL);
+	gtk_widget_get_allocation(ad->worldbox, &worldbox_rect);
+
+	r = color_int8_to_float(TOOL_HOVER_R);
+	g = color_int8_to_float(TOOL_HOVER_G);
+	b = color_int8_to_float(TOOL_HOVER_B);
+	a = color_int8_to_float(TOOL_HOVER_A);
+	cairo_set_source_rgba(cr, r, g, b, a);
+	cairo_rectangle(cr,
+	                mx - worldbox_rect.x - (BRUSH_RADIUS * WORLD_SCALE / 2),
+	                my - worldbox_rect.y - (BRUSH_RADIUS * WORLD_SCALE / 2),
+	                BRUSH_RADIUS * WORLD_SCALE,
+	                BRUSH_RADIUS * WORLD_SCALE);
+	cairo_fill(cr);
+
 	return 0;
 }
 
@@ -124,10 +159,8 @@ int
 main(int argc,
      char **argv)
 {
-	struct AppData  a;
+	struct AppData  ad;
 	GtkBuilder     *builder;
-	GtkWidget      *win;
-	GtkWidget      *worldbox;
 	GThread        *worldloop;
 	struct World    world;
 
@@ -141,53 +174,64 @@ main(int argc,
 		exit(1);
 	}
 
-	win = GTK_WIDGET(gtk_builder_get_object(builder, "main"));
-	if (NULL == win) {
+	ad.display = gdk_display_get_default();
+	if (NULL == ad.display) {
+		printf("Could not get display\n");
+		exit(1);
+	}
+
+	ad.seat = gdk_display_get_default_seat(ad.display);
+	ad.pointer = gdk_seat_get_pointer(ad.seat);
+	if (NULL == ad.pointer) {
+		printf("Could not get pointer\n");
+		exit(1);
+	}
+
+	ad.win = GTK_WIDGET(gtk_builder_get_object(builder, "main"));
+	if (NULL == ad.win) {
 		printf("No window in glade file\n");
 		exit(1);
 	}
 
-	worldbox = GTK_WIDGET(gtk_builder_get_object(builder, "worldbox"));
-	if (NULL == worldbox) {
+	ad.worldbox = GTK_WIDGET(gtk_builder_get_object(builder, "worldbox"));
+	if (NULL == ad.worldbox) {
 		printf("No worldbox in glade file\n");
 		exit(1);
 	}
 
-	g_signal_connect((GObject*) win,
+	g_signal_connect((GObject*) ad.win,
 	                 "destroy",
 	                 gtk_main_quit,
 	                 NULL);
-	g_signal_connect((GObject*) worldbox,
+	g_signal_connect((GObject*) ad.worldbox,
 	                 "draw",
 	                 (GCallback) worldbox_draw_cb,
-	                 &world);
-	worldloop = g_thread_new("worldloop", (GThreadFunc) tick, &a);
+	                 &ad);
+	worldloop = g_thread_new("worldloop", (GThreadFunc) tick, &ad);
 
-	a.active = 1;
-	g_mutex_init(&a.mutex);
-	a.world = &world;
-	a.worldbox = worldbox;
+	ad.active = 1;
+	g_mutex_init(&ad.mutex);
 
-	world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
-	set_worldbox_size(worldbox,
+	ad.world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
+	set_worldbox_size(ad.worldbox,
 	                  WORLD_W * WORLD_SCALE,
 	                  WORLD_H * WORLD_SCALE);
 
-	world.dots[WORLD_W / 2 - 1][0] = MAT_SAND;
-	world.dots  [WORLD_W / 2][0] = MAT_SAND;
-	world.thermo[WORLD_W / 2][0] = 7000;
-	world.dots[WORLD_W / 2 + 1][1] = MAT_WATER;
-	world.dots[WORLD_W / 2][1] = MAT_WATER;
+	ad.world.dots[WORLD_W / 2 - 1][0] = MAT_SAND;
+	ad.world.dots  [WORLD_W / 2][0] = MAT_SAND;
+	ad.world.thermo[WORLD_W / 2][0] = 7000;
+	ad.world.dots[WORLD_W / 2 + 1][1] = MAT_WATER;
+	ad.world.dots[WORLD_W / 2][1] = MAT_WATER;
 
-	gtk_widget_show_all(win);
+	gtk_widget_show_all(ad.win);
 	gtk_main();
 
-	g_mutex_lock(&a.mutex);
-	a.active = 0;
-	g_mutex_unlock(&a.mutex);
+	g_mutex_lock(&ad.mutex);
+	ad.active = 0;
+	g_mutex_unlock(&ad.mutex);
 
 	g_thread_join(worldloop);
-	world_free(&world);
+	world_free(&ad.world);
 
 	return 0;
 }
