@@ -55,7 +55,8 @@ Therefore it needs to go again.
 - [x] add glowcolor draw to desktop
 - [x] add brush hover draw
 
-- [ ] add content of brush- and materiallist
+- [x] add content of tool- and materiallist
+- [ ] add rules for dynamic materiallist content, based on selected tool
 - [ ] add click event of worldbox
 - [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons

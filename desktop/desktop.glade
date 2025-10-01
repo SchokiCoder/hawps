@@ -180,8 +180,8 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Slows down the simulation</property>
                 <property name="use-underline">True</property>
-                <accelerator key="KP_Subtract" signal="clicked"/>
                 <accelerator key="minus" signal="clicked"/>
+                <accelerator key="KP_Subtract" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -228,8 +228,8 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Speeds up the simulation</property>
                 <property name="use-underline">True</property>
-                <accelerator key="KP_Add" signal="clicked"/>
                 <accelerator key="plus" signal="clicked"/>
+                <accelerator key="KP_Add" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -264,6 +264,7 @@
           <object class="GtkBox" id="contentbox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="spacing">5</property>
             <child>
               <object class="GtkBox" id="leftbox">
                 <property name="visible">True</property>
@@ -273,8 +274,9 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">_Brush</property>
+                    <property name="label" translatable="yes">Too_l</property>
                     <property name="use-underline">True</property>
+                    <property name="mnemonic-widget">toollist</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -283,7 +285,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkListBox" id="brushlist">
+                  <object class="GtkComboBoxText" id="toollist">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
@@ -299,6 +301,7 @@
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">_Material</property>
                     <property name="use-underline">True</property>
+                    <property name="mnemonic-widget">materiallist</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -307,10 +310,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkListBox" id="materiallist">
+                  <object class="GtkComboBoxText" id="materiallist">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Select a material here.</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

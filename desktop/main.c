@@ -24,14 +24,25 @@
 #define WORLD_W        40
 #define WORLD_H        30
 
+static const char *TOOLS[] = {
+	"Brush",
+	"Spawner",
+	"Eraser",
+	"Heater",
+	"Cooler"
+};
+
 struct AppData {
 	int           active;
-	GdkDisplay   *display;
-	GMutex        mutex;
-	GdkDevice    *pointer;
-	GdkSeat      *seat;
 	struct World  world;
+	GMutex        mutex;
+
+	GdkDisplay   *display;
+	GdkSeat      *seat;
+	GdkDevice    *pointer;
 	GtkWidget    *win;
+	GtkWidget    *toollist;
+	GtkWidget    *materiallist;
 	GtkWidget    *worldbox;
 };
 
@@ -161,6 +172,7 @@ main(int argc,
 {
 	struct AppData  ad;
 	GtkBuilder     *builder;
+	long unsigned   i;
 	GThread        *worldloop;
 	struct World    world;
 
@@ -193,6 +205,18 @@ main(int argc,
 		exit(1);
 	}
 
+	ad.toollist = GTK_WIDGET(gtk_builder_get_object(builder, "toollist"));
+	if (NULL == ad.toollist) {
+		printf("No toollist in glade file\n");
+		exit(1);
+	}
+
+	ad.materiallist = GTK_WIDGET(gtk_builder_get_object(builder, "materiallist"));
+	if (NULL == ad.toollist) {
+		printf("No materiallist in glade file\n");
+		exit(1);
+	}
+
 	ad.worldbox = GTK_WIDGET(gtk_builder_get_object(builder, "worldbox"));
 	if (NULL == ad.worldbox) {
 		printf("No worldbox in glade file\n");
@@ -211,6 +235,16 @@ main(int argc,
 
 	ad.active = 1;
 	g_mutex_init(&ad.mutex);
+
+	for (i = 0; i < ARRSIZE(TOOLS); i += 1) {
+		gtk_combo_box_text_append_text((GtkComboBoxText*) ad.toollist,
+		                               TOOLS[i]);
+	}
+
+	for (i = 0; i < ARRSIZE(MAT_NAME); i += 1) {
+		gtk_combo_box_text_append_text((GtkComboBoxText*) ad.materiallist,
+		                               MAT_NAME[i]);
+	}
 
 	ad.world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
 	set_worldbox_size(ad.worldbox,
