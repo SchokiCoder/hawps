@@ -56,7 +56,10 @@ Therefore it needs to go again.
 - [x] add brush hover draw
 
 - [x] add content of tool- and materiallist
-- [ ] add rules for dynamic materiallist content, based on selected tool
+- [x] add materiallist entries update, based on selected tool
+- [ ] add materiallist entries update for spawner, based on temperature
+- [ ] change thermoview button into a GtkSwitch
+- [ ] change speed up/down buttons into a speedslider (0 to 60 per second)
 - [ ] add click event of worldbox
 - [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons

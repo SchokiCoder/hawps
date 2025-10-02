@@ -3,7 +3,7 @@
  */
 
 #include <core/core.h>
-#include <extra/glowcolor.h>
+#include <extra/extra.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <stdio.h>
 
@@ -23,14 +23,6 @@
 #define WORLD_SCALE    10
 #define WORLD_W        40
 #define WORLD_H        30
-
-static const char *TOOLS[] = {
-	"Brush",
-	"Spawner",
-	"Eraser",
-	"Heater",
-	"Cooler"
-};
 
 struct AppData {
 	int           active;
@@ -97,6 +89,45 @@ tick(gpointer user_data)
 	}
 
 	g_thread_exit(NULL);
+}
+
+void
+toollist_changed_cb(GtkComboBox *toollist,
+                    gpointer     user_data)
+{
+	struct AppData *ad = user_data;
+	gint cur_tool;
+	int i;
+
+	cur_tool = gtk_combo_box_get_active(toollist);
+
+	switch (cur_tool) {
+	case TOOL_BRUSH:
+		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
+		for (i = 1; i < MAT_COUNT; i += 1) {
+			gtk_combo_box_text_append_text((GtkComboBoxText*) ad->materiallist,
+				                       MAT_NAME[i]);
+		}
+		gtk_combo_box_set_active((GtkComboBox*) ad->materiallist, 0);
+		break;
+
+	case TOOL_SPAWNER:
+		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
+		for (i = 0; i < MAT_COUNT; i += 1) {
+			gtk_combo_box_text_append_text((GtkComboBoxText*) ad->materiallist,
+				                       MAT_NAME[i]);
+		}
+		gtk_combo_box_set_active((GtkComboBox*) ad->materiallist, 0);
+		break;
+
+	case TOOL_ERASER:
+		/* fallthrough */
+	case TOOL_HEATER:
+		/* fallthrough */
+	case TOOL_COOLER:
+		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
+		break;
+	}
 }
 
 gboolean
@@ -191,7 +222,7 @@ main(int argc,
 	struct World    world;
 
 	gtk_init(&argc, &argv);
-	glowcolor_init();
+	extra_init();
 
 	builder = gtk_builder_new_from_string((char*) EMBEDDED_GLADE,
 	                                      EMBEDDED_GLADE_len - 1);
@@ -218,6 +249,10 @@ main(int argc,
 	ad.materiallist = get_widget(builder, "materiallist");
 	ad.worldbox = get_widget(builder, "worldbox");
 
+	g_signal_connect((GObject*) ad.toollist,
+	                 "changed",
+	                 (GCallback) toollist_changed_cb,
+	                 &ad);
 	g_signal_connect((GObject*) ad.win,
 	                 "destroy",
 	                 gtk_main_quit,
@@ -231,15 +266,13 @@ main(int argc,
 	ad.active = 1;
 	g_mutex_init(&ad.mutex);
 
-	for (i = 0; i < ARRSIZE(TOOLS); i += 1) {
+	for (i = 0; i < TOOL_COUNT; i += 1) {
 		gtk_combo_box_text_append_text((GtkComboBoxText*) ad.toollist,
-		                               TOOLS[i]);
+		                               TOOL_NAME[i]);
 	}
 
-	for (i = 0; i < ARRSIZE(MAT_NAME); i += 1) {
-		gtk_combo_box_text_append_text((GtkComboBoxText*) ad.materiallist,
-		                               MAT_NAME[i]);
-	}
+	gtk_combo_box_set_active((GtkComboBox*) ad.toollist, TOOL_BRUSH);
+	toollist_changed_cb((GtkComboBox*) ad.toollist, &ad);
 
 	ad.world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
 	set_worldbox_size(ad.worldbox,
