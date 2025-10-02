@@ -180,8 +180,8 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Slows down the simulation</property>
                 <property name="use-underline">True</property>
-                <accelerator key="minus" signal="clicked"/>
                 <accelerator key="KP_Subtract" signal="clicked"/>
+                <accelerator key="minus" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -228,8 +228,8 @@
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Speeds up the simulation</property>
                 <property name="use-underline">True</property>
-                <accelerator key="plus" signal="clicked"/>
                 <accelerator key="KP_Add" signal="clicked"/>
+                <accelerator key="plus" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -355,6 +355,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="tooltip-text" translatable="yes">Set the temperature for newly added dots</property>
+                        <property name="input-purpose">number</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -366,6 +367,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="tooltip-text" translatable="yes">Set the temperature for newly added spawners</property>
+                        <property name="input-purpose">number</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>

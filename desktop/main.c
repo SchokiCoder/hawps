@@ -6,6 +6,7 @@
 #include <extra/extra.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "embedded_glade.h"
 
@@ -33,6 +34,7 @@ struct AppData {
 	GdkSeat      *seat;
 	GdkDevice    *pointer;
 	GtkWidget    *win;
+	GtkWidget    *spawnertemperature;
 	GtkWidget    *toollist;
 	GtkWidget    *materiallist;
 	GtkWidget    *worldbox;
@@ -92,14 +94,14 @@ tick(gpointer user_data)
 }
 
 void
-toollist_changed_cb(GtkComboBox *toollist,
-                    gpointer     user_data)
+update_materiallist(gpointer user_data)
 {
 	struct AppData *ad = user_data;
 	gint cur_tool;
 	int i;
+	int spwn_tmprtr;
 
-	cur_tool = gtk_combo_box_get_active(toollist);
+	cur_tool = gtk_combo_box_get_active((GtkComboBox*) ad->toollist);
 
 	switch (cur_tool) {
 	case TOOL_BRUSH:
@@ -113,9 +115,15 @@ toollist_changed_cb(GtkComboBox *toollist,
 
 	case TOOL_SPAWNER:
 		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
-		for (i = 0; i < MAT_COUNT; i += 1) {
+		gtk_combo_box_text_append_text((GtkComboBoxText*) ad->materiallist,
+		                       MAT_NAME[MAT_NONE]);
+		for (i = 1; i < MAT_COUNT; i += 1) {
+			spwn_tmprtr = atof(gtk_entry_get_text((GtkEntry*) ad->spawnertemperature));
+			if (MS_STATIC == mat_thermo_to_state(i, spwn_tmprtr))
+				continue;
+
 			gtk_combo_box_text_append_text((GtkComboBoxText*) ad->materiallist,
-				                       MAT_NAME[i]);
+			                               MAT_NAME[i]);
 		}
 		gtk_combo_box_set_active((GtkComboBox*) ad->materiallist, 0);
 		break;
@@ -130,10 +138,28 @@ toollist_changed_cb(GtkComboBox *toollist,
 	}
 }
 
+void
+spawnertemperature_changed_cb(void     *dummy,
+                              gpointer  user_data)
+{
+	(void) dummy;
+
+	update_materiallist(user_data);
+}
+
+void
+toollist_changed_cb(void     *dummy,
+                    gpointer  user_data)
+{
+	(void) dummy;
+
+	update_materiallist(user_data);
+}
+
 gboolean
-worldbox_draw_cb(GtkWidget *worldbox,
-                 cairo_t   *cr,
-                 gpointer   user_data)
+worldbox_draw_cb(void     *dummy,
+                 cairo_t  *cr,
+                 gpointer  user_data)
 {
 	struct AppData *ad = user_data;
 	struct Rgba glowc;
@@ -141,6 +167,8 @@ worldbox_draw_cb(GtkWidget *worldbox,
 	float r, g, b, a;
 	GtkAllocation worldbox_rect;
 	int x, y;
+
+	(void) dummy;
 
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
@@ -245,10 +273,15 @@ main(int argc,
 	}
 
 	ad.win = get_widget(builder, "main");
+	ad.spawnertemperature = get_widget(builder, "spawnertemperature");
 	ad.toollist = get_widget(builder, "toollist");
 	ad.materiallist = get_widget(builder, "materiallist");
 	ad.worldbox = get_widget(builder, "worldbox");
 
+	g_signal_connect((GObject*) ad.spawnertemperature,
+	                 "changed",
+	                 (GCallback) spawnertemperature_changed_cb,
+	                 &ad);
 	g_signal_connect((GObject*) ad.toollist,
 	                 "changed",
 	                 (GCallback) toollist_changed_cb,
@@ -272,7 +305,7 @@ main(int argc,
 	}
 
 	gtk_combo_box_set_active((GtkComboBox*) ad.toollist, TOOL_BRUSH);
-	toollist_changed_cb((GtkComboBox*) ad.toollist, &ad);
+	update_materiallist(&ad);
 
 	ad.world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
 	set_worldbox_size(ad.worldbox,

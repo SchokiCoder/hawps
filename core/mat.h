@@ -44,4 +44,8 @@ static const float MAT_G[]               = {0,         217,      237,       150,
 static const float MAT_B[]               = {0,         86,       237,       255,       200,       255,       255,        255,              65};
 static const float MAT_A[]               = {0,         255,      128,       205,       255,       100,       100,        100,              150};
 
+enum MatState
+mat_thermo_to_state(const enum Mat mat,
+                    const float thermo);
+
 #endif /* _MAT_H */
