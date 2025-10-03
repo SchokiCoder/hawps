@@ -10,20 +10,29 @@
 
 #include "embedded_glade.h"
 
+#define BUFSIZE 128
+
 #define BRUSH_RADIUS   2
+
+#define STD_TEMPERATURE    293.15
+#define STD_WORLD_SIM_RATE 24
+
+#define MAX_WORLD_SIM_RATE (STD_WORLD_SIM_RATE * 2)
+#define MIN_WORLD_SIM_RATE 0
+
+#define WORLD_SCALE    10
+#define WORLD_W        40
+#define WORLD_H        30
+
 #define SPAWNER_R      255
 #define SPAWNER_G      0
 #define SPAWNER_B      255
 #define SPAWNER_A      128
-#define TEMPERATURE    293.15
+
 #define TOOL_HOVER_R   175
 #define TOOL_HOVER_G   255
 #define TOOL_HOVER_B   175
 #define TOOL_HOVER_A   SPAWNER_A
-#define WORLD_SIM_RATE 24
-#define WORLD_SCALE    10
-#define WORLD_W        40
-#define WORLD_H        30
 
 struct AppData {
 	int           active;
@@ -34,7 +43,9 @@ struct AppData {
 	GdkSeat      *seat;
 	GdkDevice    *pointer;
 	GtkWidget    *win;
+	GtkWidget    *simspeed;
 	GtkWidget    *spawnertemperature;
+	GtkWidget    *temperature;
 	GtkWidget    *toollist;
 	GtkWidget    *materiallist;
 	GtkWidget    *worldbox;
@@ -74,7 +85,7 @@ tick(gpointer user_data)
 
 	while (1) {
 		now = g_timer_elapsed(timer, NULL);
-		if (now - lasttick > 1.0 / WORLD_SIM_RATE) {
+		if (now - lasttick > 1.0 / STD_WORLD_SIM_RATE) {
 			lasttick = now;
 
 			g_mutex_lock(&ad->mutex);
@@ -82,7 +93,7 @@ tick(gpointer user_data)
 				break;
 			}
 
-			world_update(&ad->world, TEMPERATURE);
+			world_update(&ad->world, STD_TEMPERATURE);
 			world_sim(&ad->world);
 			g_mutex_unlock(&ad->mutex);
 
@@ -245,6 +256,7 @@ main(int argc,
 {
 	struct AppData  ad;
 	GtkBuilder     *builder;
+	char            buf[BUFSIZE];
 	long unsigned   i;
 	GThread        *worldloop;
 	struct World    world;
@@ -273,7 +285,9 @@ main(int argc,
 	}
 
 	ad.win = get_widget(builder, "main");
+	ad.simspeed = get_widget(builder, "simspeed");
 	ad.spawnertemperature = get_widget(builder, "spawnertemperature");
+	ad.temperature = get_widget(builder, "temperature");
 	ad.toollist = get_widget(builder, "toollist");
 	ad.materiallist = get_widget(builder, "materiallist");
 	ad.worldbox = get_widget(builder, "worldbox");
@@ -306,8 +320,16 @@ main(int argc,
 
 	gtk_combo_box_set_active((GtkComboBox*) ad.toollist, TOOL_BRUSH);
 	update_materiallist(&ad);
+	gtk_range_set_range((GtkRange*) ad.simspeed,
+	                    MIN_WORLD_SIM_RATE,
+	                    MAX_WORLD_SIM_RATE);
+	gtk_range_set_value((GtkRange*) ad.simspeed, STD_WORLD_SIM_RATE);
+	snprintf(buf, BUFSIZE, "%f", STD_TEMPERATURE);
+	gtk_entry_set_text((GtkEntry*) ad.spawnertemperature, buf);
+	snprintf(buf, BUFSIZE, "%f", STD_TEMPERATURE);
+	gtk_entry_set_text((GtkEntry*) ad.temperature, buf);
 
-	ad.world = world_new(WORLD_W, WORLD_H, TEMPERATURE);
+	ad.world = world_new(WORLD_W, WORLD_H, STD_TEMPERATURE);
 	set_worldbox_size(ad.worldbox,
 	                  WORLD_W * WORLD_SCALE,
 	                  WORLD_H * WORLD_SCALE);

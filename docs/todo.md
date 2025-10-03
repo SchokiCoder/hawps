@@ -64,7 +64,8 @@ Change play, pause, and thermoview buttons into switches.
 Change speed up/down buttons into a single slider.
 This simplifies programming and use.
 
-- [ ] add default temperatures being loaded into the entries
+- [x] add default values being loaded into the widgets
+- [ ] add toolsize change (add mousewheel signal to worldbox)
 - [ ] add click event of worldbox
 - [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons
