@@ -58,8 +58,13 @@ Therefore it needs to go again.
 - [x] add content of tool- and materiallist
 - [x] add materiallist entries update, based on selected tool
 - [x] add materiallist entries update for spawner, based on temperature
-- [ ] change thermoview button into a GtkSwitch
-- [ ] change speed up/down buttons into a speedslider (0 to 60 per second)
+
+- [x] change simulation ui
+Change play, pause, and thermoview buttons into switches.
+Change speed up/down buttons into a single slider.
+This simplifies programming and use.
+
+- [ ] add default temperatures being loaded into the entries
 - [ ] add click event of worldbox
 - [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons
