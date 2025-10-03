@@ -65,13 +65,15 @@ Change speed up/down buttons into a single slider.
 This simplifies programming and use.
 
 - [x] add default values being loaded into the widgets
-- [ ] add toolsize change (add mousewheel signal to worldbox)
+- [x] add tool radius change upon scroll
+- [ ] is the tool size draw one tile too small?
 - [ ] add click event of worldbox
 - [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] add world scale slider
 - [ ] hook up menubar
+- [ ] save selected mat of each tool
 
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners

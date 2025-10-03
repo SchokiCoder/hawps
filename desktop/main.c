@@ -12,7 +12,9 @@
 
 #define BUFSIZE 128
 
-#define BRUSH_RADIUS   2
+#define STD_BRUSH_RADIUS   2
+#define STD_ERASER_RADIUS  5
+#define STD_THERMO_RADIUS  STD_BRUSH_RADIUS
 
 #define STD_TEMPERATURE    293.15
 #define STD_WORLD_SIM_RATE 24
@@ -36,6 +38,10 @@
 
 struct AppData {
 	int           active;
+	enum Tool     cur_tool;
+	int           brush_radius;
+	int           eraser_radius;
+	int           thermo_radius;
 	struct World  world;
 	GMutex        mutex;
 
@@ -108,13 +114,10 @@ void
 update_materiallist(gpointer user_data)
 {
 	struct AppData *ad = user_data;
-	gint cur_tool;
 	int i;
 	int spwn_tmprtr;
 
-	cur_tool = gtk_combo_box_get_active((GtkComboBox*) ad->toollist);
-
-	switch (cur_tool) {
+	switch (ad->cur_tool) {
 	case TOOL_BRUSH:
 		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
 		for (i = 1; i < MAT_COUNT; i += 1) {
@@ -146,7 +149,74 @@ update_materiallist(gpointer user_data)
 	case TOOL_COOLER:
 		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
 		break;
+
+	default:
+		break;
 	}
+}
+
+/* Additionally, there are known bugs in GTK3
+ * where the delta_x and delta_y fields in the GdkEventScroll structure
+ * are consistently zero,
+ * rendering them unusable for determining scroll direction.
+ * This issue has persisted even in newer GTK versions, including GTK4,
+ * making it impossible to reliably detect scroll events using these fields.
+ * As a workaround, developers have been advised to use
+ * the GDK_SCROLL_UP and GDK_SCROLL_DOWN event types
+ * instead of relying on the delta values
+ * - Leo (Brave Search AI)
+ *
+ * I am filled with tremendous amounts of piss...
+ * BUT WAIT, THERE IS MORE!
+ * Apparently https://docs.gtk.org/gtk3/signal.Widget.scroll-event.html
+ * lists the event parameter as type GdkEventScroll.
+ * This is putrid garbage trash, as it is actually a pointer of that.
+ * If you try to follow the documentation, you're fucked.
+ * PLUS none of the deltas will work,
+ * if you haven't added GDK_SMOOTH_SCROLL_MASK, while the docs say
+ * that you just need GDK_SCROLL_MASK.
+ */
+gboolean
+worldbox_scroll_event_cb(GtkWidget      *dummy,
+                         GdkEventScroll *event,
+                         gpointer        user_data)
+{
+	struct AppData *ad = user_data;
+	int delta = 0;
+
+	(void) dummy;
+
+	delta = (int) event->delta_y * -1;
+
+	switch (ad->cur_tool) {
+	case TOOL_BRUSH:
+		ad->brush_radius += delta;
+		if (ad->brush_radius < 0)
+			ad->brush_radius = 0;
+		break;
+
+	case TOOL_SPAWNER:
+		break;
+
+	case TOOL_ERASER:
+		ad->eraser_radius += delta;
+		if (ad->eraser_radius < 0)
+			ad->eraser_radius = 0;
+		break;
+
+	case TOOL_HEATER:
+		/* fallthrough */
+	case TOOL_COOLER:
+		ad->thermo_radius += delta;
+		if (ad->thermo_radius < 0)
+			ad->thermo_radius = 0;
+		break;
+
+	default:
+		break;
+	}
+
+	return 1;
 }
 
 void
@@ -159,10 +229,12 @@ spawnertemperature_changed_cb(void     *dummy,
 }
 
 void
-toollist_changed_cb(void     *dummy,
-                    gpointer  user_data)
+toollist_changed_cb(GtkComboBox *toollist,
+                    gpointer     user_data)
 {
-	(void) dummy;
+	struct AppData *ad = user_data;
+
+	ad->cur_tool = gtk_combo_box_get_active(toollist);
 
 	update_materiallist(user_data);
 }
@@ -173,13 +245,37 @@ worldbox_draw_cb(void     *dummy,
                  gpointer  user_data)
 {
 	struct AppData *ad = user_data;
-	struct Rgba glowc;
-	gint mx, my;
-	float r, g, b, a;
-	GtkAllocation worldbox_rect;
-	int x, y;
+	struct Rgba     glowc;
+	gint            mx, my;
+	float           r, g, b, a;
+	int             tool_radius = 0;
+	GtkAllocation   worldbox_rect;
+	int             x, y;
 
 	(void) dummy;
+
+	switch (ad->cur_tool) {
+	case TOOL_BRUSH:
+		tool_radius = ad->brush_radius;
+		break;
+
+	case TOOL_SPAWNER:
+		tool_radius = 0;
+		break;
+
+	case TOOL_ERASER:
+		tool_radius = ad->eraser_radius;
+		break;
+
+	case TOOL_HEATER:
+		/* fallthrough */
+	case TOOL_COOLER:
+		tool_radius = ad->thermo_radius;
+		break;
+
+	default:
+		break;
+	}
 
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
@@ -227,10 +323,10 @@ worldbox_draw_cb(void     *dummy,
 	a = color_int8_to_float(TOOL_HOVER_A);
 	cairo_set_source_rgba(cr, r, g, b, a);
 	cairo_rectangle(cr,
-	                mx - worldbox_rect.x - (BRUSH_RADIUS * WORLD_SCALE / 2),
-	                my - worldbox_rect.y - (BRUSH_RADIUS * WORLD_SCALE / 2),
-	                BRUSH_RADIUS * WORLD_SCALE,
-	                BRUSH_RADIUS * WORLD_SCALE);
+	                mx - worldbox_rect.x - (tool_radius * WORLD_SCALE / 2),
+	                my - worldbox_rect.y - (tool_radius * WORLD_SCALE / 2),
+	                tool_radius * WORLD_SCALE,
+	                tool_radius * WORLD_SCALE);
 	cairo_fill(cr);
 
 	return 0;
@@ -292,6 +388,9 @@ main(int argc,
 	ad.materiallist = get_widget(builder, "materiallist");
 	ad.worldbox = get_widget(builder, "worldbox");
 
+	gtk_widget_add_events(ad.worldbox,
+	                      GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
+
 	g_signal_connect((GObject*) ad.spawnertemperature,
 	                 "changed",
 	                 (GCallback) spawnertemperature_changed_cb,
@@ -308,9 +407,16 @@ main(int argc,
 	                 "draw",
 	                 (GCallback) worldbox_draw_cb,
 	                 &ad);
+	g_signal_connect((GObject*) ad.worldbox,
+	                 "scroll-event",
+	                 (GCallback) worldbox_scroll_event_cb,
+	                 &ad);
 	worldloop = g_thread_new("worldloop", (GThreadFunc) tick, &ad);
 
 	ad.active = 1;
+	ad.brush_radius = STD_BRUSH_RADIUS;
+	ad.eraser_radius = STD_ERASER_RADIUS;
+	ad.thermo_radius = STD_THERMO_RADIUS;
 	g_mutex_init(&ad.mutex);
 
 	for (i = 0; i < TOOL_COUNT; i += 1) {
