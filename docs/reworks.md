@@ -25,6 +25,91 @@ Drawing the world will need a new dependency.
 Using C, I can cut gogtk and whatever will be needed for that.
 You were good, son, real good, maybe even the best.
 
+## Unlike GTK (Moving to tkinter now)
+
+> Additionally, there are known bugs in GTK3
+> where the delta_x and delta_y fields in the GdkEventScroll structure
+> are consistently zero,
+> rendering them unusable for determining scroll direction.
+> This issue has persisted even in newer GTK versions, including GTK4,
+> making it impossible to reliably detect scroll events using these fields.
+> As a workaround, developers have been advised to use
+> the GDK_SCROLL_UP and GDK_SCROLL_DOWN event types
+> instead of relying on the delta values
+Leo (Brave Search AI)  
+
+BUT WAIT, THERE IS MORE!
+Apparently <https://docs.gtk.org/gtk3/signal.Widget.scroll-event.html>
+lists the event parameter as type `GdkEventScroll`.
+This is putrid trash, as it is actually a pointer of that.
+If you try to follow the documentation, **you're fucked**.
+PLUS none of the deltas will work,
+if you haven't added `GDK_SMOOTH_SCROLL_MASK`,
+while the docs say that you just need `GDK_SCROLL_MASK`.
+
+Accessing ComboBox in scroll event randomly did not work.  
+Thats why AppData.cur_tool got added actually.  
+
+I am filled with tremendous amounts of piss...
+Now I will try Python and tkinter.
+Compared to C/GTK there is **no loss of type safety**,
+because GTK, impressively, fucked that up too.
+In order to be OOP, it's just a huge mess of pointers,
+which you have to cast to other types of pointers.
+This practice is also known as "deleting all type safety".
+"But muh inheritance nyeeeeh!"
+If you want to eat crayons- I mean have inheritance, just use C++.
+
+I considered Go and Fyne, but mnemonics seem to not exist there,
+and it had some performance issues.
+By readjusting a slider, the thread would 100% and lag out.
+That on a rather good CPU is no good sign.
+It would eat a multitude of RAM compared to tkinter,
+which is also true for GTK 3.
+
+With Tkinter I will have to do more homework,
+but I prefer that over bugs that never get fixed,
+weird ass, forced OOP shoehorning,
+and simply just GTK's general abusiveness with developers.
+I was already wary of that fact before, but figured that since GTK 3 is still
+"maintained" (on paper as it turns out),
+I could just wait for GTK 3 to be dropped by GNOME,
+and then freeload off the inevitable fork of GTK 3, right?
+Cinnamon, XFCE, MATE, etc will surely not switch GTK 4... right?
+The future of these desktops is foggy, and I can't depend on fortune.
+
+Also Glade seemed neat...  
+GNOME doesn't even pretend that it's maintained.
+This would be fine, if it didn't crash every two seconds.
+
+Hawps can be added to the list of
+<https://en.wikipedia.org/wiki/GTK#Criticism>.
+
+## No to python and tkinter, just cut out the middle-man (raw TCL)
+
+Python and tkinter have some weird stuff.  
+I `app.bind_all("<Alt-f>", lambda e: mnemonic_f(filemenu))`,
+which just `filemenu.post()`.  
+In English, upon hitting Alt and F, open the filemenu of the menubar.
+This doesn't work:
+`TypeError: Menu.post() missing 2 required positional arguments: 'x' and 'y'`
+Ok, so there is some data related error. I didn't pass something correctly?  
+No. I merely bound it to "<Alt-f>" instead of "<Alt-F>".  
+The event **does fire**, but it just doesn't work? Why?  
+Technically this just differs in that now I would need to press Alt + Shift + F,
+but for some reason Shift is not needed.  
+It seems as if Alt uppercases all keypresses in this stack!  
+"<Alt-f>" works with Alt + Shift + F while, "<Alt-F>" works with Alt + F.  
+I could accept if the event merely would not reach the callback, but it does,
+just without the needed data.  
+
+Since I left GTK to avoid such jank, the decision is consistent.  
+Thing is, in TCL this doed not happen at all,
+**and** I don't even need to manually bind the mnemonics for the menubar :)  
+
+There is also a minor nuisance with command as a param vs. binding,
+where once can use the lambda and the other not.  
+
 # 4th rework
 
 Ah shit here we go again...  
