@@ -36,6 +36,7 @@ You were good, son, real good, maybe even the best.
 > As a workaround, developers have been advised to use
 > the GDK_SCROLL_UP and GDK_SCROLL_DOWN event types
 > instead of relying on the delta values
+
 Leo (Brave Search AI)  
 
 BUT WAIT, THERE IS MORE!
@@ -90,25 +91,43 @@ Hawps can be added to the list of
 Python and tkinter have some weird stuff.  
 I `app.bind_all("<Alt-f>", lambda e: mnemonic_f(filemenu))`,
 which just `filemenu.post()`.  
-In English, upon hitting Alt and F, open the filemenu of the menubar.
+In English, upon hitting Alt and F, open the filemenu of the menubar.  
 This doesn't work:
 `TypeError: Menu.post() missing 2 required positional arguments: 'x' and 'y'`
 Ok, so there is some data related error. I didn't pass something correctly?  
-No. I merely bound it to "<Alt-f>" instead of "<Alt-F>".  
+No. I merely bound it to `<Alt-f>` instead of `<Alt-F>`.  
 The event **does fire**, but it just doesn't work? Why?  
 Technically this just differs in that now I would need to press Alt + Shift + F,
 but for some reason Shift is not needed.  
 It seems as if Alt uppercases all keypresses in this stack!  
-"<Alt-f>" works with Alt + Shift + F while, "<Alt-F>" works with Alt + F.  
+`<Alt-f>` works with Alt + Shift + F while, `<Alt-F>` works with Alt + F.  
 I could accept if the event merely would not reach the callback, but it does,
 just without the needed data.  
 
 Since I left GTK to avoid such jank, the decision is consistent.  
-Thing is, in TCL this doed not happen at all,
+Thing is, in TCL this does not happen at all,
 **and** I don't even need to manually bind the mnemonics for the menubar :)  
 
 There is also a minor nuisance with command as a param vs. binding,
-where once can use the lambda and the other not.  
+where one can use the lambda and the other not.  
+
+One more thing.  
+Why is everything Python having such a hard time with documentation?  
+It is nigh unusable because of that.  
+
+## ~~Anguish~~ Acceptance
+
+~~AAAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRRRGHGHHGGGGGHHHHHH~~
+I have come to accept that nothing is perfect,
+and everybody makes mistakes. Toolkits are no exception to that.
+~~I HATE-~~ I have forgiven GTK3, and welcome it back into my arms.  
+What about tcl/tk? Well it had no easy way of... putting pixels on a canvas.
+There where hacks and togl, but none of them worked, or made me happy.  
+Togl may also not work on Mac, which I can't test. So that is worrying.
+~~I HAVE SPENT DaYS! I am no longer MADE FROM PISS! **I AM NUCLEAR FUSION POWERED DEATH!**~~
+Also, apparently no one over in tcl-land ever considers the end of X11.
+Once distros don't ship anything for XWayland, say bye bye to your tk apps.
+Xorg is also not getting any less bugs with time.
 
 # 4th rework
 

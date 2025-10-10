@@ -33,29 +33,39 @@ but if a switch to a different toolkit is desired,
 this should still be used as reference then.
 
 - [x] add desktop client base
+- [x] add proper window close
+
+- [x] rewrite desktop in C
+Why C again? See docs/reworks.md.
+
+- [x] rewrite core and extra in C
+Why C again? See docs/reworks.md.
+
+- [x] change signals being connected using glade handlers, not manually
+
+- [x] add basic world draw to desktop client
+This also undid glade handlers.
+`gtk_builder_connect_signals` doesn't pass custom data, which I need for draw,
+AND overrides all custom connections, which I did for draw.
+Therefore it needs to go again.
+
+- [x] add world_free and use it
+
+- [x] add world simulation loop
+- [x] add glowcolor draw to desktop
+- [x] add brush hover draw
+
+- [x] add content of tool- and materiallist
+- [x] add materiallist entries update, based on selected tool
+- [x] add materiallist entries update for spawner, based on temperature
 
 - [x] change simulation ui
 Change play, pause, and thermoview buttons into switches.
 Change speed up/down buttons into a single slider.
 This simplifies programming and use.
 
-- [x] replace gtk client implementation with tk
-This also renames the package to reflect the backend rather than the target.
-Also remove cross_platform to clean up.
-Removing cross_platform is done because it's obsolete.
-With core and extra being in C now, it would need more CGO,
-taking performance hits. That, and I don't want to bind that.
-
-- [ ] add basic world draw to desktop client
-- [ ] add world simulation loop and drawing
-- [ ] add glowcolor draw to desktop
-- [ ] add brush hover draw
-- [ ] add content of tool- and materiallist
-- [ ] add materiallist entries update, based on selected tool
-- [ ] add materiallist entries update for spawner, based on temperature
-- [ ] add default values being loaded into the widgets
-- [ ] add tool radius change upon scroll
-
+- [x] add default values being loaded into the widgets
+- [x] add tool radius change upon scroll
 - [ ] is the tool size draw one tile too small?
 - [ ] add click event of worldbox
 - [ ] add snap-to-tile option for the brushes

@@ -2,54 +2,6 @@
  * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <tcl.h>
-#include <tk.h>
-
-#define BUFSIZE 64
-
-#define NUM_TCL_ARGS 2
-
-int
-init_proc(Tcl_Interp *interp)
-{
-	int ret;
-
-	ret = Tcl_Init(interp);
-	if (TCL_ERROR == ret) {
-		fprintf(stderr, "Could not initialize Tcl\n");
-		return ret;
-	}
-
-	ret = Tk_Init(interp);
-	if (TCL_ERROR == ret) {
-		fprintf(stderr, "Could not initialize TK\n");
-		return ret;
-	}
-
-	return ret;
-}
-
-int
-main(int argc,
-     char **argv)
-{
-	int i;
-	char *tcl_args[NUM_TCL_ARGS];
-
-	for (i = 0; i < NUM_TCL_ARGS; i += 1) {
-		tcl_args[i] = malloc(sizeof(char) * BUFSIZE);
-	}
-
-	strcpy(tcl_args[0], "APP_NAME");
-	strcpy(tcl_args[1], "./client_tk/main.tcl");
-
-	Tcl_Main(NUM_TCL_ARGS, tcl_args, init_proc);
-}
-
-
-/*
 #include <core/core.h>
 #include <extra/extra.h>
 #include <gtk-3.0/gtk/gtk.h>
@@ -190,11 +142,11 @@ update_materiallist(gpointer user_data)
 		gtk_combo_box_set_active((GtkComboBox*) ad->materiallist, 0);
 		break;
 
-	case TOOL_ERASER:*/
+	case TOOL_ERASER:
 		/* fallthrough */
-/*	case TOOL_HEATER:*/
+	case TOOL_HEATER:
 		/* fallthrough */
-/*	case TOOL_COOLER:
+	case TOOL_COOLER:
 		gtk_combo_box_text_remove_all((GtkComboBoxText*) ad->materiallist);
 		break;
 
@@ -202,7 +154,7 @@ update_materiallist(gpointer user_data)
 		break;
 	}
 }
-*/
+
 /* Additionally, there are known bugs in GTK3
  * where the delta_x and delta_y fields in the GdkEventScroll structure
  * are consistently zero,
@@ -224,7 +176,7 @@ update_materiallist(gpointer user_data)
  * if you haven't added GDK_SMOOTH_SCROLL_MASK, while the docs say
  * that you just need GDK_SCROLL_MASK.
  */
-/*gboolean
+gboolean
 worldbox_scroll_event_cb(GtkWidget      *dummy,
                          GdkEventScroll *event,
                          gpointer        user_data)
@@ -252,9 +204,9 @@ worldbox_scroll_event_cb(GtkWidget      *dummy,
 			ad->eraser_radius = 0;
 		break;
 
-	case TOOL_HEATER:*/
+	case TOOL_HEATER:
 		/* fallthrough */
-/*	case TOOL_COOLER:
+	case TOOL_COOLER:
 		ad->thermo_radius += delta;
 		if (ad->thermo_radius < 0)
 			ad->thermo_radius = 0;
@@ -315,9 +267,9 @@ worldbox_draw_cb(void     *dummy,
 		tool_radius = ad->eraser_radius;
 		break;
 
-	case TOOL_HEATER:*/
+	case TOOL_HEATER:
 		/* fallthrough */
-/*	case TOOL_COOLER:
+	case TOOL_COOLER:
 		tool_radius = ad->thermo_radius;
 		break;
 
@@ -506,4 +458,3 @@ main(int argc,
 
 	return 0;
 }
-*/
