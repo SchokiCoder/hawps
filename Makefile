@@ -9,7 +9,7 @@ REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
 
 CC     :=cc
-CFLAGS :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined
+CFLAGS :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
 
 .PHONY: all build clean run
 

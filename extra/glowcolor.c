@@ -66,6 +66,16 @@ glowcolor_init(void)
 	float aStep;
 	struct RgbaFloat temp_glow_colors[GLOW_RANGE];
 
+	glow_colors[0].r = 0;
+	glow_colors[0].g = 0;
+	glow_colors[0].b = 0;
+	glow_colors[0].a = 0;
+
+	temp_glow_colors[0].r = 0.0;
+	temp_glow_colors[0].g = 0.0;
+	temp_glow_colors[0].b = 0.0;
+	temp_glow_colors[0].a = 0.0;
+
 	a = 1;
 	b = 0;
 	for (; a < GLOW_RANGE; a++) {
