@@ -66,9 +66,14 @@ This simplifies programming and use.
 
 - [x] add default values being loaded into the widgets
 - [x] add tool radius change upon scroll
-- [ ] is the tool size draw one tile too small?
+- [x] add tool zone draw snapping to tiles
+Also fix the tool hover size.
+
+- [ ] hide mousecursor when hovering on worldbox
+- [ ] tick must return gpointer as GThreadFunc
+- [ ] maybe generally removing casts for function types?
+just match the interface
 - [ ] add click event of worldbox
-- [ ] add snap-to-tile option for the brushes
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] add world scale slider

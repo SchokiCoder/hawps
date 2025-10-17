@@ -249,6 +249,7 @@ worldbox_draw_cb(void     *dummy,
 	gint            mx, my;
 	float           r, g, b, a;
 	int             tool_radius = 0;
+	int             tooldraw_size, tooldraw_x, tooldraw_y;
 	GtkAllocation   worldbox_rect;
 	int             x, y;
 
@@ -317,16 +318,18 @@ worldbox_draw_cb(void     *dummy,
 	                               NULL);
 	gtk_widget_get_allocation(ad->worldbox, &worldbox_rect);
 
+	tooldraw_size = (tool_radius * 2 + 1) * WORLD_SCALE;
+	tooldraw_x = ((mx - worldbox_rect.x) / WORLD_SCALE * WORLD_SCALE) -
+	             (tool_radius * WORLD_SCALE);
+	tooldraw_y = ((my - worldbox_rect.y) / WORLD_SCALE * WORLD_SCALE) -
+	             (tool_radius * WORLD_SCALE);
+
 	r = color_int8_to_float(TOOL_HOVER_R);
 	g = color_int8_to_float(TOOL_HOVER_G);
 	b = color_int8_to_float(TOOL_HOVER_B);
 	a = color_int8_to_float(TOOL_HOVER_A);
 	cairo_set_source_rgba(cr, r, g, b, a);
-	cairo_rectangle(cr,
-	                mx - worldbox_rect.x - (tool_radius * WORLD_SCALE / 2),
-	                my - worldbox_rect.y - (tool_radius * WORLD_SCALE / 2),
-	                tool_radius * WORLD_SCALE,
-	                tool_radius * WORLD_SCALE);
+	cairo_rectangle(cr, tooldraw_x, tooldraw_y, tooldraw_size, tooldraw_size);
 	cairo_fill(cr);
 
 	return 0;
