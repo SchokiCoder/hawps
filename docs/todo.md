@@ -69,10 +69,13 @@ This simplifies programming and use.
 - [x] add tool zone draw snapping to tiles
 Also fix the tool hover size.
 
-- [ ] hide mousecursor when hovering on worldbox
-- [ ] tick must return gpointer as GThreadFunc
-- [ ] maybe generally removing casts for function types?
-just match the interface
+- [x] hide mousecursor when hovering on worldbox
+This also causes toolhover to only draw when actually hovering on the worldbox.
+This relies on the deprecated Gdk function `gdk_cursor_new`.
+I heard GTK just eventually breaks deprecated stuff when convenient (for them),
+but hopefully this doesn't apply to Gdk too.
+- [ ] fix type warning about tick return value
+
 - [ ] add click event of worldbox
 - [ ] hook up buttons
 - [ ] use statusbar

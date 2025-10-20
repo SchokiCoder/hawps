@@ -245,11 +245,13 @@ worldbox_draw_cb(void     *dummy,
                  gpointer  user_data)
 {
 	struct AppData *ad = user_data;
+	GdkCursor      *cursor = NULL;
 	struct Rgba     glowc;
 	gint            mx, my;
 	float           r, g, b, a;
 	int             tool_radius = 0;
 	int             tooldraw_size, tooldraw_x, tooldraw_y;
+	GdkWindow      *win;
 	GtkAllocation   worldbox_rect;
 	int             x, y;
 
@@ -311,26 +313,32 @@ worldbox_draw_cb(void     *dummy,
 		}
 	}
 
-	gdk_window_get_device_position(gtk_widget_get_window(ad->win),
-	                               ad->pointer,
-	                               &mx,
-	                               &my,
-	                               NULL);
+	win = gtk_widget_get_window(ad->win);
+	gdk_window_get_device_position(win, ad->pointer, &mx, &my, NULL);
 	gtk_widget_get_allocation(ad->worldbox, &worldbox_rect);
 
-	tooldraw_size = (tool_radius * 2 + 1) * WORLD_SCALE;
-	tooldraw_x = ((mx - worldbox_rect.x) / WORLD_SCALE * WORLD_SCALE) -
-	             (tool_radius * WORLD_SCALE);
-	tooldraw_y = ((my - worldbox_rect.y) / WORLD_SCALE * WORLD_SCALE) -
-	             (tool_radius * WORLD_SCALE);
+	if (mx > worldbox_rect.x &&
+	    mx < worldbox_rect.x + worldbox_rect.width &&
+	    my > worldbox_rect.y &&
+	    my < worldbox_rect.y + worldbox_rect.height) {
+		cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
 
-	r = color_int8_to_float(TOOL_HOVER_R);
-	g = color_int8_to_float(TOOL_HOVER_G);
-	b = color_int8_to_float(TOOL_HOVER_B);
-	a = color_int8_to_float(TOOL_HOVER_A);
-	cairo_set_source_rgba(cr, r, g, b, a);
-	cairo_rectangle(cr, tooldraw_x, tooldraw_y, tooldraw_size, tooldraw_size);
-	cairo_fill(cr);
+		tooldraw_size = (tool_radius * 2 + 1) * WORLD_SCALE;
+		tooldraw_x = ((mx - worldbox_rect.x) / WORLD_SCALE * WORLD_SCALE) -
+			     (tool_radius * WORLD_SCALE);
+		tooldraw_y = ((my - worldbox_rect.y) / WORLD_SCALE * WORLD_SCALE) -
+			     (tool_radius * WORLD_SCALE);
+
+		r = color_int8_to_float(TOOL_HOVER_R);
+		g = color_int8_to_float(TOOL_HOVER_G);
+		b = color_int8_to_float(TOOL_HOVER_B);
+		a = color_int8_to_float(TOOL_HOVER_A);
+		cairo_set_source_rgba(cr, r, g, b, a);
+		cairo_rectangle(cr, tooldraw_x, tooldraw_y, tooldraw_size, tooldraw_size);
+		cairo_fill(cr);
+	}
+
+	gdk_window_set_cursor(win, cursor);
 
 	return 0;
 }
