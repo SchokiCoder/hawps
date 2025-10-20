@@ -74,7 +74,7 @@ This also causes toolhover to only draw when actually hovering on the worldbox.
 This relies on the deprecated Gdk function `gdk_cursor_new`.
 I heard GTK just eventually breaks deprecated stuff when convenient (for them),
 but hopefully this doesn't apply to Gdk too.
-- [ ] fix type warning about tick return value
+- [x] fix type warning about tick return value
 
 - [ ] add click event of worldbox
 - [ ] hook up buttons

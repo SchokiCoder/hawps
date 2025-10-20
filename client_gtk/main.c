@@ -79,7 +79,7 @@ set_worldbox_size(GtkWidget *worldbox,
 	g_value_unset(&gh);
 }
 
-void
+gpointer
 tick(gpointer user_data)
 {
 	struct AppData *ad = user_data;
@@ -108,6 +108,8 @@ tick(gpointer user_data)
 	}
 
 	g_thread_exit(NULL);
+
+	return NULL;
 }
 
 void
@@ -422,7 +424,7 @@ main(int argc,
 	                 "scroll-event",
 	                 (GCallback) worldbox_scroll_event_cb,
 	                 &ad);
-	worldloop = g_thread_new("worldloop", (GThreadFunc) tick, &ad);
+	worldloop = g_thread_new("worldloop", tick, &ad);
 
 	ad.active = 1;
 	ad.brush_radius = STD_BRUSH_RADIUS;
