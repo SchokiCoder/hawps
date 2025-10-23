@@ -19,6 +19,8 @@
 #define STD_TEMPERATURE    293.15
 #define STD_WORLD_SIM_RATE 24
 
+#define THERMOTOOL_DELTA 1
+
 #define MAX_WORLD_SIM_RATE (STD_WORLD_SIM_RATE * 2)
 #define MIN_WORLD_SIM_RATE 0
 
@@ -38,6 +40,7 @@
 
 struct AppData {
 	int           active;
+	enum Mat      cur_mat;
 	enum Tool     cur_tool;
 	int           brush_radius;
 	int           eraser_radius;
@@ -79,17 +82,90 @@ set_worldbox_size(GtkWidget *worldbox,
 	g_value_unset(&gh);
 }
 
-gpointer
-tick(gpointer user_data)
+void
+get_mouse_world_coords(struct AppData *ad,
+                       float          *x,
+                       float          *y)
 {
-	struct AppData *ad = user_data;
-	float           lasttick = 0.0;
-	float           now = 0.0;
-	GTimer         *timer;
+	int            mx = 0;
+	int            my = 0;
+	GdkWindow     *win;
+	GtkAllocation  worldbox_rect;
+
+	win = gtk_widget_get_window(ad->win);
+	gdk_window_get_device_position(win, ad->pointer, &mx, &my, NULL);
+	gtk_widget_get_allocation(ad->worldbox, &worldbox_rect);
+
+	*x = ((float) (mx - worldbox_rect.x) / (float) WORLD_SCALE);
+	*y = ((float) (my - worldbox_rect.y) / (float) WORLD_SCALE);
+}
+
+gpointer
+worldloop(gpointer user_data)
+{
+	struct AppData  *ad = user_data;
+	GdkModifierType  mouse_state;
+	float            mx;
+	float            my;
+	float            lasttick = 0.0;
+	float            now = 0.0;
+	GTimer          *timer;
+	int              x;
+	int              y;
 
 	timer = g_timer_new();
 
 	while (1) {
+		get_mouse_world_coords(ad, &mx, &my);
+		x = mx;
+		y = my;
+		gdk_device_get_state(ad->pointer,
+		                     gtk_widget_get_window(ad->win),
+		                     NULL,
+		                     &mouse_state);
+
+		if (mouse_state & GDK_BUTTON1_MASK &&
+		    x >= 0 &&
+		    y >= 0 &&
+		    x < WORLD_W &&
+		    y < WORLD_H) {
+			switch (ad->cur_tool) {
+			case TOOL_BRUSH:
+				world_use_brush(&ad->world,
+						ad->cur_mat,
+						STD_TEMPERATURE,
+						x, y,
+						ad->brush_radius);
+				break;
+
+			case TOOL_SPAWNER:
+				ad->world.spawner[x][y] = 1;
+				ad->world.spawner_mat[x][y] = ad->cur_mat;
+				break;
+
+			case TOOL_ERASER:
+				world_use_eraser(&ad->world, x, y, ad->eraser_radius);
+				break;
+
+			case TOOL_COOLER:
+				world_use_cooler(&ad->world,
+						 THERMOTOOL_DELTA,
+						 x, y,
+						 ad->thermo_radius);
+				break;
+
+			case TOOL_HEATER:
+				world_use_heater(&ad->world,
+						 THERMOTOOL_DELTA,
+						 x, y,
+						 ad->thermo_radius);
+				break;
+
+			default:
+				break;
+			}
+		}
+
 		now = g_timer_elapsed(timer, NULL);
 		if (now - lasttick > 1.0 / STD_WORLD_SIM_RATE) {
 			lasttick = now;
@@ -231,6 +307,15 @@ spawnertemperature_changed_cb(void     *dummy,
 }
 
 void
+materiallist_changed_cb(GtkComboBox *materiallist,
+                        gpointer     user_data)
+{
+	struct AppData *ad = user_data;
+
+	ad->cur_mat = gtk_combo_box_get_active(materiallist);
+}
+
+void
 toollist_changed_cb(GtkComboBox *toollist,
                     gpointer     user_data)
 {
@@ -249,12 +334,11 @@ worldbox_draw_cb(void     *dummy,
 	struct AppData *ad = user_data;
 	GdkCursor      *cursor = NULL;
 	struct Rgba     glowc;
-	gint            mx, my;
+	float           mx, my;
 	float           r, g, b, a;
 	int             tool_radius = 0;
 	int             tooldraw_size, tooldraw_x, tooldraw_y;
 	GdkWindow      *win;
-	GtkAllocation   worldbox_rect;
 	int             x, y;
 
 	(void) dummy;
@@ -316,20 +400,17 @@ worldbox_draw_cb(void     *dummy,
 	}
 
 	win = gtk_widget_get_window(ad->win);
-	gdk_window_get_device_position(win, ad->pointer, &mx, &my, NULL);
-	gtk_widget_get_allocation(ad->worldbox, &worldbox_rect);
+	get_mouse_world_coords(ad, &mx, &my);
 
-	if (mx > worldbox_rect.x &&
-	    mx < worldbox_rect.x + worldbox_rect.width &&
-	    my > worldbox_rect.y &&
-	    my < worldbox_rect.y + worldbox_rect.height) {
+	if (mx >= 0.0 &&
+	    mx < (float) WORLD_W &&
+	    my >= 0.0 &&
+	    my < (float) WORLD_H) {
 		cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
 
 		tooldraw_size = (tool_radius * 2 + 1) * WORLD_SCALE;
-		tooldraw_x = ((mx - worldbox_rect.x) / WORLD_SCALE * WORLD_SCALE) -
-			     (tool_radius * WORLD_SCALE);
-		tooldraw_y = ((my - worldbox_rect.y) / WORLD_SCALE * WORLD_SCALE) -
-			     (tool_radius * WORLD_SCALE);
+		tooldraw_x = ((int) mx * WORLD_SCALE) - (tool_radius * WORLD_SCALE);
+		tooldraw_y = ((int) my * WORLD_SCALE) - (tool_radius * WORLD_SCALE);
 
 		r = color_int8_to_float(TOOL_HOVER_R);
 		g = color_int8_to_float(TOOL_HOVER_G);
@@ -367,7 +448,7 @@ main(int argc,
 	GtkBuilder     *builder;
 	char            buf[BUFSIZE];
 	long unsigned   i;
-	GThread        *worldloop;
+	GThread        *worldloop_thread;
 	struct World    world;
 
 	gtk_init(&argc, &argv);
@@ -404,6 +485,10 @@ main(int argc,
 	gtk_widget_add_events(ad.worldbox,
 	                      GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
 
+	g_signal_connect((GObject*) ad.materiallist,
+	                 "changed",
+	                 (GCallback) materiallist_changed_cb,
+	                 &ad);
 	g_signal_connect((GObject*) ad.spawnertemperature,
 	                 "changed",
 	                 (GCallback) spawnertemperature_changed_cb,
@@ -424,7 +509,7 @@ main(int argc,
 	                 "scroll-event",
 	                 (GCallback) worldbox_scroll_event_cb,
 	                 &ad);
-	worldloop = g_thread_new("worldloop", tick, &ad);
+	worldloop_thread = g_thread_new("worldloop", worldloop, &ad);
 
 	ad.active = 1;
 	ad.brush_radius = STD_BRUSH_RADIUS;
@@ -466,7 +551,7 @@ main(int argc,
 	ad.active = 0;
 	g_mutex_unlock(&ad.mutex);
 
-	g_thread_join(worldloop);
+	g_thread_join(worldloop_thread);
 	world_free(&ad.world);
 
 	return 0;

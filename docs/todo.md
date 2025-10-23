@@ -76,7 +76,8 @@ I heard GTK just eventually breaks deprecated stuff when convenient (for them),
 but hopefully this doesn't apply to Gdk too.
 - [x] fix type warning about tick return value
 
-- [ ] add click event of worldbox
+- [x] add mouse click handling for worldbox
+- [ ] refine all that shit yo
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] add world scale slider
