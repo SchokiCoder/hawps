@@ -307,12 +307,27 @@ spawnertemperature_changed_cb(void     *dummy,
 }
 
 void
-materiallist_changed_cb(GtkComboBox *materiallist,
-                        gpointer     user_data)
+materiallist_changed_cb(GtkComboBoxText *materiallist,
+                        gpointer         user_data)
 {
 	struct AppData *ad = user_data;
+	enum Mat i;
+	gchar *sel_text;
 
-	ad->cur_mat = gtk_combo_box_get_active(materiallist);
+	sel_text = gtk_combo_box_text_get_active_text(materiallist);
+
+	if (NULL == sel_text) {
+		ad->cur_mat = MAT_NONE;
+		return;
+	}
+
+	for (i = 0; i < MAT_COUNT; i += 1) {
+		if (strcmp(MAT_NAME[i], sel_text) == 0) {
+			ad->cur_mat = i;
+		}
+	}
+
+	g_free(sel_text);
 }
 
 void
@@ -537,12 +552,6 @@ main(int argc,
 	set_worldbox_size(ad.worldbox,
 	                  WORLD_W * WORLD_SCALE,
 	                  WORLD_H * WORLD_SCALE);
-
-	ad.world.dots[WORLD_W / 2 - 1][0] = MAT_SAND;
-	ad.world.dots  [WORLD_W / 2][0] = MAT_SAND;
-	ad.world.thermo[WORLD_W / 2][0] = 7000;
-	ad.world.dots[WORLD_W / 2 + 1][1] = MAT_WATER;
-	ad.world.dots[WORLD_W / 2][1] = MAT_WATER;
 
 	gtk_widget_show_all(ad.win);
 	gtk_main();

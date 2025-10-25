@@ -77,7 +77,11 @@ but hopefully this doesn't apply to Gdk too.
 - [x] fix type warning about tick return value
 
 - [x] add mouse click handling for worldbox
-- [ ] refine all that shit yo
+- [x] fix retrieval of selected mat
+- [ ] thermotools work too fast
+- [ ] add spawner drawing
+- [ ] port colorchange upon aggregate state change
+
 - [ ] hook up buttons
 - [ ] use statusbar
 - [ ] add world scale slider
