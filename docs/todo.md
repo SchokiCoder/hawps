@@ -16,6 +16,8 @@ But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
 
+- [ ] add make rule for optimized release binary
+
 # Material Me Update
 
 - [x] add some missing phonies to Makefile
@@ -80,8 +82,21 @@ but hopefully this doesn't apply to Gdk too.
 - [x] fix retrieval of selected mat
 - [x] add thermotool rate
 This fixes them working as fast as your CPU allows.
-- [ ] add spawner drawing
+- [x] add spawner drawing
 - [ ] port colorchange upon aggregate state change
+
+- [ ] fix win err
+```
+(hawps_gtk:5093): Gdk-WARNING **: 12:53:45.076: The program 'hawps_gtk' received an X Window System error.
+This probably reflects a bug in the program.
+The error was 'BadWindow (invalid Window parameter)'.
+  (Details: serial 565481 error_code 3 request_code 131 (XInputExtension) minor_code 40)
+  (Note to programmers: normally, X errors are reported asynchronously;
+   that is, you will receive the error a while after causing it.
+   To debug your program, run it with the GDK_SYNCHRONIZE environment
+   variable to change this behavior. You can then get a meaningful
+   backtrace from your debugger if you break on the gdk_x_error() function.)
+```
 
 - [ ] hook up buttons
 - [ ] use statusbar
