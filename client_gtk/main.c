@@ -19,7 +19,7 @@
 #define STD_TEMPERATURE    293.15
 #define STD_WORLD_SIM_RATE 24
 
-#define THERMOTOOL_DELTA 1
+#define THERMOTOOL_RATE 100
 
 #define MAX_WORLD_SIM_RATE (STD_WORLD_SIM_RATE * 2)
 #define MIN_WORLD_SIM_RATE 0
@@ -108,6 +108,7 @@ worldloop(gpointer user_data)
 	float            mx;
 	float            my;
 	float            lasttick = 0.0;
+	float            lastthermo = 0.0;
 	float            now = 0.0;
 	GTimer          *timer;
 	int              x;
@@ -116,6 +117,8 @@ worldloop(gpointer user_data)
 	timer = g_timer_new();
 
 	while (1) {
+		now = g_timer_elapsed(timer, NULL);
+
 		get_mouse_world_coords(ad, &mx, &my);
 		x = mx;
 		y = my;
@@ -148,17 +151,23 @@ worldloop(gpointer user_data)
 				break;
 
 			case TOOL_COOLER:
-				world_use_cooler(&ad->world,
-						 THERMOTOOL_DELTA,
-						 x, y,
-						 ad->thermo_radius);
+				if (1.0 / THERMOTOOL_RATE < now - lastthermo) {
+					world_use_cooler(&ad->world,
+							 1.0,
+							 x, y,
+							 ad->thermo_radius);
+					lastthermo = now;
+				}
 				break;
 
 			case TOOL_HEATER:
-				world_use_heater(&ad->world,
-						 THERMOTOOL_DELTA,
-						 x, y,
-						 ad->thermo_radius);
+				if (1.0 / THERMOTOOL_RATE < now - lastthermo) {
+					world_use_heater(&ad->world,
+							 1.0,
+							 x, y,
+							 ad->thermo_radius);
+					lastthermo = now;
+				}
 				break;
 
 			default:
@@ -166,7 +175,6 @@ worldloop(gpointer user_data)
 			}
 		}
 
-		now = g_timer_elapsed(timer, NULL);
 		if (now - lasttick > 1.0 / STD_WORLD_SIM_RATE) {
 			lasttick = now;
 

@@ -78,7 +78,8 @@ but hopefully this doesn't apply to Gdk too.
 
 - [x] add mouse click handling for worldbox
 - [x] fix retrieval of selected mat
-- [ ] thermotools work too fast
+- [x] add thermotool rate
+This fixes them working as fast as your CPU allows.
 - [ ] add spawner drawing
 - [ ] port colorchange upon aggregate state change
 
