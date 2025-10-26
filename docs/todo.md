@@ -83,7 +83,7 @@ but hopefully this doesn't apply to Gdk too.
 - [x] add thermotool rate
 This fixes them working as fast as your CPU allows.
 - [x] add spawner drawing
-- [ ] port colorchange upon aggregate state change
+- [x] add colorchange upon aggregate state change
 
 - [ ] fix win err
 ```

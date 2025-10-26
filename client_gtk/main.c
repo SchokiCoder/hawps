@@ -10,6 +10,8 @@
 
 #include "embedded_glade.h"
 
+#define ALPHA_LOSS_PER_STATE 0.2
+
 #define BUFSIZE 128
 
 #define STD_BRUSH_RADIUS   2
@@ -355,6 +357,7 @@ worldbox_draw_cb(void     *dummy,
                  gpointer  user_data)
 {
 	struct AppData *ad = user_data;
+	float           dot_alpha;
 	GdkCursor      *cursor = NULL;
 	struct Rgba     glowc;
 	float           mx, my;
@@ -389,13 +392,35 @@ worldbox_draw_cb(void     *dummy,
 		break;
 	}
 
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+	cairo_rectangle(cr,
+		        0,
+		        0,
+		        WORLD_W * WORLD_SCALE,
+		        WORLD_H * WORLD_SCALE);
+	cairo_fill(cr);
+
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
 			/* draw dot */
+			switch (ad->world.states[x][y]) {
+			case MS_LIQUID:
+				dot_alpha = 1.0 - ALPHA_LOSS_PER_STATE;
+				break;
+
+			case MS_GAS:
+				dot_alpha = 1.0 - (ALPHA_LOSS_PER_STATE * 2.0);
+				break;
+
+			default:
+				dot_alpha = 1.0;
+				break;
+			}
+
 			r = color_int8_to_float(MAT_R[ad->world.dots[x][y]]);
 			g = color_int8_to_float(MAT_G[ad->world.dots[x][y]]);
 			b = color_int8_to_float(MAT_B[ad->world.dots[x][y]]);
-			a = 1.0;
+			a = dot_alpha;
 			cairo_set_source_rgba(cr, r, g, b, a);
 			cairo_rectangle(cr,
 			                x * WORLD_SCALE,
@@ -403,6 +428,22 @@ worldbox_draw_cb(void     *dummy,
 			                WORLD_SCALE,
 			                WORLD_SCALE);
 			cairo_fill(cr);
+
+			/* if actual dot given, draw dot glow */
+			if (MAT_NONE != ad->world.dots[x][y]) {
+				glowc = thermo_to_color(ad->world.thermo[x][y]);
+				r = color_int8_to_float(glowc.r);
+				g = color_int8_to_float(glowc.g);
+				b = color_int8_to_float(glowc.b);
+				a = color_int8_to_float(glowc.a);
+				cairo_set_source_rgba(cr, r, g, b, a);
+				cairo_rectangle(cr,
+					        x * WORLD_SCALE,
+					        y * WORLD_SCALE,
+					        WORLD_SCALE,
+					        WORLD_SCALE);
+				cairo_fill(cr);
+			}
 
 			/* if given, draw spawner */
 			if (ad->world.spawner[x][y]) {
@@ -418,24 +459,6 @@ worldbox_draw_cb(void     *dummy,
 					        WORLD_SCALE);
 				cairo_fill(cr);
 			}
-
-			/* if actual dot given, draw dot glow */
-			if (MAT_NONE == ad->world.dots[x][y]) {
-				continue;
-			}
-
-			glowc = thermo_to_color(ad->world.thermo[x][y]);
-			r = color_int8_to_float(glowc.r);
-			g = color_int8_to_float(glowc.g);
-			b = color_int8_to_float(glowc.b);
-			a = color_int8_to_float(glowc.a);
-			cairo_set_source_rgba(cr, r, g, b, a);
-			cairo_rectangle(cr,
-			                x * WORLD_SCALE,
-			                y * WORLD_SCALE,
-			                WORLD_SCALE,
-			                WORLD_SCALE);
-			cairo_fill(cr);
 		}
 	}
 
