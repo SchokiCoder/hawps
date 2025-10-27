@@ -48,6 +48,7 @@ struct AppData {
 	int           eraser_radius;
 	int           thermo_radius;
 	struct World  world;
+	GThread      *worldloop_thread;
 	GMutex        mutex;
 
 	GdkDisplay   *display;
@@ -61,6 +62,22 @@ struct AppData {
 	GtkWidget    *materiallist;
 	GtkWidget    *worldbox;
 };
+
+void
+mainwin_destroy_cb(GtkWidget      *dummy,
+                   gpointer        user_data)
+{
+	struct AppData *ad = user_data;
+
+	(void) dummy;
+
+	g_mutex_lock(&ad->mutex);
+	ad->active = 0;
+	g_mutex_unlock(&ad->mutex);
+
+	g_thread_join(ad->worldloop_thread);
+	gtk_main_quit();
+}
 
 void
 set_worldbox_size(GtkWidget *worldbox,
@@ -118,7 +135,7 @@ worldloop(gpointer user_data)
 
 	timer = g_timer_new();
 
-	while (1) {
+	while (ad->active) {
 		now = g_timer_elapsed(timer, NULL);
 
 		get_mouse_world_coords(ad, &mx, &my);
@@ -181,10 +198,6 @@ worldloop(gpointer user_data)
 			lasttick = now;
 
 			g_mutex_lock(&ad->mutex);
-			if (!ad->active) {
-				break;
-			}
-
 			world_update(&ad->world, STD_TEMPERATURE);
 			world_sim(&ad->world);
 			g_mutex_unlock(&ad->mutex);
@@ -511,7 +524,6 @@ main(int argc,
 	GtkBuilder     *builder;
 	char            buf[BUFSIZE];
 	long unsigned   i;
-	GThread        *worldloop_thread;
 	struct World    world;
 
 	gtk_init(&argc, &argv);
@@ -537,7 +549,7 @@ main(int argc,
 		exit(1);
 	}
 
-	ad.win = get_widget(builder, "main");
+	ad.win = get_widget(builder, "mainwin");
 	ad.simspeed = get_widget(builder, "simspeed");
 	ad.spawnertemperature = get_widget(builder, "spawnertemperature");
 	ad.temperature = get_widget(builder, "temperature");
@@ -562,8 +574,8 @@ main(int argc,
 	                 &ad);
 	g_signal_connect((GObject*) ad.win,
 	                 "destroy",
-	                 gtk_main_quit,
-	                 NULL);
+	                 (GCallback) mainwin_destroy_cb,
+	                 &ad);
 	g_signal_connect((GObject*) ad.worldbox,
 	                 "draw",
 	                 (GCallback) worldbox_draw_cb,
@@ -572,7 +584,6 @@ main(int argc,
 	                 "scroll-event",
 	                 (GCallback) worldbox_scroll_event_cb,
 	                 &ad);
-	worldloop_thread = g_thread_new("worldloop", worldloop, &ad);
 
 	ad.active = 1;
 	ad.brush_radius = STD_BRUSH_RADIUS;
@@ -602,13 +613,9 @@ main(int argc,
 	                  WORLD_H * WORLD_SCALE);
 
 	gtk_widget_show_all(ad.win);
+	ad.worldloop_thread = g_thread_new("worldloop", worldloop, &ad);
 	gtk_main();
 
-	g_mutex_lock(&ad.mutex);
-	ad.active = 0;
-	g_mutex_unlock(&ad.mutex);
-
-	g_thread_join(worldloop_thread);
 	world_free(&ad.world);
 
 	return 0;

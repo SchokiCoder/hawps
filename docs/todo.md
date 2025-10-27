@@ -85,18 +85,10 @@ This fixes them working as fast as your CPU allows.
 - [x] add spawner drawing
 - [x] add colorchange upon aggregate state change
 
-- [ ] fix win err
-```
-(hawps_gtk:5093): Gdk-WARNING **: 12:53:45.076: The program 'hawps_gtk' received an X Window System error.
-This probably reflects a bug in the program.
-The error was 'BadWindow (invalid Window parameter)'.
-  (Details: serial 565481 error_code 3 request_code 131 (XInputExtension) minor_code 40)
-  (Note to programmers: normally, X errors are reported asynchronously;
-   that is, you will receive the error a while after causing it.
-   To debug your program, run it with the GDK_SYNCHRONIZE environment
-   variable to change this behavior. You can then get a meaningful
-   backtrace from your debugger if you break on the gdk_x_error() function.)
-```
+- [x] add proper worldloop thread termination
+Also fix mistimed thread creation.
+This fixes many Gdk-Critical messages happening at start,
+regarding an invalid window being used.
 
 - [ ] hook up buttons
 - [ ] use statusbar
