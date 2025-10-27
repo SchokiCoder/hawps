@@ -90,9 +90,13 @@ Also fix mistimed thread creation.
 This fixes many Gdk-Critical messages happening at start,
 regarding an invalid window being used.
 
-- [ ] hook up buttons
-- [ ] use statusbar
+- [x] add callback for thermoview switch and thermal vision
+- [ ] add callback for pause switch
+- [ ] add callback for sim speed slider
 - [ ] add world scale slider
+This time with a callback included :)
+
+- [ ] use statusbar
 - [ ] hook up menubar
 - [ ] save selected mat of each tool
 

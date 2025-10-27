@@ -10,6 +10,8 @@
 
 #include "embedded_glade.h"
 
+#define CELSIUS_TO_KELVIN 273.15
+
 #define ALPHA_LOSS_PER_STATE 0.2
 
 #define BUFSIZE 128
@@ -18,10 +20,12 @@
 #define STD_ERASER_RADIUS  5
 #define STD_THERMO_RADIUS  STD_BRUSH_RADIUS
 
-#define STD_TEMPERATURE    293.15
+#define STD_TEMPERATURE    (20.0 + CELSIUS_TO_KELVIN)
 #define STD_WORLD_SIM_RATE 24
 
 #define THERMOTOOL_RATE 100
+
+#define THERMALVISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
 
 #define MAX_WORLD_SIM_RATE (STD_WORLD_SIM_RATE * 2)
 #define MIN_WORLD_SIM_RATE 0
@@ -29,6 +33,13 @@
 #define WORLD_SCALE    10
 #define WORLD_W        40
 #define WORLD_H        30
+
+#define WORLD_BG_R 0.0
+#define WORLD_BG_G 0.0
+#define WORLD_BG_B 0.0
+#define WORLD_THBG_R 0.4
+#define WORLD_THBG_G 0.0
+#define WORLD_THBG_B 0.0
 
 #define SPAWNER_R      255
 #define SPAWNER_G      0
@@ -47,8 +58,12 @@ struct AppData {
 	int           brush_radius;
 	int           eraser_radius;
 	int           thermo_radius;
+	int           thermalvision;
 	struct World  world;
 	GThread      *worldloop_thread;
+	float         world_bg_r;
+	float         world_bg_g;
+	float         world_bg_b;
 	GMutex        mutex;
 
 	GdkDisplay   *display;
@@ -256,6 +271,30 @@ update_materiallist(gpointer user_data)
 	}
 }
 
+gboolean
+thermalvision_state_set_cb(GtkSwitch *dummy,
+                           gboolean   state,
+                           gpointer   user_data)
+{
+	struct AppData *ad = user_data;
+
+	(void) dummy;
+
+	if (state) {
+		ad->world_bg_r = WORLD_THBG_R;
+		ad->world_bg_g = WORLD_THBG_G;
+		ad->world_bg_b = WORLD_THBG_B;
+	} else {
+		ad->world_bg_r = WORLD_BG_R;
+		ad->world_bg_g = WORLD_BG_G;
+		ad->world_bg_b = WORLD_BG_B;
+	}
+
+	ad->thermalvision = state;
+
+	return 0;
+}
+
 /* Additionally, there are known bugs in GTK3
  * where the delta_x and delta_y fields in the GdkEventScroll structure
  * are consistently zero,
@@ -364,15 +403,101 @@ toollist_changed_cb(GtkComboBox *toollist,
 	update_materiallist(user_data);
 }
 
+void
+draw_nrmldot(cairo_t  *cr,
+             struct World *w,
+             const int x,
+             const int y)
+{
+	struct Rgba glowc;
+	float r, g, b, a;
+
+	r = color_int8_to_float(MAT_R[w->dots[x][y]]);
+	g = color_int8_to_float(MAT_G[w->dots[x][y]]);
+	b = color_int8_to_float(MAT_B[w->dots[x][y]]);
+
+	switch (w->states[x][y]) {
+	case MS_LIQUID:
+		a = 1.0 - ALPHA_LOSS_PER_STATE;
+		break;
+
+	case MS_GAS:
+		a = 1.0 - (ALPHA_LOSS_PER_STATE * 2.0);
+		break;
+
+	default:
+		a = 1.0;
+		break;
+	}
+
+	cairo_set_source_rgba(cr, r, g, b, a);
+	cairo_rectangle(cr,
+	                x * WORLD_SCALE,
+	                y * WORLD_SCALE,
+	                WORLD_SCALE,
+	                WORLD_SCALE);
+	cairo_fill(cr);
+
+	if (MAT_NONE != w->dots[x][y]) {
+		glowc = thermo_to_color(w->thermo[x][y]);
+		r = color_int8_to_float(glowc.r);
+		g = color_int8_to_float(glowc.g);
+		b = color_int8_to_float(glowc.b);
+		a = color_int8_to_float(glowc.a);
+		cairo_set_source_rgba(cr, r, g, b, a);
+		cairo_rectangle(cr,
+			        x * WORLD_SCALE,
+			        y * WORLD_SCALE,
+			        WORLD_SCALE,
+			        WORLD_SCALE);
+		cairo_fill(cr);
+	}
+}
+
+void
+draw_thdot(cairo_t  *cr,
+           struct World *w,
+           const int x,
+           const int y)
+{
+	float r, g, b, a;
+	float vis_t;
+
+	if (MAT_NONE != w->dots[x][y]) {
+		vis_t = w->thermo[x][y];
+		if (vis_t > THERMALVISION_MIN_T + 255) {
+			vis_t = THERMALVISION_MIN_T + 255;
+		} else if (vis_t < THERMALVISION_MIN_T) {
+			vis_t = THERMALVISION_MIN_T;
+		}
+
+		vis_t = color_int8_to_float(vis_t - THERMALVISION_MIN_T);
+
+		r = vis_t;
+		g = vis_t;
+		b = vis_t;
+		a = 1.0;
+	} else {
+		a = 0.0;
+	}
+
+	cairo_set_source_rgba(cr, r, g, b, a);
+	cairo_rectangle(cr,
+	                x * WORLD_SCALE,
+	                y * WORLD_SCALE,
+	                WORLD_SCALE,
+	                WORLD_SCALE);
+	cairo_fill(cr);
+}
+
 gboolean
 worldbox_draw_cb(void     *dummy,
                  cairo_t  *cr,
                  gpointer  user_data)
 {
 	struct AppData *ad = user_data;
-	float           dot_alpha;
 	GdkCursor      *cursor = NULL;
-	struct Rgba     glowc;
+	void (*draw_dot_func) (cairo_t*, struct World*, const int, const int);
 	float           mx, my;
 	float           r, g, b, a;
 	int             tool_radius = 0;
@@ -405,7 +530,9 @@ worldbox_draw_cb(void     *dummy,
 		break;
 	}
 
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+	cairo_set_source_rgba(cr,
+	                      ad->world_bg_r, ad->world_bg_g, ad->world_bg_b,
+	                      1.0);
 	cairo_rectangle(cr,
 		        0,
 		        0,
@@ -413,52 +540,15 @@ worldbox_draw_cb(void     *dummy,
 		        WORLD_H * WORLD_SCALE);
 	cairo_fill(cr);
 
+	if (ad->thermalvision)
+		draw_dot_func = draw_thdot;
+	else
+		draw_dot_func = draw_nrmldot;
+
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
-			/* draw dot */
-			switch (ad->world.states[x][y]) {
-			case MS_LIQUID:
-				dot_alpha = 1.0 - ALPHA_LOSS_PER_STATE;
-				break;
+			draw_dot_func(cr, &ad->world, x, y);
 
-			case MS_GAS:
-				dot_alpha = 1.0 - (ALPHA_LOSS_PER_STATE * 2.0);
-				break;
-
-			default:
-				dot_alpha = 1.0;
-				break;
-			}
-
-			r = color_int8_to_float(MAT_R[ad->world.dots[x][y]]);
-			g = color_int8_to_float(MAT_G[ad->world.dots[x][y]]);
-			b = color_int8_to_float(MAT_B[ad->world.dots[x][y]]);
-			a = dot_alpha;
-			cairo_set_source_rgba(cr, r, g, b, a);
-			cairo_rectangle(cr,
-			                x * WORLD_SCALE,
-			                y * WORLD_SCALE,
-			                WORLD_SCALE,
-			                WORLD_SCALE);
-			cairo_fill(cr);
-
-			/* if actual dot given, draw dot glow */
-			if (MAT_NONE != ad->world.dots[x][y]) {
-				glowc = thermo_to_color(ad->world.thermo[x][y]);
-				r = color_int8_to_float(glowc.r);
-				g = color_int8_to_float(glowc.g);
-				b = color_int8_to_float(glowc.b);
-				a = color_int8_to_float(glowc.a);
-				cairo_set_source_rgba(cr, r, g, b, a);
-				cairo_rectangle(cr,
-					        x * WORLD_SCALE,
-					        y * WORLD_SCALE,
-					        WORLD_SCALE,
-					        WORLD_SCALE);
-				cairo_fill(cr);
-			}
-
-			/* if given, draw spawner */
 			if (ad->world.spawner[x][y]) {
 				r = color_int8_to_float(SPAWNER_R);
 				g = color_int8_to_float(SPAWNER_G);
@@ -524,6 +614,7 @@ main(int argc,
 	GtkBuilder     *builder;
 	char            buf[BUFSIZE];
 	long unsigned   i;
+	GtkWidget      *thermalvision;
 	struct World    world;
 
 	gtk_init(&argc, &argv);
@@ -553,6 +644,7 @@ main(int argc,
 	ad.simspeed = get_widget(builder, "simspeed");
 	ad.spawnertemperature = get_widget(builder, "spawnertemperature");
 	ad.temperature = get_widget(builder, "temperature");
+	thermalvision = get_widget(builder, "thermalvision");
 	ad.toollist = get_widget(builder, "toollist");
 	ad.materiallist = get_widget(builder, "materiallist");
 	ad.worldbox = get_widget(builder, "worldbox");
@@ -567,6 +659,10 @@ main(int argc,
 	g_signal_connect((GObject*) ad.spawnertemperature,
 	                 "changed",
 	                 (GCallback) spawnertemperature_changed_cb,
+	                 &ad);
+	g_signal_connect((GObject*) thermalvision,
+	                 "state-set",
+	                 (GCallback) thermalvision_state_set_cb,
 	                 &ad);
 	g_signal_connect((GObject*) ad.toollist,
 	                 "changed",
@@ -589,6 +685,10 @@ main(int argc,
 	ad.brush_radius = STD_BRUSH_RADIUS;
 	ad.eraser_radius = STD_ERASER_RADIUS;
 	ad.thermo_radius = STD_THERMO_RADIUS;
+	ad.thermalvision = 0;
+	ad.world_bg_r = WORLD_BG_R;
+	ad.world_bg_g = WORLD_BG_G;
+	ad.world_bg_b = WORLD_BG_B;
 	g_mutex_init(&ad.mutex);
 
 	for (i = 0; i < TOOL_COUNT; i += 1) {
