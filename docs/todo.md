@@ -91,7 +91,8 @@ This fixes many Gdk-Critical messages happening at start,
 regarding an invalid window being used.
 
 - [x] add callback for thermoview switch and thermal vision
-- [ ] add callback for pause switch
+- [x] add callback for pause switch
+Also minor var name fix: "win -> "mainwin".
 - [ ] add callback for sim speed slider
 - [ ] add world scale slider
 This time with a callback included :)

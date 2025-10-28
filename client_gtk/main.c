@@ -58,6 +58,7 @@ struct AppData {
 	int           brush_radius;
 	int           eraser_radius;
 	int           thermo_radius;
+	int           paused;
 	int           thermalvision;
 	struct World  world;
 	GThread      *worldloop_thread;
@@ -69,7 +70,7 @@ struct AppData {
 	GdkDisplay   *display;
 	GdkSeat      *seat;
 	GdkDevice    *pointer;
-	GtkWidget    *win;
+	GtkWidget    *mainwin;
 	GtkWidget    *simspeed;
 	GtkWidget    *spawnertemperature;
 	GtkWidget    *temperature;
@@ -126,7 +127,7 @@ get_mouse_world_coords(struct AppData *ad,
 	GdkWindow     *win;
 	GtkAllocation  worldbox_rect;
 
-	win = gtk_widget_get_window(ad->win);
+	win = gtk_widget_get_window(ad->mainwin);
 	gdk_window_get_device_position(win, ad->pointer, &mx, &my, NULL);
 	gtk_widget_get_allocation(ad->worldbox, &worldbox_rect);
 
@@ -157,7 +158,7 @@ worldloop(gpointer user_data)
 		x = mx;
 		y = my;
 		gdk_device_get_state(ad->pointer,
-		                     gtk_widget_get_window(ad->win),
+		                     gtk_widget_get_window(ad->mainwin),
 		                     NULL,
 		                     &mouse_state);
 
@@ -209,12 +210,14 @@ worldloop(gpointer user_data)
 			}
 		}
 
-		if (now - lasttick > 1.0 / STD_WORLD_SIM_RATE) {
+		if ((now - lasttick) > (1.0 / STD_WORLD_SIM_RATE)) {
 			lasttick = now;
 
 			g_mutex_lock(&ad->mutex);
 			world_update(&ad->world, STD_TEMPERATURE);
-			world_sim(&ad->world);
+			if (!ad->paused) {
+				world_sim(&ad->world);
+			}
 			g_mutex_unlock(&ad->mutex);
 
 			gtk_widget_queue_draw(ad->worldbox);
@@ -392,6 +395,20 @@ materiallist_changed_cb(GtkComboBoxText *materiallist,
 	g_free(sel_text);
 }
 
+gboolean
+simpaused_state_set_cb(GtkSwitch *dummy,
+                       gboolean   state,
+                       gpointer   user_data)
+{
+	struct AppData *ad = user_data;
+
+	(void) dummy;
+
+	ad->paused = state;
+
+	return 0;
+}
+
 void
 toollist_changed_cb(GtkComboBox *toollist,
                     gpointer     user_data)
@@ -565,7 +582,7 @@ worldbox_draw_cb(void     *dummy,
 		}
 	}
 
-	win = gtk_widget_get_window(ad->win);
+	win = gtk_widget_get_window(ad->mainwin);
 	get_mouse_world_coords(ad, &mx, &my);
 
 	if (mx >= 0.0 &&
@@ -614,6 +631,7 @@ main(int argc,
 	GtkBuilder     *builder;
 	char            buf[BUFSIZE];
 	long unsigned   i;
+	GtkWidget      *simpaused;
 	GtkWidget      *thermalvision;
 	struct World    world;
 
@@ -640,10 +658,11 @@ main(int argc,
 		exit(1);
 	}
 
-	ad.win = get_widget(builder, "mainwin");
+	ad.mainwin = get_widget(builder, "mainwin");
 	ad.simspeed = get_widget(builder, "simspeed");
 	ad.spawnertemperature = get_widget(builder, "spawnertemperature");
 	ad.temperature = get_widget(builder, "temperature");
+	simpaused = get_widget(builder, "simpaused");
 	thermalvision = get_widget(builder, "thermalvision");
 	ad.toollist = get_widget(builder, "toollist");
 	ad.materiallist = get_widget(builder, "materiallist");
@@ -660,6 +679,10 @@ main(int argc,
 	                 "changed",
 	                 (GCallback) spawnertemperature_changed_cb,
 	                 &ad);
+	g_signal_connect((GObject*) simpaused,
+	                 "state-set",
+	                 (GCallback) simpaused_state_set_cb,
+	                 &ad);
 	g_signal_connect((GObject*) thermalvision,
 	                 "state-set",
 	                 (GCallback) thermalvision_state_set_cb,
@@ -668,7 +691,7 @@ main(int argc,
 	                 "changed",
 	                 (GCallback) toollist_changed_cb,
 	                 &ad);
-	g_signal_connect((GObject*) ad.win,
+	g_signal_connect((GObject*) ad.mainwin,
 	                 "destroy",
 	                 (GCallback) mainwin_destroy_cb,
 	                 &ad);
@@ -685,6 +708,7 @@ main(int argc,
 	ad.brush_radius = STD_BRUSH_RADIUS;
 	ad.eraser_radius = STD_ERASER_RADIUS;
 	ad.thermo_radius = STD_THERMO_RADIUS;
+	ad.paused = 0;
 	ad.thermalvision = 0;
 	ad.world_bg_r = WORLD_BG_R;
 	ad.world_bg_g = WORLD_BG_G;
@@ -712,7 +736,7 @@ main(int argc,
 	                  WORLD_W * WORLD_SCALE,
 	                  WORLD_H * WORLD_SCALE);
 
-	gtk_widget_show_all(ad.win);
+	gtk_widget_show_all(ad.mainwin);
 	ad.worldloop_thread = g_thread_new("worldloop", worldloop, &ad);
 	gtk_main();
 
