@@ -55,6 +55,7 @@ struct AppData {
 	int           active;
 	enum Mat      cur_mat;
 	enum Tool     cur_tool;
+	int           sim_rate;
 	int           brush_radius;
 	int           eraser_radius;
 	int           thermo_radius;
@@ -71,7 +72,6 @@ struct AppData {
 	GdkSeat      *seat;
 	GdkDevice    *pointer;
 	GtkWidget    *mainwin;
-	GtkWidget    *simspeed;
 	GtkWidget    *spawnertemperature;
 	GtkWidget    *temperature;
 	GtkWidget    *toollist;
@@ -210,7 +210,7 @@ worldloop(gpointer user_data)
 			}
 		}
 
-		if ((now - lasttick) > (1.0 / STD_WORLD_SIM_RATE)) {
+		if ((now - lasttick) > (1.0 / ad->sim_rate)) {
 			lasttick = now;
 
 			g_mutex_lock(&ad->mutex);
@@ -360,6 +360,15 @@ worldbox_scroll_event_cb(GtkWidget      *dummy,
 	}
 
 	return 1;
+}
+
+void
+simspeed_value_changed_cb(GtkRange *simspeed,
+                          gpointer  user_data)
+{
+	struct AppData *ad = user_data;
+
+	ad->sim_rate = gtk_range_get_value(simspeed);
 }
 
 void
@@ -632,6 +641,7 @@ main(int argc,
 	char            buf[BUFSIZE];
 	long unsigned   i;
 	GtkWidget      *simpaused;
+	GtkWidget      *simspeed;
 	GtkWidget      *thermalvision;
 	struct World    world;
 
@@ -659,10 +669,10 @@ main(int argc,
 	}
 
 	ad.mainwin = get_widget(builder, "mainwin");
-	ad.simspeed = get_widget(builder, "simspeed");
 	ad.spawnertemperature = get_widget(builder, "spawnertemperature");
 	ad.temperature = get_widget(builder, "temperature");
 	simpaused = get_widget(builder, "simpaused");
+	simspeed = get_widget(builder, "simspeed");
 	thermalvision = get_widget(builder, "thermalvision");
 	ad.toollist = get_widget(builder, "toollist");
 	ad.materiallist = get_widget(builder, "materiallist");
@@ -682,6 +692,10 @@ main(int argc,
 	g_signal_connect((GObject*) simpaused,
 	                 "state-set",
 	                 (GCallback) simpaused_state_set_cb,
+	                 &ad);
+	g_signal_connect((GObject*) simspeed,
+	                 "value-changed",
+	                 (GCallback) simspeed_value_changed_cb,
 	                 &ad);
 	g_signal_connect((GObject*) thermalvision,
 	                 "state-set",
@@ -705,6 +719,7 @@ main(int argc,
 	                 &ad);
 
 	ad.active = 1;
+	ad.sim_rate = STD_WORLD_SIM_RATE;
 	ad.brush_radius = STD_BRUSH_RADIUS;
 	ad.eraser_radius = STD_ERASER_RADIUS;
 	ad.thermo_radius = STD_THERMO_RADIUS;
@@ -722,10 +737,10 @@ main(int argc,
 
 	gtk_combo_box_set_active((GtkComboBox*) ad.toollist, TOOL_BRUSH);
 	update_materiallist(&ad);
-	gtk_range_set_range((GtkRange*) ad.simspeed,
+	gtk_range_set_range((GtkRange*) simspeed,
 	                    MIN_WORLD_SIM_RATE,
 	                    MAX_WORLD_SIM_RATE);
-	gtk_range_set_value((GtkRange*) ad.simspeed, STD_WORLD_SIM_RATE);
+	gtk_range_set_value((GtkRange*) simspeed, STD_WORLD_SIM_RATE);
 	snprintf(buf, BUFSIZE, "%f", STD_TEMPERATURE);
 	gtk_entry_set_text((GtkEntry*) ad.spawnertemperature, buf);
 	snprintf(buf, BUFSIZE, "%f", STD_TEMPERATURE);

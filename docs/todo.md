@@ -93,7 +93,9 @@ regarding an invalid window being used.
 - [x] add callback for thermoview switch and thermal vision
 - [x] add callback for pause switch
 Also minor var name fix: "win -> "mainwin".
-- [ ] add callback for sim speed slider
+- [x] add callback for sim speed slider
+- [ ] decouple worldbox update from sim speed
+This fixes the laggy appeaerance with low simspeed.
 - [ ] add world scale slider
 This time with a callback included :)
 
