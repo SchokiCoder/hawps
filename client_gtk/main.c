@@ -210,18 +210,19 @@ worldloop(gpointer user_data)
 			}
 		}
 
+		g_mutex_lock(&ad->mutex);
+		world_update(&ad->world, STD_TEMPERATURE);
+
 		if ((now - lasttick) > (1.0 / ad->sim_rate)) {
 			lasttick = now;
 
-			g_mutex_lock(&ad->mutex);
-			world_update(&ad->world, STD_TEMPERATURE);
 			if (!ad->paused) {
 				world_sim(&ad->world);
 			}
-			g_mutex_unlock(&ad->mutex);
-
-			gtk_widget_queue_draw(ad->worldbox);
 		}
+
+		g_mutex_unlock(&ad->mutex);
+		gtk_widget_queue_draw(ad->worldbox);
 	}
 
 	g_thread_exit(NULL);

@@ -94,8 +94,11 @@ regarding an invalid window being used.
 - [x] add callback for pause switch
 Also minor var name fix: "win -> "mainwin".
 - [x] add callback for sim speed slider
-- [ ] decouple worldbox update from sim speed
-This fixes the laggy appeaerance with low simspeed.
+- [x] decouple worldbox update from sim speed
+This fixes the laggy appearance with low simspeed.
+Oddly enough this simple change had no performance impact.
+Also added an important chapter in docs/reworks.md.
+
 - [ ] add world scale slider
 This time with a callback included :)
 

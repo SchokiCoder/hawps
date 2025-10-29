@@ -129,6 +129,57 @@ Also, apparently no one over in tcl-land ever considers the end of X11.
 Once distros don't ship anything for XWayland, say bye bye to your tk apps.
 Xorg is also not getting any less bugs with time.
 
+## Not rage. Something else.
+
+Bugs. I cannot use GTK.  
+Firstly it would randomly crash,
+hinting that `gtk_widget_queue_draw` function causes it.  
+For the decoupling of `world_update` and `world_sim`, without looking laggy,
+I moved `gtk_widget_queue_draw` outisde of that tickrate loop,
+meaning it would be used more often.  
+As such this crash would happen more often or faster?  
+So even without that change this crash is bound to happen eventually.  
+libsanitizer would mention varying **different** reasons for that crash.  
+A negative sized parameter of -32, and a double free. Maybe more even.  
+
+Secondly the disabling and reenabling of the comboboxen leads to some gridding
+issues. The actual widgets update properly after you hover with the mouse over
+it, but the labels wouldn't.  
+
+I can't be bothered to look into any of it.  
+You know the thing where you don't actually do your work,
+and instead just debug your tools?  
+This is GTK.  
+I simply cannot accept this waste of my time anymore.  
+I tried to put up with it once more, most likely due to the sunk-cost-fallacy,
+but I simply have no more patience for this.  
+If a toolkit doesn't have a feature and I'll have to the homework myself, fine.  
+I can deal with that.  
+If a toolkit that is so complex that not even debuggers, or sanitizers help you,
+and where features are simply broken exists, I want no part of it.  
+
+So what is that "something else," mentioned in the title?  
+I think it's loss and sadness.
+I have lost precious time that I'll never get back.
+Worse than that, I lost motivation for this project.
+As I write this, I can feel it.
+I know that I will have to port to another toolkit _again_.  
+Maybe I'll just go back to Ebiten...  
+Thinking of it, the only reason I left it was what again?
+Fonts being _probably_ a pain? I haven't even tried to deal with it.
+Maybe I just envisioned a better UI overall. One that would be hard with ebiten.  
+But you know what?  
+A consistently working UI with faults is better
+than a better but consistently crashing UI.  
+
+What happens now?  
+I will shut down my PC, go for a walk, drink a coffee,
+and just enjoy the sun for a bit.  
+Maybe I will look at <gioui.org>.
+It looks simple, and if it performs well, **and has mnemonics and keybinds**,
+I'll grudgingly pay with a port back to Go,
+but happily know that I escaped the madness of GTK.  
+
 # 4th rework
 
 Ah shit here we go again...  
