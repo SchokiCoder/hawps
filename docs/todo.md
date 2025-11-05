@@ -99,6 +99,9 @@ This fixes the laggy appearance with low simspeed.
 Oddly enough this simple change had no performance impact.
 Also added an important chapter in docs/reworks.md.
 
+- [ ] revert to ebiten but port libs
+- figure out what the next steps are for the UI
+
 - [ ] add world scale slider
 This time with a callback included :)
 

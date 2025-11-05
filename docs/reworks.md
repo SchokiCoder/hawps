@@ -1,4 +1,4 @@
-# 5th rework
+# An unreal rework
 
 Still Go, don't worry.  
 However... ebitengine, I am afraid, needs to go.  
@@ -179,6 +179,19 @@ Maybe I will look at <gioui.org>.
 It looks simple, and if it performs well, **and has mnemonics and keybinds**,
 I'll grudgingly pay with a port back to Go,
 but happily know that I escaped the madness of GTK.  
+
+## Tcl/Tk is the light
+
+It works!  
+The light shines through.  
+It shows this is not the savior I needed.  
+ebiten makes better use of the hardware.  
+Yes, the Go stuff is more performant than the C stuff.  
+Performance is critical here.  
+By the way, GTK is worse. Drive a stake through it.  
+So there is just one choice.  
+I have to leave it behind, even when it hurts my heart.  
+I shall build you an honest pyre.  
 
 # 4th rework
 

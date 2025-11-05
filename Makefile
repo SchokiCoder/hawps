@@ -13,22 +13,15 @@ CFLAGS :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=
 
 .PHONY: all build clean run
 
-all: $(APP_NAME)_gtk
+all: $(APP_NAME)_tk
 
 clean:
-	rm -f $(APP_NAME)_* client_gtk/embedded_glade.h
+	rm -f $(APP_NAME)_*
 
-run: clean $(APP_NAME)_gtk
-	./$(APP_NAME)_gtk
+run: clean $(APP_NAME)_tk
+	./$(APP_NAME)_tk
 
-$(APP_NAME)_gtk: client_gtk/embedded_glade.h client_gtk/* core/* extra/*
-	$(CC) $$(pkg-config --cflags gtk+-3.0) $(CFLAGS) -o $@ \
-		-I . \
-		client_gtk/*.c $$(pkg-config --libs gtk+-3.0) \
-		core/*.c extra/*.c
-
-client_gtk/embedded_glade.h: client_gtk/desktop.glade
-	cat $< > EMBEDDED_GLADE
-	printf "\0" >> EMBEDDED_GLADE
-	xxd -i EMBEDDED_GLADE > $@
-	rm -f EMBEDDED_GLADE
+$(APP_NAME)_tk: client_tk/* core/* extra/*
+	$(CC) $(CFLAGS) -o $@ -I. $$(pkg-config --cflags tcl tk) \
+		client_tk/*.c core/*.c extra/*.c \
+		$$(pkg-config --libs tcl tk)

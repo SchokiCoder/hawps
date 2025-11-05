@@ -3,6 +3,7 @@ desktop/embedded_glade.h
 hawps
 hawpsds
 hawps_*
+*.so
 *.o
 *.prof
 *.test

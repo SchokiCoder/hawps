@@ -8,7 +8,9 @@ I just want to have fun writing something dumb.
 
 # Build dependencies
 
-- `sudo apt install libgtk-3-dev`  
+## desktop
+
+- `sudo apt install {tcl,tk}-dev`  
 
 # Build
 
