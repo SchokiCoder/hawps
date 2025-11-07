@@ -10,6 +10,7 @@
 #include <time.h>
 #include <tk.h>
 
+#define PIXELSIZE 4
 #define R 0
 #define G 1
 #define B 2
@@ -17,12 +18,14 @@
 
 #define TCL_ARGC          2
 #define CELSIUS_TO_KELVIN 273.15
-#define PIXELSIZE         4
-
-#define SIM_RATE 24
-#define STD_TEMPERATURE    (20.0 + CELSIUS_TO_KELVIN)
 
 #define ALPHA_LOSS_PER_STATE 51
+
+/* simulate every nth tick (sim_rate = tick_rate / sim_subsample) */
+#define SIM_SUBSAMPLE 5
+#define TICK_RATE     120
+
+#define STD_TEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
 
 #define WORLD_SCALE 10
 #define WORLD_W     40
@@ -85,6 +88,7 @@ mainloop(ClientData data,
          int objc,
          Tcl_Obj *const objv[])
 {
+	float ticks_since_sim = 9001;
 	float last_tick = -9001.0;
 	float now;
 	int x, y;
@@ -127,15 +131,18 @@ mainloop(ClientData data,
 	// TODO add end conditon or break
 	while (1) {
 		now = (float) clock() / (float) CLOCKS_PER_SEC;
-		if ((now - last_tick) > (1.0 / SIM_RATE)) {
+		if ((now - last_tick) > (1.0 / TICK_RATE)) {
 			last_tick = now;
+			ticks_since_sim += 1;
+			if (ticks_since_sim >= SIM_SUBSAMPLE) {
+				ticks_since_sim = 0;
 
-			Tcl_DoWhenIdle(tick, interp);
+				Tcl_DoWhenIdle(tick, interp);
+			}
+
+			Tcl_DoOneEvent(TCL_ALL_EVENTS | TCL_DONT_WAIT);
 		}
-
-		Tcl_DoOneEvent(TCL_ALL_EVENTS | TCL_DONT_WAIT);
 	}
-
 
 	return TCL_OK;
 }
