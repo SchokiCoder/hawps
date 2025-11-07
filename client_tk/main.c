@@ -21,6 +21,8 @@
 #define SIM_RATE 24
 #define STD_TEMPERATURE    (20.0 + CELSIUS_TO_KELVIN)
 
+#define ALPHA_LOSS_PER_STATE 51
+
 #define WORLD_SCALE 10
 #define WORLD_W     40
 #define WORLD_H     30
@@ -147,8 +149,10 @@ tick(ClientData data)
 int
 world_draw(Tcl_Interp *interp)
 {
+	int a;
 	int x, y;
 
+	/* draw bg */
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
 			pixels[x][y][R] = 0;
@@ -158,7 +162,6 @@ world_draw(Tcl_Interp *interp)
 
 		}
 	}
-
 	Tk_PhotoPutZoomedBlock(interp, worldimg, &pixblock,
 	                       0, 0,
 	                       WORLD_W * WORLD_SCALE, WORLD_H * WORLD_SCALE,
@@ -166,15 +169,29 @@ world_draw(Tcl_Interp *interp)
 	                       1, 1,
 	                       TK_PHOTO_COMPOSITE_SET);
 
+	/* draw dots */
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
+			switch (world.states[x][y]) {
+			case MS_LIQUID:
+				a = 255 - ALPHA_LOSS_PER_STATE;
+				break;
+
+			case MS_GAS:
+				a = 255 - (ALPHA_LOSS_PER_STATE * 2);
+				break;
+
+			default:
+				a = 255;
+				break;
+			}
+
 			pixels[x][y][R] = MAT_R[world.dots[x][y]];
 			pixels[x][y][G] = MAT_G[world.dots[x][y]];
 			pixels[x][y][B] = MAT_B[world.dots[x][y]];
-			pixels[x][y][A] = 255;
+			pixels[x][y][A] = a;
 		}
 	}
-
 	Tk_PhotoPutZoomedBlock(interp, worldimg, &pixblock,
 	                       0, 0,
 	                       WORLD_W * WORLD_SCALE, WORLD_H * WORLD_SCALE,
@@ -200,11 +217,13 @@ main(int argc,
 	strcpy(tcl_args[1], "./client_tk/main.tcl");
 
 	world = world_new(WORLD_W, WORLD_H, STD_TEMPERATURE);
-	world.dots[0][2] = MAT_SAND;
-	world.dots[2][0] = MAT_SAND;
-	world.dots[2][2] = MAT_SAND;
-	world.dots[4][2] = MAT_SAND;
-	world.dots[2][4] = MAT_SAND;
+	world.dots[0][2] = MAT_WATER;
+	world.thermo[0][2] = CELSIUS_TO_KELVIN - 10;
+	world.dots[2][0] = MAT_WATER;
+	world.dots[2][2] = MAT_WATER;
+	world.thermo[2][2] = CELSIUS_TO_KELVIN + 300;
+	world.dots[4][2] = MAT_WATER;
+	world.dots[2][4] = MAT_WATER;
 
 	Tcl_Main(2, tcl_args, init_proc);
 
