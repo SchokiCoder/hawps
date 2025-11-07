@@ -68,8 +68,6 @@ ttk::labelframe .frmright -text "World"
 
 image create photo worldimg
 label .world -image "worldimg"
-#canvas .world
-#.world create image 0 0 -image "worldimg"
 
 bind all <Alt-b> {focus .txtbrshtmprtr}
 bind all <Alt-i> {.chkthrmvw invoke}
@@ -80,6 +78,8 @@ bind all <Alt-p> {.chksmltnpsd invoke}
 bind all <Alt-s> {focus .txtspwnrtmprtr}
 
 bind all <Control-q> {exit}
+
+bind all <Destroy> {exit}
 
 grid .lblbrshtmprtr .txtbrshtmprtr -in .frmleft
 grid .lblspwnrtmprtr .txtspwnrtmprtr -in .frmleft
