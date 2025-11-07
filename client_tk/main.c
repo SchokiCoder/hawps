@@ -3,6 +3,7 @@
  */
 
 #include <core/core.h>
+#include <extra/extra.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tcl.h>
@@ -121,6 +122,9 @@ mainloop(ClientData data,
 	pixblock.offset[2] = B;
 	pixblock.offset[3] = A;
 
+	extra_init();
+
+	// TODO add end conditon or break
 	while (1) {
 		now = (float) clock() / (float) CLOCKS_PER_SEC;
 		if ((now - last_tick) > (1.0 / SIM_RATE)) {
@@ -149,7 +153,7 @@ tick(ClientData data)
 int
 world_draw(Tcl_Interp *interp)
 {
-	int a;
+	struct Rgba col;
 	int x, y;
 
 	/* draw bg */
@@ -174,22 +178,40 @@ world_draw(Tcl_Interp *interp)
 		for (y = 0; y < WORLD_H; y += 1) {
 			switch (world.states[x][y]) {
 			case MS_LIQUID:
-				a = 255 - ALPHA_LOSS_PER_STATE;
+				col.a = 255 - ALPHA_LOSS_PER_STATE;
 				break;
 
 			case MS_GAS:
-				a = 255 - (ALPHA_LOSS_PER_STATE * 2);
+				col.a = 255 - (ALPHA_LOSS_PER_STATE * 2);
 				break;
 
 			default:
-				a = 255;
+				col.a = 255;
 				break;
 			}
 
 			pixels[x][y][R] = MAT_R[world.dots[x][y]];
 			pixels[x][y][G] = MAT_G[world.dots[x][y]];
 			pixels[x][y][B] = MAT_B[world.dots[x][y]];
-			pixels[x][y][A] = a;
+			pixels[x][y][A] = col.a;
+		}
+	}
+	Tk_PhotoPutZoomedBlock(interp, worldimg, &pixblock,
+	                       0, 0,
+	                       WORLD_W * WORLD_SCALE, WORLD_H * WORLD_SCALE,
+	                       WORLD_SCALE, WORLD_SCALE,
+	                       1, 1,
+	                       TK_PHOTO_COMPOSITE_OVERLAY);
+
+	/* draw dotglow */
+	for (x = 0; x < WORLD_W; x += 1) {
+		for (y = 0; y < WORLD_H; y += 1) {
+			col = thermo_to_color(world.thermo[x][y]);
+			pixels[x][y][R] = col.r;
+			pixels[x][y][G] = col.g;
+			pixels[x][y][B] = col.b;
+			pixels[x][y][A] = col.a;
+
 		}
 	}
 	Tk_PhotoPutZoomedBlock(interp, worldimg, &pixblock,
@@ -221,7 +243,7 @@ main(int argc,
 	world.thermo[0][2] = CELSIUS_TO_KELVIN - 10;
 	world.dots[2][0] = MAT_WATER;
 	world.dots[2][2] = MAT_WATER;
-	world.thermo[2][2] = CELSIUS_TO_KELVIN + 300;
+	world.thermo[2][2] = CELSIUS_TO_KELVIN + 3000;
 	world.dots[4][2] = MAT_WATER;
 	world.dots[2][4] = MAT_WATER;
 
