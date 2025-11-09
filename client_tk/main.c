@@ -31,10 +31,21 @@
 #define WORLD_W     40
 #define WORLD_H     30
 
-unsigned char      ***pixels;
+#define TOOL_HOVER_R 175
+#define TOOL_HOVER_G 255
+#define TOOL_HOVER_B 175
+#define TOOL_HOVER_A 128
+
+#define TOOL_RADIUS 2
+
+unsigned char      ***pixels = NULL;
 Tk_PhotoImageBlock    pixblock;
 unsigned char        *pixbuf = NULL;
 int                   pixbuf_size = 0;
+int                   tcl_mouse_x = -1;
+int                   tcl_mouse_y = -1;
+int                   tcl_world_x = 9001;
+int                   tcl_world_y = 9001;
 struct World          world;
 Tk_PhotoHandle        worldimg = NULL;
 
@@ -46,6 +57,12 @@ mainloop(ClientData data,
          Tcl_Interp *interp,
          int objc,
          Tcl_Obj *const objv[]);
+
+int
+motion(ClientData data,
+       Tcl_Interp *interp,
+       int objc,
+       Tcl_Obj *const objv[]);
 
 void
 tick(ClientData data);
@@ -78,6 +95,7 @@ init_proc(Tcl_Interp *interp)
 	}
 
 	Tcl_CreateObjCommand(interp, "hawps::mainloop", mainloop, NULL, NULL);
+	Tcl_CreateObjCommand(interp, "hawps::motion", motion, NULL, NULL);
 
 	return ret;
 }
@@ -147,6 +165,24 @@ mainloop(ClientData data,
 	return TCL_OK;
 }
 
+int
+motion(ClientData data,
+       Tcl_Interp *interp,
+       int objc,
+       Tcl_Obj *const objv[])
+{
+	(void) data;
+	(void) objc;
+
+	Tcl_GetIntFromObj(interp, objv[1], &tcl_world_x);
+	Tcl_GetIntFromObj(interp, objv[2], &tcl_world_y);
+	Tcl_GetIntFromObj(interp, objv[3], &tcl_mouse_x);
+	Tcl_GetIntFromObj(interp, objv[4], &tcl_mouse_y);
+
+	return TCL_OK;
+}
+
+
 void
 tick(ClientData data)
 {
@@ -162,6 +198,8 @@ world_draw(Tcl_Interp *interp)
 {
 	struct Rgba col;
 	int x, y;
+	int x1, y1;
+	int x2, y2;
 
 	/* draw bg */
 	for (x = 0; x < WORLD_W; x += 1) {
@@ -218,6 +256,43 @@ world_draw(Tcl_Interp *interp)
 			pixels[x][y][G] = col.g;
 			pixels[x][y][B] = col.b;
 			pixels[x][y][A] = col.a;
+
+		}
+	}
+	Tk_PhotoPutZoomedBlock(interp, worldimg, &pixblock,
+	                       0, 0,
+	                       WORLD_W * WORLD_SCALE, WORLD_H * WORLD_SCALE,
+	                       WORLD_SCALE, WORLD_SCALE,
+	                       1, 1,
+	                       TK_PHOTO_COMPOSITE_OVERLAY);
+
+	/* draw tool hover */
+	x = ((tcl_mouse_x - tcl_world_x) / WORLD_SCALE);
+	y = ((tcl_mouse_y - tcl_world_y) / WORLD_SCALE);
+
+	x1 = x - TOOL_RADIUS;
+	if (x1 < 0)
+		x1 = 0;
+
+	y1 = y - TOOL_RADIUS;
+	if (y1 < 0)
+		y1 = 0;
+
+	x2 = x + TOOL_RADIUS + 1;
+	if (x2 > WORLD_W)
+		x2 = WORLD_W;
+
+	y2 = y + TOOL_RADIUS + 1;
+	if (y2 > WORLD_H)
+		y2 = WORLD_H;
+
+	memset(pixbuf, 0, pixbuf_size);
+	for (x = x1; x < x2; x += 1) {
+		for (y = y1; y < y2; y += 1) {
+			pixels[x][y][R] = TOOL_HOVER_R;
+			pixels[x][y][G] = TOOL_HOVER_G;
+			pixels[x][y][B] = TOOL_HOVER_B;
+			pixels[x][y][A] = TOOL_HOVER_A;
 
 		}
 	}

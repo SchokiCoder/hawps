@@ -80,6 +80,7 @@ bind all <Alt-s> {focus .txtspwnrtmprtr}
 bind all <Control-q> {exit}
 
 bind all <Destroy> {exit}
+bind all <Motion> {hawps::motion [winfo rootx .world] [winfo rooty .world] [winfo pointerx .] [winfo pointery .]}
 
 grid .lblbrshtmprtr .txtbrshtmprtr -in .frmleft
 grid .lblspwnrtmprtr .txtspwnrtmprtr -in .frmleft
