@@ -38,10 +38,12 @@
 
 #define TOOL_RADIUS 2
 
+int                   active = 1;
 unsigned char      ***pixels = NULL;
 Tk_PhotoImageBlock    pixblock;
 unsigned char        *pixbuf = NULL;
 int                   pixbuf_size = 0;
+char                 *tcl_args[TCL_ARGC];
 int                   tcl_mouse_x = -1;
 int                   tcl_mouse_y = -1;
 int                   tcl_world_x = 9001;
@@ -49,20 +51,29 @@ int                   tcl_world_y = 9001;
 struct World          world;
 Tk_PhotoHandle        worldimg = NULL;
 
+void
+exit_proc(ClientData data);
+
 int
 init_proc(Tcl_Interp *interp);
 
 int
-mainloop(ClientData data,
+tcl_mainloop(ClientData data,
+            Tcl_Interp *interp,
+            int objc,
+            Tcl_Obj *const objv[]);
+
+int
+tcl_motion(ClientData data,
+          Tcl_Interp *interp,
+          int objc,
+          Tcl_Obj *const objv[]);
+
+int
+tcl_quit(ClientData data,
          Tcl_Interp *interp,
          int objc,
          Tcl_Obj *const objv[]);
-
-int
-motion(ClientData data,
-       Tcl_Interp *interp,
-       int objc,
-       Tcl_Obj *const objv[]);
 
 void
 tick(ClientData data);
@@ -70,11 +81,25 @@ tick(ClientData data);
 int
 world_draw(Tcl_Interp *interp);
 
+void
+exit_proc(ClientData data)
+{
+	int i;
+
+	(void) data;
+
+	for (i = 0; i < TCL_ARGC; i += 1) {
+		free(tcl_args[i]);
+	}
+}
+
 int
 init_proc(Tcl_Interp *interp)
 {
 	Tcl_Namespace *ns;
 	int ret;
+
+	Tcl_CreateExitHandler(exit_proc, NULL);
 
 	ret = Tcl_Init(interp);
 	if (TCL_ERROR == ret) {
@@ -94,18 +119,20 @@ init_proc(Tcl_Interp *interp)
 		return TCL_ERROR;
 	}
 
-	Tcl_CreateObjCommand(interp, "hawps::mainloop", mainloop, NULL, NULL);
-	Tcl_CreateObjCommand(interp, "hawps::motion", motion, NULL, NULL);
+	Tcl_CreateObjCommand(interp, "hawps::mainloop", tcl_mainloop, NULL, NULL);
+	Tcl_CreateObjCommand(interp, "hawps::motion", tcl_motion, NULL, NULL);
+	Tcl_CreateObjCommand(interp, "hawps::quit", tcl_quit, NULL, NULL);
 
 	return ret;
 }
 
 int
-mainloop(ClientData data,
-         Tcl_Interp *interp,
-         int objc,
-         Tcl_Obj *const objv[])
+tcl_mainloop(ClientData data,
+            Tcl_Interp *interp,
+            int objc,
+            Tcl_Obj *const objv[])
 {
+	int i;
 	float ticks_since_sim = 9001;
 	float last_tick = -9001.0;
 	float now;
@@ -146,8 +173,7 @@ mainloop(ClientData data,
 
 	extra_init();
 
-	// TODO add end conditon or break
-	while (1) {
+	while (active) {
 		now = (float) clock() / (float) CLOCKS_PER_SEC;
 		if ((now - last_tick) > (1.0 / TICK_RATE)) {
 			last_tick = now;
@@ -162,14 +188,22 @@ mainloop(ClientData data,
 		}
 	}
 
+	for (i = 0; i < WORLD_W; i += 1) {
+		free(pixels[i]);
+	}
+	free(pixels);
+	free(pixbuf);
+
+	world_free(&world);
+
 	return TCL_OK;
 }
 
 int
-motion(ClientData data,
-       Tcl_Interp *interp,
-       int objc,
-       Tcl_Obj *const objv[])
+tcl_motion(ClientData data,
+          Tcl_Interp *interp,
+          int objc,
+          Tcl_Obj *const objv[])
 {
 	(void) data;
 	(void) objc;
@@ -182,6 +216,21 @@ motion(ClientData data,
 	return TCL_OK;
 }
 
+int
+tcl_quit(ClientData data,
+         Tcl_Interp *interp,
+         int objc,
+         Tcl_Obj *const objv[])
+{
+	(void) data;
+	(void) interp;
+	(void) objc;
+	(void) objv;
+
+	active = 0;
+
+	return TCL_OK;
+}
 
 void
 tick(ClientData data)
@@ -311,7 +360,6 @@ main(int argc,
      char **argv)
 {
 	int i;
-	char *tcl_args[TCL_ARGC];
 
 	for (i = 0; i < TCL_ARGC; i += 1) {
 		tcl_args[i] = malloc(sizeof(char) * 64);
@@ -330,15 +378,4 @@ main(int argc,
 	world.dots[2][4] = MAT_WATER;
 
 	Tcl_Main(2, tcl_args, init_proc);
-
-	for (i = 0; i < WORLD_W; i += 1) {
-		free(pixels[i]);
-	}
-	free(pixels);
-	free(pixbuf);
-	for (i = 0; i < TCL_ARGC; i += 1) {
-		free(tcl_args[i]);
-	}
-
-	world_free(&world);
 }

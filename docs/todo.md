@@ -100,6 +100,10 @@ Oddly enough this simple change had no performance impact.
 Also added an important chapter in docs/reworks.md.
 
 - [ ] revert to ebiten but port libs
+
+- things ebiten version would need going from tk client:
+	- [ ] port over tick-sim-subsample system from tk to ebiten
+
 - figure out what the next steps are for the UI
 
 - [ ] add world scale slider

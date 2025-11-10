@@ -5,8 +5,6 @@
 
 package require Tk
 
-#load ./libhawps_tk[info sharedlibextension]
-
 set brush_thermo ""
 set spawner_thermo ""
 
@@ -77,9 +75,9 @@ bind all <Alt-o> {focus .sclsmltnspd}
 bind all <Alt-p> {.chksmltnpsd invoke}
 bind all <Alt-s> {focus .txtspwnrtmprtr}
 
-bind all <Control-q> {exit}
+bind all <Control-q> {event generate . <Destroy>}
 
-bind all <Destroy> {exit}
+bind all <Destroy> {hawps::quit}
 bind all <Motion> {hawps::motion [winfo rootx .world] [winfo rooty .world] [winfo pointerx .] [winfo pointery .]}
 
 grid .lblbrshtmprtr .txtbrshtmprtr -in .frmleft

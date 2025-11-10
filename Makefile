@@ -19,7 +19,7 @@ clean:
 	rm -f $(APP_NAME)_*
 
 run: clean $(APP_NAME)_tk
-	./$(APP_NAME)_tk
+	LSAN_OPTIONS=suppressions=client_tk/lsan.supp ./$(APP_NAME)_tk
 
 $(APP_NAME)_tk: client_tk/* core/* extra/*
 	$(CC) $(CFLAGS) -o $@ -I. $$(pkg-config --cflags tcl tk) \
