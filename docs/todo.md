@@ -18,7 +18,7 @@ Add a roomtemperature?
 
 - [ ] add make rule for optimized release binary
 
-# Material Me Update
+# Hot Air Update
 
 - [x] add some missing phonies to Makefile
 - [x] unify critical errors into panics
@@ -99,31 +99,29 @@ This fixes the laggy appearance with low simspeed.
 Oddly enough this simple change had no performance impact.
 Also added an important chapter in docs/reworks.md.
 
-- [ ] revert to ebiten but port libs
+- [x] revive ebiten client and port libs to Go
+There are also some architectural differences.
+mat is now a submodule of core,
+to bring back the proper namespace use,
+which is nicer to read.
+The ebiten client also got renamed,
+and changed to fit the new libs.
+Also fix an old Makefile mistake from prior renaming attempt,
+that messed with ldflags.
 
-- things ebiten version would need going from tk client:
-	- [ ] port over tick-sim-subsample system from tk to ebiten
+- [ ] port over tick-sim-subsample system from tk to ebiten
 
 - figure out what the next steps are for the UI
 
-- [ ] add world scale slider
-This time with a callback included :)
-
-- [ ] use statusbar
-- [ ] hook up menubar
 - [ ] save selected mat of each tool
 
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
 
-- [ ] update README build dependencies
-
 - [ ] fix temperature glow (see black body radiation)
 The visible result maybe different due to the colors mixing,
 becoming a white eventually
 - [ ] increase the resolution of available glow colors ?
-
-- [ ] bring back the app args
 
 - [ ] add core test against gravity
 - [ ] add core test against grain stack collapse

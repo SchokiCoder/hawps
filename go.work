@@ -1,0 +1,9 @@
+go 1.22
+
+use (
+	./core
+	./core/mat
+	./extra
+	./client_ebiten
+	./client_ebiten/ui
+)

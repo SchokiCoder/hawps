@@ -8,9 +8,11 @@ I just want to have fun writing something dumb.
 
 # Build dependencies
 
-## desktop
-
-- `sudo apt install {tcl,tk}-dev`  
+## ebiten client
+- `go install golang.org/x/tools/cmd/stringer`
+- `sudo apt install {libx11-dev,libxrandr-dev,libglx-dev,libgl-dev,libxcursor-dev,libxinerama-dev,libxi-dev,libxxf86vm-dev}`  
+or  
+`sudo dnf install {libX11-devel,libXrandr-devel,mesa-libGL-devel,libglvnd-glx,libXcursor-devel,libXinerama-devel,libXi-devel,libXxf86vm-devel}`  
 
 # Build
 

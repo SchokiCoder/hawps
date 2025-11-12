@@ -1,3 +1,85 @@
+# C/Tcl/Tk vs Go/ebiten
+
+## Status
+
+We have 2 clients.
+
+- C/Tcl/Tk 
+- Go/ebiten
+
+We compare the use in energy over some time,
+to determine which is more efficient.
+There are 3 outcomes.
+
+1) If the difference in energy use is higher than 20%,
+development on the inefficient client is to be immediately dropped!  
+
+2) If the difference is higher than 10%,
+the inefficient client cannot define the language of the backend (Go vs C).
+The inefficient client may see delayed, less, or even no development.  
+
+3) If the difference is lower than 10%, both clients may be developed concurrently,
+with ebiten being for mobile, and tk for desktop.  
+
+However, if the ebiten client is not subject to case 1,
+the backend very likely will be rewritten in Go.  
+
+## Thesis
+
+The theory is that the software rendering Tk will have a slight performance
+penalty. Slight because we are talking about simple 2D graphics.
+The Go backend should probably be slower though,
+so the final outcome is not sure.  
+
+## 1st test method
+
+By measuring the energy consumption of a "Igel M340C",
+with "AMD GX-424CC" as CPU, and "Radeon R5E Graphics" as GPU.
+The hardware will be powered by Debian GNU/Linux Trixie, and the Mate desktop.
+I would also reboot the machine after setting up the test envirnoment,
+and each test.  
+
+The machine will be started, then a terminal.
+From there I cd into the relevant directory, and make run.  
+The clients will both run for half an hour.  
+The ebiten client will be from tag v0.6,
+and tk will be from commit 36240751ab2e9e9d82bce945422920f498b4e65f.  
+
+If the default tickrate of 120 always 100% poweruse, it may need to be lowered,
+otherwise 100% is always 100% and it just lags.  
+I must pay attention to ebiten client's different default simrate.
+The `stdWldTRateFrac` must be set from 0.25 to 0.2, which would align with tk's
+`SIM_SUBSAMPLE` of 5, thus both simulate on every 5th tick.
+Tk needs to be changed to have the same world scale from 10 to 4,
+and the size needs to go up 112x120 
+
+## 1st test result
+
+With just the mate terminal and mate system monitor running,
+the hardware consistently used 6.4W of power, rarely going up to 6.5W.  
+At max CPU, while compiling the ebiten client for example,
+16.9W of power were needed.
+
+Energy-use:
+ebiten = 0.005 kWh
+Tk     = 0.007 kWh
+
+Well these are small values.
+Maybe these are in some margin of error right?
+
+## 2nd test method
+
+Same hardware.
+Just look at the power use for 10 seconds each time, and note down the highest.
+
+## 2nd test results
+
+Power-use max:
+ebiten = 10.9 W
+Tk     = 14.4 W
+
+A 32% increase. I didn't think it would be that bad.
+
 # unify dot updates into world.Tick
 
 > This causes a reduction of individual loops, thus reducing None checks,
