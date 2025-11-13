@@ -1,4 +1,4 @@
-module github.com/SchokiCoder/hawps/cross_platform
+module github.com/SchokiCoder/hawps/client_ebiten
 
 go 1.22
 

@@ -109,7 +109,23 @@ and changed to fit the new libs.
 Also fix an old Makefile mistake from prior renaming attempt,
 that messed with ldflags.
 
-- [ ] port over tick-sim-subsample system from tk to ebiten
+- [x] port over tick-sim-subsample system from tk to ebiten
+With this I also reassessed what should be the default tick- and simrate.
+I thought about getting back to the old 24 simrate,
+but there are problems with that.
+I wanted a user to easily increase and decrease the rate with 2 keys,
+with which the simrate is doubled and halved.
+24 as a base is very odd.
+The tickrate would have to be (simrate * (factor of 2)).
+The tickrate should be high for comfortable UI use.
+That leaves a default tickrate of 192, which feels a bit high,
+or 96, which is just too low.
+I tested the performance of 120-30 vs 192-24, tickrate-simrate,
+and the latter also used more CPU.
+More updates, less simulation was heavier in that case.
+I suppose base 30 aligns better with most screens update rate anyway.
+In another thing, the cap for slow down also doesn't perfectly align with
+full numbers. This is fine. Don't "fix" it.
 
 - figure out what the next steps are for the UI
 

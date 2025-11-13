@@ -54,7 +54,7 @@ const (
 	thermalVisionMinT  = -75 + celsiusToKelvin
 
 	stdTickrate     = 120
-	stdWldTRateFrac = 0.25
+	stdSimSubsample = 4
 	heaterDelta     = 1
 
 	firstRealMat   = mat.Sand
@@ -100,16 +100,16 @@ type physGame struct {
 	FrameW       int
 	FrameH       int
 	GlowImg      *ebiten.Image
+	Matbox       ui.TileSet
 	Paused       bool
 	Temperature  float64
 	ThVision     bool
 	Tickrate     int
 	Toolbox      ui.TileSet
-	// ticks since world tick
-	TsSinceWldT  int
-	Matbox       ui.TileSet
+	SimSubsample int
+	// ticks since last simulation
+	TsSinceSim   int
 	ToolImg      *ebiten.Image
-	WldTRateFrac float64
 	World        core.World
 	WorldImg     *ebiten.Image
 	WorldX       int
@@ -125,8 +125,8 @@ func newPhysGame(
 		ThermoRadius: stdThermoRadius,
 		Temperature:  stdTemperature,
 		Tickrate:     stdTickrate,
-		TsSinceWldT:  9999,
-		WldTRateFrac: stdWldTRateFrac,
+		TsSinceSim:   9001,
+		SimSubsample: stdSimSubsample,
 	}
 
 	return ret
@@ -429,13 +429,13 @@ func (g *physGame) Update(
 			}
 
 		case ebiten.KeyNumpadAdd:
-			if g.WldTRateFrac < 1.0 {
-				g.WldTRateFrac *= 2
+			if g.SimSubsample > 1 {
+				g.SimSubsample /= 2
 			}
 
 		case ebiten.KeyNumpadSubtract:
-			if g.WldTRateFrac * float64(g.Tickrate) > 1.0 {
-				g.WldTRateFrac /= 2
+			if g.SimSubsample < g.Tickrate {
+				g.SimSubsample *= 2
 			}
 
 		case ebiten.KeyT:
@@ -461,11 +461,11 @@ func (g *physGame) Update(
 	g.World.Update(g.Temperature)
 
 	if !g.Paused {
-		if g.TsSinceWldT >= int(1.0 / g.WldTRateFrac) {
+		if g.TsSinceSim >= g.SimSubsample {
 			g.World.Simulate()
-			g.TsSinceWldT = 0
+			g.TsSinceSim = 0
 		} else {
-			g.TsSinceWldT++
+			g.TsSinceSim++
 		}
 	}
 
@@ -575,7 +575,7 @@ Default keybinds:
 
     Plus and Minus
         Increase and decrease the simulation speed respectively
-        default: %v updates per second
+        default: %.2f updates per second
 
     T
         Toggle thermal vision (grayscale displaying %v to %v degree Celsius)
@@ -727,7 +727,7 @@ func handleArgs(
 			           stdTemperature,
 			           stdTickrate,
 			           stdWinW,
-			           stdTickrate * stdWldTRateFrac,
+			           float64(stdTickrate) / float64(stdSimSubsample),
 			           thermalVisionMinT - celsiusToKelvin,
 			           thermalVisionMinT - celsiusToKelvin + 255)
 			return false
