@@ -94,6 +94,7 @@ const (
 
 type physGame struct {
 	BgColor      color.RGBA
+	BrushMat     int
 	BrushRadius  int
 	EraserRadius int
 	ThermoRadius int
@@ -107,6 +108,7 @@ type physGame struct {
 	Tickrate     int
 	Toolbox      ui.TileSet
 	SimSubsample int
+	SpawnerMat   int
 	// ticks since last simulation
 	TsSinceSim   int
 	ToolImg      *ebiten.Image
@@ -278,14 +280,23 @@ func (g physGame) Draw(
 func (g *physGame) HandleClick(
 ) {
 	var (
-		clicked bool
-		mX, mY  int
+		clicked  bool
+		mX, mY   int
+		prevTool extra.Tool
 	)
 
 	mX, mY = ebiten.CursorPosition()
+	prevTool = extra.Tool(g.Toolbox.Cursor)
 
 	clicked = g.Toolbox.HandleClick(mX, mY)
 	if clicked {
+		switch (prevTool) {
+		case extra.Brush:
+			g.BrushMat = g.Matbox.Cursor
+
+		case extra.Spawner:
+			g.SpawnerMat = g.Matbox.Cursor
+		}
 		g.UpdateMatbox()
 	}
 
@@ -408,12 +419,26 @@ func (g *physGame) Update(
 
 		case ebiten.KeyArrowLeft:
 			if g.Toolbox.Cursor > 0 {
+				switch extra.Tool(g.Toolbox.Cursor) {
+				case extra.Brush:
+					g.BrushMat = g.Matbox.Cursor
+
+				case extra.Spawner:
+					g.SpawnerMat = g.Matbox.Cursor
+				}
 				g.Toolbox.Cursor--
 				g.UpdateMatbox()
 			}
 
 		case ebiten.KeyArrowRight:
 			if g.Toolbox.Cursor < len(g.Toolbox.VisibleTiles) - 1 {
+				switch extra.Tool(g.Toolbox.Cursor) {
+				case extra.Brush:
+					g.BrushMat = g.Matbox.Cursor
+
+				case extra.Spawner:
+					g.SpawnerMat = g.Matbox.Cursor
+				}
 				g.Toolbox.Cursor++
 				g.UpdateMatbox()
 			}
@@ -476,7 +501,6 @@ func (g *physGame) UpdateMatbox(
 ) {
 	var tiles = make([]int, 0)
 
-	g.Matbox.Cursor = 0
 	g.Matbox.Scroll = 0
 
 	switch(extra.Tool(g.Toolbox.Cursor)) {
@@ -485,6 +509,7 @@ func (g *physGame) UpdateMatbox(
 			tiles = append(tiles, int(i))
 		}
 		g.Matbox.VisibleTiles = tiles
+		g.Matbox.Cursor = g.BrushMat
 
 	case extra.Spawner:
 		tiles = append(tiles, int(mat.None))
@@ -495,6 +520,7 @@ func (g *physGame) UpdateMatbox(
 			}
 		}
 		g.Matbox.VisibleTiles = tiles
+		g.Matbox.Cursor = g.SpawnerMat
 
 	case extra.Eraser: fallthrough
 	case extra.Heater: fallthrough

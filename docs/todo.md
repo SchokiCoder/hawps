@@ -127,9 +127,17 @@ I suppose base 30 aligns better with most screens update rate anyway.
 In another thing, the cap for slow down also doesn't perfectly align with
 full numbers. This is fine. Don't "fix" it.
 
-- figure out what the next steps are for the UI
+- [x] add saving of selected mat of each tool
 
-- [ ] save selected mat of each tool
+- [ ] add Dirt
+- [ ] add Ironoxide
+- [ ] add Aluminum
+- [ ] add Aluminumoxide
+- [ ] add some Rocks lol
+- [ ] add Coal
+- [ ] add Sulfur
+- [ ] add Gunpowder
+- [ ] add Thermite
 
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
@@ -147,16 +155,6 @@ becoming a white eventually
 - [ ] add core test against chemical reactions
 - [ ] add core test against loss of mass upon heat up
 - [ ] add core test against spawners
-
-- [ ] add Dirt
-- [ ] add Ironoxide
-- [ ] add Aluminum
-- [ ] add Aluminumoxide
-- [ ] add some Rocks lol
-- [ ] add Coal
-- [ ] add Sulfur
-- [ ] add Gunpowder
-- [ ] add Thermite
 
 - [ ] add Sulfur and Coal collision, creating Gunpowder
 - [ ] add Oxygen and Iron collision, creating Ironoxide
