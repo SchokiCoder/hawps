@@ -129,6 +129,8 @@ full numbers. This is fine. Don't "fix" it.
 
 - [x] add saving of selected mat of each tool
 
+- [x] add tiled png-font and replace hard drawn text of mat symbols
+
 - [ ] add Dirt
 - [ ] add Ironoxide
 - [ ] add Aluminum

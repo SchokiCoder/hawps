@@ -69,6 +69,7 @@ const (
 	uiMatBgB       = 130
 	uiMatBgA       = 255
 	uiTileSetW     = 3
+	uiSymbolFontSpacing = 1
 
 	spawnerR       = 255
 	spawnerG       = 0
@@ -613,17 +614,19 @@ Default keybinds:
 
 func genMatImages(t float64) []*ebiten.Image {
 	var (
-		bgImgs [mat.StateCount]*ebiten.Image
-		matBgPrefix = "assets/matbg_"
+		bgImgs      [mat.StateCount]*ebiten.Image
+		matBgPrefix string = "assets/matbg_"
 		matBgPaths = [mat.StateCount]string{
 			"static",
 			"grain",
 			"liquid",
 			"gas",
 		}
-		matPrefix = "assets/mat_"
-		postfix = ".png"
-		ret []*ebiten.Image
+		postfix     string = ".png"
+		ret         []*ebiten.Image
+		symbolImg   *ebiten.Image
+		symbolImgW  int
+		symbolImgH  int
 	)
 
 	imgopen := func(path string) *ebiten.Image {
@@ -640,8 +643,10 @@ func genMatImages(t float64) []*ebiten.Image {
 	}
 
 	for i := mat.None; i < mat.Mat(mat.MatCount); i++ {
-		path := matPrefix + i.String() + postfix
-		matImg := imgopen(path)
+		symbolImg = ebiten.NewImage(
+			ui.DrawnTextLen(mat.Symbol(i), uiSymbolFontSpacing),
+			ui.FontCharMaxH)
+		ui.DrawText(symbolImg, 0, 0, mat.Symbol(i), uiSymbolFontSpacing)
 		opt := ebiten.DrawImageOptions{}
 		img := ebiten.NewImage(pngSize, pngSize)
 
@@ -662,9 +667,10 @@ func genMatImages(t float64) []*ebiten.Image {
 			G: 255 - c.G,
 			B: 255 - c.B,
 			A: 255})
-		opt.GeoM.Translate(float64(pngSize - matImg.Bounds().Dx()) / 2,
-		                   float64(pngSize - matImg.Bounds().Dy() - 1))
-		img.DrawImage(matImg, &opt)
+		symbolImgW, symbolImgH = symbolImg.Size()
+		opt.GeoM.Translate(float64(pngSize - symbolImgW) / 2,
+		                   float64(pngSize - symbolImgH - 1))
+		img.DrawImage(symbolImg, &opt)
 		ret = append(ret, img)
 	}
 
@@ -815,6 +821,8 @@ func main(
 		tbW, tbH   int
 		wW, wH     int
 	)
+
+	ui.Init(pngs, "assets/font.png")
 
 	ebiten.SetFullscreen(true);
 
