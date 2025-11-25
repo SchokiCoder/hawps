@@ -115,14 +115,17 @@ func (w *World) Update(
 func (w *World) updateDotFromThermo(
 	x, y int,
 ) {
+	var meltPrdct mat.Mat
+
 	if w.Thermo[x][y] < mat.MeltP(w.Dot[x][y]) {
 		w.State[x][y] = mat.SolidS(w.Dot[x][y])
 		w.Weight[x][y] = mat.SolidWeight(w.Dot[x][y])
 	} else if w.Thermo[x][y] < mat.BoilP(w.Dot[x][y]) {
 		w.State[x][y] = mat.Liquid
 
-		if w.Dot[x][y] == mat.Sand {
-			w.Dot[x][y] = mat.Glass
+		meltPrdct = mat.MeltPrdct(w.Dot[x][y])
+		if meltPrdct != mat.None {
+			w.Dot[x][y] = meltPrdct
 		}
 
 		w.Weight[x][y] = mat.SolidWeight(w.Dot[x][y]) *

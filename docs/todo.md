@@ -135,14 +135,16 @@ full numbers. This is fine. Don't "fix" it.
 - [x] add tiled png-font and replace hard drawn text of mat symbols
 
 - [x] add Coal and a oxidation product chance system
+- [x] add Ironoxide, melt product system, and applied it to Sand/Glass too
 - [ ] add Dirt
-- [ ] add Ironoxide
 - [ ] add Aluminum
 - [ ] add Aluminumoxide
 - [ ] add some Rocks lol
 - [ ] add Sulfur
 - [ ] add Gunpowder
 - [ ] add Thermite
+
+- [ ] add "Hammer" tool, which changes statics into grains?
 
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
