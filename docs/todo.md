@@ -18,6 +18,9 @@ Add a roomtemperature?
 
 - [ ] add make rule for optimized release binary
 
+- [ ] load image files instead of embedding them
+- [ ] move mat property table to json or csv and provide an init function for package mat
+
 # Hot Air Update
 
 - [x] add some missing phonies to Makefile
@@ -131,12 +134,12 @@ full numbers. This is fine. Don't "fix" it.
 
 - [x] add tiled png-font and replace hard drawn text of mat symbols
 
+- [x] add Coal and a oxidation product chance system
 - [ ] add Dirt
 - [ ] add Ironoxide
 - [ ] add Aluminum
 - [ ] add Aluminumoxide
 - [ ] add some Rocks lol
-- [ ] add Coal
 - [ ] add Sulfur
 - [ ] add Gunpowder
 - [ ] add Thermite

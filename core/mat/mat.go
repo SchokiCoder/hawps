@@ -4,6 +4,10 @@
 //go:generate stringer -type=Mat
 package mat
 
+import (
+	"math/rand/v2"
+)
+
 type Mat int
 const (
 	None Mat = iota
@@ -15,6 +19,7 @@ const (
 	Hydrogen
 	CarbonDioxide
 	Methane
+	Coal /* Bituminous, but also with some value from Graphite */
 
 	MatCount int = iota
 )
@@ -36,21 +41,22 @@ const (
 )
 
 var (
-	_symbol     = [...]string  {"nil",  "Si",    "Si",    "H2O",  "Fe",    "O2",     "H2",       "CO2",    "CH4"}
-	_weight     = [...]float64 {0.0,    1.5,     1.5,     0.999,  7.874,   0.001323, 0.00008319, 0.001977, 0.000657}  /* g/cm³ */
-	_boilP      = [...]float64 {0,      3223.15, 3223.15, 373.15, 3134.15, 90.19,    27.20,      194.686,  111.65}    /* K */
-	_ignP       = [...]float64 {0,      0,       0,       0,      0,       0,        858.0,      0,        853.15}    /* K */
-	_meltP      = [...]float64 {0,      1985.15, 1985.15, 273.15, 1811.15, 54.36,    13.99,      216.589,  90.55}     /* K */
-	_oxidPrdct1 = [...]Mat     {None,   None,    None,    None,   None,    None,     Water,      None,     Water}
-	_oxidPrdct2 = [...]Mat     {None,   None,    None,    None,   None,    None,     Water,      None,     CarbonDioxide}
-	_oxidTh     = [...]float64 {0,      0,       0,       0,      0,       0,        2130.0,     0,        1963.0}    /* K released on oxidation */
-	_oxidSpd    = [...]float64 {0,      0,       0,       0,      0,       0,        0.34,       0,        0.2}       /* fraction per tick */
-	_solidS     = [...]State   {Static, Grain,   Static,  Static, Static,  Static,   Static,     Static,   Static} /* state when solid */
-	_thCond     = [...]float64 {0.0,    0.00673, 0.00673, 0.0061, 0.084,   0.002,    0.0018,     0.00146,  0.003}     /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-	_r          = [...]uint8   {0,      238,     237,     150,    200,     200,      200,        200,      65}
-	_g          = [...]uint8   {0,      217,     237,     150,    200,     200,      200,        200,      65}
-	_b          = [...]uint8   {0,      86,      237,     255,    200,     255,      255,        255,      65}
-	_a          = [...]uint8   {0,      255,     128,     205,    255,     100,      100,        100,      150}
+	_symbol           = [...]string  {"nil",  "Si",    "Si",    "H2O",  "Fe",    "O2",     "H2",       "CO2",    "CH4",         "C9O"}
+	_weight           = [...]float64 {0.0,    1.5,     1.5,     0.999,  7.874,   0.001323, 0.00008319, 0.001977, 0.000657,      0.833}   /* g/cm³ */
+	_boilP            = [...]float64 {0,      3223.15, 3223.15, 373.15, 3134.15, 90.19,    27.20,      194.686,  111.65,        3947.65} /* K */
+	_ignP             = [...]float64 {0,      0,       0,       0,      0,       0,        858.0,      0,        853.15,        1001.15} /* K */
+	_meltP            = [...]float64 {0,      1985.15, 1985.15, 273.15, 1811.15, 54.36,    13.99,      216.589,  90.55,         4200.15} /* K */
+	_oxidPrdct1Chance = [...]int     {0,      0,       0,       0,      0,       0,        50,         0,        50,            5}       /* 0 - 100 percent */
+	_oxidPrdct1       = [...]Mat     {None,   None,    None,    None,   None,    None,     Water,      None,     Water,         Water}
+	_oxidPrdct2       = [...]Mat     {None,   None,    None,    None,   None,    None,     Water,      None,     CarbonDioxide, CarbonDioxide}
+	_oxidTh           = [...]float64 {0,      0,       0,       0,      0,       0,        2130.0,     0,        1963.0,        5400.0}  /* K released on oxidation */
+	_oxidSpd          = [...]float64 {0,      0,       0,       0,      0,       0,        0.34,       0,        0.2,           0.005}   /* fraction per tick */
+	_solidS           = [...]State   {Static, Grain,   Static,  Static, Static,  Static,   Static,     Static,   Static,        Static}  /* state when solid */
+	_thCond           = [...]float64 {0.0,    0.00673, 0.00673, 0.0061, 0.084,   0.002,    0.0018,     0.00146,  0.003,         0.0033}  /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
+	_r                = [...]uint8   {0,      238,     237,     150,    200,     200,      200,        200,      65,            30}
+	_g                = [...]uint8   {0,      217,     237,     150,    200,     200,      200,        200,      65,            30}
+	_b                = [...]uint8   {0,      86,      237,     255,    200,     255,      255,        255,      65,            30}
+	_a                = [...]uint8   {0,      255,     128,     205,    255,     100,      100,        100,      150,           255}
 )
 
 func Symbol(
@@ -86,7 +92,20 @@ func MeltP(
 func OxidPrdcts(
 	i Mat,
 ) (Mat, Mat) {
-	return _oxidPrdct1[i], _oxidPrdct2[i]
+	var ret1, ret2 Mat
+
+	if (rand.Int() % 100) <= _oxidPrdct1Chance[i] {
+		ret1 = _oxidPrdct1[i]
+	} else {
+		ret1 = _oxidPrdct2[i]
+	}
+	if (rand.Int() % 100) <= _oxidPrdct1Chance[i] {
+		ret2 = _oxidPrdct1[i]
+	} else {
+		ret2 = _oxidPrdct2[i]
+	}
+
+	return ret1, ret2
 }
 
 func OxidSpd(
