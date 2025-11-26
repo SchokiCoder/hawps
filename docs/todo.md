@@ -136,9 +136,11 @@ full numbers. This is fine. Don't "fix" it.
 
 - [x] add Coal and a oxidation product chance system
 - [x] add Ironoxide, melt product system, and applied it to Sand/Glass too
-- [ ] add Dirt
-- [ ] add Aluminum
+- [x] add Aluminum and change Iron a bit
+Iron 's thermal conductivity had a minor mistake,
+and Iron's color got touched up to make it more distinct from Aluminum.
 - [ ] add Aluminumoxide
+- [ ] add Dirt
 - [ ] add some Rocks lol
 - [ ] add Sulfur
 - [ ] add Gunpowder

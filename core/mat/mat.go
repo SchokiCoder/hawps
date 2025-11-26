@@ -21,6 +21,7 @@ const (
 	Methane
 	Coal /* Bituminous, but also with some value from Graphite */
 	IronOxide
+	Aluminum
 
 	MatCount int = iota
 )
@@ -42,23 +43,23 @@ const (
 )
 
 var (
-	_symbol           = [...]string  {"nil",  "Si",    "Si",    "H2O",  "Fe",      "O2",     "H2",       "CO2",    "CH4",         "C9O",         "FeO"}
-	_weight           = [...]float64 {0.0,    1.5,     1.5,     0.999,  7.874,     0.001323, 0.00008319, 0.001977, 0.000657,      0.833,         5.25}   /* g/cm³ */
-	_boilP            = [...]float64 {0,      3223.15, 3223.15, 373.15, 3134.15,   90.19,    27.20,      194.686,  111.65,        3947.65,       9999.9} /* boils at K */
-	_ignP             = [...]float64 {0,      0,       0,       0,      0,         0,        858.0,      0,        853.15,        1001.15,       0}      /* ignites at K */
-	_meltP            = [...]float64 {0,      1985.15, 1985.15, 273.15, 1811.15,   54.36,    13.99,      216.589,  90.55,         4200.15,       1812.0} /* melts at K */
-	_meltPrdct        = [...]Mat     {None,   Glass,   None,    None,   None,      None,     None,       None,     None,          None,          Iron}   /* becomes mat upon melting */
-	_oxidPrdct1Chance = [...]int     {0,      0,       0,       0,      49,        0,        50,         0,        50,            5,             0}      /* 0 - 100 percent */
-	_oxidPrdct1       = [...]Mat     {None,   None,    None,    None,   IronOxide, None,     Water,      None,     Water,         Water,         None}
-	_oxidPrdct2       = [...]Mat     {None,   None,    None,    None,   Oxygen,    None,     Water,      None,     CarbonDioxide, CarbonDioxide, None}
-	_oxidTh           = [...]float64 {0,      0,       0,       0,      0.69,      0,        2130.0,     0,        1963.0,        5400.0,        0}      /* K released on oxidation */
-	_oxidSpd          = [...]float64 {0,      0,       0,       0,      0.0001112, 0,        0.34,       0,        0.2,           0.005,         0}      /* fraction per tick */
-	_solidS           = [...]State   {Static, Grain,   Static,  Static, Static,    Static,   Static,     Static,   Static,        Static,        Grain}  /* state when solid */
-	_thCond           = [...]float64 {0.0,    0.00673, 0.00673, 0.0061, 0.084,     0.002,    0.0018,     0.00146,  0.003,         0.0033,        0.063}  /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-	_r                = [...]uint8   {0,      238,     237,     150,    200,       200,      200,        200,      65,            30,            62}
-	_g                = [...]uint8   {0,      217,     237,     150,    200,       200,      200,        200,      65,            30,            9}
-	_b                = [...]uint8   {0,      86,      237,     255,    200,       255,      255,        255,      65,            30,            0}
-	_a                = [...]uint8   {0,      255,     128,     205,    255,       100,      100,        100,      150,           255,           255}
+	_symbol           = [...]string  {"nil",  "Si",    "Si",    "H2O",  "Fe",      "O2",     "H2",       "CO2",    "CH4",         "C9O",         "FeO",  "Al"}
+	_weight           = [...]float64 {0.0,    1.5,     1.5,     0.999,  7.874,     0.001323, 0.00008319, 0.001977, 0.000657,      0.833,         5.25,   2.699}   /* g/cm³ */
+	_boilP            = [...]float64 {0,      3223.15, 3223.15, 373.15, 3134.15,   90.19,    27.20,      194.686,  111.65,        3947.65,       9999.9, 2743.0} /* boils at K */
+	_ignP             = [...]float64 {0,      0,       0,       0,      0,         0,        858.0,      0,        853.15,        1001.15,       0,      0}      /* ignites at K */
+	_meltP            = [...]float64 {0,      1985.15, 1985.15, 273.15, 1811.15,   54.36,    13.99,      216.589,  90.55,         4200.15,       1812.0, 933.47} /* melts at K */
+	_meltPrdct        = [...]Mat     {None,   Glass,   None,    None,   None,      None,     None,       None,     None,          None,          Iron,   None}   /* becomes mat upon melting */
+	_oxidPrdct1Chance = [...]int     {0,      0,       0,       0,      49,        0,        50,         0,        50,            5,             0,      0}      /* 0 - 100 percent */
+	_oxidPrdct1       = [...]Mat     {None,   None,    None,    None,   IronOxide, None,     Water,      None,     Water,         Water,         None,   None}
+	_oxidPrdct2       = [...]Mat     {None,   None,    None,    None,   Oxygen,    None,     Water,      None,     CarbonDioxide, CarbonDioxide, None,   None}
+	_oxidTh           = [...]float64 {0,      0,       0,       0,      0.69,      0,        2130.0,     0,        1963.0,        5400.0,        0,      0}      /* K released on oxidation */
+	_oxidSpd          = [...]float64 {0,      0,       0,       0,      0.0001112, 0,        0.34,       0,        0.2,           0.005,         0,      0}      /* fraction per tick */
+	_solidS           = [...]State   {Static, Grain,   Static,  Static, Static,    Static,   Static,     Static,   Static,        Static,        Grain,  Static}  /* state when solid */
+	_thCond           = [...]float64 {0.0,    0.00673, 0.00673, 0.0061, 0.0804,    0.002,    0.0018,     0.00146,  0.003,         0.0033,        0.063,  0.237}  /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
+	_r                = [...]uint8   {0,      238,     237,     150,    185,       200,      200,        200,      65,            30,            62,     200}
+	_g                = [...]uint8   {0,      217,     237,     150,    175,       200,      200,        200,      65,            30,            9,      200}
+	_b                = [...]uint8   {0,      86,      237,     255,    175,       255,      255,        255,      65,            30,            0,      210}
+	_a                = [...]uint8   {0,      255,     128,     205,    255,       100,      100,        100,      150,           255,           255,    255}
 )
 
 func Symbol(
