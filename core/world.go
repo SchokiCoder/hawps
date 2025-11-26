@@ -369,6 +369,15 @@ func (w *World) simChemicalReaction(
 			}
 		}
 	}
+
+	if mat.TouchReagent(w.Dot[x][y]) != mat.None {
+		if mat.TouchReagent(w.Dot[x][y]) == w.Dot[dx][dy] {
+			tp1, tp2 := mat.TouchPrdcts(w.Dot[x][y])
+
+			w.Dot[x][y] = tp1
+			w.Dot[dx][dy] = tp2
+		}
+	}
 }
 
 func (w *World) simGravity(

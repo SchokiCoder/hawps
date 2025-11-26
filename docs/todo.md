@@ -142,13 +142,21 @@ and Iron's color got touched up to make it more distinct from Aluminum.
 - [x] add Aluminumoxide
 Also bring back the possibility for oxidation to have fixed products.
 This has been applied to all oxidations except Coal.
+- [x] add Thermite and touch reaction system
+- [ ] add Magnesium and make sure it can work as a fuse for thermite
 - [ ] add Dirt
 - [ ] add some Rocks lol
 - [ ] add Sulfur
 - [ ] add Gunpowder
-- [ ] add Thermite
+
+- [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
+I didn't even notice that. You may think I did,
+because Iron and Alu oxidation have that value given,
+but that was just a joke, I swear.
 
 - [ ] add "Hammer" tool, which changes statics into grains?
+- change TileSet to use mouse on release
+This fixes accidentally changing mat or tool
 
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
