@@ -143,7 +143,7 @@ and Iron's color got touched up to make it more distinct from Aluminum.
 Also bring back the possibility for oxidation to have fixed products.
 This has been applied to all oxidations except Coal.
 - [x] add Thermite and touch reaction system
-- [ ] add Magnesium and make sure it can work as a fuse for thermite
+- [x] add Magnesium and Magnesiumoxide
 - [ ] add Dirt
 - [ ] add some Rocks lol
 - [ ] add Sulfur
