@@ -139,7 +139,9 @@ full numbers. This is fine. Don't "fix" it.
 - [x] add Aluminum and change Iron a bit
 Iron 's thermal conductivity had a minor mistake,
 and Iron's color got touched up to make it more distinct from Aluminum.
-- [ ] add Aluminumoxide
+- [x] add Aluminumoxide
+Also bring back the possibility for oxidation to have fixed products.
+This has been applied to all oxidations except Coal.
 - [ ] add Dirt
 - [ ] add some Rocks lol
 - [ ] add Sulfur
