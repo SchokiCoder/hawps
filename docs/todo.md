@@ -144,10 +144,10 @@ Also bring back the possibility for oxidation to have fixed products.
 This has been applied to all oxidations except Coal.
 - [x] add Thermite and touch reaction system
 - [x] add Magnesium and Magnesiumoxide
+- [x] add Sulfur, Sulfur trioxide, and Gunpowder
+- [ ] add Sulfuric acid
 - [ ] add Dirt
 - [ ] add some Rocks lol
-- [ ] add Sulfur
-- [ ] add Gunpowder
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
 I didn't even notice that. You may think I did,
@@ -155,12 +155,16 @@ because Iron and Alu oxidation have that value given,
 but that was just a joke, I swear.
 
 - [ ] add "Hammer" tool, which changes statics into grains?
-- change TileSet to use mouse on release
+- [ ] change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
 
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
 
+- [ ] change conduction so that the conductivity describes the rate at which a mat **loses** temperature?
+A metal rod (high cond.) can ignite a gas (low cond.) quickly this way.
+
+- [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] fix temperature glow (see black body radiation)
 The visible result maybe different due to the colors mixing,
 becoming a white eventually
@@ -174,11 +178,6 @@ becoming a white eventually
 - [ ] add core test against chemical reactions
 - [ ] add core test against loss of mass upon heat up
 - [ ] add core test against spawners
-
-- [ ] add Sulfur and Coal collision, creating Gunpowder
-- [ ] add Oxygen and Iron collision, creating Ironoxide
-- [ ] add Oxygen and Aluminum collision, creating Aluminumoxide
-- [ ] add Ironoxide and Aluminumoxide collision, creating Thermite
 
 - [ ] set version to 0.7
 
