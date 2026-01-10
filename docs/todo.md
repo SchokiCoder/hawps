@@ -145,7 +145,7 @@ This has been applied to all oxidations except Coal.
 - [x] add Thermite and touch reaction system
 - [x] add Magnesium and Magnesiumoxide
 - [x] add Sulfur, Sulfur trioxide, and Gunpowder
-- [ ] add Sulfuric acid
+- [x] add Sulfuric acid and acidity system
 - [ ] add Dirt
 - [ ] add some Rocks lol
 

@@ -16,6 +16,8 @@ type World struct {
 	_spwnMat []mat.Mat
 	SpwnMat  [][]mat.Mat
 
+	_dissol  []float64
+	Dissol   [][]float64
 	_dot     []mat.Mat
 	Dot      [][]mat.Mat
 	_oxid    []float64
@@ -35,6 +37,8 @@ func NewWorld(
 	var ret = World{
 		W:        w,
 		H:        h,
+		_dissol:  make([]float64, w * h),
+		Dissol:   make([][]float64, w),
 		_dot:     make([]mat.Mat, w * h),
 		Dot:      make([][]mat.Mat, w),
 		_oxid:    make([]float64, w * h),
@@ -52,6 +56,7 @@ func NewWorld(
 	}
 
 	for x := 0; x < w; x++ {
+		ret.Dissol[x] = ret._dissol[x * h:h + (x * h)]
 		ret.Dot[x] = ret._dot[x * h:h + (x * h)]
 		ret.Oxid[x] = ret._oxid[x * h:h + (x * h)]
 		ret.Spawner[x] = ret._spawner[x * h:h + (x * h)]
@@ -169,6 +174,8 @@ func (w *World) UseBrush(
 	for x := x1; x <= x2; x++ {
 		for y := y1; y <= y2; y++ {
 			w.Dot[x][y] = m
+			w.Dissol[x][y] = 0.0
+			w.Oxid[x][y] = 0.0
 			w.Thermo[x][y] = t
 		}
 	}
@@ -348,6 +355,13 @@ func (w *World) Simulate(
 func (w *World) simChemicalReaction(
 	x, y, dx, dy int,
 ) {
+	w.Dissol[x][y] += mat.Acidity(w.Dot[dx][dy]) *
+	                  mat.AcidVulnerability(w.Dot[x][y])
+	if w.Dissol[x][y] >= 1.0 {
+		w.Dissol[x][y] = 0.0
+		w.clearDot(x, y)
+	}
+
 	if mat.OxidTh(w.Dot[x][y]) > 0.0 {
 		if mat.Oxygen == w.Dot[dx][dy] {
 			if w.Thermo[x][y] > mat.IgnP(w.Dot[x][y]) {
@@ -580,17 +594,20 @@ func (w *World) swapDots(
 	x2, y2 int,
 ) {
 	var (
+		tmpD = w.Dissol[x][y]
 		tmpM = w.Dot[x][y]
 		tmpO = w.Oxid[x][y]
 		tmpS = w.State[x][y]
 		tmpT = w.Thermo[x][y]
 	)
 
+	w.Dissol[x][y] = w.Dissol[x2][y2]
 	w.Dot[x][y] = w.Dot[x2][y2]
 	w.Oxid[x][y] = w.Oxid[x2][y2]
 	w.State[x][y] = w.State[x2][y2]
 	w.Thermo[x][y] = w.Thermo[x2][y2]
 
+	w.Dissol[x2][y2] = tmpD
 	w.Dot[x2][y2] = tmpM
 	w.Oxid[x2][y2] = tmpO
 	w.State[x2][y2] = tmpS

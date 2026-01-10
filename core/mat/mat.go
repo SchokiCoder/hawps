@@ -29,6 +29,7 @@ const (
 	Sulfur
 	SulfurTrioxide
 	BlackPowder
+	SulfuricAcid
 
 	MatCount int = iota
 )
@@ -50,28 +51,42 @@ const (
 )
 
 var (
-	_symbol           = [...]string  {"nil",  "Si",    "Si",    "H2O",  "Fe",      "O2",     "H2",       "CO2",    "CH4",         "C9O",         "FeO",        "Al",          "AlO",    "FeAl",   "Mg",           "MgO",     "S",         "SO3", "SC"}           /* Simplified chemical formula */
-	_weight           = [...]float64 {0.0,    1.5,     1.5,     0.999,  7.874,     0.001323, 0.00008319, 0.001977, 0.000657,      0.833,         5.25,         2.699,         3.987,    0.7,      17.37,          3.6,       1.96,        1.92,  1.7}            /* g/cm³ */
-	_boilP            = [...]float64 {0,      3223.15, 3223.15, 373.15, 3134.15,   90.19,    27.20,      194.686,  111.65,        3947.65,       9999.9,       2743.0,        3250.0,   3134.15,  1363.0,         3870.0,    717.8,       318.0, 3947.65}        /* boils at K */
-	_ignP             = [...]float64 {0,      0,       0,       0,      0,         0,        858.0,      0,        853.15,        1001.15,       0,            0,             0,        1811.0,   746.0,          0,         0,           0,     737.15}         /* ignites at K */
-	_meltP            = [...]float64 {0,      1985.15, 1985.15, 273.15, 1811.15,   54.36,    13.99,      216.589,  90.55,         4200.15,       1812.0,       933.47,        2345.0,   1811.15,  923.0,          3125.0,    388.36,      290.0, 4200.15}        /* melts at K */
-	_meltPrdct        = [...]Mat     {None,   Glass,   None,    None,   None,      None,     None,       None,     None,          None,          Iron,         None,          Aluminum, None,     None,           Magnesium, None,        None,  None}           /* becomes mat upon melting */
-	_oxidRandom       = [...]bool    {false,  false,   false,   false,  false,     false,    false,      false,    false,         true,          false,        false,         false,    true,     false,          false,     false,       false, false}          /* Has random oxidation products */
-	_oxidPrdct1Chance = [...]int     {0,      0,       0,       0,      0,         0,        0,          0,        0,             5,             0,            0,             0,        67,       0,              0,         0,           0,     50}             /* oxidation product 1 chance at 0 - 100 percent */
-	_oxidPrdct1       = [...]Mat     {None,   None,    None,    None,   IronOxide, None,     Water,      None,     Water,         Water,         None,         AluminumOxide, None,     Iron,     MagnesiumOxide, None,      None,        None,  SulfurTrioxide} /* Oxidation product 1 */
-	_oxidPrdct2       = [...]Mat     {None,   None,    None,    None,   Oxygen,    None,     Water,      None,     CarbonDioxide, CarbonDioxide, None,         Oxygen,        None,     Aluminum, Oxygen,         None,      None,        None,  CarbonDioxide}  /* Oxidation product 2 */
-	_oxidTh           = [...]float64 {0,      0,       0,       0,      0.69,      0,        2130.0,     0,        1963.0,        5400.0,        0,            0.69,          0,        6270.0,   6740.0,         0,         0,           0,     2400.0}         /* K released on oxidation */
-	_oxidSpd          = [...]float64 {0,      0,       0,       0,      0.0001112, 0,        0.34,       0,        0.2,           0.005,         0,            0.00666666,    0,        0.05,     0.1,            0,         0,           0,     0.5}            /* oxidation fraction per tick */
-	_solidS           = [...]State   {Static, Grain,   Static,  Static, Static,    Static,   Static,     Static,   Static,        Static,        Grain,        Static,        Static,   Grain,    Static,         Grain,     Grain,       Grain, Grain}          /* state when solid */
-	_thCond           = [...]float64 {0.0,    0.00673, 0.00673, 0.0061, 0.0804,    0.002,    0.0018,     0.00146,  0.003,         0.0033,        0.063,        0.237,         0.03,     0.063,    0.156,          0.0525,    0.000205,    0.011, 0.05}           /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
-	_touchReagent     = [...]Mat     {None,   None,    None,    None,   None,      None,     None,       None,     None,          None,          Aluminum,     IronOxide,     None,     None,     None,           None,      Coal,        None,  None}           /* touching this material causes a reaction */
-	_touchPrdct1      = [...]Mat     {None,   None,    None,    None,   None,      None,     None,       None,     None,          None,          IronThermite, IronThermite,  None,     None,     None,           None,      BlackPowder, None,  None}           /* Touch product 1 */
-	_touchPrdct2      = [...]Mat     {None,   None,    None,    None,   None,      None,     None,       None,     None,          None,          IronThermite, IronThermite,  None,     None,     None,           None,      BlackPowder, None,  None}           /* Touch product 2 */
-	_r                = [...]uint8   {0,      238,     237,     150,    185,       200,      200,        200,      65,            30,            62,           200,           225,      112,      200,            240,       181,         240,   60}             /* R */
-	_g                = [...]uint8   {0,      217,     237,     150,    175,       200,      200,        200,      65,            30,            9,            200,           225,      59,       200,            240,       169,         240,   60}             /* G */
-	_b                = [...]uint8   {0,      86,      237,     255,    175,       255,      255,        255,      65,            30,            0,            210,           225,      65,       200,            240,       49,          240,   60}             /* B */
-	_a                = [...]uint8   {0,      255,     128,     205,    255,       100,      100,        100,      150,           255,           255,          255,           255,      255,      255,            255,       215,         255,   255}            /* A */
+	_symbol           = [...]string  {"nil",  "Si",    "Si",    "H2O",  "Fe",      "O2",     "H2",       "CO2",    "CH4",         "C9O",         "FeO",        "Al",          "AlO",    "FeAl",   "Mg",           "MgO",     "S",         "SO3", "SC",           "H2SO"} /* Simplified chemical formula */
+	_acidity          = [...]float64 {0,      0,       0,       0,      0,         0,        0,          0,        0,             0,             0,            0,             0,        0,        0,              0,         0,           0,     0,              0.3334} /* inflicts dissolution fraction per tick */
+	_acidVuln         = [...]float64 {0,      0,       0,       0,      0.5,       0,        0,          0,        0,             0.2,           1.0,          0.5,           1.0,      1.0,      0.5,            1.0,       0.005,       0.05,  0.075,          0}      /* factor at which acid damage is multiplied */
+	_weight           = [...]float64 {0.0,    1.5,     1.5,     0.999,  7.874,     0.001323, 0.00008319, 0.001977, 0.000657,      0.833,         5.25,         2.699,         3.987,    0.7,      17.37,          3.6,       1.96,        1.92,  1.7,            1.8302} /* g/cm³ */
+	_boilP            = [...]float64 {0,      3223.15, 3223.15, 373.15, 3134.15,   90.19,    27.20,      194.686,  111.65,        3947.65,       9999.9,       2743.0,        3250.0,   3134.15,  1363.0,         3870.0,    717.8,       318.0, 3947.65,        610.0}  /* boils at K */
+	_ignP             = [...]float64 {0,      0,       0,       0,      0,         0,        858.0,      0,        853.15,        1001.15,       0,            0,             0,        1811.0,   746.0,          0,         0,           0,     737.15,         0}      /* ignites at K */
+	_meltP            = [...]float64 {0,      1985.15, 1985.15, 273.15, 1811.15,   54.36,    13.99,      216.589,  90.55,         4200.15,       1812.0,       933.47,        2345.0,   1811.15,  923.0,          3125.0,    388.36,      290.0, 4200.15,        283.46} /* melts at K */
+	_meltPrdct        = [...]Mat     {None,   Glass,   None,    None,   None,      None,     None,       None,     None,          None,          Iron,         None,          Aluminum, None,     None,           Magnesium, None,        None,  None,           None}   /* becomes mat upon melting */
+	_oxidRandom       = [...]bool    {false,  false,   false,   false,  false,     false,    false,      false,    false,         true,          false,        false,         false,    true,     false,          false,     false,       false, false,          false}  /* Has random oxidation products */
+	_oxidPrdct1Chance = [...]int     {0,      0,       0,       0,      0,         0,        0,          0,        0,             5,             0,            0,             0,        67,       0,              0,         0,           0,     50,             0}      /* oxidation product 1 chance at 0 - 100 percent */
+	_oxidPrdct1       = [...]Mat     {None,   None,    None,    None,   IronOxide, None,     Water,      None,     Water,         Water,         None,         AluminumOxide, None,     Iron,     MagnesiumOxide, None,      None,        None,  SulfurTrioxide, None}   /* Oxidation product 1 */
+	_oxidPrdct2       = [...]Mat     {None,   None,    None,    None,   Oxygen,    None,     Water,      None,     CarbonDioxide, CarbonDioxide, None,         Oxygen,        None,     Aluminum, Oxygen,         None,      None,        None,  CarbonDioxide,  None}   /* Oxidation product 2 */
+	_oxidTh           = [...]float64 {0,      0,       0,       0,      0.69,      0,        2130.0,     0,        1963.0,        5400.0,        0,            0.69,          0,        6270.0,   6740.0,         0,         0,           0,     2400.0,         0}      /* K released on oxidation */
+	_oxidSpd          = [...]float64 {0,      0,       0,       0,      0.0001112, 0,        0.34,       0,        0.2,           0.005,         0,            0.00666666,    0,        0.05,     0.1,            0,         0,           0,     0.5,            0}      /* oxidation fraction per tick */
+	_solidS           = [...]State   {Static, Grain,   Static,  Static, Static,    Static,   Static,     Static,   Static,        Static,        Grain,        Static,        Static,   Grain,    Static,         Grain,     Grain,       Grain, Grain,          Static} /* state when solid */
+	_thCond           = [...]float64 {0.0,    0.00673, 0.00673, 0.0061, 0.0804,    0.002,    0.0018,     0.00146,  0.003,         0.0033,        0.063,        0.237,         0.03,     0.063,    0.156,          0.0525,    0.000205,    0.011, 0.05,           0.0061} /* W/(m⋅K)/1000 but flattened so that at most two zeroes are after the dot */
+	_touchReagent     = [...]Mat     {None,   None,    None,    None,   None,      None,     None,       None,     None,          None,          Aluminum,     IronOxide,     None,     None,     None,           None,      Coal,        None,  None,           None}   /* touching this material causes a reaction */
+	_touchPrdct1      = [...]Mat     {None,   None,    None,    None,   None,      None,     None,       None,     None,          None,          IronThermite, IronThermite,  None,     None,     None,           None,      BlackPowder, None,  None,           None}   /* Touch product 1 */
+	_touchPrdct2      = [...]Mat     {None,   None,    None,    None,   None,      None,     None,       None,     None,          None,          IronThermite, IronThermite,  None,     None,     None,           None,      BlackPowder, None,  None,           None}   /* Touch product 2 */
+	_r                = [...]uint8   {0,      238,     237,     150,    185,       200,      200,        200,      65,            30,            62,           200,           225,      112,      200,            240,       181,         240,   60,             255}    /* R */
+	_g                = [...]uint8   {0,      217,     237,     150,    175,       200,      200,        200,      65,            30,            9,            200,           225,      59,       200,            240,       169,         240,   60,             255}    /* G */
+	_b                = [...]uint8   {0,      86,      237,     255,    175,       255,      255,        255,      65,            30,            0,            210,           225,      65,       200,            240,       49,          240,   60,             255}    /* B */
+	_a                = [...]uint8   {0,      255,     128,     205,    255,       100,      100,        100,      150,           255,           255,          255,           255,      255,      255,            255,       215,         255,   255,            30}     /* A */
 )
+
+func Acidity(
+	i Mat,
+) float64 {
+	return _acidity[i]
+}
+
+func AcidVulnerability(
+	i Mat,
+) float64 {
+	return _acidVuln[i]
+}
 
 func Symbol(
 	i Mat,
