@@ -7,15 +7,10 @@ Clay might be boring. Do something with it.
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
 
-- [ ] add shader that uses the temperature glow to emit light around the glowing object
-
 - [ ] test android build
 `sudo apt install google-android-ndk-r26d-installer or newer version`
 
 - [ ] add "hold ALT key" to display what UI element uses which key bind
-
-- [ ] unify approach to flag error prints
-Some are panics, despite a graceful shutdown being implemented
 
 - [ ] find out how to make ebiten not use keyboard scancodes
 - [ ] add non-numpad plus/minus to tickrate keybinds
@@ -25,10 +20,26 @@ But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
 
-- [ ] add make rule for optimized release binary
+# Beauty Update
+
+- [ ] fix temperature glow (see black body radiation)
+The visible result is different due to the colors mixing,
+becoming a white eventually. Otherwise our sun would be green. It isn't...
+which is kinda sad.
+
+- [ ] change conduction so that the conductivity describes the rate at which a mat **loses** temperature?
+A metal rod (high cond.) can ignite a gas (low cond.) quickly this way.
+Thus redo all the conductivity values to remove the artifical flattening?
 
 - [ ] load image files instead of embedding them
 - [ ] move mat property table to json or csv and provide an init function for package mat
+
+- [ ] add make rule for optimized release binary
+- [ ] ensure packaging and installation aligns with flatpaks
+- [ ] add shader that uses the temperature glow to emit light around the glowing object
+
+- [ ] unify approach to flag error prints
+Some are panics, despite a graceful shutdown being implemented
 
 # Hot Air Update
 
@@ -166,7 +177,14 @@ therefore I just decided it becomes glass. Currently there is no
 "random melting product" system,
 and I don't feel adding it for just one edge case.
 
-- [ ] add some Rocks lol
+- [x] add Limestone and Cement
+- [ ] add wet cement and concrete
+
+- [ ] remove the `_oxidRandom` property allows removal of an if: `if _oxidRandom[i] {`,
+which guards two ifs.
+current best case = no ifs; worst case = three ifs
+removal means always two ifs
+Do that?
 
 - [ ] add world/dot scaling
 And set default scaling to 4.
@@ -180,13 +198,7 @@ but that was just a joke, I swear.
 - [ ] change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
 
-- [ ] change conduction so that the conductivity describes the rate at which a mat **loses** temperature?
-A metal rod (high cond.) can ignite a gas (low cond.) quickly this way.
-
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
-- [ ] fix temperature glow (see black body radiation)
-The visible result maybe different due to the colors mixing,
-becoming a white eventually
 
 - [ ] add core test against gravity
 - [ ] add core test against grain stack collapse
