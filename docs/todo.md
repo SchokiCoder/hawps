@@ -1,3 +1,12 @@
+- [ ] enable grains to absorb water, or add a water can wash away clay function?
+Clay might be boring. Do something with it.
+
+- [ ] add "Hammer" tool, which changes statics into grains?
+- [ ] increase the resolution of available glow colors ?
+
+- [ ] add per spawner temperature
+- [ ] add temperature setting for new spawners
+
 - [ ] add shader that uses the temperature glow to emit light around the glowing object
 
 - [ ] test android build
@@ -146,20 +155,30 @@ This has been applied to all oxidations except Coal.
 - [x] add Magnesium and Magnesiumoxide
 - [x] add Sulfur, Sulfur trioxide, and Gunpowder
 - [x] add Sulfuric acid and acidity system
-- [ ] add Dirt
+- [x] ~~add Dirt~~
+- [x] add Clay and Ceramic
+Dirt is too impure and would be wonky to implement,
+which is rich given that clay is implemented even.
+Dirt is just even worse than clay.
+Ceramic probably wouldn't melt and then eventually go back to being solid
+ceramic. It apparently gets destroyed by heat. It seems to be mainly silicon,
+therefore I just decided it becomes glass. Currently there is no
+"random melting product" system,
+and I don't feel adding it for just one edge case.
+
 - [ ] add some Rocks lol
+
+- [ ] add world/dot scaling
+And set default scaling to 4.
+- [ ] double the resolution to allow better labels on the materials
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
 I didn't even notice that. You may think I did,
 because Iron and Alu oxidation have that value given,
 but that was just a joke, I swear.
 
-- [ ] add "Hammer" tool, which changes statics into grains?
 - [ ] change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
-
-- [ ] add per spawner temperature
-- [ ] add temperature setting for new spawners
 
 - [ ] change conduction so that the conductivity describes the rate at which a mat **loses** temperature?
 A metal rod (high cond.) can ignite a gas (low cond.) quickly this way.
@@ -168,7 +187,6 @@ A metal rod (high cond.) can ignite a gas (low cond.) quickly this way.
 - [ ] fix temperature glow (see black body radiation)
 The visible result maybe different due to the colors mixing,
 becoming a white eventually
-- [ ] increase the resolution of available glow colors ?
 
 - [ ] add core test against gravity
 - [ ] add core test against grain stack collapse

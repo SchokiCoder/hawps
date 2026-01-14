@@ -28,11 +28,13 @@ func _() {
 	_ = x[SulfurTrioxide-17]
 	_ = x[BlackPowder-18]
 	_ = x[SulfuricAcid-19]
+	_ = x[Kaolinite-20]
+	_ = x[Metakaolin-21]
 }
 
-const _Mat_name = "NoneSandGlassWaterIronOxygenHydrogenCarbonDioxideMethaneCoalIronOxideAluminumAluminumOxideIronThermiteMagnesiumMagnesiumOxideSulfurSulfurTrioxideBlackPowderSulfuricAcid"
+const _Mat_name = "NoneSandGlassWaterIronOxygenHydrogenCarbonDioxideMethaneCoalIronOxideAluminumAluminumOxideIronThermiteMagnesiumMagnesiumOxideSulfurSulfurTrioxideBlackPowderSulfuricAcidKaoliniteMetakaolin"
 
-var _Mat_index = [...]uint8{0, 4, 8, 13, 18, 22, 28, 36, 49, 56, 60, 69, 77, 90, 102, 111, 125, 131, 145, 156, 168}
+var _Mat_index = [...]uint8{0, 4, 8, 13, 18, 22, 28, 36, 49, 56, 60, 69, 77, 90, 102, 111, 125, 131, 145, 156, 168, 177, 187}
 
 func (i Mat) String() string {
 	if i < 0 || i >= Mat(len(_Mat_index)-1) {
