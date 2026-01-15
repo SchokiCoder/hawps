@@ -79,6 +79,7 @@ const (
 	stdTemperature = 20 + celsiusToKelvin
 	stdWinW        = 640
 	stdWinH        = 480
+	stdWinScale    = 4
 	stdWorldScale  = 4
 
 	toolHoverR     = 175
@@ -556,6 +557,10 @@ Options:
     -noborder
         removes window decoration from window
 
+    -scale -winscale -windowscale
+        sets the overall graphical scale
+        default: %v
+
     -tallui
         overrides automatic layout determination, and sets tall ui
 
@@ -718,6 +723,7 @@ func handleArgs(
 	tickrate    *int,
 	winW        *int,
 	winH        *int,
+	winScale    *int,
 	worldScale  *int,
 ) bool {
 	argToInt := func(i int) int {
@@ -757,6 +763,7 @@ func handleArgs(
 			fmt.Printf(appHelp,
 			           AppName,
 			           stdWinH,
+			           stdWinScale,
 			           celsiusToKelvin,
 			           stdTemperature,
 			           stdTickrate,
@@ -769,6 +776,12 @@ func handleArgs(
 
 		case "-noborder":
 			ebiten.SetWindowDecorated(false)
+
+		case "-scale": fallthrough
+		case "-winscale": fallthrough
+		case "-windowscale":
+			*winScale = argToInt(i)
+			i++
 
 		case "-tallui":
 			*layout = tall
@@ -822,6 +835,7 @@ func main(
 		layout     uiLayout
 		tiles      []int
 		tsWide     bool
+		winScale   int = stdWinScale
 		winW       int = stdWinW
 		winH       int = stdWinH
 		mbW, mbH   int
@@ -839,6 +853,7 @@ func main(
 		&g.Tickrate,
 		&winW,
 		&winH,
+		&winScale,
 		&g.WorldScale,
 	) == false {
 		return
@@ -846,11 +861,11 @@ func main(
 
 	if ebiten.IsFullscreen() {
 		screenW, screenH := ebiten.Monitor().Size()
-		g.FrameW = screenW / 10
-		g.FrameH = screenH / 10
+		g.FrameW = screenW / winScale
+		g.FrameH = screenH / winScale
 	} else {
-		g.FrameW = winW / 4
-		g.FrameH = winH / 4
+		g.FrameW = winW / winScale
+		g.FrameH = winH / winScale
 	}
 
 	switch layout {

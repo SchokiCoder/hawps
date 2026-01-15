@@ -181,6 +181,8 @@ and I don't feel adding it for just one edge case.
 
 - [x] add world/dot scaling
 Default scaling is 4.
+- [x] add overall scaling
+This removes the old magic numbers for scaling with flags and proper defaults.
 - [ ] double the resolution to allow better labels on the materials
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
