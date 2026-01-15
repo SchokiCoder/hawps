@@ -178,16 +178,9 @@ therefore I just decided it becomes glass. Currently there is no
 and I don't feel adding it for just one edge case.
 
 - [x] add Limestone and Cement
-- [ ] add wet cement and concrete
 
-- [ ] remove the `_oxidRandom` property allows removal of an if: `if _oxidRandom[i] {`,
-which guards two ifs.
-current best case = no ifs; worst case = three ifs
-removal means always two ifs
-Do that?
-
-- [ ] add world/dot scaling
-And set default scaling to 4.
+- [x] add world/dot scaling
+Default scaling is 4.
 - [ ] double the resolution to allow better labels on the materials
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
@@ -197,6 +190,16 @@ but that was just a joke, I swear.
 
 - [ ] change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
+
+- [ ] add wet cement and concrete
+I fear this needs a new system for changing mats when going from liquid to solid,
+or a system where grains can generally absorb water
+
+- [ ] remove the `_oxidRandom` property allows removal of an if: `if _oxidRandom[i] {`,
+which guards two ifs.
+current best case = no ifs; worst case = three ifs
+removal means always two ifs
+Do that?
 
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 

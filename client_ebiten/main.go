@@ -50,7 +50,7 @@ const (
 	stdBrushRadius  = 2
 	stdEraserRadius = 5
 	stdThermoRadius = stdBrushRadius
-	maxRadius = 32
+	maxRadius = 16
 	thermalVisionMinT  = -75 + celsiusToKelvin
 
 	stdTickrate     = 120
@@ -79,6 +79,7 @@ const (
 	stdTemperature = 20 + celsiusToKelvin
 	stdWinW        = 640
 	stdWinH        = 480
+	stdWorldScale  = 4
 
 	toolHoverR     = 175
 	toolHoverG     = 255
@@ -115,6 +116,7 @@ type physGame struct {
 	ToolImg      *ebiten.Image
 	World        core.World
 	WorldImg     *ebiten.Image
+	WorldScale   int
 	WorldX       int
 	WorldY       int
 }
@@ -130,6 +132,7 @@ func newPhysGame(
 		Tickrate:     stdTickrate,
 		TsSinceSim:   9001,
 		SimSubsample: stdSimSubsample,
+		WorldScale:   stdWorldScale,
 	}
 
 	return ret
@@ -253,8 +256,8 @@ func (g physGame) Draw(
 	}
 
 	thX, thY := ebiten.CursorPosition()
-	thX -= radius + g.WorldX
-	thY -= radius + g.WorldY
+	thX = ((thX - g.WorldX) / g.WorldScale) - radius
+	thY = ((thY - g.WorldY) / g.WorldScale) - radius
 	thX2 := thX + radius * 2 + 1
 	thY2 := thY + radius * 2 + 1
 	for x := thX; x < thX2; x++ {
@@ -269,6 +272,7 @@ func (g physGame) Draw(
 	}
 
 	opt.GeoM.Reset()
+	opt.GeoM.Scale(float64(g.WorldScale), float64(g.WorldScale))
 	opt.GeoM.Translate(float64(g.WorldX), float64(g.WorldY))
 	opt.Blend.BlendFactorSourceRGB = ebiten.BlendFactorSourceAlpha
 	screen.DrawImage(g.WorldImg, &opt)
@@ -283,6 +287,7 @@ func (g *physGame) HandleClick(
 	var (
 		clicked  bool
 		mX, mY   int
+		wX, wY   int
 		prevTool extra.Tool
 	)
 
@@ -305,9 +310,12 @@ func (g *physGame) HandleClick(
 		clicked = g.Matbox.HandleClick(mX, mY)
 	}
 
+	wX = (mX - g.WorldX) / g.WorldScale
+	wY = (mY - g.WorldY) / g.WorldScale
+
 	if !clicked &&
-	   mX >= g.WorldX && mX < g.WorldX + g.World.W &&
-	   mY >= g.WorldY && mY < g.WorldY + g.World.H {
+	   wX >= 0 && wX < g.World.W &&
+	   wY >= 0 && wY < g.World.H {
 		curTool := extra.Tool(g.Toolbox.Cursor)
 
 		switch curTool {
@@ -315,34 +323,23 @@ func (g *physGame) HandleClick(
 			g.World.UseBrush(
 				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor]),
 				g.Temperature,
-				mX - g.WorldX,
-				mY - g.WorldY,
+				wX,
+				wY,
 				g.BrushRadius)
 
 		case extra.Spawner:
-			g.World.Spawner[mX - g.WorldX][mY - g.WorldY] = true
-			g.World.SpwnMat[mX - g.WorldX][mY - g.WorldY] =
+			g.World.Spawner[wX][wY] = true
+			g.World.SpwnMat[wX][wY] =
 				mat.Mat(g.Matbox.VisibleTiles[g.Matbox.Cursor])
 
 		case extra.Eraser:
-			g.World.UseEraser(
-				mX - g.WorldX,
-				mY - g.WorldY,
-				g.EraserRadius)
+			g.World.UseEraser(wX, wY, g.EraserRadius)
 
 		case extra.Heater:
-			g.World.UseHeater(
-				heaterDelta,
-				mX - g.WorldX,
-				mY - g.WorldY,
-				g.ThermoRadius)
+			g.World.UseHeater(heaterDelta, wX, wY, g.ThermoRadius)
 
 		case extra.Cooler:
-			g.World.UseCooler(
-				heaterDelta,
-				mX - g.WorldX,
-				mY - g.WorldY,
-				g.ThermoRadius)
+			g.World.UseCooler(heaterDelta, wX, wY, g.ThermoRadius)
 
 		default:
 			panic("Used unknown tool " + curTool.String())
@@ -372,8 +369,8 @@ func (g *physGame) HandleWheel(
 	if g.Matbox.HandleWheel(mX, mY, delta) {
 		return
 	}
-	if mX >= g.WorldX && mX < g.WorldX + g.World.W &&
-	   mY >= g.WorldY && mY < g.WorldY + g.World.H {
+	if mX >= g.WorldX && mX < g.WorldX + g.World.W * g.WorldScale &&
+	   mY >= g.WorldY && mY < g.WorldY + g.World.H * g.WorldScale {
 		switch extra.Tool(g.Toolbox.Cursor) {
 		case extra.Brush:
 			target = &g.BrushRadius
@@ -586,6 +583,10 @@ Options:
     -window -windowed
         starts the app in windowed mode... not fullscreen
 
+    -worldscale
+        sets the graphical scale of the world
+        default: %v
+
 Default keybinds:
 
     ESC
@@ -717,6 +718,7 @@ func handleArgs(
 	tickrate    *int,
 	winW        *int,
 	winH        *int,
+	worldScale  *int,
 ) bool {
 	argToInt := func(i int) int {
 		if len(os.Args) <= i + 1 {
@@ -759,6 +761,7 @@ func handleArgs(
 			           stdTemperature,
 			           stdTickrate,
 			           stdWinW,
+			           stdWorldScale,
 			           float64(stdTickrate) / float64(stdSimSubsample),
 			           thermalVisionMinT - celsiusToKelvin,
 			           thermalVisionMinT - celsiusToKelvin + 255)
@@ -800,6 +803,10 @@ func handleArgs(
 		case "-windowed":
 			ebiten.SetFullscreen(false)
 
+		case "-worldscale":
+			*worldScale = argToInt(i)
+			i++
+
 		default:
 			panic(`Argument "` + os.Args[i] + `" is not recognized`)
 		}
@@ -832,6 +839,7 @@ func main(
 		&g.Tickrate,
 		&winW,
 		&winH,
+		&g.WorldScale,
 	) == false {
 		return
 	}
@@ -862,8 +870,8 @@ func main(
 		tbH = pngSize * 2
 		mbW = tbW
 		mbH = g.FrameH - tbH
-		wW = g.FrameW - tbW
-		wH = g.FrameH
+		wW = (g.FrameW - tbW) / g.WorldScale
+		wH = g.FrameH / g.WorldScale
 		g.WorldX = tbW
 		g.WorldY = 0
 	} else {
@@ -871,8 +879,8 @@ func main(
 		tbH = uiTileSetW * pngSize
 		mbW = g.FrameW - tbW
 		mbH = tbH
-		wW = g.FrameW
-		wH = g.FrameH - tbH
+		wW = g.FrameW / g.WorldScale
+		wH = (g.FrameH - tbH) / g.WorldScale
 		g.WorldX = 0
 		g.WorldY = 0
 	}
