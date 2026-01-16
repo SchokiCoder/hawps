@@ -183,7 +183,20 @@ and I don't feel adding it for just one edge case.
 Default scaling is 4.
 - [x] add overall scaling
 This removes the old magic numbers for scaling with flags and proper defaults.
-- [ ] double the resolution to allow better labels on the materials
+- [x] add better labels for materials
+This needed multiple things.
+Changing the win- and worldscale, adding a scale for pngs (constant),
+updating the TileSets in use, and updating the mat table.
+Sadly "Al2Si2O5" and "Al2Si2O7" still don't fully fit,
+but at least now one can see how things may transform.
+Seeing "CaCO3" and then "CaO", obviously a "CO2" is missing,
+which is released when burning it.
+This may given an "aha" moment to the user.
+Also thermite is not one molecule.
+It's a mix and should technically be labelled "2 Al+Fe2O3",
+which is obviously still too long as well.
+
+- [ ] scroll TileSet when cursor goes below or above visible
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
 I didn't even notice that. You may think I did,

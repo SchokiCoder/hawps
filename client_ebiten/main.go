@@ -58,6 +58,7 @@ const (
 	heaterDelta     = 1
 
 	firstRealMat   = mat.Sand
+	pngScale       = 2
 	pngSize        = 16
 
 	uiToolBgR      = 80
@@ -79,8 +80,8 @@ const (
 	stdTemperature = 20 + celsiusToKelvin
 	stdWinW        = 640
 	stdWinH        = 480
-	stdWinScale    = 4
-	stdWorldScale  = 4
+	stdWinScale    = 2
+	stdWorldScale  = 8
 
 	toolHoverR     = 175
 	toolHoverG     = 255
@@ -654,7 +655,7 @@ func genMatImages(t float64) []*ebiten.Image {
 			ui.FontCharMaxH)
 		ui.DrawText(symbolImg, 0, 0, mat.Symbol(i), uiSymbolFontSpacing)
 		opt := ebiten.DrawImageOptions{}
-		img := ebiten.NewImage(pngSize, pngSize)
+		img := ebiten.NewImage(pngSize * pngScale, pngSize * pngScale)
 
 		state := mat.ThermoToState(i, t)
 		c := color.RGBA{
@@ -665,6 +666,7 @@ func genMatImages(t float64) []*ebiten.Image {
 		}
 
 		opt.ColorM.ScaleWithColor(c)
+		opt.GeoM.Scale(float64(pngScale), float64(pngScale))
 		img.DrawImage(bgImgs[state], &opt)
 
 		opt.ColorM.Reset()
@@ -674,8 +676,9 @@ func genMatImages(t float64) []*ebiten.Image {
 			B: 255 - c.B,
 			A: 255})
 		symbolImgW, symbolImgH = symbolImg.Size()
-		opt.GeoM.Translate(float64(pngSize - symbolImgW) / 2,
-		                   float64(pngSize - symbolImgH - 1))
+		opt.GeoM.Reset()
+		opt.GeoM.Translate(float64((pngSize * pngScale) - symbolImgW) / 2,
+		                   float64((pngSize * pngScale) - symbolImgH - 1))
 		img.DrawImage(symbolImg, &opt)
 		ret = append(ret, img)
 	}
@@ -691,21 +694,23 @@ func genToolImages() []*ebiten.Image {
 	)
 
 	imgopenAndDraw := func(path string, dest *ebiten.Image) {
+		opt := ebiten.DrawImageOptions{}
 		img, _, err := ebitenutil.NewImageFromFileSystem(pngs, path)
 		if err != nil {
 			panic(err)
 		}
-		dest.DrawImage(img, nil)
+		opt.GeoM.Scale(float64(pngScale), float64(pngScale))
+		dest.DrawImage(img, &opt)
 	}
 
 	for i := 0; i < extra.ToolCount; i++ {
-		ret[i] = ebiten.NewImage(pngSize, pngSize)
+		ret[i] = ebiten.NewImage(pngSize * pngScale, pngSize * pngScale)
 
 		vector.DrawFilledCircle(
 			ret[i],
-			float32(pngSize / 2),
-			float32(pngSize / 2),
-			float32(pngSize / 2) + 2,
+			float32((pngSize * pngScale) / 2),
+			float32((pngSize * pngScale) / 2),
+			float32((pngSize * pngScale) / 2) + 2,
 			image.Black,
 			false)
 
@@ -881,8 +886,8 @@ func main(
 	}
 
 	if true == tsWide {
-		tbW = uiTileSetW * pngSize
-		tbH = pngSize * 2
+		tbW = uiTileSetW * (pngSize * pngScale)
+		tbH = (pngSize * pngScale) * 2
 		mbW = tbW
 		mbH = g.FrameH - tbH
 		wW = (g.FrameW - tbW) / g.WorldScale
@@ -890,8 +895,8 @@ func main(
 		g.WorldX = tbW
 		g.WorldY = 0
 	} else {
-		tbW = pngSize * 2
-		tbH = uiTileSetW * pngSize
+		tbW = (pngSize * pngScale) * 2
+		tbH = uiTileSetW * (pngSize * pngScale)
 		mbW = g.FrameW - tbW
 		mbH = tbH
 		wW = g.FrameW / g.WorldScale
