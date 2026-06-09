@@ -19,8 +19,8 @@ all: $(APP_NAME)_ebiten
 clean:
 	rm -f $(APP_NAME)_*
 
-run: clean $(APP_NAME)_ebiten
-	./$(APP_NAME)_ebiten -window
+run: clean $(APP_NAME)_terminal
+	./$(APP_NAME)_terminal
 
 test:
 	go test ./core -cpuprofile cpu.prof -memprofile mem.prof -bench ./core
@@ -30,6 +30,12 @@ vet:
 
 $(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
 	go build $(GO_COMPILE_VARS) -o $@ ./client_ebiten
+
+$(APP_NAME)_terminal: client_terminal/*.go client_terminal/csi/*.go client_terminal/tool_string.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
+	go build $(GO_COMPILE_VARS) -o $@ ./client_terminal
+
+client_terminal/tool_string.go: client_terminal/main.go
+	go generate ./client_terminal
 
 core/mat/mat_string.go: core/mat/mat.go
 	go generate ./core/mat

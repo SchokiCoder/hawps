@@ -1,6 +1,6 @@
 module github.com/SchokiCoder/hawps/client_ebiten
 
-go 1.22
+go 1.25.0
 
 require (
 	github.com/ebitengine/gomobile v0.0.0-20240911145611-4856209ac325 // indirect
@@ -10,6 +10,7 @@ require (
 	github.com/jezek/xgb v1.1.1 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/tools v0.27.0 // indirect
 )

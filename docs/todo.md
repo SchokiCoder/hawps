@@ -1,3 +1,7 @@
+- [ ] ebiten client: scroll TileSet when cursor goes below or above visible
+- [ ] ebiten client: change TileSet to use mouse on release
+This fixes accidentally changing mat or tool
+
 - [ ] enable grains to absorb water, or add a water can wash away clay function?
 Clay might be boring. Do something with it.
 
@@ -196,15 +200,38 @@ Also thermite is not one molecule.
 It's a mix and should technically be labelled "2 Al+Fe2O3",
 which is obviously still too long as well.
 
-- [ ] scroll TileSet when cursor goes below or above visible
+- [x] create basic terminal client
+What? Why?
+I used to be a frontend dev like you, but then I took a GTK to the knee.
+GUI has been the bane of my existence for the past year.
+Qt is C++ = no.
+Tk is sadly unfit due to performance issues and an unclear future,
+regarding X11's impending death.
+Hacking together widgets, whether in my own lib (C/Tk) or in Ebiten,
+is just stinky.
+The idea of TUI for hawps I mocked up turned out better than I expected,
+and it even took less time than coming up with my GUI design.
+Best of all, new features like save-load, networking, etc. will be easy...
+Just add a flag to arg-parsing, done.
+Now losing mouse input isn't trivial, I know, but so is losing my sanity.
+"Proper" GUI was supposed to be a quick slam dunk and win for desktop users,
+but it became a full on main quest with C/Tk.
+While fun (most of the time) I lost 5 months for hawps.
+No commits, no work.
+
+- [ ] terminal client: add navigation input and mainloop
+- [ ] terminal client: add draw dots with color
+- [ ] terminal client: add draw dots with glow color
+- [ ] terminal client: add draw tool
+- [ ] terminal client: add thermoview
+- [ ] terminal client: add tool switch binds
+- [ ] terminal client: add cmdline
+- [ ] terminal client: add flags
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
 I didn't even notice that. You may think I did,
 because Iron and Alu oxidation have that value given,
 but that was just a joke, I swear.
-
-- [ ] change TileSet to use mouse on release
-This fixes accidentally changing mat or tool
 
 - [ ] add wet cement and concrete
 I fear this needs a new system for changing mats when going from liquid to solid,
