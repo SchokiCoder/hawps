@@ -219,6 +219,18 @@ but it became a full on main quest with C/Tk.
 While fun (most of the time) I lost 5 months for hawps.
 No commits, no work.
 
+- [x] terminal client: port to C
+HUH?!
+Yeah, let me squeeze that in real quick. Why?
+Ebiten is just one client, next to Tk and potentially someday C/Tk (who knows?)
+and it's only Ebiten that is written in Go.
+The core and extra lib of hawps already have C versions that need to be dug out
+and some features need to be backported.
+Now if I'll ever use Ebiten client again, I'll just bind the C libs with CGo.
+
+- [ ] bring back C versions of core and extra
+- [ ] port back features from the Go version
+
 - [ ] terminal client: add navigation input and mainloop
 - [ ] terminal client: add draw dots with color
 - [ ] terminal client: add draw dots with glow color

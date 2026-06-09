@@ -7,10 +7,11 @@ LICENSE          :=LGPL-2.1-only
 LICENSE_URL      :=https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
 REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
-GO_COMPILE_VARS  :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
+GO_DEFINES       :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
 
-CC     :=cc
-CFLAGS :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
+CC        :=cc
+C_FLAGS   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
+C_DEFINES :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(LICENSE)"' -D APP_LICENSE_URL='"$(LICENSE_URL)"' -D APP_REPOSITORY='"$(REPOSITORY)"' -D APP_VERSION='"$(VERSION)"'
 
 .PHONY: all build clean generate run test vet
 
@@ -29,13 +30,12 @@ vet:
 	go vet ./client_ebiten
 
 $(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
-	go build $(GO_COMPILE_VARS) -o $@ ./client_ebiten
+	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
-$(APP_NAME)_terminal: client_terminal/*.go client_terminal/csi/*.go client_terminal/tool_string.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
-	go build $(GO_COMPILE_VARS) -o $@ ./client_terminal
-
-client_terminal/tool_string.go: client_terminal/main.go
-	go generate ./client_terminal
+$(APP_NAME)_terminal: client_terminal/* client_terminal/csi/* core/* extra/*
+	$(CC) $(CFLAGS) $(C_DEFINES) -o $@ \
+		client_terminal/*.c client_terminal/csi/*.c \
+		core/*.c extra/*.c
 
 core/mat/mat_string.go: core/mat/mat.go
 	go generate ./core/mat

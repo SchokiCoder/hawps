@@ -3,8 +3,6 @@ go 1.25.0
 use (
 	./client_ebiten
 	./client_ebiten/ui
-	./client_terminal
-	./client_terminal/csi
 	./core
 	./core/mat
 	./extra
