@@ -75,6 +75,11 @@ static const short MAT_A[]                = {0,         255,       128,       20
 enum Mat
 mat_melt_prdct(const enum Mat mat);
 
+void
+mat_oxid_prdcts(const enum Mat     mat,
+                enum Mat *restrict out1,
+                enum Mat *restrict out2);
+
 enum MatState
 mat_thermo_to_state(const enum Mat mat,
                     const float thermo);

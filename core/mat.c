@@ -16,6 +16,28 @@ mat_melt_prdct(const enum Mat mat)
 	}
 }
 
+void
+mat_oxid_prdcts(const enum Mat     mat,
+                enum Mat *restrict out1,
+                enum Mat *restrict out2)
+{
+	if (MAT_OXID_RANDOM[mat]) {
+		if ((rand() % 100) <= MAT_OXID_PRDCT1_CHANCE[mat]) {
+			*out1 = MAT_OXID_PRDCT1[mat];
+		} else {
+			*out1 = MAT_OXID_PRDCT2[mat];
+		}
+		if ((rand() % 100) <= MAT_OXID_PRDCT1_CHANCE[mat]) {
+			*out2 = MAT_OXID_PRDCT1[mat];
+		} else {
+			*out2 = MAT_OXID_PRDCT2[mat];
+		}
+	} else {
+		*out1 = MAT_OXID_PRDCT1[mat];
+		*out2 = MAT_OXID_PRDCT2[mat];
+	}
+}
+
 enum MatState
 mat_thermo_to_state(const enum Mat mat,
                     const float thermo)

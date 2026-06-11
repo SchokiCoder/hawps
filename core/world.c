@@ -463,7 +463,6 @@ world_sim_chemical_reaction(struct World *w,
                             const int dx,
                             const int dy)
 {
-	enum Mat op1, op2;
 	float th;
 
 	if (MAT_OXID_HEAT[w->dots[x][y]] > 0.0) {
@@ -478,11 +477,9 @@ world_sim_chemical_reaction(struct World *w,
 				w->thermo[dx][dy] += th;
 
 				if (w->oxid[x][y] >= 1.0) {
-					op1 = MAT_OXID_PRDCT1[w->dots[x][y]];
-					op2 = MAT_OXID_PRDCT2[w->dots[x][y]];
-
-					w->dots[x][y] = op1;
-					w->dots[dx][dy] = op2;
+					mat_oxid_prdcts(w->dots[x][y],
+					                &w->dots[x][y],
+					                &w->dots[dx][dy]);
 					w->oxid[x][y] = 0.0;
 				}
 			}
