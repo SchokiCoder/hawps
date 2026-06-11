@@ -241,13 +241,16 @@ and  325651e1b387cd7f3b3864bfc35039bbceee29ad
 - [x] backport to C libs: oxidation product system
 From a2a4e514a428a8bf8ca31a2611be57b1a90e2295
 
-- [ ] backport to C libs: touch reaction system
+- [x] backport to C libs: touch reaction system
 From 4c81602e3d641fcb7ba4b2873e33d997ac562867
 
 - [ ] backport to C libs: acidity system
 From 79102fb2d936f8fa98411a8be4c79f73d8f54d17
 
 - [ ] update copyright
+
+- [ ] core chemical sim: touch's parenting if is unnecessary?
+remove and decrease indent of content
 
 - [ ] terminal client: add navigation input and mainloop
 - [ ] terminal client: add draw dots with color
