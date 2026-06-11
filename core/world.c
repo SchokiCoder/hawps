@@ -102,31 +102,31 @@ world_new(const int w,
 		.h =            h,
 		.dissol =       calloc(w, sizeof(float*)),
 		._dissol =      calloc(w * h, sizeof(float)),
-		.dots =         calloc(w, sizeof(enum Mat*)),
-		._dots =        calloc(w * h, sizeof(enum Mat)),
+		.dot =          calloc(w, sizeof(enum Mat*)),
+		._dot =         calloc(w * h, sizeof(enum Mat)),
 		.oxid =         calloc(w, sizeof(float*)),
 		._oxid =        calloc(w * h, sizeof(float)),
 		.spawner =      calloc(w, sizeof(int*)),
 		._spawner =     calloc(w * h, sizeof(int)),
 		.spawner_mat =  calloc(w, sizeof(enum Mat*)),
 		._spawner_mat = calloc(w * h, sizeof(enum Mat)),
-		.states =       calloc(w, sizeof(enum MatState*)),
-		._states =      calloc(w * h, sizeof(enum MatState)),
+		.state =        calloc(w, sizeof(enum MatState*)),
+		._state =       calloc(w * h, sizeof(enum MatState)),
 		.thermo =       calloc(w, sizeof(float*)),
 		._thermo =      calloc(w * h, sizeof(float)),
-		.weights =      calloc(w, sizeof(float*)),
-		._weights =     calloc(w * h, sizeof(float))
+		.weight =       calloc(w, sizeof(float*)),
+		._weight =      calloc(w * h, sizeof(float))
 	};
 
 	for (x = 0; x < w; x++) {
 		ret.dissol[x] = &ret._dissol[x * h];
-		ret.dots[x] = &ret._dots[x * h];
+		ret.dot[x] = &ret._dot[x * h];
 		ret.oxid[x] = &ret._oxid[x * h];
 		ret.spawner[x] = &ret._spawner[x * h];
 		ret.spawner_mat[x] = &ret._spawner_mat[x * h];
-		ret.states[x] = &ret._states[x * h];
+		ret.state[x] = &ret._state[x * h];
 		ret.thermo[x] = &ret._thermo[x * h];
-		ret.weights[x] = &ret._weights[x * h];
+		ret.weight[x] = &ret._weight[x * h];
 
 		for (y = 0; y < h; y++) {
 			ret.thermo[x][y] = temperature;
@@ -143,15 +143,15 @@ world_can_displace(struct World *w,
                    const int dx,
                    const int dy)
 {
-	if (MAT_NONE == w->dots[dx][dy]) {
+	if (MAT_NONE == w->dot[dx][dy]) {
 		return 1;
 	}
 
-	if (MS_STATIC == w->states[dx][dy]) {
+	if (MS_STATIC == w->state[dx][dy]) {
 		return 0;
 	}
 
-	if (w->weights[dx][dy] < w->weights[x][y]) {
+	if (w->weight[dx][dy] < w->weight[x][y]) {
 		return 1;
 	}
 
@@ -163,8 +163,8 @@ world_clear_dot(struct World *w,
                 const int x,
                 const int y)
 {
-	w->dots[x][y] = MAT_NONE;
-	w->states[x][y] = MS_STATIC;
+	w->dot[x][y] = MAT_NONE;
+	w->state[x][y] = MS_STATIC;
 	w->thermo[x][y] = 0;
 }
 
@@ -177,7 +177,7 @@ world_update(struct World *w,
 	for (x = 0; x < w->w; x++) {
 		for (y = 0; y < w->h; y++) {
 			if (w->spawner[x][y]) {
-				w->dots[x][y] = w->spawner_mat[x][y];
+				w->dot[x][y] = w->spawner_mat[x][y];
 				w->thermo[x][y] = spawner_temperature;
 			}
 
@@ -191,26 +191,26 @@ world_update_dot_from_thermo(struct World *w,
                              const int x,
                              const int y)
 {
-	if (w->thermo[x][y] < MAT_MELT_P[w->dots[x][y]]) {
-		w->states[x][y] = MAT_SOLID_S[w->dots[x][y]];
-		w->weights[x][y] = MAT_FULL_WEIGHT[w->dots[x][y]];
-	} else if (w->thermo[x][y] < MAT_BOIL_P[w->dots[x][y]]) {
-		w->states[x][y] = MS_LIQUID;
+	if (w->thermo[x][y] < MAT_MELT_P[w->dot[x][y]]) {
+		w->state[x][y] = MAT_SOLID_S[w->dot[x][y]];
+		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]];
+	} else if (w->thermo[x][y] < MAT_BOIL_P[w->dot[x][y]]) {
+		w->state[x][y] = MS_LIQUID;
 
-		if (MAT_MELT_DECOMP[w->dots[x][y]]) {
-			w->dots[x][y] = mat_melt_prdct(w->dots[x][y]);
+		if (MAT_MELT_DECOMP[w->dot[x][y]]) {
+			w->dot[x][y] = mat_melt_prdct(w->dot[x][y]);
 		}
 
-		w->weights[x][y] = MAT_FULL_WEIGHT[w->dots[x][y]] *
-		                                   WEIGHT_FACTOR_LIQUID;
+		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
+		                  WEIGHT_FACTOR_LIQUID;
 	} else {
-		w->states[x][y] = MS_GAS;
-		w->weights[x][y] = MAT_FULL_WEIGHT[w->dots[x][y]] *
-		                                   WEIGHT_FACTOR_GAS;
-		w->weights[x][y] -= w->weights[x][y] *
-		                    (w->thermo[x][y] -
-		                     MAT_BOIL_P[w->dots[x][y]]) /
-		                    WEIGHTLOSS_LIMIT_GAS;
+		w->state[x][y] = MS_GAS;
+		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
+		                  WEIGHT_FACTOR_GAS;
+		w->weight[x][y] -= w->weight[x][y] *
+		                   (w->thermo[x][y] -
+		                    MAT_BOIL_P[w->dot[x][y]]) /
+		                   WEIGHTLOSS_LIMIT_GAS;
 	}
 }
 
@@ -244,7 +244,7 @@ world_use_brush(struct World *w,
 	for (x = x1; x <= x2; x++) {
 		for (y = y1; y <= y2; y++) {
 			w->dissol[x][y] = 0.0;
-			w->dots[x][y] = m;
+			w->dot[x][y] = m;
 			w->oxid[x][y] = 0.0;
 			w->thermo[x][y] = t;
 		}
@@ -361,7 +361,7 @@ world_sim(struct World *w)
 
 	y = w->h - 1;
 	for (x = 1; x <= w->w - 2; x++) {
-		if (MAT_NONE == w->dots[x][y]) {
+		if (MAT_NONE == w->dot[x][y]) {
 			continue;
 		}
 
@@ -379,7 +379,7 @@ world_sim(struct World *w)
 
 	y = 0;
 	for (x = 1; x <= w->w - 2; x++) {
-		if (MAT_NONE == w->dots[x][y]) {
+		if (MAT_NONE == w->dot[x][y]) {
 			continue;
 		}
 
@@ -394,7 +394,7 @@ world_sim(struct World *w)
 
 	x = 0;
 	for (y = w->h - 2; y >= 0; y--) {
-		if (MAT_NONE == w->dots[x][y]) {
+		if (MAT_NONE == w->dot[x][y]) {
 			continue;
 		}
 
@@ -406,7 +406,7 @@ world_sim(struct World *w)
 
 	x = w->w - 1;
 	for (y = w->h - 2; y >= 0; y--) {
-		if (MAT_NONE == w->dots[x][y]) {
+		if (MAT_NONE == w->dot[x][y]) {
 			continue;
 		}
 
@@ -423,7 +423,7 @@ world_sim_to_right(struct World *w,
                    const int y)
 {
 	for (*x = 1; *x <= w->w - 2; *x += 1) {
-		if (MAT_NONE == w->dots[*x][y]) {
+		if (MAT_NONE == w->dot[*x][y]) {
 			continue;
 		}
 
@@ -445,7 +445,7 @@ world_sim_to_left(struct World *w,
                   const int y)
 {
 	for (*x = w->w - 2; *x >= 1; *x -= 1) {
-		if (MAT_NONE == w->dots[*x][y]) {
+		if (MAT_NONE == w->dot[*x][y]) {
 			continue;
 		}
 
@@ -470,38 +470,38 @@ world_sim_chemical_reaction(struct World *w,
 {
 	float th;
 
-	w->dissol[x][y] += MAT_ACIDITY[w->dots[dx][dy]] *
-	                   MAT_ACID_VULN[w->dots[x][y]];
+	w->dissol[x][y] += MAT_ACIDITY[w->dot[dx][dy]] *
+	                   MAT_ACID_VULN[w->dot[x][y]];
 	if (w->dissol[x][y] >= 1.0) {
 		w->dissol[x][y] = 0.0;
 		world_clear_dot(w, x, y);
 	}
 
-	if (MAT_OXID_HEAT[w->dots[x][y]] > 0.0) {
-		if (MAT_OXYGEN == w->dots[dx][dy]) {
-			if (w->thermo[x][y] > MAT_IGN_P[w->dots[x][y]]) {
-				th = MAT_OXID_HEAT[w->dots[x][y]] *
-				     MAT_OXID_SPEED[w->dots[x][y]] /
+	if (MAT_OXID_HEAT[w->dot[x][y]] > 0.0) {
+		if (MAT_OXYGEN == w->dot[dx][dy]) {
+			if (w->thermo[x][y] > MAT_IGN_P[w->dot[x][y]]) {
+				th = MAT_OXID_HEAT[w->dot[x][y]] *
+				     MAT_OXID_SPEED[w->dot[x][y]] /
 				     2.0;
 
-				w->oxid[x][y] += MAT_OXID_SPEED[w->dots[x][y]];
+				w->oxid[x][y] += MAT_OXID_SPEED[w->dot[x][y]];
 				w->thermo[x][y] += th;
 				w->thermo[dx][dy] += th;
 
 				if (w->oxid[x][y] >= 1.0) {
-					mat_oxid_prdcts(w->dots[x][y],
-					                &w->dots[x][y],
-					                &w->dots[dx][dy]);
+					mat_oxid_prdcts(w->dot[x][y],
+					                &w->dot[x][y],
+					                &w->dot[dx][dy]);
 					w->oxid[x][y] = 0.0;
 				}
 			}
 		}
 	}
 
-	if (MAT_TOUCH_REAGENT[w->dots[x][y]] != MAT_NONE) {
-		if (MAT_TOUCH_REAGENT[w->dots[x][y]] == w->dots[dx][dy]) {
-			w->dots[x][y] = MAT_TOUCH_PRDCT1[w->dots[x][y]];
-			w->dots[dx][dy] = MAT_TOUCH_PRDCT2[w->dots[x][y]];
+	if (MAT_TOUCH_REAGENT[w->dot[x][y]] != MAT_NONE) {
+		if (MAT_TOUCH_REAGENT[w->dot[x][y]] == w->dot[dx][dy]) {
+			w->dot[x][y] = MAT_TOUCH_PRDCT1[w->dot[x][y]];
+			w->dot[dx][dy] = MAT_TOUCH_PRDCT2[w->dot[x][y]];
 		}
 	}
 }
@@ -511,7 +511,7 @@ world_sim_gravity(struct World *w,
                   const int x,
                   const int y)
 {
-	switch (w->states[x][y]) {
+	switch (w->state[x][y]) {
 	case MS_GAS:
 		world_drop_gas(w, x, y);
 		break;
@@ -538,11 +538,11 @@ world_sim_th_conduction(struct World *w,
 {
 	float c1, c2, combCond;
 
-	if (MAT_NONE == w->dots[x2][y2]) {
+	if (MAT_NONE == w->dot[x2][y2]) {
 		return;
 	}
 
-	combCond = (MAT_TH_COND[w->dots[x][y]] + MAT_TH_COND[w->dots[x2][y2]]) / 2;
+	combCond = (MAT_TH_COND[w->dot[x][y]] + MAT_TH_COND[w->dot[x2][y2]]) / 2;
 	c1 = (w->thermo[x2][y2] - w->thermo[x][y]) * combCond;
 	c2 = (w->thermo[x][y] - w->thermo[x2][y2]) * combCond;
 
@@ -589,8 +589,8 @@ world_collapse_gas_stack(struct World *w,
 		return 0;
 	}
 
-	if (MS_STATIC == w->states[dx][dy] ||
-	    MS_GRAIN == w->states[dx][dy]) {
+	if (MS_STATIC == w->state[dx][dy] ||
+	    MS_GRAIN == w->state[dx][dy]) {
 		return 1;
 	}
 
@@ -670,8 +670,8 @@ world_collapse_liquid_stack(struct World *w,
 		return 0;
 	}
 
-	if (MS_STATIC == w->states[dx][dy] ||
-	    MS_GRAIN == w->states[dx][dy]) {
+	if (MS_STATIC == w->state[dx][dy] ||
+	    MS_GRAIN == w->state[dx][dy]) {
 		return 1;
 	}
 
@@ -686,21 +686,21 @@ world_swap_dots(struct World *w,
                 const int y2)
 {
 	float         tmp_d = w->dissol[x][y];
-	enum Mat      tmp_m = w->dots[x][y];
+	enum Mat      tmp_m = w->dot[x][y];
 	float         tmp_o = w->oxid[x][y];
-	enum MatState tmp_s = w->states[x][y];
+	enum MatState tmp_s = w->state[x][y];
 	float         tmp_t = w->thermo[x][y];
 
 	w->dissol[x][y] = w->dissol[x2][y2];
-	w->dots[x][y] = w->dots[x2][y2];
+	w->dot[x][y] = w->dot[x2][y2];
 	w->oxid[x][y] = w->oxid[x2][y2];
-	w->states[x][y] = w->states[x2][y2];
+	w->state[x][y] = w->state[x2][y2];
 	w->thermo[x][y] = w->thermo[x2][y2];
 
 	w->dissol[x2][y2] = tmp_d;
-	w->dots[x2][y2] = tmp_m;
+	w->dot[x2][y2] = tmp_m;
 	w->oxid[x2][y2] = tmp_o;
-	w->states[x2][y2] = tmp_s;
+	w->state[x2][y2] = tmp_s;
 	w->thermo[x2][y2] = tmp_t;
 }
 
@@ -717,14 +717,14 @@ world_free(struct World *w)
 		w->_dissol = NULL;
 	}
 
-	if (w->dots != NULL) {
-		free(w->dots);
-		w->dots = NULL;
+	if (w->dot != NULL) {
+		free(w->dot);
+		w->dot = NULL;
 	}
 
-	if (w->_dots != NULL) {
-		free(w->_dots);
-		w->_dots = NULL;
+	if (w->_dot != NULL) {
+		free(w->_dot);
+		w->_dot = NULL;
 	}
 
 	if (w->oxid != NULL) {
@@ -757,14 +757,14 @@ world_free(struct World *w)
 		w->_spawner_mat = NULL;
 	}
 
-	if (w->states != NULL) {
-		free(w->states);
-		w->states = NULL;
+	if (w->state != NULL) {
+		free(w->state);
+		w->state = NULL;
 	}
 
-	if (w->_states != NULL) {
-		free(w->_states);
-		w->_states = NULL;
+	if (w->_state != NULL) {
+		free(w->_state);
+		w->_state = NULL;
 	}
 
 	if (w->thermo != NULL) {
@@ -777,13 +777,13 @@ world_free(struct World *w)
 		w->_thermo = NULL;
 	}
 
-	if (w->weights != NULL) {
-		free(w->weights);
-		w->weights = NULL;
+	if (w->weight != NULL) {
+		free(w->weight);
+		w->weight = NULL;
 	}
 
-	if (w->_weights != NULL) {
-		free(w->_weights);
-		w->_weights = NULL;
+	if (w->_weight != NULL) {
+		free(w->_weight);
+		w->_weight = NULL;
 	}
 }

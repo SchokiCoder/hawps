@@ -174,12 +174,12 @@ draw(const enum Mat        brush_mat,
 
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
-			if (world.dots[x][y] == MAT_NONE) {
+			if (world.dot[x][y] == MAT_NONE) {
 				fputs(" ", stdout);
 				continue;
 			}
 
-			switch (world.states[x][y]) {
+			switch (world.state[x][y]) {
 			case MS_STATIC:
 			case MS_GRAIN:
 				fputs("X", stdout);

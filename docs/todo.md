@@ -248,7 +248,10 @@ From 4c81602e3d641fcb7ba4b2873e33d997ac562867
 From 79102fb2d936f8fa98411a8be4c79f73d8f54d17
 Also update copyright.
 
-- [ ] core world: remove plural from array names
+- [x] remove plural from world array names
+This has already been the case in the Go libs.
+
+- [ ] replace truth ints with stdbool
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
 remove and decrease indent of content

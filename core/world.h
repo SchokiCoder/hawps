@@ -18,16 +18,16 @@ struct World {
 
 	float          *_dissol;
 	float         **dissol;
-	enum Mat       *_dots;
-	enum Mat      **dots;
+	enum Mat       *_dot;
+	enum Mat      **dot;
 	float          *_oxid;
 	float         **oxid;
-	enum MatState  *_states;
-	enum MatState **states;
+	enum MatState  *_state;
+	enum MatState **state;
 	float          *_thermo;
 	float         **thermo;
-	float          *_weights;
-	float         **weights;
+	float          *_weight;
+	float         **weight;
 };
 
 struct World
