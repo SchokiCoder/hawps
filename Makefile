@@ -15,16 +15,13 @@ C_DEFINES :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"
 
 .PHONY: all build clean generate run test vet
 
-all: $(APP_NAME)_ebiten
+all: $(APP_NAME)_terminal
 
 clean:
 	rm -f $(APP_NAME)_*
 
 run: clean $(APP_NAME)_terminal
 	./$(APP_NAME)_terminal
-
-test:
-	go test ./core -cpuprofile cpu.prof -memprofile mem.prof -bench ./core
 
 vet:
 	go vet ./client_ebiten
@@ -33,7 +30,7 @@ $(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.g
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
 $(APP_NAME)_terminal: client_terminal/* client_terminal/csi/* core/* extra/*
-	$(CC) $(CFLAGS) $(C_DEFINES) -o $@ \
+	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I . \
 		client_terminal/*.c client_terminal/csi/*.c \
 		core/*.c extra/*.c
 
@@ -44,6 +41,6 @@ extra/tool_string.go: extra/extra.go
 	go generate ./extra
 
 $(APP_NAME)_tk: client_tk/* core/* extra/*
-	$(CC) $(CFLAGS) -o $@ -I. $$(pkg-config --cflags tcl tk) \
+	$(CC) $(C_FLAGS) -o $@ -I. $$(pkg-config --cflags tcl tk) \
 		client_tk/*.c core/*.c extra/*.c \
 		$$(pkg-config --libs tcl tk)

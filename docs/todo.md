@@ -228,7 +228,7 @@ The core and extra lib of hawps already have C versions that need to be dug out
 and some features need to be backported.
 Now if I'll ever use Ebiten client again, I'll just bind the C libs with CGo.
 
-- [ ] bring back C versions of core and extra
+- [x] bring back C versions of core and extra and tie to terminal client
 - [ ] port back features from the Go version
 
 - [ ] terminal client: add navigation input and mainloop

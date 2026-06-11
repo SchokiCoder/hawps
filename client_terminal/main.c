@@ -3,21 +3,28 @@
  */
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+#include "core/core.h"
 #include "csi/csi.h"
 
-enum tool {
+enum Tool {
 	TOOL_BRUSH,
 	TOOL_SPAWNER,
 	TOOL_ERASER,
 	TOOL_HEATER,
 	TOOL_COOLER,
 };
+
+#define LEFT_ST_BAR_SIZE  150
+#define RIGHT_ST_BAR_SIZE 100
+#define ST_BAR_SIZE       LEFT_ST_BAR_SIZE + RIGHT_ST_BAR_SIZE
+#define VISION_SIZE       16
 
 #define CELSIUS_TO_KELVIN 273.15
 
@@ -66,14 +73,14 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "\n"
 "    -temperature\n"
 "        sets the temperature of every new dot in Kelvin\n"
-"        0 °C == %i K\n"
-"        default: %i\n"
+"        0 °C == %.2f K\n"
+"        default: %.2f\n"
 "\n"
 "    -tickrate NUMBER\n"
 "        sets the tickrate (ticks per second),\n"
 "        which also effects simulation speed\n"
 "        only use when otherwise performance problems occur\n"
-"        default: %s\n"
+"        default: %i\n"
 "\n"
 "    -v -version\n"
 "        prints version information then exits\n"
@@ -97,19 +104,20 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "        default: %.2f updates per second\n"
 "\n"
 "    T\n"
-"        toggle thermal vision (grayscale displaying %v to %v degree Celsius)\n"
+"        toggle thermal vision (grayscale displaying %.0f to %.0f degree Celsius)\n"
 "\n";
 
 void
-draw(const mat             brush_mat,
+draw(const enum Mat        brush_mat,
      const bool            cmdmode,
      const int             cursor_x,
      const int             cursor_y,
      const char           *ip_address,
-     const enum tool       sel_tool,
-     const mat             spawner_mat,
+     const enum Tool       sel_tool,
+     const enum Mat        spawner_mat,
      const bool            th_vision,
-     const struct winsize  win_size,
+     const size_t          win_w,
+     const size_t          win_h,
      const struct World    world,
      const char           *world_name,
      const size_t          world_w,
@@ -128,25 +136,21 @@ int_flag_parse(int    argc,
                long  *out);
 
 void
-draw(const mat             brush_mat,
+draw(const enum Mat        brush_mat,
      const bool            cmdmode,
      const int             cursor_x,
      const int             cursor_y,
      const char           *ip_address,
-     const enum tool       sel_tool,
-     const mat             spawner_mat,
+     const enum Tool       sel_tool,
+     const enum Mat        spawner_mat,
      const bool            th_vision,
-     const struct winsize  win_size,
+     const size_t          win_w,
+     const size_t          win_h,
      const struct World    world,
      const char           *world_name,
      const size_t          world_w,
      const size_t          world_h)
 {
-	const size_t LEFT_ST_BAR_SIZE = 150;
-	const size_t RIGHT_ST_BAR_SIZE = 100;
-	const size_t ST_BAR_SIZE = LEFT_ST_BAR_SIZE + RIGHT_ST_BAR_SIZE;
-	const size_t VISION_SIZE = 16;
-
 	char left_st_bar[LEFT_ST_BAR_SIZE];
 	char right_st_bar[RIGHT_ST_BAR_SIZE];
 	char st_bar[ST_BAR_SIZE];
@@ -155,42 +159,44 @@ draw(const mat             brush_mat,
 	size_t world_draw_h;
 	size_t x, y;
 
-	puts(CSI_CLEAR);
+	fputs(CSI_CLEAR, stdout);
 
-	if (world_w > win_size.ws_col) {
-		world_draw_w = win_size.ws_col;
+	if (world_w > win_w) {
+		world_draw_w = win_w;
 	} else {
 		world_draw_w = world_w;
 	}
-	if (world_h > win_size.ws_row - 2) {
-		world_draw_h = win_size.ws_row - 2;
+	if (world_h > win_h - 2) {
+		world_draw_h = win_h - 2;
 	} else {
 		world_draw_h = world_h;
 	}
 
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
-			if (world.dot[x][y] == MAT_NONE) {
-				puts(" ");
+			if (world.dots[x][y] == MAT_NONE) {
+				fputs(" ", stdout);
 				continue;
 			}
 
-			switch (world.state[x][y]) {
-			case MAT_STATIC:
-			case MAT_GRAIN:
-				puts("X");
+			switch (world.states[x][y]) {
+			case MS_STATIC:
+			case MS_GRAIN:
+				fputs("X", stdout);
 				break;
 
-			case MAT_LIQUID:
-				puts("+");
+			case MS_LIQUID:
+				fputs("+", stdout);
 				break;
 
-			case MAT_GAS:
-				puts("-");
+			case MS_GAS:
+				fputs("-", stdout);
+				break;
+
+			case MS_COUNT:
 				break;
 			}
 		}
-		puts("\n");
 	}
 
 	if (th_vision) {
@@ -201,32 +207,32 @@ draw(const mat             brush_mat,
 
 	sprintf(left_st_bar, "%s (%i,%i) | View:%s | %s",
 	        world_name, cursor_x, cursor_y, vision, ip_address);
-	sprintf(right_st_bar, "%v: bindings, %v: help", "bind1", "bind2");
-	sprintf(st_bar, "%%s%%%ss", win_size.ws_col - strlen(left_st_bar));
+	sprintf(right_st_bar, "%s: bindings, %s: help", "bind1", "bind2");
+	sprintf(st_bar, "%%s%%%lus", win_w - strlen(left_st_bar));
 	printf(st_bar, left_st_bar, right_st_bar);
 
 	if (cmdmode) {
-		puts(":cmd input currently not implemented");
+		fputs(":cmd input currently not implemented", stdout);
 	} else {
 		switch (sel_tool) {
 		case TOOL_BRUSH:
-			printf("BRUSH %s", brush_mat.String());
+			printf("BRUSH %s", MAT_NAME[brush_mat]);
 			break;
 
 		case TOOL_SPAWNER:
-			printf("SPAWNER %s", spawner_mat.String());
+			printf("SPAWNER %s", MAT_NAME[spawner_mat]);
 			break;
 
 		case TOOL_ERASER:
-			puts("ERASER");
+			fputs("ERASER", stdout);
 			break;
 
 		case TOOL_HEATER:
-			puts("HEATER");
+			fputs("HEATER", stdout);
 			break;
 
 		case TOOL_COOLER:
-			puts("COOLER");
+			fputs("COOLER", stdout);
 			break;
 		}
 	}
@@ -256,7 +262,7 @@ handle_args(int     argc,
 			       CELSIUS_TO_KELVIN,
 			       STD_TEMPERATURE,
 			       STD_TICKRATE,
-			       STD_TICKRATE / STD_SIM_SUBSAMPLE,
+			       (float) STD_TICKRATE / (float) STD_SIM_SUBSAMPLE,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
@@ -272,13 +278,13 @@ handle_args(int     argc,
 			}
 			i++;
 		} else if (strcmp(argv[i], "-tickrate")) {
-			if (int_flag_parse(argc, argv, &i, tickrate)) {
+			if (int_flag_parse(argc, argv, &i, (long*) tickrate)) {
 				return false;
 			}
 			i++;
 		} else if (strcmp(argv[i], "-v") ||
 		           strcmp(argv[i],  "-version")) {
-			printf("%v: version %v\n", APP_NAME, APP_VERSION);
+			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
 		} else {
 			fprintf(stderr,
@@ -303,7 +309,7 @@ int_flag_parse(int    argc,
 		        argv[*idx]);
 		return false;
 	}
-	*idx++;
+	*idx += 1;
 
 	errno = 0;
 	*out = strtol(argv[*idx], NULL, 10);
@@ -321,45 +327,51 @@ int
 main(int    argc,
      char **argv)
 {
-	bool active = true;
-	mat brush_mat = FIRST_REAL_MAT;
-	int brush_radius = STD_BRUSH_RADIUS;
-	bool cmdmode = false;
-	int cursor_x = 0;
-	int cursor_y = 0;
-	int eraser_radius = STD_ERASER_RADIUS;
-	bool paused = false;
-	clock_t now;
-	enum tool sel_tool = STD_SELECTED_TOOL;
-	int sim_subsample = STD_SIM_SUBSAMPLE;
-	mat spawner_mat = FIRST_REAL_MAT;
-	float temperature = STD_TEMPERATURE;
-	int thermo_radius = STD_THERMO_RADIUS;
-	bool th_vision = false;
-	clock_t tick;
-	size_t tickrate = STD_TICKRATE;
-	size_t ts_since_sim = 9001; // ticks since last simulation
-	struct winsize win_size;
-	struct World world;
-	size_t world_w;
-	size_t world_h;
+	bool           active = true;
+	enum Mat       brush_mat = FIRST_REAL_MAT;
+	int            brush_radius = STD_BRUSH_RADIUS;
+	bool           cmdmode = false;
+	int            cursor_x = 0;
+	int            cursor_y = 0;
+	int            eraser_radius = STD_ERASER_RADIUS;
+	bool           paused = false;
+	clock_t        now;
+	enum Tool      sel_tool = STD_SELECTED_TOOL;
+	int            sim_subsample = STD_SIM_SUBSAMPLE;
+	enum Mat       spawner_mat = FIRST_REAL_MAT;
+	float          temperature = STD_TEMPERATURE;
+	struct winsize tempws;
+	int            thermo_radius = STD_THERMO_RADIUS;
+	bool           th_vision = false;
+	clock_t        tick = 0;
+	size_t         tickrate = STD_TICKRATE;
+	size_t         ts_since_sim = 9001; // ticks since last simulation
+	size_t         win_w;
+	size_t         win_h;
+	struct World   world;
+	size_t         world_w;
+	size_t         world_h;
 
-	if (handle_args(argc, argv, &temperature, &tickrate)) {
+	if (!handle_args(argc, argv, &temperature, &tickrate)) {
 		return 0;
 	}
 
-	win_size = term_get_size();
+	tempws = term_get_size();
+	win_w = tempws.ws_col;
+	win_h = tempws.ws_row;
 
-	world_w = win_size.ws_col;
-	world_h = win_size.ws_row - 2;
+	world_w = win_w;
+	world_h = win_h - 2;
 	world = world_new(world_w, world_h, temperature);
 
 	while (active) {
 		now = clock();
-		if (now - tick >= (CLOCKS_PER_SEC / tickrate)) {
+		if (now - tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			tick = now;
 
-			win_size = term_get_size();
+			tempws = term_get_size();
+			win_w = tempws.ws_col;
+			win_h = tempws.ws_row;
 			draw(
 				brush_mat,
 				cmdmode,
@@ -368,12 +380,15 @@ main(int    argc,
 				sel_tool,
 				spawner_mat,
 				th_vision,
-				win_size,
+				win_w,
+				win_h,
 				world, "worldname", world_w, world_h);
 
 			active = 0;
 		}
 	}
+
+	world_free(&world);
 
 	return 0;
 }
