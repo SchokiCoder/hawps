@@ -1,4 +1,23 @@
-# An unreal rework
+# 6th rework
+
+Rise and shine, Mister C-man.
+Rise and shine...
+Not that I wish to imply you have been sleeping on the job.
+No one is more deserving of a rest,
+and all the effort in the world would have gone to waste until...
+well, let's just say your hour has come again.
+The right language in the wrong place can make all the difference in the world.
+So, wake up, Mister C-man. Wake up, and smell the ashes.
+
+Here is a thought:
+All the technical superiority of a language or generally an environment,
+is wasted on the lack of will to work with it.
+Go/Ebiten is FINE, Rust is FINE, but they are not GREAT *for me.*
+
+Fuck all the technical goals, when I don't have fun writing.
+I don't need to accept the superiority of a tool when I don't like it.
+
+# 5th rework: An unreal rework
 
 Still Go, don't worry.  
 However... ebitengine, I am afraid, needs to go.  

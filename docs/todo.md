@@ -229,7 +229,37 @@ and some features need to be backported.
 Now if I'll ever use Ebiten client again, I'll just bind the C libs with CGo.
 
 - [x] bring back C versions of core and extra and tie to terminal client
-- [ ] port back features from the Go version
+- [x] terminal client: add tick-sim-subsample system
+
+- [ ] backport to C libs: Coal and a oxidation product chance system
+From 6c9efeb9e91e3135767efbc64671806a4e2159f9
+
+- [ ] backport to C libs: Ironoxide, melt product system
+From 723183c680ff94c65aa3a778d8a5b02bbc06ed83
+
+- [ ] backport to C libs: Aluminum and change Iron a bit
+From 9caaeaedce2bb1be0f1cc1a01d9e7ec6f8033326
+
+- [ ] backport to C libs: Aluminumoxide
+From a2a4e514a428a8bf8ca31a2611be57b1a90e2295
+
+- [ ] backport to C libs: Thermite and touch reaction system
+From 4c81602e3d641fcb7ba4b2873e33d997ac562867
+
+- [ ] backport to C libs: Magnesium and Magnesiumoxide
+From 657a51856852dc0cb3d2facc7ff435342da612ab
+
+- [ ] backport to C libs: Sulfur, Sulfur trioxide, and Gunpowder
+From 379eec7493eb15ce9a37f7556c117196d9e7cb7c
+
+- [ ] backport to C libs: Sulfuric acid and acidity system
+From 79102fb2d936f8fa98411a8be4c79f73d8f54d17
+
+- [ ] backport to C libs: Clay and Ceramic
+From da37303fc497c92cc4e10091b2a899f9ffcb0ab9
+
+- [ ] backport to C libs: Limestone and Cement
+From 325651e1b387cd7f3b3864bfc35039bbceee29ad
 
 - [ ] terminal client: add navigation input and mainloop
 - [ ] terminal client: add draw dots with color

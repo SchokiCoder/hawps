@@ -337,7 +337,7 @@ main(int    argc,
 	bool           paused = false;
 	clock_t        now;
 	enum Tool      sel_tool = STD_SELECTED_TOOL;
-	int            sim_subsample = STD_SIM_SUBSAMPLE;
+	size_t         sim_subsample = STD_SIM_SUBSAMPLE;
 	enum Mat       spawner_mat = FIRST_REAL_MAT;
 	float          temperature = STD_TEMPERATURE;
 	struct winsize tempws;
@@ -369,21 +369,33 @@ main(int    argc,
 		if (now - tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			tick = now;
 
+			if (!paused) {
+				if (ts_since_sim >= sim_subsample) {
+					world_sim(&world);
+					ts_since_sim = 0;
+				} else {
+					ts_since_sim++;
+				}
+			}
+
 			tempws = term_get_size();
 			win_w = tempws.ws_col;
 			win_h = tempws.ws_row;
-			draw(
-				brush_mat,
-				cmdmode,
-				cursor_x, cursor_y,
-				"localhost",
-				sel_tool,
-				spawner_mat,
-				th_vision,
-				win_w,
-				win_h,
-				world, "worldname", world_w, world_h);
+			draw(brush_mat,
+			     cmdmode,
+			     cursor_x, cursor_y,
+			     "localhost",
+			     sel_tool,
+			     spawner_mat,
+			     th_vision,
+			     win_w,
+			     win_h,
+			     world,
+			     "worldname",
+			     world_w,
+			     world_h);
 
+			// TODO remove this
 			active = 0;
 		}
 	}
