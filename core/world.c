@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-only
- * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
+ * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
 #include <stdlib.h>
@@ -100,6 +100,8 @@ world_new(const int w,
 	struct World ret = {
 		.w =            w,
 		.h =            h,
+		.dissol =       calloc(w, sizeof(float*)),
+		._dissol =      calloc(w * h, sizeof(float)),
 		.dots =         calloc(w, sizeof(enum Mat*)),
 		._dots =        calloc(w * h, sizeof(enum Mat)),
 		.oxid =         calloc(w, sizeof(float*)),
@@ -117,6 +119,7 @@ world_new(const int w,
 	};
 
 	for (x = 0; x < w; x++) {
+		ret.dissol[x] = &ret._dissol[x * h];
 		ret.dots[x] = &ret._dots[x * h];
 		ret.oxid[x] = &ret._oxid[x * h];
 		ret.spawner[x] = &ret._spawner[x * h];
@@ -240,7 +243,9 @@ world_use_brush(struct World *w,
 
 	for (x = x1; x <= x2; x++) {
 		for (y = y1; y <= y2; y++) {
+			w->dissol[x][y] = 0.0;
 			w->dots[x][y] = m;
+			w->oxid[x][y] = 0.0;
 			w->thermo[x][y] = t;
 		}
 	}
@@ -465,6 +470,13 @@ world_sim_chemical_reaction(struct World *w,
 {
 	float th;
 
+	w->dissol[x][y] += MAT_ACIDITY[w->dots[dx][dy]] *
+	                   MAT_ACID_VULN[w->dots[x][y]];
+	if (w->dissol[x][y] >= 1.0) {
+		w->dissol[x][y] = 0.0;
+		world_clear_dot(w, x, y);
+	}
+
 	if (MAT_OXID_HEAT[w->dots[x][y]] > 0.0) {
 		if (MAT_OXYGEN == w->dots[dx][dy]) {
 			if (w->thermo[x][y] > MAT_IGN_P[w->dots[x][y]]) {
@@ -673,25 +685,38 @@ world_swap_dots(struct World *w,
                 const int x2,
                 const int y2)
 {
-	enum Mat      tmpM = w->dots[x][y];
-	float         tmpO = w->oxid[x][y];
-	enum MatState tmpS = w->states[x][y];
-	float         tmpT = w->thermo[x][y];
+	float         tmp_d = w->dissol[x][y];
+	enum Mat      tmp_m = w->dots[x][y];
+	float         tmp_o = w->oxid[x][y];
+	enum MatState tmp_s = w->states[x][y];
+	float         tmp_t = w->thermo[x][y];
 
+	w->dissol[x][y] = w->dissol[x2][y2];
 	w->dots[x][y] = w->dots[x2][y2];
 	w->oxid[x][y] = w->oxid[x2][y2];
 	w->states[x][y] = w->states[x2][y2];
 	w->thermo[x][y] = w->thermo[x2][y2];
 
-	w->dots[x2][y2] = tmpM;
-	w->oxid[x2][y2] = tmpO;
-	w->states[x2][y2] = tmpS;
-	w->thermo[x2][y2] = tmpT;
+	w->dissol[x2][y2] = tmp_d;
+	w->dots[x2][y2] = tmp_m;
+	w->oxid[x2][y2] = tmp_o;
+	w->states[x2][y2] = tmp_s;
+	w->thermo[x2][y2] = tmp_t;
 }
 
 void
 world_free(struct World *w)
 {
+	if (w->dissol != NULL) {
+		free(w->dissol);
+		w->dissol = NULL;
+	}
+
+	if (w->_dissol != NULL) {
+		free(w->_dissol);
+		w->_dissol = NULL;
+	}
+
 	if (w->dots != NULL) {
 		free(w->dots);
 		w->dots = NULL;

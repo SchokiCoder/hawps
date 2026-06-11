@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-only
- * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
+ * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
 #ifndef _WORLD_H
@@ -16,6 +16,8 @@ struct World {
 	enum Mat  *_spawner_mat;
 	enum Mat **spawner_mat;
 
+	float          *_dissol;
+	float         **dissol;
 	enum Mat       *_dots;
 	enum Mat      **dots;
 	float          *_oxid;
