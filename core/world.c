@@ -194,8 +194,8 @@ world_update_dot_from_thermo(struct World *w,
 	} else if (w->thermo[x][y] < MAT_BOIL_P[w->dots[x][y]]) {
 		w->states[x][y] = MS_LIQUID;
 
-		if (MAT_SAND == w->dots[x][y]) {
-			w->dots[x][y] = MAT_GLASS;
+		if (MAT_MELT_DECOMP[w->dots[x][y]]) {
+			w->dots[x][y] = mat_melt_prdct(w->dots[x][y]);
 		}
 
 		w->weights[x][y] = MAT_FULL_WEIGHT[w->dots[x][y]] *

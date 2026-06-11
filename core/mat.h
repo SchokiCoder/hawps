@@ -72,6 +72,9 @@ static const short MAT_G[]                = {0,         217,       237,       15
 static const short MAT_B[]                = {0,         86,        237,       255,       175,            255,       255,        255,              65,                 30,                 0,                 210,                225,              65,          200,                  240,               49,               240,               60,                  255,             123,            169,          194,                240};      /* B */
 static const short MAT_A[]                = {0,         255,       128,       205,       255,            100,       100,        100,              150,                255,                255,               255,                255,              255,         255,                  255,               215,              255,               255,                 30,              255,            255,          255,                255};      /* A */
 
+enum Mat
+mat_melt_prdct(const enum Mat mat);
+
 enum MatState
 mat_thermo_to_state(const enum Mat mat,
                     const float thermo);

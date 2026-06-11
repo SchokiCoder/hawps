@@ -2,7 +2,16 @@
  * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
  */
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "core.h"
+
+void
+core_init(void)
+{
+	srand(clock());
+}
 
 float
 color_int8_to_float(const int color)

@@ -17,6 +17,9 @@ struct Rgba {
 	int a;
 };
 
+void
+core_init(void);
+
 float
 color_int8_to_float(const int color);
 

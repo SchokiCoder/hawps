@@ -234,8 +234,13 @@ Now if I'll ever use Ebiten client again, I'll just bind the C libs with CGo.
 - [x] backport to C libs: all new Materials and the property table
 This is easier than doing it on a per commit basis.
 
-- [ ] backport to C libs: melt product system
+- [x] backport to C libs: melt product system
 From 723183c680ff94c65aa3a778d8a5b02bbc06ed83
+and  325651e1b387cd7f3b3864bfc35039bbceee29ad
+
+- [ ] investigate
+"Also bring back the possibility for oxidation to have fixed products."
+a2a4e514a428a8bf8ca31a2611be57b1a90e2295
 
 - [ ] backport to C libs: touch reaction system
 From 4c81602e3d641fcb7ba4b2873e33d997ac562867

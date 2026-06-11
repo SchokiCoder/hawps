@@ -356,6 +356,8 @@ main(int    argc,
 		return 0;
 	}
 
+	core_init();
+
 	tempws = term_get_size();
 	win_w = tempws.ws_col;
 	win_h = tempws.ws_row;

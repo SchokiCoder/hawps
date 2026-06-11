@@ -2,7 +2,19 @@
  * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
  */
 
+#include <stdlib.h>
+
 #include "mat.h"
+
+enum Mat
+mat_melt_prdct(const enum Mat mat)
+{
+	if ((rand() % 100) < MAT_MELT_PRDCT1_CHANCE[mat]) {
+		return MAT_MELT_PRDCT1[mat];
+	} else {
+		return MAT_MELT_PRDCT2[mat];
+	}
+}
 
 enum MatState
 mat_thermo_to_state(const enum Mat mat,
