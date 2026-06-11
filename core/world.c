@@ -466,14 +466,14 @@ world_sim_chemical_reaction(struct World *w,
 	enum Mat op1, op2;
 	float th;
 
-	if (MAT_OXID_TH[w->dots[x][y]] > 0.0) {
+	if (MAT_OXID_HEAT[w->dots[x][y]] > 0.0) {
 		if (MAT_OXYGEN == w->dots[dx][dy]) {
 			if (w->thermo[x][y] > MAT_IGN_P[w->dots[x][y]]) {
-				th = MAT_OXID_TH[w->dots[x][y]] *
-				     MAT_OXID_SPD[w->dots[x][y]] /
+				th = MAT_OXID_HEAT[w->dots[x][y]] *
+				     MAT_OXID_SPEED[w->dots[x][y]] /
 				     2.0;
 
-				w->oxid[x][y] += MAT_OXID_SPD[w->dots[x][y]];
+				w->oxid[x][y] += MAT_OXID_SPEED[w->dots[x][y]];
 				w->thermo[x][y] += th;
 				w->thermo[dx][dy] += th;
 
