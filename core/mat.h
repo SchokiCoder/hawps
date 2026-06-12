@@ -82,6 +82,6 @@ mat_oxid_prdcts(const enum Mat     mat,
 
 enum MatState
 mat_thermo_to_state(const enum Mat mat,
-                    const float thermo);
+                    const float    thermo);
 
 #endif /* _MAT_H */

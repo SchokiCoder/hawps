@@ -252,7 +252,7 @@ Also update copyright.
 This has already been the case in the Go libs.
 
 - [x] replace truth ints with stdbool
-- [ ] libs: fix alphabetical ordering of functions
+- [x] core: fix formatting and alphabetical ordering of functions
 - [ ] `CSI_CLEAR` prints 6 empty lines?
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?

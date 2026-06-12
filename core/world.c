@@ -15,84 +15,84 @@ static void (*body_sim) (struct World*, int*, const int);
 
 static void
 world_clear_dot(struct World *w,
-                const int x,
-                const int y);
-
-static void
-world_update_dot_from_thermo(struct World *w, 
-                             const int x,
-                             const int y);
-
-static void
-world_sim_to_right(struct World *w,
-                   int *x,
-                   const int y);
-
-static void
-world_sim_to_left(struct World *w,
-                  int *x,
-                  const int y);
-
-static void
-world_sim_chemical_reaction(struct World *w,
-                            const int x,
-                            const int y,
-                            const int dx,
-                            const int dy);
-
-static void
-world_sim_gravity(struct World *w,
-                  const int x,
-                  const int y);
-
-static void
-world_sim_th_conduction(struct World *w,
-                        const int x,
-                        const int y,
-                        const int x2,
-                        const int y2);
-
-static void
-world_drop_gas(struct World *w,
-               const int x,
-               const int y);
+                const int     x,
+                const int     y);
 
 static bool
 world_collapse_gas_stack(struct World *w,
-                         const int x,
-                         const int y,
-                         const int dx,
-                         const int dy);
-
-static void
-world_drop_grain(struct World *w,
-                 const int x,
-                 const int y);
-
-static void
-world_drop_liquid(struct World *w,
-                  const int x,
-                  const int y);
+                         const int     x,
+                         const int     y,
+                         const int     dx,
+                         const int     dy);
 
 static bool
 world_collapse_liquid_stack(struct World *w,
-                            const int x,
-                            const int y,
-                            const int dx,
-                            const int dy);
+                            const int     x,
+                            const int     y,
+                            const int     dx,
+                            const int     dy);
+
+static void
+world_drop_gas(struct World *w,
+               const int     x,
+               const int     y);
+
+static void
+world_drop_grain(struct World *w,
+                 const int     x,
+                 const int     y);
+
+static void
+world_drop_liquid(struct World *w,
+                  const int     x,
+                  const int     y);
+
+static void
+world_sim_to_right(struct World *w,
+                   int          *x,
+                   const int     y);
+
+static void
+world_sim_to_left(struct World *w,
+                  int          *x,
+                  const int     y);
+
+static void
+world_sim_chemical_reaction(struct World *w,
+                            const int     x,
+                            const int     y,
+                            const int     dx,
+                            const int     dy);
+
+static void
+world_sim_gravity(struct World *w,
+                  const int     x,
+                  const int     y);
+
+static void
+world_sim_th_conduction(struct World *w,
+                        const int     x,
+                        const int     y,
+                        const int     x2,
+                        const int     y2);
 
 /* Swaps all properties of two coordinates.
  */
 static void
 world_swap_dots(struct World *w,
-                const int x,
-                const int y,
-                const int x2,
-                const int y2);
+                const int     x,
+                const int     y,
+                const int     x2,
+                const int     y2);
+
+static void
+world_update_dot_from_thermo(struct World *w,
+                             const int     x,
+                             const int     y);
 
 struct World
-world_new(const int w,
-          const int h,
+world_new(const int   w,
+          const int   h,
           const float temperature)
 {
 	int x;
@@ -139,10 +139,10 @@ world_new(const int w,
 
 bool
 world_can_displace(struct World *w,
-                   const int x,
-                   const int y,
-                   const int dx,
-                   const int dy)
+                   const int     x,
+                   const int     y,
+                   const int     dx,
+                   const int     dy)
 {
 	if (MAT_NONE == w->dot[dx][dy]) {
 		return true;
@@ -161,196 +161,138 @@ world_can_displace(struct World *w,
 
 static void
 world_clear_dot(struct World *w,
-                const int x,
-                const int y)
+                const int     x,
+                const int     y)
 {
 	w->dot[x][y] = MAT_NONE;
 	w->state[x][y] = MS_STATIC;
 	w->thermo[x][y] = 0;
 }
 
-void
-world_update(struct World *w,
-             const float spawner_temperature)
+static bool
+world_collapse_gas_stack(struct World *w,
+                         const int     x,
+                         const int     y,
+                         const int     dx,
+                         const int     dy)
 {
-	int x, y;
+	if (world_can_displace(w, x, y, dx, dy)) {
+		world_swap_dots(w, x, y, dx, dy);
+		return false;
+	}
 
-	for (x = 0; x < w->w; x++) {
-		for (y = 0; y < w->h; y++) {
-			if (w->spawner[x][y]) {
-				w->dot[x][y] = w->spawner_mat[x][y];
-				w->thermo[x][y] = spawner_temperature;
-			}
+	if (MS_STATIC == w->state[dx][dy] ||
+	    MS_GRAIN == w->state[dx][dy]) {
+		return true;
+	}
 
-			world_update_dot_from_thermo(w, x, y);
+	return false;
+}
+
+static bool
+world_collapse_liquid_stack(struct World *w,
+                            const int     x,
+                            const int     y,
+                            const int     dx,
+                            const int     dy)
+{
+	if (world_can_displace(w, x, y, dx, dy)) {
+		world_swap_dots(w, x, y, dx, dy);
+		return false;
+	}
+
+	if (MS_STATIC == w->state[dx][dy] ||
+	    MS_GRAIN == w->state[dx][dy]) {
+		return true;
+	}
+
+	return false;
+}
+
+static void
+world_drop_gas(struct World *w,
+               const int     x,
+               const int     y)
+{
+	int dx, dy;
+
+	dx = x;
+	dy = y + 1;
+	if (world_can_displace(w, x, y, dx, dy)) {
+		world_swap_dots(w, x, y, dx, dy);
+		return;
+	}
+
+	dy = y + 1;
+	for (dx = x - 1; dx >= 0; dx--) {
+		if (world_collapse_gas_stack(w, x, y, dx, dy)) {
+			break;
+		}
+	}
+	for (dx = x + 1; dx < w->w; dx++) {
+		if (world_collapse_gas_stack(w, x, y, dx, dy)) {
+			break;
 		}
 	}
 }
 
 static void
-world_update_dot_from_thermo(struct World *w, 
-                             const int x,
-                             const int y)
+world_drop_grain(struct World *w,
+                 const int     x,
+                 const int     y)
 {
-	if (w->thermo[x][y] < MAT_MELT_P[w->dot[x][y]]) {
-		w->state[x][y] = MAT_SOLID_S[w->dot[x][y]];
-		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]];
-	} else if (w->thermo[x][y] < MAT_BOIL_P[w->dot[x][y]]) {
-		w->state[x][y] = MS_LIQUID;
+	int dx, dy;
 
-		if (MAT_MELT_DECOMP[w->dot[x][y]]) {
-			w->dot[x][y] = mat_melt_prdct(w->dot[x][y]);
+	dx = x;
+	dy = y + 1;
+	if (world_can_displace(w, x, y, dx, dy)) {
+		world_swap_dots(w, x, y, dx, dy);
+		return;
+	}
+
+	if (x - 1 >= 0) {
+		dx = x - 1;
+		dy = y + 1;
+
+		if (world_can_displace(w, x, y, dx, dy)) {
+			world_swap_dots(w, x, y, dx, dy);
+			return;
 		}
+	}
+	if (x + 1 < w->w) {
+		dx = x + 1;
+		dy = y + 1;
 
-		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
-		                  WEIGHT_FACTOR_LIQUID;
-	} else {
-		w->state[x][y] = MS_GAS;
-		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
-		                  WEIGHT_FACTOR_GAS;
-		w->weight[x][y] -= w->weight[x][y] *
-		                   (w->thermo[x][y] -
-		                    MAT_BOIL_P[w->dot[x][y]]) /
-		                   WEIGHTLOSS_LIMIT_GAS;
-	}
-}
-
-void
-world_use_brush(struct World *w,
-                const enum Mat m,
-                const float t,
-                const int x_c,
-                const int y_c,
-                const int radius)
-{
-	int x, y;
-	int x1 = x_c - radius;
-	int x2 = x_c + radius;
-	int y1 = y_c - radius;
-	int y2 = y_c + radius;
-
-	if (x1 < 0) {
-		x1 = 0;
-	}
-	if (x2 >= w->w) {
-		x2 = w->w - 1;
-	}
-	if (y1 < 0) {
-		y1 = 0;
-	}
-	if (y2 >= w->h) {
-		y2 = w->h - 1;
-	}
-
-	for (x = x1; x <= x2; x++) {
-		for (y = y1; y <= y2; y++) {
-			w->dissol[x][y] = 0.0;
-			w->dot[x][y] = m;
-			w->oxid[x][y] = 0.0;
-			w->thermo[x][y] = t;
+		if (world_can_displace(w, x, y, dx, dy)) {
+			world_swap_dots(w, x, y, dx, dy);
+			return;
 		}
 	}
 }
 
-void
-world_use_eraser(struct World *w,
-                 const int x_c,
-                 const int y_c,
-                 const int radius)
+static void
+world_drop_liquid(struct World *w,
+                  const int     x,
+                  const int     y)
 {
-	int x, y;
-	int x1 = x_c - radius;
-	int x2 = x_c + radius;
-	int y1 = y_c - radius;
-	int y2 = y_c + radius;
+	int dx, dy;
 
-	if (x1 < 0) {
-		x1 = 0;
-	}
-	if (x2 >= w->w) {
-		x2 = w->w - 1;
-	}
-	if (y1 < 0) {
-		y1 = 0;
-	}
-	if (y2 >= w->h) {
-		y2 = w->h - 1;
+	dx = x;
+	dy = y + 1;
+	if (world_can_displace(w, x, y, dx, dy)) {
+		world_swap_dots(w, x, y, dx, dy);
+		return;
 	}
 
-	for (x = x1; x <= x2; x++) {
-		for (y = y1; y <= y2; y++) {
-			world_clear_dot(w, x, y);
-			w->spawner[x][y] = 0;
+	dy = y + 1;
+	for (dx = x - 1; dx >= 0; dx--) {
+		if (world_collapse_liquid_stack(w, x, y, dx, dy)) {
+			break;
 		}
 	}
-}
-
-void
-world_use_cooler(struct World *w,
-                 const float delta,
-                 const int x_c,
-                 const int y_c,
-                 const int radius)
-{
-	int x, y;
-	int x1 = x_c - radius;
-	int x2 = x_c + radius;
-	int y1 = y_c - radius;
-	int y2 = y_c + radius;
-
-	if (x1 < 0) {
-		x1 = 0;
-	}
-	if (x2 >= w->w) {
-		x2 = w->w - 1;
-	}
-	if (y1 < 0) {
-		y1 = 0;
-	}
-	if (y2 >= w->h) {
-		y2 = w->h - 1;
-	}
-
-	for (x = x1; x <= x2; x++) {
-		for (y = y1; y <= y2; y++) {
-			w->thermo[x][y] -= delta;
-
-			if (w->thermo[x][y] < 0.0) {
-				w->thermo[x][y] = 0.0;
-			}
-		}
-	}
-}
-
-void
-world_use_heater(struct World *w,
-                 const float delta,
-                 const int x_c,
-                 const int y_c,
-                 const int radius)
-{
-	int x, y;
-	int x1 = x_c - radius;
-	int x2 = x_c + radius;
-	int y1 = y_c - radius;
-	int y2 = y_c + radius;
-
-	if (x1 < 0) {
-		x1 = 0;
-	}
-	if (x2 >= w->w) {
-		x2 = w->w - 1;
-	}
-	if (y1 < 0) {
-		y1 = 0;
-	}
-	if (y2 >= w->h) {
-		y2 = w->h - 1;
-	}
-
-	for (x = x1; x <= x2; x++) {
-		for (y = y1; y <= y2; y++) {
-			w->thermo[x][y] += delta;
+	for (dx = x + 1; dx < w->w; dx++) {
+		if (world_collapse_liquid_stack(w, x, y, dx, dy)) {
+			break;
 		}
 	}
 }
@@ -420,8 +362,8 @@ world_sim(struct World *w)
 
 static void
 world_sim_to_right(struct World *w,
-                   int *x,
-                   const int y)
+                   int          *x,
+                   const int     y)
 {
 	for (*x = 1; *x <= w->w - 2; *x += 1) {
 		if (MAT_NONE == w->dot[*x][y]) {
@@ -442,8 +384,8 @@ world_sim_to_right(struct World *w,
 
 static void
 world_sim_to_left(struct World *w,
-                  int *x,
-                  const int y)
+                  int          *x,
+                  const int     y)
 {
 	for (*x = w->w - 2; *x >= 1; *x -= 1) {
 		if (MAT_NONE == w->dot[*x][y]) {
@@ -464,10 +406,10 @@ world_sim_to_left(struct World *w,
 
 static void
 world_sim_chemical_reaction(struct World *w,
-                            const int x,
-                            const int y,
-                            const int dx,
-                            const int dy)
+                            const int     x,
+                            const int     y,
+                            const int     dx,
+                            const int     dy)
 {
 	float th;
 
@@ -509,8 +451,8 @@ world_sim_chemical_reaction(struct World *w,
 
 static void
 world_sim_gravity(struct World *w,
-                  const int x,
-                  const int y)
+                  const int     x,
+                  const int     y)
 {
 	switch (w->state[x][y]) {
 	case MS_GAS:
@@ -532,10 +474,10 @@ world_sim_gravity(struct World *w,
 
 static void
 world_sim_th_conduction(struct World *w,
-                        const int x,
-                        const int y,
-                        const int x2,
-                        const int y2)
+                        const int     x,
+                        const int     y,
+                        const int     x2,
+                        const int     y2)
 {
 	float c1, c2, combCond;
 
@@ -552,139 +494,11 @@ world_sim_th_conduction(struct World *w,
 }
 
 static void
-world_drop_gas(struct World *w,
-               const int x,
-               const int y)
-{
-	int dx, dy;
-
-	dx = x;
-	dy = y + 1;
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
-		return;
-	}
-
-	dy = y + 1;
-	for (dx = x - 1; dx >= 0; dx--) {
-		if (world_collapse_gas_stack(w, x, y, dx, dy)) {
-			break;
-		}
-	}
-	for (dx = x + 1; dx < w->w; dx++) {
-		if (world_collapse_gas_stack(w, x, y, dx, dy)) {
-			break;
-		}
-	}
-}
-
-static bool
-world_collapse_gas_stack(struct World *w,
-                         const int x,
-                         const int y,
-                         const int dx,
-                         const int dy)
-{
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
-		return false;
-	}
-
-	if (MS_STATIC == w->state[dx][dy] ||
-	    MS_GRAIN == w->state[dx][dy]) {
-		return true;
-	}
-
-	return false;
-}
-
-static void
-world_drop_grain(struct World *w,
-                 const int x,
-                 const int y)
-{
-	int dx, dy;
-
-	dx = x;
-	dy = y + 1;
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
-		return;
-	}
-
-	if (x - 1 >= 0) {
-		dx = x - 1;
-		dy = y + 1;
-
-		if (world_can_displace(w, x, y, dx, dy)) {
-			world_swap_dots(w, x, y, dx, dy);
-			return;
-		}
-	}
-	if (x + 1 < w->w) {
-		dx = x + 1;
-		dy = y + 1;
-
-		if (world_can_displace(w, x, y, dx, dy)) {
-			world_swap_dots(w, x, y, dx, dy);
-			return;
-		}
-	}
-}
-
-static void
-world_drop_liquid(struct World *w,
-                  const int x,
-                  const int y)
-{
-	int dx, dy;
-
-	dx = x;
-	dy = y + 1;
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
-		return;
-	}
-
-	dy = y + 1;
-	for (dx = x - 1; dx >= 0; dx--) {
-		if (world_collapse_liquid_stack(w, x, y, dx, dy)) {
-			break;
-		}
-	}
-	for (dx = x + 1; dx < w->w; dx++) {
-		if (world_collapse_liquid_stack(w, x, y, dx, dy)) {
-			break;
-		}
-	}
-}
-
-static bool
-world_collapse_liquid_stack(struct World *w,
-                            const int x,
-                            const int y,
-                            const int dx,
-                            const int dy)
-{
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
-		return false;
-	}
-
-	if (MS_STATIC == w->state[dx][dy] ||
-	    MS_GRAIN == w->state[dx][dy]) {
-		return true;
-	}
-
-	return false;
-}
-
-static void
 world_swap_dots(struct World *w,
-                const int x,
-                const int y,
-                const int x2,
-                const int y2)
+                const int     x,
+                const int     y,
+                const int     x2,
+                const int     y2)
 {
 	float         tmp_d = w->dissol[x][y];
 	enum Mat      tmp_m = w->dot[x][y];
@@ -703,6 +517,192 @@ world_swap_dots(struct World *w,
 	w->oxid[x2][y2] = tmp_o;
 	w->state[x2][y2] = tmp_s;
 	w->thermo[x2][y2] = tmp_t;
+}
+
+void
+world_update(struct World *w,
+             const float   spawner_temperature)
+{
+	int x, y;
+
+	for (x = 0; x < w->w; x++) {
+		for (y = 0; y < w->h; y++) {
+			if (w->spawner[x][y]) {
+				w->dot[x][y] = w->spawner_mat[x][y];
+				w->thermo[x][y] = spawner_temperature;
+			}
+
+			world_update_dot_from_thermo(w, x, y);
+		}
+	}
+}
+
+static void
+world_update_dot_from_thermo(struct World *w,
+                             const int     x,
+                             const int     y)
+{
+	if (w->thermo[x][y] < MAT_MELT_P[w->dot[x][y]]) {
+		w->state[x][y] = MAT_SOLID_S[w->dot[x][y]];
+		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]];
+	} else if (w->thermo[x][y] < MAT_BOIL_P[w->dot[x][y]]) {
+		w->state[x][y] = MS_LIQUID;
+
+		if (MAT_MELT_DECOMP[w->dot[x][y]]) {
+			w->dot[x][y] = mat_melt_prdct(w->dot[x][y]);
+		}
+
+		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
+		                  WEIGHT_FACTOR_LIQUID;
+	} else {
+		w->state[x][y] = MS_GAS;
+		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
+		                  WEIGHT_FACTOR_GAS;
+		w->weight[x][y] -= w->weight[x][y] *
+		                   (w->thermo[x][y] -
+		                    MAT_BOIL_P[w->dot[x][y]]) /
+		                   WEIGHTLOSS_LIMIT_GAS;
+	}
+}
+
+void
+world_use_brush(struct World   *w,
+                const enum Mat  m,
+                const float     t,
+                const int       x_c,
+                const int       y_c,
+                const int       radius)
+{
+	int x, y;
+	int x1 = x_c - radius;
+	int x2 = x_c + radius;
+	int y1 = y_c - radius;
+	int y2 = y_c + radius;
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+	if (x2 >= w->w) {
+		x2 = w->w - 1;
+	}
+	if (y1 < 0) {
+		y1 = 0;
+	}
+	if (y2 >= w->h) {
+		y2 = w->h - 1;
+	}
+
+	for (x = x1; x <= x2; x++) {
+		for (y = y1; y <= y2; y++) {
+			w->dissol[x][y] = 0.0;
+			w->dot[x][y] = m;
+			w->oxid[x][y] = 0.0;
+			w->thermo[x][y] = t;
+		}
+	}
+}
+
+void
+world_use_eraser(struct World *w,
+                 const int     x_c,
+                 const int     y_c,
+                 const int     radius)
+{
+	int x, y;
+	int x1 = x_c - radius;
+	int x2 = x_c + radius;
+	int y1 = y_c - radius;
+	int y2 = y_c + radius;
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+	if (x2 >= w->w) {
+		x2 = w->w - 1;
+	}
+	if (y1 < 0) {
+		y1 = 0;
+	}
+	if (y2 >= w->h) {
+		y2 = w->h - 1;
+	}
+
+	for (x = x1; x <= x2; x++) {
+		for (y = y1; y <= y2; y++) {
+			world_clear_dot(w, x, y);
+			w->spawner[x][y] = 0;
+		}
+	}
+}
+
+void
+world_use_cooler(struct World *w,
+                 const float   delta,
+                 const int     x_c,
+                 const int     y_c,
+                 const int     radius)
+{
+	int x, y;
+	int x1 = x_c - radius;
+	int x2 = x_c + radius;
+	int y1 = y_c - radius;
+	int y2 = y_c + radius;
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+	if (x2 >= w->w) {
+		x2 = w->w - 1;
+	}
+	if (y1 < 0) {
+		y1 = 0;
+	}
+	if (y2 >= w->h) {
+		y2 = w->h - 1;
+	}
+
+	for (x = x1; x <= x2; x++) {
+		for (y = y1; y <= y2; y++) {
+			w->thermo[x][y] -= delta;
+
+			if (w->thermo[x][y] < 0.0) {
+				w->thermo[x][y] = 0.0;
+			}
+		}
+	}
+}
+
+void
+world_use_heater(struct World *w,
+                 const float   delta,
+                 const int     x_c,
+                 const int     y_c,
+                 const int     radius)
+{
+	int x, y;
+	int x1 = x_c - radius;
+	int x2 = x_c + radius;
+	int y1 = y_c - radius;
+	int y2 = y_c + radius;
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+	if (x2 >= w->w) {
+		x2 = w->w - 1;
+	}
+	if (y1 < 0) {
+		y1 = 0;
+	}
+	if (y2 >= w->h) {
+		y2 = w->h - 1;
+	}
+
+	for (x = x1; x <= x2; x++) {
+		for (y = y1; y <= y2; y++) {
+			w->thermo[x][y] += delta;
+		}
+	}
 }
 
 void
