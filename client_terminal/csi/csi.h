@@ -7,7 +7,11 @@
 
 #include <sys/ioctl.h>
 
-#define CSI_CLEAR        "\x1b[2J"
+/* This is a double sequence for clear and cursor to top-left pos.
+ * Without this, empty lines remain in the scrollback.
+ */
+#define CSI_CLEAR        "\x1b[2J\033[H"
+
 #define CSI_FG_DEFAULT   "\x1b[39m"
 #define CSI_BG_DEFAULT   "\x1b[49m"
 #define CSI_CURSOR_HIDE  "\033[?25l"

@@ -253,7 +253,7 @@ This has already been the case in the Go libs.
 
 - [x] replace truth ints with stdbool
 - [x] core: fix formatting and alphabetical ordering of functions
-- [ ] `CSI_CLEAR` prints 6 empty lines?
+- [x] fix `CSI_CLEAR` leaving empty lines behind
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
 remove and decrease indent of content
