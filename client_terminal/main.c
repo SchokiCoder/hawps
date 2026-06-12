@@ -383,6 +383,7 @@ main(int    argc,
 			tempws = term_get_size();
 			win_w = tempws.ws_col;
 			win_h = tempws.ws_row;
+
 			draw(brush_mat,
 			     cmdmode,
 			     cursor_x, cursor_y,

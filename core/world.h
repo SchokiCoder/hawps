@@ -5,14 +5,16 @@
 #ifndef _WORLD_H
 #define _WORLD_H
 
+#include <stdbool.h>
+
 #include "mat.h"
 
 struct World {
 	int w;
 	int h;
 
-	int       *_spawner;
-	int      **spawner;
+	bool      *_spawner;
+	bool     **spawner;
 	enum Mat  *_spawner_mat;
 	enum Mat **spawner_mat;
 
@@ -35,7 +37,7 @@ world_new(const int w,
           const int h,
           const float temperature);
 
-int
+bool
 world_can_displace(struct World *w,
                    const int x,
                    const int y,

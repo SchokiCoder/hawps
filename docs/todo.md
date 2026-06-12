@@ -251,7 +251,9 @@ Also update copyright.
 - [x] remove plural from world array names
 This has already been the case in the Go libs.
 
-- [ ] replace truth ints with stdbool
+- [x] replace truth ints with stdbool
+- [ ] libs: fix alphabetical ordering of functions
+- [ ] `CSI_CLEAR` prints 6 empty lines?
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
 remove and decrease indent of content

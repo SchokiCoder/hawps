@@ -2,6 +2,7 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "world.h"
@@ -56,7 +57,7 @@ world_drop_gas(struct World *w,
                const int x,
                const int y);
 
-static int
+static bool
 world_collapse_gas_stack(struct World *w,
                          const int x,
                          const int y,
@@ -73,7 +74,7 @@ world_drop_liquid(struct World *w,
                   const int x,
                   const int y);
 
-static int
+static bool
 world_collapse_liquid_stack(struct World *w,
                             const int x,
                             const int y,
@@ -136,7 +137,7 @@ world_new(const int w,
 	return ret;
 }
 
-int
+bool
 world_can_displace(struct World *w,
                    const int x,
                    const int y,
@@ -144,18 +145,18 @@ world_can_displace(struct World *w,
                    const int dy)
 {
 	if (MAT_NONE == w->dot[dx][dy]) {
-		return 1;
+		return true;
 	}
 
 	if (MS_STATIC == w->state[dx][dy]) {
-		return 0;
+		return false;
 	}
 
 	if (w->weight[dx][dy] < w->weight[x][y]) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static void
@@ -577,7 +578,7 @@ world_drop_gas(struct World *w,
 	}
 }
 
-static int
+static bool
 world_collapse_gas_stack(struct World *w,
                          const int x,
                          const int y,
@@ -586,15 +587,15 @@ world_collapse_gas_stack(struct World *w,
 {
 	if (world_can_displace(w, x, y, dx, dy)) {
 		world_swap_dots(w, x, y, dx, dy);
-		return 0;
+		return false;
 	}
 
 	if (MS_STATIC == w->state[dx][dy] ||
 	    MS_GRAIN == w->state[dx][dy]) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static void
@@ -658,7 +659,7 @@ world_drop_liquid(struct World *w,
 	}
 }
 
-static int
+static bool
 world_collapse_liquid_stack(struct World *w,
                             const int x,
                             const int y,
@@ -667,15 +668,15 @@ world_collapse_liquid_stack(struct World *w,
 {
 	if (world_can_displace(w, x, y, dx, dy)) {
 		world_swap_dots(w, x, y, dx, dy);
-		return 0;
+		return false;
 	}
 
 	if (MS_STATIC == w->state[dx][dy] ||
 	    MS_GRAIN == w->state[dx][dy]) {
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static void
