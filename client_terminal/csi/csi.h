@@ -22,6 +22,12 @@
 #define CSI_CURSOR_LEFT  "\033[D"
 
 struct winsize
-term_get_size();
+CSI_get_size();
+
+void
+CSI_set_normal();
+
+void
+CSI_set_raw();
 
 #endif /* _CSI_H */

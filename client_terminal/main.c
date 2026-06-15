@@ -3,15 +3,18 @@
  */
 
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "core/core.h"
 #include "csi/csi.h"
+#include "config.h"
 
 enum Tool {
 	TOOL_BRUSH,
@@ -38,18 +41,7 @@ enum Tool {
 #define KEY_PGDOWN    "\033[6~"
 #define KEY_END       "\x1b[F"
 
-#define SIG_INT  "\003"
-#define SIG_TSTP "\004"
-
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
-
-#define STD_BRUSH_RADIUS  2
-#define STD_ERASER_RADIUS 5
-#define STD_SELECTED_TOOL TOOL_BRUSH
-#define STD_SIM_SUBSAMPLE 4
-#define STD_TEMPERATURE   (20.0 + CELSIUS_TO_KELVIN)
-#define STD_THERMO_RADIUS STD_BRUSH_RADIUS
-#define STD_TICKRATE      120
 
 static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
 "licensed under the %s at:\n"
@@ -116,18 +108,30 @@ draw(const enum Mat        brush_mat,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
      const bool            th_vision,
-     const size_t          win_w,
-     const size_t          win_h,
+     const int             win_w,
+     const int             win_h,
      const struct World    world,
-     const char           *world_name,
-     const size_t          world_w,
-     const size_t          world_h);
+     const char           *world_name);
 
 bool
 handle_args(int     argc,
             char  **argv,
             float  *temperature,
-            size_t *tickrate);
+            int    *tickrate);
+
+void
+handle_input(bool           *active,
+             const enum Mat  brush_mat,
+             const int       brush_radius,
+             int            *cursor_x,
+             int            *cursor_y,
+             const int       eraser_radius,
+             bool           *paused,
+             enum Tool      *sel_tool,
+             const enum Mat  spawner_mat,
+             const float     temperature,
+             const int       thermo_radius,
+             struct World   *world);
 
 bool
 int_flag_parse(int    argc,
@@ -144,32 +148,30 @@ draw(const enum Mat        brush_mat,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
      const bool            th_vision,
-     const size_t          win_w,
-     const size_t          win_h,
+     const int             win_w,
+     const int             win_h,
      const struct World    world,
-     const char           *world_name,
-     const size_t          world_w,
-     const size_t          world_h)
+     const char           *world_name)
 {
 	char left_st_bar[LEFT_ST_BAR_SIZE];
 	char right_st_bar[RIGHT_ST_BAR_SIZE];
 	char st_bar[ST_BAR_SIZE];
 	char vision[VISION_SIZE];
-	size_t world_draw_w;
-	size_t world_draw_h;
-	size_t x, y;
+	int  world_draw_w;
+	int  world_draw_h;
+	int  x, y;
 
 	fputs(CSI_CLEAR, stdout);
 
-	if (world_w > win_w) {
+	if (world.w > win_w) {
 		world_draw_w = win_w;
 	} else {
-		world_draw_w = world_w;
+		world_draw_w = world.w;
 	}
-	if (world_h > win_h - 2) {
+	if (world.h > win_h - 2) {
 		world_draw_h = win_h - 2;
 	} else {
-		world_draw_h = world_h;
+		world_draw_h = world.h;
 	}
 
 	for (y = 0; y < world_draw_h; y++) {
@@ -242,7 +244,7 @@ bool
 handle_args(int     argc,
             char  **argv,
             float  *temperature,
-            size_t *tickrate)
+            int    *tickrate)
 {
 	int i;
 
@@ -297,6 +299,130 @@ handle_args(int     argc,
 	return true;
 }
 
+void
+handle_input(bool           *active,
+             const enum Mat  brush_mat,
+             const int       brush_radius,
+             int            *cursor_x,
+             int            *cursor_y,
+             const int       eraser_radius,
+             bool           *paused,
+             enum Tool      *sel_tool,
+             const enum Mat  spawner_mat,
+             const float     temperature,
+             const int       thermo_radius,
+             struct World   *world)
+{
+	char in;
+
+	if (read(STDIN_FILENO, &in, sizeof(in)) <= 0) {
+		return;
+	}
+
+	switch (in) {
+	case KEY_QUIT:
+		*active = 0;
+		break;
+
+	case KEY_USE:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			world_use_brush(world,
+			                brush_mat,
+			                temperature,
+			                *cursor_x,
+			                *cursor_y,
+			                brush_radius);
+			break;
+
+		case TOOL_SPAWNER:
+			world->spawner[*cursor_x][*cursor_y] = true;
+			world->spawner_mat[*cursor_x][*cursor_y] = spawner_mat;
+			break;
+
+		case TOOL_ERASER:
+			world_use_eraser(world,
+			                 *cursor_x,
+			                 *cursor_y,
+			                 eraser_radius);
+			break;
+
+		case TOOL_HEATER:
+			world_use_heater(world,
+			                 STD_THERMO_DELTA,
+			                 *cursor_x,
+			                 *cursor_y,
+			                 thermo_radius);
+			break;
+
+		case TOOL_COOLER:
+			world_use_cooler(world,
+			                 STD_THERMO_DELTA,
+			                 *cursor_x,
+			                 *cursor_y,
+			                 thermo_radius);
+			break;
+		}
+		break;
+
+	case KEY_BRUSH:
+		*sel_tool = TOOL_BRUSH;
+		break;
+
+	case KEY_SPAWNER:
+		*sel_tool = TOOL_SPAWNER;
+		break;
+
+	case KEY_ERASER:
+		*sel_tool = TOOL_ERASER;
+		break;
+
+	case KEY_HEATER:
+		*sel_tool = TOOL_HEATER;
+		break;
+
+	case KEY_COOLER:
+		*sel_tool = TOOL_COOLER;
+		break;
+
+	case KEY_LEFT:
+		if (*cursor_x > 0)
+			*cursor_x -= 1;
+		break;
+
+	case KEY_DOWN:
+		if (*cursor_y < world->h - 1)
+			*cursor_y += 1;
+		break;
+
+	case KEY_UP:
+		if (*cursor_y > 0)
+			*cursor_y -= 1;
+		break;
+
+	case KEY_RIGHT:
+		if (*cursor_x < world->w - 1)
+			*cursor_x += 1;
+		break;
+
+	case KEY_CMD:
+		// TODO *imode = IM_CMD;
+		break;
+
+	case KEY_PAUSE:
+		if (*paused)
+			*paused = false;
+		else
+			*paused = true;
+		break;
+
+	case SIGINT:
+	case SIGTSTP:
+		*active = 0;
+		break;
+	}
+}
+
 bool
 int_flag_parse(int    argc,
                char **argv,
@@ -337,20 +463,18 @@ main(int    argc,
 	bool           paused = false;
 	clock_t        now;
 	enum Tool      sel_tool = STD_SELECTED_TOOL;
-	size_t         sim_subsample = STD_SIM_SUBSAMPLE;
+	int            sim_subsample = STD_SIM_SUBSAMPLE;
 	enum Mat       spawner_mat = FIRST_REAL_MAT;
 	float          temperature = STD_TEMPERATURE;
 	struct winsize tempws;
 	int            thermo_radius = STD_THERMO_RADIUS;
 	bool           th_vision = false;
-	clock_t        tick = 0;
-	size_t         tickrate = STD_TICKRATE;
-	size_t         ts_since_sim = 9001; // ticks since last simulation
-	size_t         win_w;
-	size_t         win_h;
+	clock_t        last_tick = 0;
+	int            tickrate = STD_TICKRATE;
+	int            ts_since_sim = 9001; // ticks since last simulation
+	int            win_w;
+	int            win_h;
 	struct World   world;
-	size_t         world_w;
-	size_t         world_h;
 
 	if (!handle_args(argc, argv, &temperature, &tickrate)) {
 		return 0;
@@ -358,29 +482,42 @@ main(int    argc,
 
 	core_init();
 
-	tempws = term_get_size();
+	CSI_set_raw();
+
+	tempws = CSI_get_size();
 	win_w = tempws.ws_col;
 	win_h = tempws.ws_row;
 
-	world_w = win_w;
-	world_h = win_h - 2;
-	world = world_new(world_w, world_h, temperature);
+	world = world_new(win_w, win_h - 2, temperature);
 
 	while (active) {
 		now = clock();
-		if (now - tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
-			tick = now;
+		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
+			last_tick = now;
+
+			handle_input(&active,
+			             brush_mat,
+			             brush_radius,
+			             &cursor_x,
+			             &cursor_y,
+			             eraser_radius,
+			             &paused,
+			             &sel_tool,
+			             spawner_mat,
+			             temperature,
+			             thermo_radius,
+			             &world);
 
 			if (!paused) {
 				if (ts_since_sim >= sim_subsample) {
 					world_sim(&world);
 					ts_since_sim = 0;
 				} else {
-					ts_since_sim++;
+					ts_since_sim += 1;
 				}
 			}
 
-			tempws = term_get_size();
+			tempws = CSI_get_size();
 			win_w = tempws.ws_col;
 			win_h = tempws.ws_row;
 
@@ -394,15 +531,11 @@ main(int    argc,
 			     win_w,
 			     win_h,
 			     world,
-			     "worldname",
-			     world_w,
-			     world_h);
-
-			// TODO remove this
-			active = 0;
+			     "worldname");
 		}
 	}
 
+	CSI_set_normal();
 	world_free(&world);
 
 	return 0;

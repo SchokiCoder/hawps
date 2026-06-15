@@ -255,17 +255,19 @@ This has already been the case in the Go libs.
 - [x] core: fix formatting and alphabetical ordering of functions
 - [x] fix `CSI_CLEAR` leaving empty lines behind
 
-- [ ] core chemical sim: touch's parenting if is unnecessary?
-remove and decrease indent of content
-
-- [ ] terminal client: add navigation input and mainloop
-- [ ] terminal client: add draw dots with color
-- [ ] terminal client: add draw dots with glow color
-- [ ] terminal client: add draw tool
+- [x] terminal client: add input and mainloop
+- [ ] terminal client: is waiting for input (it shouldn't)
+- [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
+- [ ] terminal client: add dots with glow color to draw
+- [ ] terminal client: add tool hover to draw
 - [ ] terminal client: add thermoview
 - [ ] terminal client: add tool switch binds
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
+- [ ] terminal client: remove todos
+
+- [ ] core chemical sim: touch's parenting if is unnecessary?
+remove and decrease indent of content
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
 I didn't even notice that. You may think I did,

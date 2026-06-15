@@ -1,0 +1,35 @@
+/* SPDX-License-Identifier: LGPL-2.1-only
+ * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
+ */
+
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+/* key binds
+ */
+#define KEY_QUIT    'q'
+#define KEY_USE     'e'
+#define KEY_BRUSH   'a'
+#define KEY_SPAWNER 's'
+#define KEY_ERASER  'd'
+#define KEY_HEATER  'f'
+#define KEY_COOLER  'g'
+#define KEY_LEFT    'h'
+#define KEY_DOWN    'j'
+#define KEY_UP      'k'
+#define KEY_RIGHT   'l'
+#define KEY_CMD     ':'
+#define KEY_PAUSE   ' '
+
+/* startup settings
+ */
+#define STD_BRUSH_RADIUS  2
+#define STD_ERASER_RADIUS 5
+#define STD_SELECTED_TOOL TOOL_BRUSH
+#define STD_SIM_SUBSAMPLE 4
+#define STD_TEMPERATURE   (20.0 + CELSIUS_TO_KELVIN)
+#define STD_THERMO_DELTA  1.0
+#define STD_THERMO_RADIUS STD_BRUSH_RADIUS
+#define STD_TICKRATE      120
+
+#endif /* _CONFIG_H */
