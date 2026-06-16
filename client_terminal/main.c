@@ -510,6 +510,7 @@ main(int    argc,
 			             thermo_radius,
 			             &world);
 
+			world_update(&world, temperature);
 			if (!paused) {
 				if (ts_since_sim >= sim_subsample) {
 					world_sim(&world);

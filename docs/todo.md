@@ -257,6 +257,14 @@ This has already been the case in the Go libs.
 
 - [x] terminal client: add input and mainloop
 - [x] terminal client: fix input blocking
+
+- [x] terminal client: fix not updating the world
+Also add minor chapter to `docs/performance.md`.
+
+- [ ] terminal client: fix drawing being flickery (the higher up, the more flicker)
+(prepare everything to be drawn in a string, then print it (like v-sync but cooler)?)
+(wait do we need raw mode still? sure we need fcntl for NONBLOCK, but the rest?)
+
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw
@@ -265,6 +273,8 @@ This has already been the case in the Go libs.
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
+- [ ] ebiten client: hook up to c libs
+- [ ] performance review of both clients
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
 remove and decrease indent of content

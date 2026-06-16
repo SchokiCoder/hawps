@@ -1,3 +1,22 @@
+# Go/ebiten vs C/terminal
+
+## Dipping the toes
+
+I *will* do the test from below, just wait, but I already have some results.
+I did 3 tests:
+
+client          | environment              | Power use in Watts
+----------------|--------------------------|-------------------
+ebiten client   | KDE Plasma Wayland 6.6.5 | ~105 to 110
+terminal client | KDE Konsole              | ~110 to 115
+terminal client | TTY                      | ~85 to 90
+
+:O
+Holy shit! We've found something more efficient than ebiten, guys!?
+
+terminal client's drawing is still rather primitive,
+and I'm confident that the future looks bright for this client.
+
 # C/Tcl/Tk vs Go/ebiten
 
 ## Status

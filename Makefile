@@ -7,7 +7,10 @@ LICENSE          :=LGPL-2.1-only
 LICENSE_URL      :=https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
 REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
-GO_DEFINES       :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
+
+DEFAULT_CLIENT :=$(APP_NAME)_terminal
+
+GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
 
 CC        :=cc
 C_FLAGS   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
@@ -15,13 +18,16 @@ C_DEFINES :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"
 
 .PHONY: all build clean generate run test vet
 
-all: $(APP_NAME)_terminal
+all: $(DEFAULT_CLIENT)
 
 clean:
 	rm -f $(APP_NAME)_*
 
-run: clean $(APP_NAME)_terminal
-	./$(APP_NAME)_terminal
+prerun:
+	rm -f $(DEFAULT_CLIENT)
+
+run: prerun $(DEFAULT_CLIENT)
+	./$(DEFAULT_CLIENT)
 
 vet:
 	go vet ./client_ebiten
