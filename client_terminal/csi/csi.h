@@ -25,6 +25,10 @@ struct winsize
 CSI_get_size();
 
 void
+CSI_set_cursorpos(const int x,
+                  const int y);
+
+void
 CSI_set_normal();
 
 void

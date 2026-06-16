@@ -161,8 +161,6 @@ draw(const enum Mat        brush_mat,
 	int  world_draw_h;
 	int  x, y;
 
-	fputs(CSI_CLEAR, stdout);
-
 	if (world.w > win_w) {
 		world_draw_w = win_w;
 	} else {
@@ -174,6 +172,7 @@ draw(const enum Mat        brush_mat,
 		world_draw_h = world.h;
 	}
 
+	CSI_set_cursorpos(0, 0);
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
 			if (world.dot[x][y] == MAT_NONE) {
@@ -238,6 +237,9 @@ draw(const enum Mat        brush_mat,
 			break;
 		}
 	}
+
+	CSI_set_cursorpos(cursor_x, cursor_y);
+	fputs("^", stdout);
 }
 
 bool

@@ -4,6 +4,7 @@
 
 #include "csi.h"
 
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <termios.h>
@@ -11,6 +12,7 @@
 
 static bool           term_raw = false;
 static struct termios term_initial_settings;
+static int            term_stdin_initial_flags;
 
 struct winsize
 CSI_get_size()
@@ -23,6 +25,13 @@ CSI_get_size()
 }
 
 void
+CSI_set_cursorpos(const int x,
+                  const int y)
+{
+	printf("\033[%i;%iH", y, x);
+}
+
+void
 CSI_set_normal()
 {
 	if (!term_raw) {
@@ -30,6 +39,7 @@ CSI_set_normal()
 	}
 
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &term_initial_settings);
+	fcntl(STDIN_FILENO, F_SETFL, term_stdin_initial_flags);
 	fputs(CSI_CURSOR_SHOW, stdout);
 	fputs(CSI_FG_DEFAULT, stdout);
 	fputs(CSI_BG_DEFAULT, stdout);
@@ -50,6 +60,8 @@ CSI_set_raw()
 	raw = term_initial_settings;
 	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	term_stdin_initial_flags = fcntl(STDIN_FILENO, F_GETFL);
+	fcntl(STDIN_FILENO, F_SETFL, term_stdin_initial_flags | O_NONBLOCK);
 	fputs(CSI_CURSOR_HIDE, stdout);
 	term_raw = true;
 }

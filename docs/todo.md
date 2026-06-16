@@ -256,7 +256,7 @@ This has already been the case in the Go libs.
 - [x] fix `CSI_CLEAR` leaving empty lines behind
 
 - [x] terminal client: add input and mainloop
-- [ ] terminal client: is waiting for input (it shouldn't)
+- [x] terminal client: fix input blocking
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw
