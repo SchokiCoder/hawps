@@ -261,10 +261,10 @@ This has already been the case in the Go libs.
 - [x] terminal client: fix not updating the world
 Also add minor chapter to `docs/performance.md`.
 
-- [ ] terminal client: fix drawing being flickery (the higher up, the more flicker)
-(prepare everything to be drawn in a string, then print it (like v-sync but cooler)?)
-(wait do we need raw mode still? sure we need fcntl for NONBLOCK, but the rest?)
+- [x] terminal client: buf drawing output
+This fixes a flickery appearance.
 
+- [ ] terminal client: add bind for vision switch default: t
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw

@@ -24,10 +24,11 @@ enum Tool {
 	TOOL_COOLER,
 };
 
-#define LEFT_ST_BAR_SIZE  150
-#define RIGHT_ST_BAR_SIZE 100
-#define ST_BAR_SIZE       LEFT_ST_BAR_SIZE + RIGHT_ST_BAR_SIZE
-#define VISION_SIZE       16
+// TODO allow for dynamic size via display string being on heap
+#define LEFT_ST_BAR_SIZE  300
+#define RIGHT_ST_BAR_SIZE 200
+#define ST_BAR_SIZE       (LEFT_ST_BAR_SIZE + RIGHT_ST_BAR_SIZE)
+#define DISPLAY_SIZE      (ST_BAR_SIZE * ST_BAR_SIZE)
 
 #define CELSIUS_TO_KELVIN 273.15
 
@@ -104,6 +105,7 @@ draw(const enum Mat        brush_mat,
      const bool            cmdmode,
      const int             cursor_x,
      const int             cursor_y,
+     char                 *display,
      const char           *ip_address,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
@@ -139,11 +141,18 @@ int_flag_parse(int    argc,
                int   *idx,
                long  *out);
 
+size_t
+string_cat(char *restrict       dst,
+           const size_t         dst_size,
+           const size_t         cat_pos,
+           const char *restrict src);
+
 void
 draw(const enum Mat        brush_mat,
      const bool            cmdmode,
      const int             cursor_x,
      const int             cursor_y,
+     char                 *display,
      const char           *ip_address,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
@@ -153,13 +162,16 @@ draw(const enum Mat        brush_mat,
      const struct World    world,
      const char           *world_name)
 {
-	char left_st_bar[LEFT_ST_BAR_SIZE];
-	char right_st_bar[RIGHT_ST_BAR_SIZE];
-	char st_bar[ST_BAR_SIZE];
-	char vision[VISION_SIZE];
-	int  world_draw_w;
-	int  world_draw_h;
-	int  x, y;
+	size_t display_len = 0;
+	char   left_st_bar[LEFT_ST_BAR_SIZE];
+	char   right_st_bar[RIGHT_ST_BAR_SIZE];
+	char   st_bar_fmt[24];
+	char  *vision;
+	int    world_draw_w;
+	int    world_draw_h;
+	int    x, y;
+
+	display[0] = '\0';
 
 	if (world.w > win_w) {
 		world_draw_w = win_w;
@@ -172,26 +184,29 @@ draw(const enum Mat        brush_mat,
 		world_draw_h = world.h;
 	}
 
-	CSI_set_cursorpos(0, 0);
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
 			if (world.dot[x][y] == MAT_NONE) {
-				fputs(" ", stdout);
+				display[display_len] = ' ';
+				display_len += 1;
 				continue;
 			}
 
 			switch (world.state[x][y]) {
 			case MS_STATIC:
 			case MS_GRAIN:
-				fputs("X", stdout);
+				display[display_len] = 'X';
+				display_len += 1;
 				break;
 
 			case MS_LIQUID:
-				fputs("+", stdout);
+				display[display_len] = '+';
+				display_len += 1;
 				break;
 
 			case MS_GAS:
-				fputs("-", stdout);
+				display[display_len] = '-';
+				display_len += 1;
 				break;
 
 			case MS_COUNT:
@@ -199,47 +214,77 @@ draw(const enum Mat        brush_mat,
 			}
 		}
 	}
+	display[(cursor_y * world.w) + cursor_x] = '^';
 
 	if (th_vision) {
-		strncpy(vision, "Thermal", VISION_SIZE);
+		vision = "Thermal";
 	} else {
-		strncpy(vision, "Normal", VISION_SIZE);
+		vision = "Normal";
 	}
 
-	sprintf(left_st_bar, "%s (%i,%i) | View:%s | %s",
-	        world_name, cursor_x, cursor_y, vision, ip_address);
-	sprintf(right_st_bar, "%s: bindings, %s: help", "bind1", "bind2");
-	sprintf(st_bar, "%%s%%%lus", win_w - strlen(left_st_bar));
-	printf(st_bar, left_st_bar, right_st_bar);
+	snprintf(left_st_bar, LEFT_ST_BAR_SIZE, "%s (%i,%i) | View:%s | %s",
+	         world_name, cursor_x, cursor_y, vision, ip_address);
+	snprintf(right_st_bar, RIGHT_ST_BAR_SIZE, "%s: bindings, %s: help",
+	         "bind1", "bind2");
+	sprintf(st_bar_fmt, "%%s%%%lus", win_w - strlen(left_st_bar));
+	snprintf(&display[display_len], DISPLAY_SIZE, st_bar_fmt,
+	         left_st_bar, right_st_bar);
+	display_len += win_w;
 
 	if (cmdmode) {
-		fputs(":cmd input currently not implemented", stdout);
+		display_len = string_cat(display,
+		           DISPLAY_SIZE,
+		           display_len,
+		           ":cmd input currently not implemented");
 	} else {
 		switch (sel_tool) {
 		case TOOL_BRUSH:
-			printf("BRUSH %s", MAT_NAME[brush_mat]);
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           "BRUSH ");
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           MAT_NAME[brush_mat]);
 			break;
 
 		case TOOL_SPAWNER:
-			printf("SPAWNER %s", MAT_NAME[spawner_mat]);
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           "SPAWNER ");
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           MAT_NAME[spawner_mat]);
 			break;
 
 		case TOOL_ERASER:
-			fputs("ERASER", stdout);
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           "ERASER");
 			break;
 
 		case TOOL_HEATER:
-			fputs("HEATER", stdout);
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           "HEATER");
 			break;
 
 		case TOOL_COOLER:
-			fputs("COOLER", stdout);
+			display_len = string_cat(display,
+			           DISPLAY_SIZE,
+			           display_len,
+			           "COOLER");
 			break;
 		}
 	}
 
-	CSI_set_cursorpos(cursor_x, cursor_y);
-	fputs("^", stdout);
+	CSI_set_cursorpos(0, 0);
+	fputs(display, stdout);
 }
 
 bool
@@ -451,6 +496,28 @@ int_flag_parse(int    argc,
 	return true;
 }
 
+size_t
+string_cat(char *restrict       dst,
+           const size_t         dst_size,
+           const size_t         cat_pos,
+           const char *restrict src)
+{
+	size_t copy_len;
+	size_t src_len;
+
+	src_len = strlen(src);
+
+	copy_len = dst_size - cat_pos - 1;
+	if (src_len < copy_len) {
+		copy_len = src_len;
+	}
+
+	strncpy(&dst[cat_pos], src, copy_len);
+	dst[cat_pos + copy_len] = '\0';
+
+	return copy_len + cat_pos;
+}
+
 int
 main(int    argc,
      char **argv)
@@ -461,6 +528,7 @@ main(int    argc,
 	bool           cmdmode = false;
 	int            cursor_x = 0;
 	int            cursor_y = 0;
+	char           display[DISPLAY_SIZE];
 	int            eraser_radius = STD_ERASER_RADIUS;
 	bool           paused = false;
 	clock_t        now;
@@ -485,6 +553,7 @@ main(int    argc,
 	core_init();
 
 	CSI_set_raw();
+	fputs(CSI_CLEAR, stdout);
 
 	tempws = CSI_get_size();
 	win_w = tempws.ws_col;
@@ -527,6 +596,7 @@ main(int    argc,
 			draw(brush_mat,
 			     cmdmode,
 			     cursor_x, cursor_y,
+			     display,
 			     "localhost",
 			     sel_tool,
 			     spawner_mat,
@@ -539,6 +609,7 @@ main(int    argc,
 	}
 
 	CSI_set_normal();
+	fputs(CSI_CLEAR, stdout);
 	world_free(&world);
 
 	return 0;
