@@ -264,7 +264,11 @@ Also add minor chapter to `docs/performance.md`.
 - [x] terminal client: buf drawing output
 This fixes a flickery appearance.
 
-- [ ] terminal client: add bind for vision switch default: t
+- [x] terminal client: add bind for vision switch
+- [ ] terminal client: fix last row not being cleared properly
+- [ ] terminal client: fix arg parsing
+- [ ] terminal client: fix thermo tools not doing a thing?
+
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw

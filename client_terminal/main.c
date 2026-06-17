@@ -132,6 +132,7 @@ handle_input(bool           *active,
              enum Tool      *sel_tool,
              const enum Mat  spawner_mat,
              const float     temperature,
+             bool           *th_vision,
              const int       thermo_radius,
              struct World   *world);
 
@@ -357,6 +358,7 @@ handle_input(bool           *active,
              enum Tool      *sel_tool,
              const enum Mat  spawner_mat,
              const float     temperature,
+             bool           *th_vision,
              const int       thermo_radius,
              struct World   *world)
 {
@@ -410,6 +412,13 @@ handle_input(bool           *active,
 			                 thermo_radius);
 			break;
 		}
+		break;
+
+	case KEY_SWITCH_VISION:
+		if (*th_vision)
+			*th_vision = false;
+		else
+			*th_vision = true;
 		break;
 
 	case KEY_BRUSH:
@@ -537,8 +546,8 @@ main(int    argc,
 	enum Mat       spawner_mat = FIRST_REAL_MAT;
 	float          temperature = STD_TEMPERATURE;
 	struct winsize tempws;
-	int            thermo_radius = STD_THERMO_RADIUS;
 	bool           th_vision = false;
+	int            thermo_radius = STD_THERMO_RADIUS;
 	clock_t        last_tick = 0;
 	int            tickrate = STD_TICKRATE;
 	int            ts_since_sim = 9001; // ticks since last simulation
@@ -576,6 +585,7 @@ main(int    argc,
 			             &sel_tool,
 			             spawner_mat,
 			             temperature,
+			             &th_vision,
 			             thermo_radius,
 			             &world);
 

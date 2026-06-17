@@ -7,19 +7,20 @@
 
 /* key binds
  */
-#define KEY_QUIT    'q'
-#define KEY_USE     'e'
-#define KEY_BRUSH   'a'
-#define KEY_SPAWNER 's'
-#define KEY_ERASER  'd'
-#define KEY_HEATER  'f'
-#define KEY_COOLER  'g'
-#define KEY_LEFT    'h'
-#define KEY_DOWN    'j'
-#define KEY_UP      'k'
-#define KEY_RIGHT   'l'
-#define KEY_CMD     ':'
-#define KEY_PAUSE   ' '
+#define KEY_QUIT          'q'
+#define KEY_USE           'e'
+#define KEY_SWITCH_VISION 't'
+#define KEY_BRUSH         'a'
+#define KEY_SPAWNER       's'
+#define KEY_ERASER        'd'
+#define KEY_HEATER        'f'
+#define KEY_COOLER        'g'
+#define KEY_LEFT          'h'
+#define KEY_DOWN          'j'
+#define KEY_UP            'k'
+#define KEY_RIGHT         'l'
+#define KEY_CMD           ':'
+#define KEY_PAUSE         ' '
 
 /* startup settings
  */
