@@ -25,10 +25,8 @@ enum Tool {
 };
 
 // TODO allow for dynamic size via display string being on heap
-#define LEFT_ST_BAR_SIZE  300
-#define RIGHT_ST_BAR_SIZE 200
-#define ST_BAR_SIZE       (LEFT_ST_BAR_SIZE + RIGHT_ST_BAR_SIZE)
-#define DISPLAY_SIZE      (ST_BAR_SIZE * ST_BAR_SIZE)
+#define BUF_SIZE     64
+#define DISPLAY_SIZE (500 * 500)
 
 #define CELSIUS_TO_KELVIN 273.15
 
@@ -163,13 +161,15 @@ draw(const enum Mat        brush_mat,
      const struct World    world,
      const char           *world_name)
 {
+	char   buf[BUF_SIZE];
+	size_t buf_len = 0;
 	size_t display_len = 0;
-	char   left_st_bar[LEFT_ST_BAR_SIZE];
-	char   right_st_bar[RIGHT_ST_BAR_SIZE];
-	char   st_bar_fmt[24];
+	size_t left_st_bar_len = 0;
+	size_t right_st_bar_len = 0;
+	size_t space_len = 0;
 	char  *vision;
-	int    world_draw_w;
-	int    world_draw_h;
+	int    world_draw_w = 0;
+	int    world_draw_h = 0;
 	int    x, y;
 
 	display[0] = '\0';
@@ -223,14 +223,73 @@ draw(const enum Mat        brush_mat,
 		vision = "Normal";
 	}
 
-	snprintf(left_st_bar, LEFT_ST_BAR_SIZE, "%s (%i,%i) | View:%s | %s",
-	         world_name, cursor_x, cursor_y, vision, ip_address);
-	snprintf(right_st_bar, RIGHT_ST_BAR_SIZE, "%s: bindings, %s: help",
-	         "bind1", "bind2");
-	sprintf(st_bar_fmt, "%%s%%%lus", win_w - strlen(left_st_bar));
-	snprintf(&display[display_len], DISPLAY_SIZE, st_bar_fmt,
-	         left_st_bar, right_st_bar);
-	display_len += win_w;
+	left_st_bar_len = display_len;
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         world_name);
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         " (");
+	snprintf(buf, BUF_SIZE, "%i", cursor_x);
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         buf);
+	display[display_len] = ',';
+	display_len += 1;
+	snprintf(buf, BUF_SIZE, "%i", cursor_y);
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         buf);
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         ") | View:");
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         vision);
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         " | ");
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         ip_address);
+	left_st_bar_len = display_len - left_st_bar_len;
+
+	buf[0] = '\0';
+	buf_len = 0;
+	buf_len = string_cat(buf,
+	                     BUF_SIZE,
+	                     buf_len,
+	                     "bind1");
+	buf_len = string_cat(buf,
+	                     BUF_SIZE,
+	                     buf_len,
+	                     ": bindings, ");
+	buf_len = string_cat(buf,
+	                     BUF_SIZE,
+	                     buf_len,
+	                     "bind2");
+	buf_len = string_cat(buf,
+	                     BUF_SIZE,
+	                     buf_len,
+	                     ": help");
+	right_st_bar_len = buf_len;
+
+	space_len = win_w - (left_st_bar_len + right_st_bar_len);
+	memset(&display[display_len], ' ', space_len);
+	display_len += space_len;
+
+	display_len = string_cat(display,
+	                         DISPLAY_SIZE,
+	                         display_len,
+	                         buf);
 
 	if (cmdmode) {
 		display_len = string_cat(display,
@@ -550,7 +609,7 @@ main(int    argc,
 	int            thermo_radius = STD_THERMO_RADIUS;
 	clock_t        last_tick = 0;
 	int            tickrate = STD_TICKRATE;
-	int            ts_since_sim = 9001; // ticks since last simulation
+	int            ts_since_sim = 9001; /* ticks since last simulation */
 	int            win_w;
 	int            win_h;
 	struct World   world;

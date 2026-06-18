@@ -265,6 +265,11 @@ Also add minor chapter to `docs/performance.md`.
 This fixes a flickery appearance.
 
 - [x] terminal client: add bind for vision switch
+
+- [x] terminal client: performance: replace most sprintf calls
+- [ ] terminal client: performance: add lookup table for int to str
+(removing last sprintf calls)
+
 - [ ] terminal client: fix last row not being cleared properly
 - [ ] terminal client: fix arg parsing
 - [ ] terminal client: fix thermo tools not doing a thing?
