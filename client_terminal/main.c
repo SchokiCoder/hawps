@@ -292,55 +292,68 @@ draw(const enum Mat        brush_mat,
 	                         buf);
 
 	if (cmdmode) {
+		// TODO implement
 		display_len = string_cat(display,
-		           DISPLAY_SIZE,
-		           display_len,
-		           ":cmd input currently not implemented");
+		                         DISPLAY_SIZE,
+		                         display_len,
+		                         ":cmd input currently not implemented");
+		// TODO draw ' ' until row end
 	} else {
+		buf[0] = '\0';
+		buf_len = 0;
+
 		switch (sel_tool) {
 		case TOOL_BRUSH:
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           "BRUSH ");
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           MAT_NAME[brush_mat]);
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     "BRUSH ");
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     MAT_NAME[brush_mat]);
 			break;
 
 		case TOOL_SPAWNER:
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           "SPAWNER ");
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           MAT_NAME[spawner_mat]);
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     "SPAWNER ");
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     MAT_NAME[spawner_mat]);
 			break;
 
 		case TOOL_ERASER:
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           "ERASER");
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     "ERASER");
 			break;
 
 		case TOOL_HEATER:
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           "HEATER");
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     "HEATER");
 			break;
 
 		case TOOL_COOLER:
-			display_len = string_cat(display,
-			           DISPLAY_SIZE,
-			           display_len,
-			           "COOLER");
+			buf_len = string_cat(buf,
+			                     BUF_SIZE,
+			                     buf_len,
+			                     "COOLER");
 			break;
 		}
+
+		display_len = string_cat(display,
+	                                 DISPLAY_SIZE,
+	                                 display_len,
+	                                 buf);
+		space_len = win_w - buf_len;
+		memset(&display[display_len], ' ', space_len);
+		display_len += space_len;
 	}
 
 	CSI_set_cursorpos(0, 0);

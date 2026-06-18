@@ -267,10 +267,8 @@ This fixes a flickery appearance.
 - [x] terminal client: add bind for vision switch
 
 - [x] terminal client: performance: replace most sprintf calls
-- [ ] terminal client: performance: add lookup table for int to str
-(removing last sprintf calls)
 
-- [ ] terminal client: fix last row not being cleared properly
+- [x] terminal client: fix last row not being cleared properly
 - [ ] terminal client: fix arg parsing
 - [ ] terminal client: fix thermo tools not doing a thing?
 
@@ -283,6 +281,8 @@ This fixes a flickery appearance.
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
 - [ ] ebiten client: hook up to c libs
+- [ ] terminal client: performance: add lookup table for int to str conversion
+(removing last sprintf calls)
 - [ ] performance review of both clients
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
