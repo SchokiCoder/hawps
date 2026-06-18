@@ -271,14 +271,21 @@ This fixes a flickery appearance.
 - [x] terminal client: fix last row not being cleared properly
 - [x] terminal client: fix flag parsing
 - [x] terminal client: fix flag int arg parsing
-- [ ] terminal client: fix thermo tools not doing a thing?
 
-- [ ] terminal client: do we need the outer tickrate?
-having a simrate? of course.
-but the outer loop (controlled by tickrate) was for faster ebiten input.
-on terminal land, the input rate is capped by the environment's keyboard stuff.
-maybe use `cfsetispeed` or just set tickrate to be `cfgetispeed`?
+- [x] ~terminal client: consider removing tickrate (for a as fast as possible loop)~
+No, the tickrate is need for device battery life.
+I considered setting tickrate to 60 and sim-subsample to 2 to compensate,
+so that on first glance nothing changes,
+but this didn't really lower the power usage.
+Also `cfsetispeed` seems to not affect keyboard input speed at all.
 
+- [x] terminal client: add mouse input support
+POV ebiten client:
+Anything you can do, I can do better!
+I can do anything better than you!
+
+- [ ] terminal client: fix thermo tools being too slow
+- [ ] terminal client: fix SIGINT and SIGTSTP handling
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw
@@ -287,6 +294,7 @@ maybe use `cfsetispeed` or just set tickrate to be `cfgetispeed`?
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
+- [ ] terminal client: update help text
 - [ ] ebiten client: hook up to c libs
 - [ ] terminal client: performance: add lookup table for int to str conversion
 (removing last sprintf calls)

@@ -27,18 +27,19 @@ enum Tool {
 // TODO allow for dynamic size via display string being on heap
 #define BUF_SIZE     64
 #define DISPLAY_SIZE (500 * 500)
+#define INPUT_SIZE   16
 
 #define CELSIUS_TO_KELVIN 273.15
 
 #define FIRST_REAL_MAT MAT_SAND
 
-#define KEY_BACKSPACE "\x7f"
-#define KEY_HOME      "\x1b[H"
-#define KEY_INSERT    "\033[2~"
-#define KEY_DELETE    "\033[3~"
-#define KEY_PGUP      "\033[5~"
-#define KEY_PGDOWN    "\033[6~"
-#define KEY_END       "\x1b[F"
+#define KEY_BACKSPACE '\x7f'
+#define KEY_HOME      '\x1b[H'
+#define KEY_INSERT    '\033[2~'
+#define KEY_DELETE    '\033[3~'
+#define KEY_PGUP      '\033[5~'
+#define KEY_PGDOWN    '\033[6~'
+#define KEY_END       '\x1b[F'
 
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
 
@@ -145,6 +146,18 @@ string_cat(char *restrict       dst,
            const size_t         dst_size,
            const size_t         cat_pos,
            const char *restrict src);
+
+void
+use_tool(const enum Mat   brush_mat,
+         const int        brush_radius,
+         const int        cursor_x,
+         const int        cursor_y,
+         const int        eraser_radius,
+         const enum Tool  sel_tool,
+         const enum Mat   spawner_mat,
+         const float      temperature,
+         const int        thermo_radius,
+         struct World    *world);
 
 void
 draw(const enum Mat        brush_mat,
@@ -437,56 +450,31 @@ handle_input(bool           *active,
              const int       thermo_radius,
              struct World   *world)
 {
-	char in;
+	int  b;
+	char in[INPUT_SIZE];
+	int  x;
+	int  y;
 
-	if (read(STDIN_FILENO, &in, sizeof(in)) <= 0) {
+	if (read(STDIN_FILENO, &in, INPUT_SIZE) <= 0) {
 		return;
 	}
 
-	switch (in) {
+	switch (in[0]) {
 	case KEY_QUIT:
 		*active = 0;
 		break;
 
 	case KEY_USE:
-		switch (*sel_tool) {
-		case TOOL_BRUSH:
-			world_use_brush(world,
-			                brush_mat,
-			                temperature,
-			                *cursor_x,
-			                *cursor_y,
-			                brush_radius);
-			break;
-
-		case TOOL_SPAWNER:
-			world->spawner[*cursor_x][*cursor_y] = true;
-			world->spawner_mat[*cursor_x][*cursor_y] = spawner_mat;
-			break;
-
-		case TOOL_ERASER:
-			world_use_eraser(world,
-			                 *cursor_x,
-			                 *cursor_y,
-			                 eraser_radius);
-			break;
-
-		case TOOL_HEATER:
-			world_use_heater(world,
-			                 STD_THERMO_DELTA,
-			                 *cursor_x,
-			                 *cursor_y,
-			                 thermo_radius);
-			break;
-
-		case TOOL_COOLER:
-			world_use_cooler(world,
-			                 STD_THERMO_DELTA,
-			                 *cursor_x,
-			                 *cursor_y,
-			                 thermo_radius);
-			break;
-		}
+		use_tool(brush_mat,
+		         brush_radius,
+		         *cursor_x,
+		         *cursor_y,
+		         eraser_radius,
+		         *sel_tool,
+		         spawner_mat,
+		         temperature,
+		         thermo_radius,
+		         world);
 		break;
 
 	case KEY_SWITCH_VISION:
@@ -551,6 +539,48 @@ handle_input(bool           *active,
 	case SIGTSTP:
 		*active = 0;
 		break;
+
+	default:
+		/* mouse device reporting */
+		if (in[0] != 27 ||
+		    in[1] != 91 ||
+		    in[2] != 60) {
+			break;
+		}
+
+		sscanf(in, "\033[<%i;%i;%i", &b, &x, &y);
+
+		switch (b) {
+		case CSI_MB_LEFT:
+		case CSI_MB_LEFT_DRAG:
+			*cursor_x = x;
+			*cursor_y = y;
+			use_tool(brush_mat,
+			         brush_radius,
+			         *cursor_x,
+			         *cursor_y,
+			         eraser_radius,
+			         *sel_tool,
+			         spawner_mat,
+			         temperature,
+			         thermo_radius,
+			         world);
+			break;
+
+		case CSI_MB_HOVER:
+			*cursor_x = x;
+			*cursor_y = y;
+			break;
+
+		case CSI_MB_MIDDLE:
+		case CSI_MB_MIDDLE_DRAG:
+		case CSI_MB_RIGHT:
+		case CSI_MB_RIGHT_DRAG:
+		case CSI_MB_WHEELUP:
+		case CSI_MB_WHEELDOWN:
+			break;
+		}
+		break;
 	}
 }
 
@@ -600,6 +630,58 @@ string_cat(char *restrict       dst,
 	dst[cat_pos + copy_len] = '\0';
 
 	return copy_len + cat_pos;
+}
+
+void
+use_tool(const enum Mat   brush_mat,
+         const int        brush_radius,
+         const int        cursor_x,
+         const int        cursor_y,
+         const int        eraser_radius,
+         const enum Tool  sel_tool,
+         const enum Mat   spawner_mat,
+         const float      temperature,
+         const int        thermo_radius,
+         struct World    *world)
+{
+	switch (sel_tool) {
+	case TOOL_BRUSH:
+		world_use_brush(world,
+		                brush_mat,
+		                temperature,
+		                cursor_x,
+		                cursor_y,
+		                brush_radius);
+		break;
+
+	case TOOL_SPAWNER:
+		world->spawner[cursor_x][cursor_y] = true;
+		world->spawner_mat[cursor_x][cursor_y] = spawner_mat;
+		break;
+
+	case TOOL_ERASER:
+		world_use_eraser(world,
+		                 cursor_x,
+		                 cursor_y,
+		                 eraser_radius);
+		break;
+
+	case TOOL_HEATER:
+		world_use_heater(world,
+		                 STD_THERMO_DELTA,
+		                 cursor_x,
+		                 cursor_y,
+		                 thermo_radius);
+		break;
+
+	case TOOL_COOLER:
+		world_use_cooler(world,
+		                 STD_THERMO_DELTA,
+		                 cursor_x,
+		                 cursor_y,
+		                 thermo_radius);
+		break;
+	}
 }
 
 int

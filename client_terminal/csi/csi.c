@@ -40,6 +40,7 @@ CSI_set_normal()
 
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &term_initial_settings);
 	fcntl(STDIN_FILENO, F_SETFL, term_stdin_initial_flags);
+	fputs(CSI_DISABLE_MOUSE, stdout);
 	fputs(CSI_CURSOR_SHOW, stdout);
 	fputs(CSI_FG_DEFAULT, stdout);
 	fputs(CSI_BG_DEFAULT, stdout);
@@ -62,6 +63,7 @@ CSI_set_raw()
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	term_stdin_initial_flags = fcntl(STDIN_FILENO, F_GETFL);
 	fcntl(STDIN_FILENO, F_SETFL, term_stdin_initial_flags | O_NONBLOCK);
+	fputs(CSI_ENABLE_MOUSE, stdout);
 	fputs(CSI_CURSOR_HIDE, stdout);
 	term_raw = true;
 }
