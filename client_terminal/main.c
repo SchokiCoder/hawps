@@ -367,6 +367,7 @@ handle_args(int     argc,
             int    *tickrate)
 {
 	int i;
+	long l;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-a") == 0 ||
@@ -389,9 +390,10 @@ handle_args(int     argc,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
 		} else if (strcmp(argv[i], "-temperature") == 0) {
-			if (int_flag_parse(argc, argv, &i, (long*) temperature)) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
+			*temperature = l;
 			if (*temperature < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
@@ -400,9 +402,10 @@ handle_args(int     argc,
 			}
 			i++;
 		} else if (strcmp(argv[i], "-tickrate") == 0) {
-			if (int_flag_parse(argc, argv, &i, (long*) tickrate)) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
+			*tickrate = l;
 			i++;
 		} else if (strcmp(argv[i], "-v") == 0 ||
 		           strcmp(argv[i],  "-version") == 0) {
