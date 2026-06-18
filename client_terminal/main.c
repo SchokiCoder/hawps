@@ -369,16 +369,16 @@ handle_args(int     argc,
 	int i;
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-a") ||
-		    strcmp(argv[i], "-about")) {
+		if (strcmp(argv[i], "-a") == 0 ||
+		    strcmp(argv[i], "-about") == 0) {
 			printf(APP_ABOUT,
 			       APP_NAME_FORMAL, APP_NAME, APP_VERSION,
 			       APP_LICENSE,
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return false;
-		} else if (strcmp(argv[i], "-h") ||
-		           strcmp(argv[i], "-help")) {
+		} else if (strcmp(argv[i], "-h") == 0 ||
+		           strcmp(argv[i], "-help") == 0) {
 			printf(APP_HELP,
 			       APP_NAME,
 			       CELSIUS_TO_KELVIN,
@@ -388,7 +388,7 @@ handle_args(int     argc,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
-		} else if (strcmp(argv[i], "-temperature")) {
+		} else if (strcmp(argv[i], "-temperature") == 0) {
 			if (int_flag_parse(argc, argv, &i, (long*) temperature)) {
 				return false;
 			}
@@ -399,13 +399,13 @@ handle_args(int     argc,
 				return false;
 			}
 			i++;
-		} else if (strcmp(argv[i], "-tickrate")) {
+		} else if (strcmp(argv[i], "-tickrate") == 0) {
 			if (int_flag_parse(argc, argv, &i, (long*) tickrate)) {
 				return false;
 			}
 			i++;
-		} else if (strcmp(argv[i], "-v") ||
-		           strcmp(argv[i],  "-version")) {
+		} else if (strcmp(argv[i], "-v") == 0 ||
+		           strcmp(argv[i],  "-version") == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
 		} else {

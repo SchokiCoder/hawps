@@ -269,8 +269,15 @@ This fixes a flickery appearance.
 - [x] terminal client: performance: replace most sprintf calls
 
 - [x] terminal client: fix last row not being cleared properly
-- [ ] terminal client: fix arg parsing
+- [x] terminal client: fix flag parsing
+- [ ] terminal client: fix int arg parsing
 - [ ] terminal client: fix thermo tools not doing a thing?
+
+- [ ] terminal client: do we need the outer tickrate?
+having a simrate? of course.
+but the outer loop (controlled by tickrate) was for faster ebiten input.
+on terminal land, the input rate is capped by the environemnts keyboard stuff.
+maybe use `cfsetispeed`?
 
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
