@@ -298,7 +298,9 @@ and then output would be shifted upward permanently.
 - [x] terminal client: add spawner drawing
 - [x] terminal client: improve color csi gen function robustness
 - [x] terminal client: fix mouse release not being caught during lag
-- [ ] terminal client: fix laggy input (by moving `handle_input` outside of tickrate)
+- [x] terminal client: fix laggy input
+This decouples input from the tickrate.
+
 - [ ] terminal client: add dots with color
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw

@@ -788,24 +788,24 @@ main(int    argc,
 	world = world_new(win_w, win_h - 2, temperature);
 
 	while (active) {
+		handle_input(&active,
+		             brush_mat,
+		             &brush_radius,
+		             &cursor_x,
+		             &cursor_y,
+		             &eraser_radius,
+		             &mouse_pressed,
+		             &paused,
+		             &sel_tool,
+		             spawner_mat,
+		             temperature,
+		             &th_vision,
+		             &thermo_radius,
+		             &world);
+
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
-
-			handle_input(&active,
-			             brush_mat,
-			             &brush_radius,
-			             &cursor_x,
-			             &cursor_y,
-			             &eraser_radius,
-			             &mouse_pressed,
-			             &paused,
-			             &sel_tool,
-			             spawner_mat,
-			             temperature,
-			             &th_vision,
-			             &thermo_radius,
-			             &world);
 
 			if (mouse_pressed) {
 				use_tool(brush_mat,
