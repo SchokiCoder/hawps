@@ -5,6 +5,12 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+/* color settings
+ */
+#define COLOR_SPAWNER_R 128
+#define COLOR_SPAWNER_G 0
+#define COLOR_SPAWNER_B 128
+
 /* key binds
  */
 #define KEY_QUIT          'q'

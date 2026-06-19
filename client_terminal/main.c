@@ -219,6 +219,10 @@ draw(const enum Mat        brush_mat,
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
+	                          CSI_FG_DEFAULT);
+	display_len += string_cat(display,
+	                          display_size,
+	                          display_len,
 	                          CSI_BG_DEFAULT);
 
 	if (th_vision) {
@@ -345,7 +349,13 @@ draw(const enum Mat        brush_mat,
 	display[display_len] = '\0';
 
 	CSI_set_cursorpos(0, 0);
-	fputs(display, stdout);
+	buf_len = 0;
+	while (buf_len < display_len) {
+		buf_len += fwrite(&display[buf_len],
+		                  1,
+		                  display_len - buf_len,
+		                  stdout);
+	}
 }
 
 bool
@@ -658,17 +668,31 @@ render_world(const int           cursor_x,
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
 			if (world.spawner[x][y] == true) {
+				out_len += CSI_color_to_string(COLOR_SPAWNER_R,
+				                               COLOR_SPAWNER_G,
+				                               COLOR_SPAWNER_B,
+				                               true,
+				                               &out[out_len],
+				                               out_size - out_len);
 				out[out_len] = 'O';
 				out_len += 1;
 				continue;
 			}
 
 			if (world.dot[x][y] == MAT_NONE) {
+				out_len += CSI_color_to_string(255, 255, 255,
+				                               true,
+				                               &out[out_len],
+				                               out_size - out_len);
 				out[out_len] = ' ';
 				out_len += 1;
 				continue;
 			}
 
+			out_len += CSI_color_to_string(255, 255, 255,
+			                               true,
+			                               &out[out_len],
+			                               out_size - out_len);
 			switch (world.state[x][y]) {
 			case MS_STATIC:
 			case MS_GRAIN:
@@ -686,12 +710,18 @@ render_world(const int           cursor_x,
 				out_len += 1;
 				break;
 
-			case MS_COUNT:
+			default:
+				out[out_len] = '?';
+				out_len += 1;
 				break;
 			}
 		}
 	}
-	out[(cursor_y * world.w) + cursor_x] = '^';
+	out[((cursor_y * world.w) + cursor_x + 1) *
+	    (CSI_COLORSTRING_LEN + 1) -
+	    1] = '^';
+
+	out[out_len] = '\0';
 
 	return out_len;
 }

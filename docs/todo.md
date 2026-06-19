@@ -305,9 +305,12 @@ This decouples input from the tickrate.
 This HAS to be done.
 Colored dots are quickly using up anything the stack can provide at all.
 
-- [ ] terminal client: add thermoview
-- [ ] terminal client: add spawner color
+- [x] terminal client: add spawner color
+Actually this was rather a giant rabbit hole of debugging.
+Just look at the commit and what kind of stuff I wrote.
+
 - [ ] terminal client: add cursor color
+- [ ] terminal client: add thermoview
 - [ ] terminal client: add dots with color
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: replace cursor draw with actual tool hover
