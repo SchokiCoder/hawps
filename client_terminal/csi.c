@@ -10,8 +10,9 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "config.h"
 #include "str.h"
+
+#define COLOR_BUF_SIZE 4
 
 static bool           term_raw = false;
 static struct termios term_initial_settings;
@@ -28,14 +29,14 @@ CSI_get_size()
 }
 
 size_t
-CSI_color_to_string(const unsigned int  r,
-                    const unsigned int  g,
-                    const unsigned int  b,
+CSI_color_to_string(const unsigned char r,
+                    const unsigned char g,
+                    const unsigned char b,
                     const bool          is_fg,
                     char               *str,
                     const size_t        str_size)
 {
-	char    buf[BUF_SIZE];
+	char    buf[COLOR_BUF_SIZE];
 	char   *color_type;
 	size_t  str_len = 0;
 
@@ -48,13 +49,13 @@ CSI_color_to_string(const unsigned int  r,
 
 	str_len += string_cat(str, str_size, str_len, color_type);
 	str_len += string_cat(str, str_size, str_len, ";2;");
-	snprintf(buf, BUF_SIZE, "%i", r);
+	snprintf(buf, COLOR_BUF_SIZE, "%.3i", r);
 	str_len += string_cat(str, str_size, str_len, buf);
 	str_len += string_cat(str, str_size, str_len, ";");
-	snprintf(buf, BUF_SIZE, "%i", g);
+	snprintf(buf, COLOR_BUF_SIZE, "%.3i", g);
 	str_len += string_cat(str, str_size, str_len, buf);
 	str_len += string_cat(str, str_size, str_len, ";");
-	snprintf(buf, BUF_SIZE, "%i", b);
+	snprintf(buf, COLOR_BUF_SIZE, "%.3i", b);
 	str_len += string_cat(str, str_size, str_len, buf);
 	str_len += string_cat(str, str_size, str_len, "m");
 

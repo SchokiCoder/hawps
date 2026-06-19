@@ -50,9 +50,9 @@ CSI_get_size();
  * Returns the amount of written bytes.
  */
 size_t
-CSI_color_to_string(const unsigned int  r,
-                    const unsigned int  g,
-                    const unsigned int  b,
+CSI_color_to_string(const unsigned char r,
+                    const unsigned char g,
+                    const unsigned char b,
                     const bool          is_fg,
                     char               *str,
                     const size_t        str_size);
