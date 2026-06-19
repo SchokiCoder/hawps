@@ -3,7 +3,6 @@
  */
 
 #include <errno.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -40,6 +39,9 @@ enum Tool {
 #define KEY_PGUP      '\033[5~'
 #define KEY_PGDOWN    '\033[6~'
 #define KEY_END       '\x1b[F'
+
+#define SIG_INT  '\003'
+#define SIG_TSTP '\032'
 
 static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
 "licensed under the %s at:\n"
@@ -460,7 +462,7 @@ handle_input(bool           *active,
 
 	switch (in[0]) {
 	case KEY_QUIT:
-		*active = 0;
+		*active = false;
 		break;
 
 	case KEY_USE:
@@ -534,9 +536,9 @@ handle_input(bool           *active,
 			*paused = true;
 		break;
 
-	case SIGINT:
-	case SIGTSTP:
-		*active = 0;
+	case SIG_INT:
+	case SIG_TSTP:
+		*active = false;
 		break;
 
 	default:
