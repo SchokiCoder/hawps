@@ -46,7 +46,6 @@
  */
 // TODO allow for dynamic size via display string being on heap
 #define BUF_SIZE     64
-#define DISPLAY_SIZE (500 * 500)
 #define INPUT_SIZE   16
 
 #endif /* _CONFIG_H */

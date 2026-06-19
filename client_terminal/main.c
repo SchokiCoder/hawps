@@ -101,6 +101,7 @@ draw(const enum Mat        brush_mat,
      const int             cursor_x,
      const int             cursor_y,
      char                 *display,
+     const size_t          display_size,
      const char           *ip_address,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
@@ -142,6 +143,7 @@ size_t
 render_world(const int           cursor_x,
              const int           cursor_y,
              char               *out,
+             const size_t        out_size,
              const struct World  world,
              const size_t        world_draw_w,
              const size_t        world_draw_h);
@@ -164,6 +166,7 @@ draw(const enum Mat        brush_mat,
      const int             cursor_x,
      const int             cursor_y,
      char                 *display,
+     const size_t          display_size,
      const char           *ip_address,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
@@ -202,18 +205,19 @@ draw(const enum Mat        brush_mat,
 		                                   THERMAL_VISION_B,
 		                                   false,
 		                                   &display[display_len],
-		                                   DISPLAY_SIZE - display_len);
+		                                   display_size - display_len);
 	}
 
 	display_len += render_world(cursor_x,
 	                            cursor_y,
 	                            &display[display_len],
+	                            display_size - display_len,
 	                            world,
 	                            world_draw_w,
 	                            world_draw_h);
 
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          CSI_BG_DEFAULT);
 
@@ -225,39 +229,39 @@ draw(const enum Mat        brush_mat,
 
 	left_st_bar_len = display_len;
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          world_name);
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          " (");
 	snprintf(buf, BUF_SIZE, "%i", cursor_x);
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          buf);
 	display[display_len] = ',';
 	display_len += 1;
 	snprintf(buf, BUF_SIZE, "%i", cursor_y);
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          buf);
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          ") | View:");
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          vision);
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          " | ");
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          ip_address);
 	left_st_bar_len = display_len - left_st_bar_len;
@@ -287,14 +291,14 @@ draw(const enum Mat        brush_mat,
 	display_len += space_len;
 
 	display_len += string_cat(display,
-	                          DISPLAY_SIZE,
+	                          display_size,
 	                          display_len,
 	                          buf);
 
 	if (cmdmode) {
 		// TODO implement
 		display_len += string_cat(display,
-		                          DISPLAY_SIZE,
+		                          display_size,
 		                          display_len,
 		                          ":cmd input currently not implemented");
 		// TODO draw ' ' until row end
@@ -332,7 +336,7 @@ draw(const enum Mat        brush_mat,
 			break;
 		}
 
-		display_len += string_cat(display, DISPLAY_SIZE, display_len, buf);
+		display_len += string_cat(display, display_size, display_len, buf);
 		space_len = win_w - buf_len;
 		memset(&display[display_len], ' ', space_len);
 		display_len += space_len;
@@ -643,6 +647,7 @@ size_t
 render_world(const int           cursor_x,
              const int           cursor_y,
              char               *out,
+             const size_t        out_size,
              const struct World  world,
              const size_t        world_draw_w,
              const size_t        world_draw_h)
@@ -753,7 +758,8 @@ main(int    argc,
 	bool           cmdmode = false;
 	int            cursor_x = 0;
 	int            cursor_y = 0;
-	char           display[DISPLAY_SIZE];
+	char          *display = NULL;
+	size_t         display_size = 0;
 	int            eraser_radius = STD_ERASER_RADIUS;
 	bool           paused = false;
 	bool           mouse_pressed = false;
@@ -784,6 +790,9 @@ main(int    argc,
 	tempws = CSI_get_size();
 	win_w = tempws.ws_col;
 	win_h = tempws.ws_row;
+
+	display_size = win_w * win_h * (CSI_COLORSTRING_LEN + 1);
+	display = malloc(display_size);
 
 	world = world_new(win_w, win_h - 2, temperature);
 
@@ -831,13 +840,23 @@ main(int    argc,
 			}
 
 			tempws = CSI_get_size();
-			win_w = tempws.ws_col;
-			win_h = tempws.ws_row;
+			if (win_w != tempws.ws_col ||
+			    win_h != tempws.ws_row) {
+				win_w = tempws.ws_col;
+				win_h = tempws.ws_row;
+
+				free(display);
+				display_size = win_w *
+				               win_h *
+				               (CSI_COLORSTRING_LEN + 1);
+				display = malloc(display_size);
+			}
 
 			draw(brush_mat,
 			     cmdmode,
 			     cursor_x, cursor_y,
 			     display,
+			     display_size,
 			     "localhost",
 			     sel_tool,
 			     spawner_mat,
@@ -854,6 +873,9 @@ main(int    argc,
 	fputs(CSI_FG_DEFAULT, stdout);
 	fputs(CSI_BG_DEFAULT, stdout);
 	world_free(&world);
+	if (display != NULL) {
+		free(display);
+	}
 
 	return 0;
 }

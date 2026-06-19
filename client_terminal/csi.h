@@ -25,6 +25,8 @@
 #define CSI_CURSOR_RIGHT  "\033[C"
 #define CSI_CURSOR_LEFT   "\033[D"
 
+#define CSI_COLORSTRING_LEN 19
+
 enum MouseButton {
 	CSI_MB_LEFT = 0,
 	CSI_MB_LEFT_DRAG = 32,
