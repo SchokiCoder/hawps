@@ -284,7 +284,10 @@ POV ebiten client:
 Anything you can do, I can do better!
 I can do anything better than you!
 
-- [ ] terminal client: fix thermo tools being too slow
+- [x] terminal client: add tool radius change via mouse wheel
+Also buff thermo tools to roughly match ebiten thermo rate,
+since input isn't as fast as the tickrate itself.
+
 - [ ] terminal client: fix SIGINT and SIGTSTP handling
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
@@ -297,7 +300,7 @@ I can do anything better than you!
 - [ ] terminal client: update help text
 - [ ] ebiten client: hook up to c libs
 - [ ] terminal client: performance: add lookup table for int to str conversion
-(removing last sprintf calls)
+(removing last sprintf calls, and don't forget scanf)
 - [ ] performance review of both clients
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?

@@ -22,6 +22,11 @@
 #define KEY_CMD           ':'
 #define KEY_PAUSE         ' '
 
+/* settings
+ */
+#define MAX_RADIUS           16
+#define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
+
 /* startup settings
  */
 #define STD_BRUSH_RADIUS  2
@@ -29,7 +34,7 @@
 #define STD_SELECTED_TOOL TOOL_BRUSH
 #define STD_SIM_SUBSAMPLE 4
 #define STD_TEMPERATURE   (20.0 + CELSIUS_TO_KELVIN)
-#define STD_THERMO_DELTA  1.0
+#define STD_THERMO_DELTA  5.0
 #define STD_THERMO_RADIUS STD_BRUSH_RADIUS
 #define STD_TICKRATE      120
 

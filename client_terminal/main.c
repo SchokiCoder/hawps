@@ -41,8 +41,6 @@ enum Tool {
 #define KEY_PGDOWN    '\033[6~'
 #define KEY_END       '\x1b[F'
 
-#define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
-
 static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
 "licensed under the %s at:\n"
 "%s\n"
@@ -123,16 +121,16 @@ handle_args(int     argc,
 void
 handle_input(bool           *active,
              const enum Mat  brush_mat,
-             const int       brush_radius,
+             int            *brush_radius,
              int            *cursor_x,
              int            *cursor_y,
-             const int       eraser_radius,
+             int            *eraser_radius,
              bool           *paused,
              enum Tool      *sel_tool,
              const enum Mat  spawner_mat,
              const float     temperature,
              bool           *th_vision,
-             const int       thermo_radius,
+             int            *thermo_radius,
              struct World   *world);
 
 bool
@@ -438,22 +436,23 @@ handle_args(int     argc,
 void
 handle_input(bool           *active,
              const enum Mat  brush_mat,
-             const int       brush_radius,
+             int            *brush_radius,
              int            *cursor_x,
              int            *cursor_y,
-             const int       eraser_radius,
+             int            *eraser_radius,
              bool           *paused,
              enum Tool      *sel_tool,
              const enum Mat  spawner_mat,
              const float     temperature,
              bool           *th_vision,
-             const int       thermo_radius,
+             int            *thermo_radius,
              struct World   *world)
 {
-	int  b;
-	char in[INPUT_SIZE];
-	int  x;
-	int  y;
+	int   b;
+	char  in[INPUT_SIZE];
+	int  *target;
+	int   x;
+	int   y;
 
 	if (read(STDIN_FILENO, &in, INPUT_SIZE) <= 0) {
 		return;
@@ -466,14 +465,14 @@ handle_input(bool           *active,
 
 	case KEY_USE:
 		use_tool(brush_mat,
-		         brush_radius,
+		         *brush_radius,
 		         *cursor_x,
 		         *cursor_y,
-		         eraser_radius,
+		         *eraser_radius,
 		         *sel_tool,
 		         spawner_mat,
 		         temperature,
-		         thermo_radius,
+		         *thermo_radius,
 		         world);
 		break;
 
@@ -556,14 +555,14 @@ handle_input(bool           *active,
 			*cursor_x = x;
 			*cursor_y = y;
 			use_tool(brush_mat,
-			         brush_radius,
+			         *brush_radius,
 			         *cursor_x,
 			         *cursor_y,
-			         eraser_radius,
+			         *eraser_radius,
 			         *sel_tool,
 			         spawner_mat,
 			         temperature,
-			         thermo_radius,
+			         *thermo_radius,
 			         world);
 			break;
 
@@ -576,8 +575,56 @@ handle_input(bool           *active,
 		case CSI_MB_MIDDLE_DRAG:
 		case CSI_MB_RIGHT:
 		case CSI_MB_RIGHT_DRAG:
+			break;
+
 		case CSI_MB_WHEELUP:
+			switch (*sel_tool) {
+			case TOOL_BRUSH:
+				target = brush_radius;
+				break;
+
+			case TOOL_SPAWNER:
+				break;
+
+			case TOOL_ERASER:
+				target = eraser_radius;
+				break;
+
+			case TOOL_HEATER:
+			case TOOL_COOLER:
+				target = thermo_radius;
+				break;
+			}
+
+			*target += 1;
+			if (*target > MAX_RADIUS) {
+				*target = MAX_RADIUS;
+			}
+			break;
+
 		case CSI_MB_WHEELDOWN:
+			switch (*sel_tool) {
+			case TOOL_BRUSH:
+				target = brush_radius;
+				break;
+
+			case TOOL_SPAWNER:
+				break;
+
+			case TOOL_ERASER:
+				target = eraser_radius;
+				break;
+
+			case TOOL_HEATER:
+			case TOOL_COOLER:
+				target = thermo_radius;
+				break;
+			}
+
+			*target -= 1;
+			if (*target < 0) {
+				*target = 0;
+			}
 			break;
 		}
 		break;
@@ -734,16 +781,16 @@ main(int    argc,
 
 			handle_input(&active,
 			             brush_mat,
-			             brush_radius,
+			             &brush_radius,
 			             &cursor_x,
 			             &cursor_y,
-			             eraser_radius,
+			             &eraser_radius,
 			             &paused,
 			             &sel_tool,
 			             spawner_mat,
 			             temperature,
 			             &th_vision,
-			             thermo_radius,
+			             &thermo_radius,
 			             &world);
 
 			world_update(&world, temperature);
