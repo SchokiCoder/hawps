@@ -123,6 +123,7 @@ handle_input(bool           *active,
              int            *cursor_x,
              int            *cursor_y,
              int            *eraser_radius,
+             bool           *mouse_pressed,
              bool           *paused,
              enum Tool      *sel_tool,
              const enum Mat  spawner_mat,
@@ -412,6 +413,7 @@ handle_input(bool           *active,
              int            *cursor_x,
              int            *cursor_y,
              int            *eraser_radius,
+             bool           *mouse_pressed,
              bool           *paused,
              enum Tool      *sel_tool,
              const enum Mat  spawner_mat,
@@ -422,6 +424,7 @@ handle_input(bool           *active,
 {
 	int   b;
 	char  in[INPUT_SIZE];
+	char  pressed;
 	int  *target;
 	int   x;
 	int   y;
@@ -519,7 +522,7 @@ handle_input(bool           *active,
 			break;
 		}
 
-		sscanf(in, "\033[<%i;%i;%i", &b, &x, &y);
+		sscanf(in, "\033[<%i;%i;%i%c", &b, &x, &y, &pressed);
 
 		switch (b) {
 		case CSI_MB_LEFT:
@@ -536,6 +539,12 @@ handle_input(bool           *active,
 			         temperature,
 			         *thermo_radius,
 			         world);
+
+			if ('M' == pressed) {
+				*mouse_pressed = true;
+			} else {
+				*mouse_pressed = false;
+			}
 			break;
 
 		case CSI_MB_HOVER:
@@ -740,6 +749,7 @@ main(int    argc,
 	char           display[DISPLAY_SIZE];
 	int            eraser_radius = STD_ERASER_RADIUS;
 	bool           paused = false;
+	bool           mouse_pressed = false;
 	clock_t        now;
 	enum Tool      sel_tool = STD_SELECTED_TOOL;
 	int            sim_subsample = STD_SIM_SUBSAMPLE;
@@ -781,6 +791,7 @@ main(int    argc,
 			             &cursor_x,
 			             &cursor_y,
 			             &eraser_radius,
+			             &mouse_pressed,
 			             &paused,
 			             &sel_tool,
 			             spawner_mat,
@@ -788,6 +799,19 @@ main(int    argc,
 			             &th_vision,
 			             &thermo_radius,
 			             &world);
+
+			if (mouse_pressed) {
+				use_tool(brush_mat,
+					 brush_radius,
+					 cursor_x,
+					 cursor_y,
+					 eraser_radius,
+					 sel_tool,
+					 spawner_mat,
+					 temperature,
+					 thermo_radius,
+					 &world);
+			}
 
 			world_update(&world, temperature);
 			if (!paused) {

@@ -294,6 +294,7 @@ Also fix draw display having no null termination.
 This can make the display fuller than intended,
 and then output would be shifted upward permanently.
 
+- [x] terminal client: add tool use when mouse button held down
 - [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw
