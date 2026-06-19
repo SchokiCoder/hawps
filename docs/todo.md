@@ -295,7 +295,8 @@ This can make the display fuller than intended,
 and then output would be shifted upward permanently.
 
 - [x] terminal client: add tool use when mouse button held down
-- [ ] terminal client: add dots with color (draw spawner as a 'O') to draw
+- [x] terminal client: add spawner drawing
+- [ ] terminal client: add dots with color
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: add tool hover to draw
 - [ ] terminal client: add thermoview

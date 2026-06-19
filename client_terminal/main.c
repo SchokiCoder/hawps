@@ -651,6 +651,12 @@ render_world(const int           cursor_x,
 
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
+			if (world.spawner[x][y] == true) {
+				out[out_len] = 'O';
+				out_len += 1;
+				continue;
+			}
+
 			if (world.dot[x][y] == MAT_NONE) {
 				out[out_len] = ' ';
 				out_len += 1;
