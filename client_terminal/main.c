@@ -550,6 +550,7 @@ handle_input(bool           *active,
 		case CSI_MB_HOVER:
 			*cursor_x = x;
 			*cursor_y = y;
+			*mouse_pressed = false;
 			break;
 
 		case CSI_MB_MIDDLE:
