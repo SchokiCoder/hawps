@@ -12,8 +12,9 @@
 #include <unistd.h>
 
 #include "core/core.h"
-#include "csi/csi.h"
+#include "csi.h"
 #include "config.h"
+#include "str.h"
 
 enum Tool {
 	TOOL_BRUSH,
@@ -22,11 +23,6 @@ enum Tool {
 	TOOL_HEATER,
 	TOOL_COOLER,
 };
-
-// TODO allow for dynamic size via display string being on heap
-#define BUF_SIZE     64
-#define DISPLAY_SIZE (500 * 500)
-#define INPUT_SIZE   16
 
 #define CELSIUS_TO_KELVIN 273.15
 
@@ -142,10 +138,12 @@ int_flag_parse(int    argc,
                long  *out);
 
 size_t
-string_cat(char *restrict       dst,
-           const size_t         dst_size,
-           const size_t         cat_pos,
-           const char *restrict src);
+render_world(const int           cursor_x,
+             const int           cursor_y,
+             char               *out,
+             const struct World  world,
+             const size_t        world_draw_w,
+             const size_t        world_draw_h);
 
 void
 use_tool(const enum Mat   brush_mat,
@@ -180,10 +178,9 @@ draw(const enum Mat        brush_mat,
 	size_t left_st_bar_len = 0;
 	size_t right_st_bar_len = 0;
 	size_t space_len = 0;
-	char  *vision;
-	int    world_draw_w = 0;
-	int    world_draw_h = 0;
-	int    x, y;
+	char  *vision = NULL;
+	size_t world_draw_w = 0;
+	size_t world_draw_h = 0;
 
 	display[0] = '\0';
 
@@ -198,37 +195,26 @@ draw(const enum Mat        brush_mat,
 		world_draw_h = world.h;
 	}
 
-	for (y = 0; y < world_draw_h; y++) {
-		for (x = 0; x < world_draw_w; x++) {
-			if (world.dot[x][y] == MAT_NONE) {
-				display[display_len] = ' ';
-				display_len += 1;
-				continue;
-			}
-
-			switch (world.state[x][y]) {
-			case MS_STATIC:
-			case MS_GRAIN:
-				display[display_len] = 'X';
-				display_len += 1;
-				break;
-
-			case MS_LIQUID:
-				display[display_len] = '+';
-				display_len += 1;
-				break;
-
-			case MS_GAS:
-				display[display_len] = '-';
-				display_len += 1;
-				break;
-
-			case MS_COUNT:
-				break;
-			}
-		}
+	if (th_vision) {
+		display_len += CSI_color_to_string(THERMAL_VISION_R,
+		                                   THERMAL_VISION_G,
+		                                   THERMAL_VISION_B,
+		                                   false,
+		                                   &display[display_len],
+		                                   DISPLAY_SIZE - display_len);
 	}
-	display[(cursor_y * world.w) + cursor_x] = '^';
+
+	display_len += render_world(cursor_x,
+	                            cursor_y,
+	                            &display[display_len],
+	                            world,
+	                            world_draw_w,
+	                            world_draw_h);
+
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          CSI_BG_DEFAULT);
 
 	if (th_vision) {
 		vision = "Thermal";
@@ -237,79 +223,79 @@ draw(const enum Mat        brush_mat,
 	}
 
 	left_st_bar_len = display_len;
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         world_name);
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         " (");
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          world_name);
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          " (");
 	snprintf(buf, BUF_SIZE, "%i", cursor_x);
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         buf);
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          buf);
 	display[display_len] = ',';
 	display_len += 1;
 	snprintf(buf, BUF_SIZE, "%i", cursor_y);
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         buf);
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         ") | View:");
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         vision);
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         " | ");
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         ip_address);
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          buf);
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          ") | View:");
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          vision);
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          " | ");
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          ip_address);
 	left_st_bar_len = display_len - left_st_bar_len;
 
 	buf[0] = '\0';
 	buf_len = 0;
-	buf_len = string_cat(buf,
-	                     BUF_SIZE,
-	                     buf_len,
-	                     "bind1");
-	buf_len = string_cat(buf,
-	                     BUF_SIZE,
-	                     buf_len,
-	                     ": bindings, ");
-	buf_len = string_cat(buf,
-	                     BUF_SIZE,
-	                     buf_len,
-	                     "bind2");
-	buf_len = string_cat(buf,
-	                     BUF_SIZE,
-	                     buf_len,
-	                     ": help");
+	buf_len += string_cat(buf,
+	                      BUF_SIZE,
+	                      buf_len,
+	                      "bind1");
+	buf_len += string_cat(buf,
+	                      BUF_SIZE,
+	                      buf_len,
+	                      ": bindings, ");
+	buf_len += string_cat(buf,
+	                      BUF_SIZE,
+	                      buf_len,
+	                      "bind2");
+	buf_len += string_cat(buf,
+	                      BUF_SIZE,
+	                      buf_len,
+	                      ": help");
 	right_st_bar_len = buf_len;
 
 	space_len = win_w - (left_st_bar_len + right_st_bar_len);
 	memset(&display[display_len], ' ', space_len);
 	display_len += space_len;
 
-	display_len = string_cat(display,
-	                         DISPLAY_SIZE,
-	                         display_len,
-	                         buf);
+	display_len += string_cat(display,
+	                          DISPLAY_SIZE,
+	                          display_len,
+	                          buf);
 
 	if (cmdmode) {
 		// TODO implement
-		display_len = string_cat(display,
-		                         DISPLAY_SIZE,
-		                         display_len,
-		                         ":cmd input currently not implemented");
+		display_len += string_cat(display,
+		                          DISPLAY_SIZE,
+		                          display_len,
+		                          ":cmd input currently not implemented");
 		// TODO draw ' ' until row end
 	} else {
 		buf[0] = '\0';
@@ -317,57 +303,41 @@ draw(const enum Mat        brush_mat,
 
 		switch (sel_tool) {
 		case TOOL_BRUSH:
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     "BRUSH ");
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     MAT_NAME[brush_mat]);
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, "BRUSH ");
+			buf_len += string_cat(buf,
+			                      BUF_SIZE,
+			                      buf_len,
+			                      MAT_NAME[brush_mat]);
 			break;
 
 		case TOOL_SPAWNER:
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     "SPAWNER ");
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     MAT_NAME[spawner_mat]);
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, "SPAWNER ");
+			buf_len += string_cat(buf,
+			                      BUF_SIZE,
+			                      buf_len,
+			                      MAT_NAME[spawner_mat]);
 			break;
 
 		case TOOL_ERASER:
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     "ERASER");
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, "ERASER");
 			break;
 
 		case TOOL_HEATER:
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     "HEATER");
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, "HEATER");
 			break;
 
 		case TOOL_COOLER:
-			buf_len = string_cat(buf,
-			                     BUF_SIZE,
-			                     buf_len,
-			                     "COOLER");
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, "COOLER");
 			break;
 		}
 
-		display_len = string_cat(display,
-	                                 DISPLAY_SIZE,
-	                                 display_len,
-	                                 buf);
+		display_len += string_cat(display, DISPLAY_SIZE, display_len, buf);
 		space_len = win_w - buf_len;
 		memset(&display[display_len], ' ', space_len);
 		display_len += space_len;
 	}
+
+	display[display_len] = '\0';
 
 	CSI_set_cursorpos(0, 0);
 	fputs(display, stdout);
@@ -660,25 +630,49 @@ int_flag_parse(int    argc,
 }
 
 size_t
-string_cat(char *restrict       dst,
-           const size_t         dst_size,
-           const size_t         cat_pos,
-           const char *restrict src)
+render_world(const int           cursor_x,
+             const int           cursor_y,
+             char               *out,
+             const struct World  world,
+             const size_t        world_draw_w,
+             const size_t        world_draw_h)
 {
-	size_t copy_len;
-	size_t src_len;
+	size_t out_len = 0;
+	size_t x, y;
 
-	src_len = strlen(src);
+	for (y = 0; y < world_draw_h; y++) {
+		for (x = 0; x < world_draw_w; x++) {
+			if (world.dot[x][y] == MAT_NONE) {
+				out[out_len] = ' ';
+				out_len += 1;
+				continue;
+			}
 
-	copy_len = dst_size - cat_pos - 1;
-	if (src_len < copy_len) {
-		copy_len = src_len;
+			switch (world.state[x][y]) {
+			case MS_STATIC:
+			case MS_GRAIN:
+				out[out_len] = 'X';
+				out_len += 1;
+				break;
+
+			case MS_LIQUID:
+				out[out_len] = '+';
+				out_len += 1;
+				break;
+
+			case MS_GAS:
+				out[out_len] = '-';
+				out_len += 1;
+				break;
+
+			case MS_COUNT:
+				break;
+			}
+		}
 	}
+	out[(cursor_y * world.w) + cursor_x] = '^';
 
-	strncpy(&dst[cat_pos], src, copy_len);
-	dst[cat_pos + copy_len] = '\0';
-
-	return copy_len + cat_pos;
+	return out_len;
 }
 
 void
@@ -826,6 +820,8 @@ main(int    argc,
 
 	CSI_set_normal();
 	fputs(CSI_CLEAR, stdout);
+	fputs(CSI_FG_DEFAULT, stdout);
+	fputs(CSI_BG_DEFAULT, stdout);
 	world_free(&world);
 
 	return 0;

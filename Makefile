@@ -35,10 +35,9 @@ vet:
 $(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
-$(APP_NAME)_terminal: client_terminal/* client_terminal/csi/* core/* extra/*
+$(APP_NAME)_terminal: client_terminal/* core/* extra/*
 	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I . \
-		client_terminal/*.c client_terminal/csi/*.c \
-		core/*.c extra/*.c
+		client_terminal/*.c core/*.c extra/*.c
 
 core/mat/mat_string.go: core/mat/mat.go
 	go generate ./core/mat

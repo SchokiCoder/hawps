@@ -5,6 +5,8 @@
 #ifndef _CSI_H
 #define _CSI_H
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <sys/ioctl.h>
 
 /* This is a double sequence for clear and cursor to top-left pos.
@@ -37,6 +39,23 @@ enum MouseButton {
 
 struct winsize
 CSI_get_size();
+
+/* @r: Red
+ * @g: Green
+ * @b: and Blue all in 0 to 255.
+ * @is_fg: Return string for a foreground, otherwise background.
+ * @str: Destination string.
+ * @str_size: Destination string size, not length.
+ *
+ * Returns the amount of written bytes.
+ */
+size_t
+CSI_color_to_string(const unsigned int  r,
+                    const unsigned int  g,
+                    const unsigned int  b,
+                    const bool          is_fg,
+                    char               *str,
+                    const size_t        str_size);
 
 void
 CSI_set_cursorpos(const int x,

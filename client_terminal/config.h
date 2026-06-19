@@ -26,6 +26,9 @@
  */
 #define MAX_RADIUS           16
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
+#define THERMAL_VISION_R 100
+#define THERMAL_VISION_G 0
+#define THERMAL_VISION_B 0
 
 /* startup settings
  */
@@ -37,5 +40,13 @@
 #define STD_THERMO_DELTA  5.0
 #define STD_THERMO_RADIUS STD_BRUSH_RADIUS
 #define STD_TICKRATE      120
+
+/* size values
+ * Consider only touching them when you have special hardware or problems.
+ */
+// TODO allow for dynamic size via display string being on heap
+#define BUF_SIZE     64
+#define DISPLAY_SIZE (500 * 500)
+#define INPUT_SIZE   16
 
 #endif /* _CONFIG_H */

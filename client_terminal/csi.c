@@ -10,6 +10,9 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "config.h"
+#include "str.h"
+
 static bool           term_raw = false;
 static struct termios term_initial_settings;
 static int            term_stdin_initial_flags;
@@ -22,6 +25,40 @@ CSI_get_size()
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &ret);
 
 	return ret;
+}
+
+size_t
+CSI_color_to_string(const unsigned int  r,
+                    const unsigned int  g,
+                    const unsigned int  b,
+                    const bool          is_fg,
+                    char               *str,
+                    const size_t        str_size)
+{
+	char    buf[BUF_SIZE];
+	char   *color_type;
+	size_t  str_len = 0;
+
+	str[0] = '\0';
+
+	if (is_fg)
+		color_type = "\x1b[38";
+	else
+		color_type = "\x1b[48";
+
+	str_len += string_cat(str, str_size, str_len, color_type);
+	str_len += string_cat(str, str_size, str_len, ";2;");
+	snprintf(buf, BUF_SIZE, "%i", r);
+	str_len += string_cat(str, str_size, str_len, buf);
+	str_len += string_cat(str, str_size, str_len, ";");
+	snprintf(buf, BUF_SIZE, "%i", g);
+	str_len += string_cat(str, str_size, str_len, buf);
+	str_len += string_cat(str, str_size, str_len, ";");
+	snprintf(buf, BUF_SIZE, "%i", b);
+	str_len += string_cat(str, str_size, str_len, buf);
+	str_len += string_cat(str, str_size, str_len, "m");
+
+	return str_len;
 }
 
 void
