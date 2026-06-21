@@ -1,8 +1,5 @@
+bin/*
 client_gtk/embedded_glade.h
-desktop/embedded_glade.h
-hawps
-hawpsds
-hawps_*
 *.so
 *.o
 *.prof

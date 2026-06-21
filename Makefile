@@ -21,31 +21,25 @@ C_DEFINES :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"
 all: $(DEFAULT_CLIENT)
 
 clean:
-	rm -f $(APP_NAME)_*
+	rm -f bin/*
 
 prerun:
-	rm -f $(DEFAULT_CLIENT)
+	rm -f bin/$(DEFAULT_CLIENT)
 
-run: prerun $(DEFAULT_CLIENT)
-	./$(DEFAULT_CLIENT)
+run: prerun bin/$(DEFAULT_CLIENT)
+	./bin/$(DEFAULT_CLIENT)
 
 vet:
 	go vet ./client_ebiten
 
-$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
+bin/$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
-$(APP_NAME)_terminal: client_terminal/* core/* extra/*
-	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I . \
-		client_terminal/*.c core/*.c extra/*.c
+bin/$(APP_NAME)_terminal: client_terminal/* lib_core/*
+	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I lib_core \
+		client_terminal/*.c lib_core/*.c
 
-core/mat/mat_string.go: core/mat/mat.go
-	go generate ./core/mat
-
-extra/tool_string.go: extra/extra.go
-	go generate ./extra
-
-$(APP_NAME)_tk: client_tk/* core/* extra/*
+bin/$(APP_NAME)_tk: client_tk/*
 	$(CC) $(C_FLAGS) -o $@ -I. $$(pkg-config --cflags tcl tk) \
 		client_tk/*.c core/*.c extra/*.c \
 		$$(pkg-config --libs tcl tk)

@@ -2,10 +2,10 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#ifndef _GLOWCOLOR_H
-#define _GLOWCOLOR_H
+#ifndef _HAWPS_GLOWCOLOR_H
+#define _HAWPS_GLOWCOLOR_H
 
-#include "core/core.h"
+#include <hawps_core.h>
 
 void
 glowcolor_init(void);
@@ -13,4 +13,4 @@ glowcolor_init(void);
 struct Rgba
 thermo_to_color(const float thermo);
 
-#endif /* _GLOWCOLOR_H */
+#endif /* _HAWPS_GLOWCOLOR_H */

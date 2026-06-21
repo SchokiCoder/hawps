@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-#include "mat.h"
+#include "hawps_mat.h"
 
 enum Mat
 mat_melt_prdct(const enum Mat mat)

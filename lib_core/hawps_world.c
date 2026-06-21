@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "world.h"
+#include "hawps_world.h"
 
 #define WEIGHT_FACTOR_LIQUID 0.95
 #define WEIGHT_FACTOR_GAS    0.90

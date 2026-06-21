@@ -7,7 +7,7 @@
  * which we then iterate through based on dot temperature.
  */
 
-#include "glowcolor.h"
+#include "hawps_glowcolor.h"
 
 #define GLOW_MAX_ALPHA 200
 // Kelvin / 100

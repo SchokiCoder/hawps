@@ -3,6 +3,7 @@
  */
 
 #include <errno.h>
+#include <hawps_core.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -11,7 +12,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "core/core.h"
 #include "csi.h"
 #include "config.h"
 #include "str.h"
@@ -812,7 +812,7 @@ main(int    argc,
 		return 0;
 	}
 
-	core_init();
+	hawps_core_init();
 
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);

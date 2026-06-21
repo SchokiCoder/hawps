@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "core.h"
+#include "hawps_core.h"
 
 void
-core_init(void)
+hawps_core_init(void)
 {
 	srand(clock());
 }

@@ -2,8 +2,8 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#ifndef _MAT_H
-#define _MAT_H
+#ifndef _HAWPS_MAT_H
+#define _HAWPS_MAT_H
 
 #include <stdbool.h>
 
@@ -84,4 +84,4 @@ enum MatState
 mat_thermo_to_state(const enum Mat mat,
                     const float    thermo);
 
-#endif /* _MAT_H */
+#endif /* _HAWPS_MAT_H */

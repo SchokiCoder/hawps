@@ -2,12 +2,12 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#ifndef _WORLD_H
-#define _WORLD_H
+#ifndef _HAWPS_WORLD_H
+#define _HAWPS_WORLD_H
 
 #include <stdbool.h>
 
-#include "mat.h"
+#include "hawps_mat.h"
 
 struct World {
 	int w;
@@ -94,4 +94,4 @@ world_sim(struct World *w);
 void
 world_free(struct World *w);
 
-#endif /* _WORLD_H */
+#endif /* _HAWPS_WORLD_H */

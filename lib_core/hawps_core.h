@@ -2,11 +2,11 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#ifndef _CORE_H
-#define _CORE_H
+#ifndef _HAWPS_CORE_H
+#define _HAWPS_CORE_H
 
-#include "mat.h"
-#include "world.h"
+#include "hawps_mat.h"
+#include "hawps_world.h"
 
 #define ARRSIZE(a) (sizeof(a) / sizeof(*(a)))
 
@@ -18,9 +18,9 @@ struct Rgba {
 };
 
 void
-core_init(void);
+hawps_core_init(void);
 
 float
 color_int8_to_float(const int color);
 
-#endif /* _CORE_H */
+#endif /* _HAWPS_CORE_H */

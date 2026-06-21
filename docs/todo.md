@@ -309,6 +309,9 @@ Colored dots are quickly using up anything the stack can provide at all.
 Actually this was rather a giant rabbit hole of debugging.
 Just look at the commit and what kind of stuff I wrote.
 
+- [x] add "lib" prefix to core and extra and move binaries to bin
+No, this doesn't give these libs proper namespaces, because I don't want to.
+
 - [ ] terminal client: add cursor color
 - [ ] terminal client: add thermoview
 - [ ] terminal client: add dots with color

@@ -2,10 +2,10 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#include "extra.h"
+#include "hawps_extra.h"
 
 void
-extra_init(void)
+hawps_extra_init(void)
 {
 	glowcolor_init();
 }
