@@ -16,6 +16,12 @@
 #include "config.h"
 #include "str.h"
 
+struct Color {
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+};
+
 enum Tool {
 	TOOL_BRUSH,
 	TOOL_SPAWNER,
@@ -111,6 +117,16 @@ draw(const enum Mat        brush_mat,
      const struct World    world,
      const char           *world_name);
 
+struct Color
+get_normal_dot_color(const struct World world,
+                     const size_t       x,
+                     const size_t       y);
+
+struct Color
+get_thermal_dot_color(const struct World world,
+                      const size_t       x,
+                      const size_t       y);
+
 bool
 handle_args(int     argc,
             char  **argv,
@@ -144,6 +160,7 @@ render_world(const int           cursor_x,
              const int           cursor_y,
              char               *out,
              const size_t        out_size,
+             const bool          th_vision,
              const struct World  world,
              const size_t        world_draw_w,
              const size_t        world_draw_h);
@@ -212,6 +229,7 @@ draw(const enum Mat        brush_mat,
 	                            cursor_y,
 	                            &display[display_len],
 	                            display_size - display_len,
+	                            th_vision,
 	                            world,
 	                            world_draw_w,
 	                            world_draw_h);
@@ -356,6 +374,47 @@ draw(const enum Mat        brush_mat,
 		                  display_len - buf_len,
 		                  stdout);
 	}
+}
+
+struct Color
+get_normal_dot_color(const struct World world,
+                     const size_t       x,
+                     const size_t       y)
+{
+	struct Color ret = {
+		.r = 255,
+		.g = 255,
+		.b = 255,
+	};
+
+	(void) world;
+	(void) x;
+	(void) y;
+
+	return ret;
+}
+
+struct Color
+get_thermal_dot_color(const struct World world,
+                      const size_t       x,
+                      const size_t       y)
+{
+	struct Color ret;
+	unsigned char vis_t;
+
+	if (world.thermo[x][y] > (THERMAL_VISION_MIN_T + 255)) {
+		vis_t = 255;
+	} else if (world.thermo[x][y] < THERMAL_VISION_MIN_T) {
+		vis_t = 0;
+	} else {
+		vis_t = world.thermo[x][y] - THERMAL_VISION_MIN_T;
+	}
+
+	ret.r = vis_t;
+	ret.g = vis_t;
+	ret.b = vis_t;
+
+	return ret;
 }
 
 bool
@@ -658,12 +717,23 @@ render_world(const int           cursor_x,
              const int           cursor_y,
              char               *out,
              const size_t        out_size,
+             const bool          th_vision,
              const struct World  world,
              const size_t        world_draw_w,
              const size_t        world_draw_h)
 {
+	struct Color dot_color;
+	struct Color (*get_dot_color)(const struct World,
+	                              const size_t x,
+	                              const size_t y);
 	size_t out_len = 0;
 	size_t x, y;
+
+	if (th_vision) {
+		get_dot_color = get_thermal_dot_color;
+	} else {
+		get_dot_color = get_normal_dot_color;
+	}
 
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
@@ -689,7 +759,10 @@ render_world(const int           cursor_x,
 				continue;
 			}
 
-			out_len += CSI_color_to_string(255, 255, 255,
+			dot_color = get_dot_color(world, x, y);
+			out_len += CSI_color_to_string(dot_color.r,
+			                               dot_color.g,
+			                               dot_color.b,
 			                               true,
 			                               &out[out_len],
 			                               out_size - out_len);

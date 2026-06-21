@@ -312,8 +312,8 @@ Just look at the commit and what kind of stuff I wrote.
 - [x] add "lib" prefix to core and extra and move binaries to bin
 No, this doesn't give these libs proper namespaces, because I don't want to.
 
+- [x] terminal client: add thermoview
 - [ ] terminal client: add cursor color
-- [ ] terminal client: add thermoview
 - [ ] terminal client: add dots with color
 - [ ] terminal client: add dots with glow color to draw
 - [ ] terminal client: replace cursor draw with actual tool hover
