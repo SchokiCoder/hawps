@@ -39,7 +39,8 @@ bin/$(APP_NAME)_terminal: client_terminal/* lib_core/*
 	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I lib_core \
 		client_terminal/*.c lib_core/*.c
 
-bin/$(APP_NAME)_tk: client_tk/*
-	$(CC) $(C_FLAGS) -o $@ -I. $$(pkg-config --cflags tcl tk) \
-		client_tk/*.c core/*.c extra/*.c \
+bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
+	$(CC) $(C_FLAGS) -o $@ -I lib_core -I lib_extra \
+		$$(pkg-config --cflags tcl tk) \
+		client_tk/*.c lib_core/*.c lib_extra/*.c \
 		$$(pkg-config --libs tcl tk)

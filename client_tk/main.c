@@ -2,8 +2,8 @@
  * Copyright (C) 2024 - 2025  Andy Frank Schoknecht
  */
 
-#include <core/core.h>
-#include <extra/extra.h>
+#include <hawps_core.h>
+#include <hawps_extra.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tcl.h>
@@ -171,7 +171,8 @@ tcl_mainloop(ClientData data,
 	pixblock.offset[2] = B;
 	pixblock.offset[3] = A;
 
-	extra_init();
+	hawps_core_init();
+	hawps_extra_init();
 
 	while (active) {
 		now = (float) clock() / (float) CLOCKS_PER_SEC;
@@ -270,7 +271,7 @@ world_draw(Tcl_Interp *interp)
 	/* draw dots */
 	for (x = 0; x < WORLD_W; x += 1) {
 		for (y = 0; y < WORLD_H; y += 1) {
-			switch (world.states[x][y]) {
+			switch (world.state[x][y]) {
 			case MS_LIQUID:
 				col.a = 255 - ALPHA_LOSS_PER_STATE;
 				break;
@@ -284,9 +285,9 @@ world_draw(Tcl_Interp *interp)
 				break;
 			}
 
-			pixels[x][y][R] = MAT_R[world.dots[x][y]];
-			pixels[x][y][G] = MAT_G[world.dots[x][y]];
-			pixels[x][y][B] = MAT_B[world.dots[x][y]];
+			pixels[x][y][R] = MAT_R[world.dot[x][y]];
+			pixels[x][y][G] = MAT_G[world.dot[x][y]];
+			pixels[x][y][B] = MAT_B[world.dot[x][y]];
 			pixels[x][y][A] = col.a;
 		}
 	}
@@ -369,13 +370,13 @@ main(int argc,
 	strcpy(tcl_args[1], "./client_tk/main.tcl");
 
 	world = world_new(WORLD_W, WORLD_H, STD_TEMPERATURE);
-	world.dots[0][2] = MAT_WATER;
+	world.dot[0][2] = MAT_WATER;
 	world.thermo[0][2] = CELSIUS_TO_KELVIN - 10;
-	world.dots[2][0] = MAT_WATER;
-	world.dots[2][2] = MAT_WATER;
+	world.dot[2][0] = MAT_WATER;
+	world.dot[2][2] = MAT_WATER;
 	world.thermo[2][2] = CELSIUS_TO_KELVIN + 3000;
-	world.dots[4][2] = MAT_WATER;
-	world.dots[2][4] = MAT_WATER;
+	world.dot[4][2] = MAT_WATER;
+	world.dot[2][4] = MAT_WATER;
 
 	Tcl_Main(2, tcl_args, init_proc);
 }

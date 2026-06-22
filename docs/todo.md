@@ -323,7 +323,7 @@ No, this can't be done because it adds ifs.
 
 - [x] move `struct Rgba` from libcore to libextra
 - [ ] tk client: update to current lib and update Makefile
-- [ ] terminal client: use libcore's `enum Tool` instead of own
+- [ ] terminal client: use libs' `enum Tool` and `struct Rgba`
 
 - [ ] terminal client: add cursor color
 - [ ] terminal client: add dots with color
