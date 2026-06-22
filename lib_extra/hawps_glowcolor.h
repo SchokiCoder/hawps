@@ -5,7 +5,12 @@
 #ifndef _HAWPS_GLOWCOLOR_H
 #define _HAWPS_GLOWCOLOR_H
 
-#include <hawps_core.h>
+struct Rgba {
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+};
 
 void
 glowcolor_init(void);

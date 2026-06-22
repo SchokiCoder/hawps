@@ -24,6 +24,10 @@ But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
 
+# Web Update
+
+- [ ] look at ca22d7451c87b6d090e35328ae6994459117e86c, the commit before networking got removed
+
 # Beauty Update
 
 - [ ] fix temperature glow (see black body radiation)
@@ -313,6 +317,14 @@ Just look at the commit and what kind of stuff I wrote.
 No, this doesn't give these libs proper namespaces, because I don't want to.
 
 - [x] terminal client: add thermoview
+
+- [x] ~replace world size int vars with size_t~
+No, this can't be done because it adds ifs.
+
+- [x] move `struct Rgba` from libcore to libextra
+- [ ] tk client: update to current lib and update Makefile
+- [ ] terminal client: use libcore's `enum Tool` instead of own
+
 - [ ] terminal client: add cursor color
 - [ ] terminal client: add dots with color
 - [ ] terminal client: add dots with glow color to draw

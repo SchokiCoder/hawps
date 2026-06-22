@@ -12,9 +12,3 @@ hawps_core_init(void)
 {
 	srand(clock());
 }
-
-float
-color_int8_to_float(const int color)
-{
-	return (float) color / 255.0;
-}
