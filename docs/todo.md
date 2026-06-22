@@ -326,10 +326,23 @@ No, this can't be done because it adds `if`s.
 - [x] terminal client: use libs' `enum Tool` and `struct Rgba`
 - [x] terminal client: use `size_t` only for memory things anymore
 
-- [ ] terminal client: add cursor color
+- [x] fix: re-enable most melt conversions
 - [ ] terminal client: add dots with color
 - [ ] terminal client: add dots with glow color to draw
+Maybe make glow color on bg.
+This would allow us to not do any color blending at all.
+It also gets us to that shine effect around the dot,
+since the dot is then a char surrounded by its glow bg color.
+This would however almost double the framesize,
+which could have performance implications.
+
 - [ ] terminal client: replace cursor draw with actual tool hover
+Maybe just make it spaces ' ' but with bg color
+
+- [ ] terminal client: about dot color
+Do we just ignore the core given mat alpha?
+We still do no blending?
+
 - [ ] terminal client: add tool switch binds
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
