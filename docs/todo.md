@@ -327,7 +327,7 @@ No, this can't be done because it adds `if`s.
 - [x] terminal client: use `size_t` only for memory things anymore
 
 - [x] fix: re-enable most melt conversions
-- [ ] terminal client: add dots with color
+- [x] terminal client: add dot color
 - [ ] terminal client: add dots with glow color to draw
 Maybe make glow color on bg.
 This would allow us to not do any color blending at all.

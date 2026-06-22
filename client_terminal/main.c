@@ -371,16 +371,12 @@ get_normal_dot_color(const struct World world,
                      const int          x,
                      const int          y)
 {
-	struct Rgba ret = {
-		.r = 255,
-		.g = 255,
-		.b = 255,
-		.a = 255,
-	};
+	struct Rgba ret;
 
-	(void) world;
-	(void) x;
-	(void) y;
+	ret.r = MAT_R[world.dot[x][y]];
+	ret.g = MAT_G[world.dot[x][y]];
+	ret.b = MAT_B[world.dot[x][y]];
+	ret.a = MAT_A[world.dot[x][y]];
 
 	return ret;
 }
