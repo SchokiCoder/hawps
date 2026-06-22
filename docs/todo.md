@@ -318,12 +318,13 @@ No, this doesn't give these libs proper namespaces, because I don't want to.
 
 - [x] terminal client: add thermoview
 
-- [x] ~replace world size int vars with size_t~
-No, this can't be done because it adds ifs.
+- [x] ~replace world size `int` vars with `size_t`~
+No, this can't be done because it adds `if`s.
 
 - [x] move `struct Rgba` from libcore to libextra
-- [ ] tk client: update to current lib and update Makefile
+- [x] tk client: update to current lib and update Makefile
 - [ ] terminal client: use libs' `enum Tool` and `struct Rgba`
+- [ ] terminal client: use `size_t` only for memory things anymore
 
 - [ ] terminal client: add cursor color
 - [ ] terminal client: add dots with color

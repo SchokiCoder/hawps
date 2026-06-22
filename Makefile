@@ -35,9 +35,9 @@ vet:
 bin/$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
-bin/$(APP_NAME)_terminal: client_terminal/* lib_core/*
-	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I lib_core \
-		client_terminal/*.c lib_core/*.c
+bin/$(APP_NAME)_terminal: client_terminal/* lib_core/* lib_extra/*
+	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I lib_core -I lib_extra \
+		client_terminal/*.c lib_core/*.c lib_extra/*.c
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
 	$(CC) $(C_FLAGS) -o $@ -I lib_core -I lib_extra \

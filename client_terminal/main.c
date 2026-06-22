@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <hawps_core.h>
+#include <hawps_extra.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -15,20 +16,6 @@
 #include "csi.h"
 #include "config.h"
 #include "str.h"
-
-struct Color {
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-};
-
-enum Tool {
-	TOOL_BRUSH,
-	TOOL_SPAWNER,
-	TOOL_ERASER,
-	TOOL_HEATER,
-	TOOL_COOLER,
-};
 
 #define CELSIUS_TO_KELVIN 273.15
 
@@ -117,12 +104,12 @@ draw(const enum Mat        brush_mat,
      const struct World    world,
      const char           *world_name);
 
-struct Color
+struct Rgba
 get_normal_dot_color(const struct World world,
                      const size_t       x,
                      const size_t       y);
 
-struct Color
+struct Rgba
 get_thermal_dot_color(const struct World world,
                       const size_t       x,
                       const size_t       y);
@@ -356,6 +343,9 @@ draw(const enum Mat        brush_mat,
 		case TOOL_COOLER:
 			buf_len += string_cat(buf, BUF_SIZE, buf_len, "COOLER");
 			break;
+
+		case TOOL_COUNT:
+			break;
 		}
 
 		display_len += string_cat(display, display_size, display_len, buf);
@@ -376,15 +366,16 @@ draw(const enum Mat        brush_mat,
 	}
 }
 
-struct Color
+struct Rgba
 get_normal_dot_color(const struct World world,
                      const size_t       x,
                      const size_t       y)
 {
-	struct Color ret = {
+	struct Rgba ret = {
 		.r = 255,
 		.g = 255,
 		.b = 255,
+		.a = 255,
 	};
 
 	(void) world;
@@ -394,12 +385,12 @@ get_normal_dot_color(const struct World world,
 	return ret;
 }
 
-struct Color
+struct Rgba
 get_thermal_dot_color(const struct World world,
                       const size_t       x,
                       const size_t       y)
 {
-	struct Color ret;
+	struct Rgba ret;
 	unsigned char vis_t;
 
 	if (world.thermo[x][y] > (THERMAL_VISION_MIN_T + 255)) {
@@ -413,6 +404,7 @@ get_thermal_dot_color(const struct World world,
 	ret.r = vis_t;
 	ret.g = vis_t;
 	ret.b = vis_t;
+	ret.a = 255;
 
 	return ret;
 }
@@ -649,6 +641,9 @@ handle_input(bool           *active,
 			case TOOL_COOLER:
 				target = thermo_radius;
 				break;
+
+			case TOOL_COUNT:
+				break;
 			}
 
 			*target += 1;
@@ -673,6 +668,9 @@ handle_input(bool           *active,
 			case TOOL_HEATER:
 			case TOOL_COOLER:
 				target = thermo_radius;
+				break;
+
+			case TOOL_COUNT:
 				break;
 			}
 
@@ -722,10 +720,10 @@ render_world(const int           cursor_x,
              const size_t        world_draw_w,
              const size_t        world_draw_h)
 {
-	struct Color dot_color;
-	struct Color (*get_dot_color)(const struct World,
-	                              const size_t x,
-	                              const size_t y);
+	struct Rgba dot_color;
+	struct Rgba (*get_dot_color)(const struct World,
+	                             const size_t x,
+	                             const size_t y);
 	size_t out_len = 0;
 	size_t x, y;
 
@@ -847,6 +845,9 @@ use_tool(const enum Mat   brush_mat,
 		                 cursor_x,
 		                 cursor_y,
 		                 thermo_radius);
+		break;
+
+	case TOOL_COUNT:
 		break;
 	}
 }
