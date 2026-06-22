@@ -106,13 +106,13 @@ draw(const enum Mat        brush_mat,
 
 struct Rgba
 get_normal_dot_color(const struct World world,
-                     const size_t       x,
-                     const size_t       y);
+                     const int          x,
+                     const int          y);
 
 struct Rgba
 get_thermal_dot_color(const struct World world,
-                      const size_t       x,
-                      const size_t       y);
+                      const int          x,
+                      const int          y);
 
 bool
 handle_args(int     argc,
@@ -149,8 +149,8 @@ render_world(const int           cursor_x,
              const size_t        out_size,
              const bool          th_vision,
              const struct World  world,
-             const size_t        world_draw_w,
-             const size_t        world_draw_h);
+             const int           world_draw_w,
+             const int           world_draw_h);
 
 void
 use_tool(const enum Mat   brush_mat,
@@ -187,8 +187,8 @@ draw(const enum Mat        brush_mat,
 	size_t right_st_bar_len = 0;
 	size_t space_len = 0;
 	char  *vision = NULL;
-	size_t world_draw_w = 0;
-	size_t world_draw_h = 0;
+	int    world_draw_w = 0;
+	int    world_draw_h = 0;
 
 	display[0] = '\0';
 
@@ -368,8 +368,8 @@ draw(const enum Mat        brush_mat,
 
 struct Rgba
 get_normal_dot_color(const struct World world,
-                     const size_t       x,
-                     const size_t       y)
+                     const int          x,
+                     const int          y)
 {
 	struct Rgba ret = {
 		.r = 255,
@@ -387,8 +387,8 @@ get_normal_dot_color(const struct World world,
 
 struct Rgba
 get_thermal_dot_color(const struct World world,
-                      const size_t       x,
-                      const size_t       y)
+                      const int          x,
+                      const int          y)
 {
 	struct Rgba ret;
 	unsigned char vis_t;
@@ -717,15 +717,15 @@ render_world(const int           cursor_x,
              const size_t        out_size,
              const bool          th_vision,
              const struct World  world,
-             const size_t        world_draw_w,
-             const size_t        world_draw_h)
+             const int           world_draw_w,
+             const int           world_draw_h)
 {
 	struct Rgba dot_color;
 	struct Rgba (*get_dot_color)(const struct World,
-	                             const size_t x,
-	                             const size_t y);
+	                             const int    x,
+	                             const int    y);
 	size_t out_len = 0;
-	size_t x, y;
+	int    x, y;
 
 	if (th_vision) {
 		get_dot_color = get_thermal_dot_color;
