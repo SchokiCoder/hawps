@@ -340,13 +340,7 @@ and by figuring out how the colors finally look in the ebiten client,
 I found out that the color blending there never really worked as intended,
 so the assumptions of the values haven't been met anyway.
 
-- [ ] terminal client: add dots with glow color to draw
-Maybe make glow color on bg.
-This would allow us to not do any color blending at all.
-It also gets us to that shine effect around the dot,
-since the dot is then a char surrounded by its glow bg color.
-This would however almost double the framesize,
-which could have performance implications.
+- [x] terminal client: add glow color to dot draw
 
 - [ ] terminal client: add world dot property for glow color (as a buffer for SIMD)?
 

@@ -371,12 +371,20 @@ get_normal_dot_color(const struct World world,
                      const int          x,
                      const int          y)
 {
-	struct Rgba ret;
+	struct Rgba a, b, ret;
 
-	ret.r = MAT_R[world.dot[x][y]];
-	ret.g = MAT_G[world.dot[x][y]];
-	ret.b = MAT_B[world.dot[x][y]];
-	ret.a = MAT_A[world.dot[x][y]];
+	a = thermo_to_color(world.thermo[x][y]);
+
+	b.r = MAT_R[world.dot[x][y]];
+	b.g = MAT_G[world.dot[x][y]];
+	b.b = MAT_B[world.dot[x][y]];
+	b.a = 255;
+
+	// TODO make blending a lib_extra function (blend the entire color struct)
+	ret.r = ((a.r * a.a) + b.r * (255 - a.a)) >> 8;
+	ret.g = ((a.g * a.a) + b.g * (255 - a.a)) >> 8;
+	ret.b = ((a.b * a.a) + b.b * (255 - a.a)) >> 8;
+	ret.a = 255;
 
 	return ret;
 }
@@ -883,6 +891,7 @@ main(int    argc,
 	}
 
 	hawps_core_init();
+	hawps_extra_init();
 
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
