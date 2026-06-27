@@ -1,3 +1,4 @@
+- [ ] ebiten client: hook up to c libs
 - [ ] ebiten client: scroll TileSet when cursor goes below or above visible
 - [ ] ebiten client: change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
@@ -23,10 +24,6 @@ Clay might be boring. Do something with it.
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
-
-# Web Update
-
-- [ ] look at ca22d7451c87b6d090e35328ae6994459117e86c, the commit before networking got removed
 
 # Beauty Update
 
@@ -232,6 +229,10 @@ The core and extra lib of hawps already have C versions that need to be dug out
 and some features need to be backported.
 Now if I'll ever use Ebiten client again, I'll just bind the C libs with CGo.
 
+<<<<<<< Updated upstream
+- [ ] bring back C versions of core and extra
+- [ ] port back features from the Go version
+=======
 - [x] bring back C versions of core and extra and tie to terminal client
 - [x] terminal client: add tick-sim-subsample system
 
@@ -328,6 +329,17 @@ No, this can't be done because it adds `if`s.
 
 - [x] fix: re-enable most melt conversions
 - [x] terminal client: add dot color
+
+- [x] remove mat alpha for performance reasons
+This removes an entire alpha blend step for each dot in terminal client,
+since we use a different char for aggregate states, not alpha loss.
+Graphic clients such as ebiten can just assume full alpha.
+Why haven't the RGB values changed to compensate?
+I wanted to do that,
+and by figuring out how the colors finally look in the ebiten client,
+I found out that the color blending there never really worked as intended,
+so the assumptions of the values haven't been met anyway.
+
 - [ ] terminal client: add dots with glow color to draw
 Maybe make glow color on bg.
 This would allow us to not do any color blending at all.
@@ -336,25 +348,35 @@ since the dot is then a char surrounded by its glow bg color.
 This would however almost double the framesize,
 which could have performance implications.
 
+- [ ] terminal client: add world dot property for glow color (as a buffer for SIMD)?
+
 - [ ] terminal client: replace cursor draw with actual tool hover
 Maybe just make it spaces ' ' but with bg color
 
 - [ ] terminal client: about dot color
 Do we just ignore the core given mat alpha?
 We still do no blending?
+>>>>>>> Stashed changes
 
+- [ ] terminal client: add navigation input and mainloop
+- [ ] terminal client: add draw dots with color
+- [ ] terminal client: add draw dots with glow color
+- [ ] terminal client: add draw tool
+- [ ] terminal client: add thermoview
 - [ ] terminal client: add tool switch binds
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
+<<<<<<< Updated upstream
+=======
 - [ ] terminal client: remove todos
 - [ ] terminal client: update help text
-- [ ] ebiten client: hook up to c libs
 - [ ] terminal client: performance: add lookup table for int to str conversion
 (removing last sprintf calls, and don't forget scanf)
 - [ ] performance review of both clients
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
 remove and decrease indent of content
+>>>>>>> Stashed changes
 
 - [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
 I didn't even notice that. You may think I did,
@@ -381,8 +403,6 @@ Do that?
 - [ ] add core test against chemical reactions
 - [ ] add core test against loss of mass upon heat up
 - [ ] add core test against spawners
-
-- [ ] update README
 
 - [ ] set version to 0.7
 
