@@ -1,3 +1,5 @@
+- [ ] ebiten client: hook up to c libs
+
 - [ ] ebiten client: scroll TileSet when cursor goes below or above visible
 - [ ] ebiten client: change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
@@ -344,18 +346,13 @@ so the assumptions of the values haven't been met anyway.
 The terminal report is offset, starting at 1, not 0.
 This also fixes a crash when the mouse moves o lower right corner.
 
-- [ ] terminal client: replace cursor draw with actual tool hover
+- [x] terminal client: replace cursor draw with actual tool hover
+- [ ] terminal client: add tool hover color
 
-- [ ] terminal client: about dot color
-Do we just ignore the core given mat alpha?
-We still do no blending?
-
-- [ ] terminal client: add tool switch binds
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
 - [ ] terminal client: update help text
-- [ ] ebiten client: hook up to c libs
 - [ ] terminal client: performance: add lookup table for int to str conversion
 (removing last sprintf calls, and don't forget scanf)
 - [ ] performance review of both clients

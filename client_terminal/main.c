@@ -99,6 +99,10 @@ draw(const enum Mat        brush_mat,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
      const bool            th_vision,
+     const int             tool_x1,
+     const int             tool_y1,
+     const int             tool_x2,
+     const int             tool_y2,
      const int             win_w,
      const int             win_h,
      const struct World    world,
@@ -143,11 +147,13 @@ int_flag_parse(int    argc,
                long  *out);
 
 size_t
-render_world(const int           cursor_x,
-             const int           cursor_y,
-             char               *out,
+render_world(char               *out,
              const size_t        out_size,
              const bool          th_vision,
+             const int           tool_x1,
+             const int           tool_y1,
+             const int           tool_x2,
+             const int           tool_y2,
              const struct World  world,
              const int           world_draw_w,
              const int           world_draw_h);
@@ -175,6 +181,10 @@ draw(const enum Mat        brush_mat,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
      const bool            th_vision,
+     const int             tool_x1,
+     const int             tool_y1,
+     const int             tool_x2,
+     const int             tool_y2,
      const int             win_w,
      const int             win_h,
      const struct World    world,
@@ -212,11 +222,13 @@ draw(const enum Mat        brush_mat,
 		                                   display_size - display_len);
 	}
 
-	display_len += render_world(cursor_x,
-	                            cursor_y,
-	                            &display[display_len],
+	display_len += render_world(&display[display_len],
 	                            display_size - display_len,
 	                            th_vision,
+	                            tool_x1,
+	                            tool_y1,
+	                            tool_x2,
+	                            tool_y2,
 	                            world,
 	                            world_draw_w,
 	                            world_draw_h);
@@ -717,11 +729,13 @@ int_flag_parse(int    argc,
 }
 
 size_t
-render_world(const int           cursor_x,
-             const int           cursor_y,
-             char               *out,
+render_world(char               *out,
              const size_t        out_size,
              const bool          th_vision,
+             const int           tool_x1,
+             const int           tool_y1,
+             const int           tool_x2,
+             const int           tool_y2,
              const struct World  world,
              const int           world_draw_w,
              const int           world_draw_h)
@@ -794,10 +808,14 @@ render_world(const int           cursor_x,
 			}
 		}
 	}
-	out[((cursor_y * world.w) + cursor_x + 1) *
-	    (CSI_COLORSTRING_LEN + 1) -
-	    1] = '^';
 
+	for (x = tool_x1; x < tool_x2; x++) {
+		for (y = tool_y1; y < tool_y2; y++) {
+			out[((y * world.w) + x + 1) *
+			    (CSI_COLORSTRING_LEN + 1) -
+			    1] = '^';
+		}
+	}
 	out[out_len] = '\0';
 
 	return out_len;
@@ -880,6 +898,11 @@ main(int    argc,
 	float          temperature = STD_TEMPERATURE;
 	struct winsize tempws;
 	bool           th_vision = false;
+	int            tool_radius = STD_BRUSH_RADIUS;
+	int            tool_x1 = 0;
+	int            tool_y1 = 0;
+	int            tool_x2 = 0;
+	int            tool_y2 = 0;
 	int            thermo_radius = STD_THERMO_RADIUS;
 	clock_t        last_tick = 0;
 	int            tickrate = STD_TICKRATE;
@@ -923,6 +946,44 @@ main(int    argc,
 		             &thermo_radius,
 		             &world);
 
+		switch (sel_tool) {
+		case TOOL_BRUSH:
+			tool_radius = brush_radius;
+			break;
+
+		case TOOL_SPAWNER:
+			tool_radius = 1;
+			break;
+
+		case TOOL_ERASER:
+			tool_radius = eraser_radius;
+			break;
+
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+			tool_radius = thermo_radius;
+			break;
+
+		case TOOL_COUNT:
+			break;
+		}
+
+		tool_x1 = cursor_x - tool_radius;
+		if (tool_x1 < 0)
+			tool_x1 = 0;
+
+		tool_y1 = cursor_y - tool_radius;
+		if (tool_y1 < 0)
+			tool_y1 = 0;
+
+		tool_x2 = cursor_x + tool_radius + 1;
+		if (tool_x2 >= world.w)
+			tool_x2 = world.w;
+
+		tool_y2 = cursor_y + tool_radius + 1;
+		if (tool_y2 >= world.h)
+			tool_y2 = world.h;
+
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
@@ -965,13 +1026,18 @@ main(int    argc,
 
 			draw(brush_mat,
 			     cmdmode,
-			     cursor_x, cursor_y,
+			     cursor_x,
+			     cursor_y,
 			     display,
 			     display_size,
 			     "localhost",
 			     sel_tool,
 			     spawner_mat,
 			     th_vision,
+			     tool_x1,
+			     tool_y1,
+			     tool_x2,
+			     tool_y2,
 			     win_w,
 			     win_h,
 			     world,
