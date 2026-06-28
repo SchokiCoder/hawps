@@ -340,8 +340,11 @@ so the assumptions of the values haven't been met anyway.
 
 - [x] terminal client: add dots with glow color to draw
 
+- [x] terminal client: fixmouse cursor reporting
+The terminal report is offset, starting at 1, not 0.
+This also fixes a crash when the mouse moves o lower right corner.
+
 - [ ] terminal client: replace cursor draw with actual tool hover
-Maybe just make it spaces ' ' but with bg color
 
 - [ ] terminal client: about dot color
 Do we just ignore the core given mat alpha?

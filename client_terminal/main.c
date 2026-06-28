@@ -592,6 +592,8 @@ handle_input(bool           *active,
 		}
 
 		sscanf(in, "\033[<%i;%i;%i%c", &b, &x, &y, &pressed);
+		x -= 1;
+		y -= 1;
 
 		switch (b) {
 		case CSI_MB_LEFT:
