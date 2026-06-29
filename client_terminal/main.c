@@ -717,7 +717,7 @@ tool_radius_add(const int  radius_change,
                 enum Tool *sel_tool,
                 int       *thermo_radius)
 {
-	int  *target;
+	int  *target = NULL;
 
 	switch (*sel_tool) {
 	case TOOL_BRUSH:
@@ -725,6 +725,7 @@ tool_radius_add(const int  radius_change,
 		break;
 
 	case TOOL_SPAWNER:
+		return;
 		break;
 
 	case TOOL_ERASER:

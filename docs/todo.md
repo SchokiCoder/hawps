@@ -356,7 +356,8 @@ Plus, the tool hover draw doesn't change the underlying colors,
 so it is kind of transparent in a way.
 
 - [x] terminal client: add binds for tool radius change
-- [ ] terminal client: fix radius change on spawner crash
+- [x] terminal client: fix radius change on spawner crash
+- [ ] terminal client: fix tool hover draw of spawner
 - [ ] terminal client: add arrow keys as alias for tool navigation
 - [ ] terminal client: add pgup, pgdn, pos1, end keys for tool navigation
 
