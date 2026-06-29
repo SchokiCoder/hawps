@@ -347,7 +347,18 @@ The terminal report is offset, starting at 1, not 0.
 This also fixes a crash when the mouse moves o lower right corner.
 
 - [x] terminal client: replace cursor draw with actual tool hover
-- [ ] terminal client: add tool hover color
+
+- [x] ~terminal client: add tool hover color~
+Not too sure about it anymore.
+In the times of single point cursor, it was hard to see,
+but now it's an actual zone, and visibility is not too bad.
+Plus, the tool hover draw doesn't change the underlying colors,
+so it is kind of transparent in a way.
+
+- [x] terminal client: add binds for tool radius change
+- [ ] terminal client: fix radius change on spawner crash
+- [ ] terminal client: add arrow keys as alias for tool navigation
+- [ ] terminal client: add pgup, pgdn, pos1, end keys for tool navigation
 
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags

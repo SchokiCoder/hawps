@@ -146,6 +146,13 @@ int_flag_parse(int    argc,
                int   *idx,
                long  *out);
 
+void
+tool_radius_add(const int  radius_change,
+                int       *brush_radius,
+                int       *eraser_radius,
+                enum Tool *sel_tool,
+                int       *thermo_radius);
+
 size_t
 render_world(char               *out,
              const size_t        out_size,
@@ -506,7 +513,6 @@ handle_input(bool           *active,
 	int   b;
 	char  in[INPUT_SIZE];
 	char  pressed;
-	int  *target;
 	int   x;
 	int   y;
 
@@ -579,6 +585,22 @@ handle_input(bool           *active,
 			*cursor_x += 1;
 		break;
 
+	case KEY_RADIUS_DOWN:
+		tool_radius_add(-1,
+		                brush_radius,
+		                eraser_radius,
+		                sel_tool,
+		                thermo_radius);
+		break;
+
+	case KEY_RADIUS_UP:
+		tool_radius_add(1,
+		                brush_radius,
+		                eraser_radius,
+		                sel_tool,
+		                thermo_radius);
+		break;
+
 	case KEY_CMD:
 		// TODO *imode = IM_CMD;
 		break;
@@ -643,59 +665,19 @@ handle_input(bool           *active,
 			break;
 
 		case CSI_MB_WHEELUP:
-			switch (*sel_tool) {
-			case TOOL_BRUSH:
-				target = brush_radius;
-				break;
-
-			case TOOL_SPAWNER:
-				break;
-
-			case TOOL_ERASER:
-				target = eraser_radius;
-				break;
-
-			case TOOL_HEATER:
-			case TOOL_COOLER:
-				target = thermo_radius;
-				break;
-
-			case TOOL_COUNT:
-				break;
-			}
-
-			*target += 1;
-			if (*target > MAX_RADIUS) {
-				*target = MAX_RADIUS;
-			}
+			tool_radius_add(1,
+			                brush_radius,
+			                eraser_radius,
+			                sel_tool,
+			                thermo_radius);
 			break;
 
 		case CSI_MB_WHEELDOWN:
-			switch (*sel_tool) {
-			case TOOL_BRUSH:
-				target = brush_radius;
-				break;
-
-			case TOOL_SPAWNER:
-				break;
-
-			case TOOL_ERASER:
-				target = eraser_radius;
-				break;
-
-			case TOOL_HEATER:
-			case TOOL_COOLER:
-				target = thermo_radius;
-				break;
-
-			case TOOL_COUNT:
-				break;
-			}
-
-			*target -= 1;
-			if (*target < 0) {
-				*target = 0;
-			}
+			tool_radius_add(-1,
+			                brush_radius,
+			                eraser_radius,
+			                sel_tool,
+			                thermo_radius);
 			break;
 		}
 		break;
@@ -726,6 +708,44 @@ int_flag_parse(int    argc,
 	}
 
 	return true;
+}
+
+void
+tool_radius_add(const int  radius_change,
+                int       *brush_radius,
+                int       *eraser_radius,
+                enum Tool *sel_tool,
+                int       *thermo_radius)
+{
+	int  *target;
+
+	switch (*sel_tool) {
+	case TOOL_BRUSH:
+		target = brush_radius;
+		break;
+
+	case TOOL_SPAWNER:
+		break;
+
+	case TOOL_ERASER:
+		target = eraser_radius;
+		break;
+
+	case TOOL_HEATER:
+	case TOOL_COOLER:
+		target = thermo_radius;
+		break;
+
+	case TOOL_COUNT:
+		break;
+	}
+
+	*target += radius_change;
+	if (*target < 0) {
+		*target = 0;
+	} else if (*target > MAX_RADIUS) {
+		*target = MAX_RADIUS;
+	}
 }
 
 size_t

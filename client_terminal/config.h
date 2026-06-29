@@ -25,6 +25,8 @@
 #define KEY_DOWN          'j'
 #define KEY_UP            'k'
 #define KEY_RIGHT         'l'
+#define KEY_RADIUS_DOWN   'c'
+#define KEY_RADIUS_UP     'v'
 #define KEY_CMD           ':'
 #define KEY_PAUSE         ' '
 
