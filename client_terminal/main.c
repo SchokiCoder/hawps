@@ -973,7 +973,7 @@ main(int    argc,
 			break;
 
 		case TOOL_SPAWNER:
-			tool_radius = 1;
+			tool_radius = 0;
 			break;
 
 		case TOOL_ERASER:
