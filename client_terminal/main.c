@@ -341,37 +341,20 @@ draw(const enum Mat        brush_mat,
 		buf[0] = '\0';
 		buf_len = 0;
 
-		switch (sel_tool) {
-		case TOOL_BRUSH:
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, "BRUSH ");
+		buf_len += string_cat(buf, BUF_SIZE, buf_len, TOOL_NAME[sel_tool]);
+
+		if (sel_tool == TOOL_BRUSH) {
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, " ");
 			buf_len += string_cat(buf,
 			                      BUF_SIZE,
 			                      buf_len,
 			                      MAT_NAME[brush_mat]);
-			break;
-
-		case TOOL_SPAWNER:
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, "SPAWNER ");
+		} else if (sel_tool == TOOL_SPAWNER) {
+			buf_len += string_cat(buf, BUF_SIZE, buf_len, " ");
 			buf_len += string_cat(buf,
 			                      BUF_SIZE,
 			                      buf_len,
 			                      MAT_NAME[spawner_mat]);
-			break;
-
-		case TOOL_ERASER:
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, "ERASER");
-			break;
-
-		case TOOL_HEATER:
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, "HEATER");
-			break;
-
-		case TOOL_COOLER:
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, "COOLER");
-			break;
-
-		case TOOL_COUNT:
-			break;
 		}
 
 		display_len += string_cat(display, display_size, display_len, buf);
@@ -1099,7 +1082,7 @@ main(int    argc,
 			     cursor_y,
 			     display,
 			     display_size,
-			     "localhost",
+			     "localhost", // TODO implement actual backend
 			     sel_tool,
 			     spawner_mat,
 			     th_vision,
@@ -1110,7 +1093,7 @@ main(int    argc,
 			     win_w,
 			     win_h,
 			     world,
-			     "worldname");
+			     "worldname"); // TODO implement actual backend
 		}
 	}
 
