@@ -21,14 +21,6 @@
 
 #define FIRST_REAL_MAT MAT_SAND
 
-#define KEY_BACKSPACE '\x7f'
-#define KEY_HOME      '\x1b[H'
-#define KEY_INSERT    '\033[2~'
-#define KEY_DELETE    '\033[3~'
-#define KEY_PGUP      '\033[5~'
-#define KEY_PGDOWN    '\033[6~'
-#define KEY_END       '\x1b[F'
-
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
 
@@ -125,7 +117,22 @@ handle_args(int     argc,
             int    *tickrate);
 
 void
-handle_input(bool           *active,
+handle_csi_input(const char     *in,
+                 const enum Mat  brush_mat,
+                 int            *brush_radius,
+                 int            *cursor_x,
+                 int            *cursor_y,
+                 int            *eraser_radius,
+                 bool           *mouse_pressed,
+                 const enum Tool sel_tool,
+                 const enum Mat  spawner_mat,
+                 const float     temperature,
+                 int            *thermo_radius,
+                 struct World   *world);
+
+void
+handle_input(const char     *in,
+             bool           *active,
              const enum Mat  brush_mat,
              int            *brush_radius,
              int            *cursor_x,
@@ -147,11 +154,11 @@ int_flag_parse(int    argc,
                long  *out);
 
 void
-tool_radius_add(const int  radius_change,
-                int       *brush_radius,
-                int       *eraser_radius,
-                enum Tool *sel_tool,
-                int       *thermo_radius);
+tool_radius_add(const int        radius_change,
+                int             *brush_radius,
+                int             *eraser_radius,
+                const enum Tool  sel_tool,
+                int             *thermo_radius);
 
 size_t
 render_world(char               *out,
@@ -495,7 +502,104 @@ handle_args(int     argc,
 }
 
 void
-handle_input(bool           *active,
+handle_csi_input(const char     *in,
+                 const enum Mat  brush_mat,
+                 int            *brush_radius,
+                 int            *cursor_x,
+                 int            *cursor_y,
+                 int            *eraser_radius,
+                 bool           *mouse_pressed,
+                 const enum Tool sel_tool,
+                 const enum Mat  spawner_mat,
+                 const float     temperature,
+                 int            *thermo_radius,
+                 struct World   *world)
+{
+	int   b;
+	char  pressed;
+	int   x;
+	int   y;
+
+	if (strcmp(in, CSI_KEY_LEFT) == 0) {
+		if (*cursor_x > 0) {
+			*cursor_x -= 1;
+		}
+	} else if (strcmp(in, CSI_KEY_DOWN) == 0) {
+		if (*cursor_y < world->h - 1) {
+			*cursor_y += 1;
+		}
+	} else if (strcmp(in, CSI_KEY_UP) == 0) {
+		if (*cursor_y > 0) {
+			*cursor_y -= 1;
+		}
+	} else if (strcmp(in, CSI_KEY_RIGHT) == 0) {
+		if (*cursor_x < world->w - 1) {
+			*cursor_x += 1;
+		}
+	} else if (in[1] == '[' &&
+	           in[2] == '<') {
+		/* mouse device reporting */
+		sscanf(in, CSI_ESCAPE "[<%i;%i;%i%c", &b, &x, &y, &pressed);
+		x -= 1;
+		y -= 1;
+
+		switch (b) {
+		case CSI_MB_LEFT:
+		case CSI_MB_LEFT_DRAG:
+			*cursor_x = x;
+			*cursor_y = y;
+			use_tool(brush_mat,
+				 *brush_radius,
+				 *cursor_x,
+				 *cursor_y,
+				 *eraser_radius,
+				 sel_tool,
+				 spawner_mat,
+				 temperature,
+				 *thermo_radius,
+				 world);
+
+			if ('M' == pressed) {
+				*mouse_pressed = true;
+			} else {
+				*mouse_pressed = false;
+			}
+			break;
+
+		case CSI_MB_HOVER:
+			*cursor_x = x;
+			*cursor_y = y;
+			*mouse_pressed = false;
+			break;
+
+		case CSI_MB_MIDDLE:
+		case CSI_MB_MIDDLE_DRAG:
+		case CSI_MB_RIGHT:
+		case CSI_MB_RIGHT_DRAG:
+			break;
+
+		case CSI_MB_WHEELUP:
+			tool_radius_add(1,
+				        brush_radius,
+				        eraser_radius,
+				        sel_tool,
+				        thermo_radius);
+			break;
+
+		case CSI_MB_WHEELDOWN:
+			tool_radius_add(-1,
+				        brush_radius,
+				        eraser_radius,
+				        sel_tool,
+				        thermo_radius);
+			break;
+		}
+	}
+}
+
+void
+handle_input(const char     *in,
+             bool           *active,
              const enum Mat  brush_mat,
              int            *brush_radius,
              int            *cursor_x,
@@ -510,16 +614,6 @@ handle_input(bool           *active,
              int            *thermo_radius,
              struct World   *world)
 {
-	int   b;
-	char  in[INPUT_SIZE];
-	char  pressed;
-	int   x;
-	int   y;
-
-	if (read(STDIN_FILENO, &in, INPUT_SIZE) <= 0) {
-		return;
-	}
-
 	switch (in[0]) {
 	case KEY_QUIT:
 		*active = false;
@@ -589,7 +683,7 @@ handle_input(bool           *active,
 		tool_radius_add(-1,
 		                brush_radius,
 		                eraser_radius,
-		                sel_tool,
+		                *sel_tool,
 		                thermo_radius);
 		break;
 
@@ -597,7 +691,7 @@ handle_input(bool           *active,
 		tool_radius_add(1,
 		                brush_radius,
 		                eraser_radius,
-		                sel_tool,
+		                *sel_tool,
 		                thermo_radius);
 		break;
 
@@ -617,69 +711,19 @@ handle_input(bool           *active,
 		*active = false;
 		break;
 
-	default:
-		/* mouse device reporting */
-		if (in[0] != 27 ||
-		    in[1] != 91 ||
-		    in[2] != 60) {
-			break;
-		}
-
-		sscanf(in, "\033[<%i;%i;%i%c", &b, &x, &y, &pressed);
-		x -= 1;
-		y -= 1;
-
-		switch (b) {
-		case CSI_MB_LEFT:
-		case CSI_MB_LEFT_DRAG:
-			*cursor_x = x;
-			*cursor_y = y;
-			use_tool(brush_mat,
-			         *brush_radius,
-			         *cursor_x,
-			         *cursor_y,
-			         *eraser_radius,
-			         *sel_tool,
-			         spawner_mat,
-			         temperature,
-			         *thermo_radius,
-			         world);
-
-			if ('M' == pressed) {
-				*mouse_pressed = true;
-			} else {
-				*mouse_pressed = false;
-			}
-			break;
-
-		case CSI_MB_HOVER:
-			*cursor_x = x;
-			*cursor_y = y;
-			*mouse_pressed = false;
-			break;
-
-		case CSI_MB_MIDDLE:
-		case CSI_MB_MIDDLE_DRAG:
-		case CSI_MB_RIGHT:
-		case CSI_MB_RIGHT_DRAG:
-			break;
-
-		case CSI_MB_WHEELUP:
-			tool_radius_add(1,
-			                brush_radius,
-			                eraser_radius,
-			                sel_tool,
-			                thermo_radius);
-			break;
-
-		case CSI_MB_WHEELDOWN:
-			tool_radius_add(-1,
-			                brush_radius,
-			                eraser_radius,
-			                sel_tool,
-			                thermo_radius);
-			break;
-		}
+	case CHAR_ESCAPE:
+		handle_csi_input(in,
+		                 brush_mat,
+		                 brush_radius,
+		                 cursor_x,
+		                 cursor_y,
+		                 eraser_radius,
+		                 mouse_pressed,
+		                 *sel_tool,
+		                 spawner_mat,
+		                 temperature,
+		                 thermo_radius,
+		                 world);
 		break;
 	}
 }
@@ -711,15 +755,15 @@ int_flag_parse(int    argc,
 }
 
 void
-tool_radius_add(const int  radius_change,
-                int       *brush_radius,
-                int       *eraser_radius,
-                enum Tool *sel_tool,
-                int       *thermo_radius)
+tool_radius_add(const int        radius_change,
+                int             *brush_radius,
+                int             *eraser_radius,
+                const enum Tool  sel_tool,
+                int             *thermo_radius)
 {
 	int  *target = NULL;
 
-	switch (*sel_tool) {
+	switch (sel_tool) {
 	case TOOL_BRUSH:
 		target = brush_radius;
 		break;
@@ -910,6 +954,7 @@ main(int    argc,
 	char          *display = NULL;
 	size_t         display_size = 0;
 	int            eraser_radius = STD_ERASER_RADIUS;
+	char           input[INPUT_SIZE];
 	bool           paused = false;
 	bool           mouse_pressed = false;
 	clock_t        now;
@@ -952,20 +997,23 @@ main(int    argc,
 	world = world_new(win_w, win_h - 2, temperature);
 
 	while (active) {
-		handle_input(&active,
-		             brush_mat,
-		             &brush_radius,
-		             &cursor_x,
-		             &cursor_y,
-		             &eraser_radius,
-		             &mouse_pressed,
-		             &paused,
-		             &sel_tool,
-		             spawner_mat,
-		             temperature,
-		             &th_vision,
-		             &thermo_radius,
-		             &world);
+		if (read(STDIN_FILENO, &input, INPUT_SIZE) > 0) {
+			handle_input(input,
+			             &active,
+			             brush_mat,
+			             &brush_radius,
+			             &cursor_x,
+			             &cursor_y,
+			             &eraser_radius,
+			             &mouse_pressed,
+			             &paused,
+			             &sel_tool,
+			             spawner_mat,
+			             temperature,
+			             &th_vision,
+			             &thermo_radius,
+			             &world);
+		}
 
 		switch (sel_tool) {
 		case TOOL_BRUSH:

@@ -9,23 +9,42 @@
 #include <stddef.h>
 #include <sys/ioctl.h>
 
+#define CSI_COLORSTRING_LEN 19
+
+/* Single character strings, and characters.
+ * This exists because C can't add chars to a string at compile time. Too bad.
+ * Hit anyone who adds multichar strings here.
+ */
+#define CHAR_ESCAPE    '\x1b'
+#define CSI_ESCAPE     "\x1b"
+#define CHAR_BACKSPACE '\x7f'
+#define CSI_BACKSPACE  "\x7f"
+
+/* Sequences.
+ */
+#define CSI_FG_DEFAULT    CSI_ESCAPE "[39m"
+#define CSI_BG_DEFAULT    CSI_ESCAPE "[49m"
+#define CSI_CURSOR_HIDE   CSI_ESCAPE "[?25l"
+#define CSI_CURSOR_SHOW   CSI_ESCAPE "[?25h"
+
+#define CSI_KEY_UP        CSI_ESCAPE "[A"
+#define CSI_KEY_DOWN      CSI_ESCAPE "[B"
+#define CSI_KEY_RIGHT     CSI_ESCAPE "[C"
+#define CSI_KEY_LEFT      CSI_ESCAPE "[D"
+#define CSI_KEY_HOME      CSI_ESCAPE "[H"
+#define CSI_KEY_INSERT    CSI_ESCAPE "[2~"
+#define CSI_KEY_DELETE    CSI_ESCAPE "[3~"
+#define CSI_KEY_PGUP      CSI_ESCAPE "[5~"
+#define CSI_KEY_PGDOWN    CSI_ESCAPE "[6~"
+#define CSI_KEY_END       CSI_ESCAPE "[F"
+
 /* This is a double sequence for clear and cursor to top-left pos.
  * Without this, empty lines remain in the scrollback.
  */
-#define CSI_CLEAR         "\x1b[2J\033[H"
+#define CSI_CLEAR         CSI_ESCAPE "[2J" CSI_ESCAPE "[H"
 
-#define CSI_ENABLE_MOUSE  "\033[?1003h\033[?1006h"
-#define CSI_DISABLE_MOUSE "\033[?1003l\033[?1006l"
-#define CSI_FG_DEFAULT    "\x1b[39m"
-#define CSI_BG_DEFAULT    "\x1b[49m"
-#define CSI_CURSOR_HIDE   "\033[?25l"
-#define CSI_CURSOR_SHOW   "\033[?25h"
-#define CSI_CURSOR_UP     "\033[A"
-#define CSI_CURSOR_DOWN   "\033[B"
-#define CSI_CURSOR_RIGHT  "\033[C"
-#define CSI_CURSOR_LEFT   "\033[D"
-
-#define CSI_COLORSTRING_LEN 19
+#define CSI_ENABLE_MOUSE  CSI_ESCAPE "[?1003h" CSI_ESCAPE "[?1006h"
+#define CSI_DISABLE_MOUSE CSI_ESCAPE "[?1003l" CSI_ESCAPE "[?1006l"
 
 enum MouseButton {
 	CSI_MB_LEFT = 0,

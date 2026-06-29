@@ -18,7 +18,7 @@ C_DEFINES :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"
 
 .PHONY: all build clean generate run test vet
 
-all: $(DEFAULT_CLIENT)
+all: bin/$(DEFAULT_CLIENT)
 
 clean:
 	rm -f bin/*

@@ -358,9 +358,13 @@ so it is kind of transparent in a way.
 - [x] terminal client: add binds for tool radius change
 - [x] terminal client: fix radius change on spawner crash
 - [x] terminal client: fix tool hover draw of spawner
-- [ ] terminal client: add arrow keys as alias for tool navigation
+
+- [x] terminal client: add arrow keys as alias for tool navigation
+Also clean up csi.h quite a bit.
+
 - [ ] terminal client: add pgup, pgdn, pos1, end keys for tool navigation
 
+- [ ] terminal client: use libextra's Tool names for draw
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
