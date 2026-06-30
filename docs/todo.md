@@ -387,7 +387,9 @@ Now it cannot fall onto my feet anymore.
 
 - [x] terminal client: add basic cmdline
 - [x] terminal client: add mat switch binds
-- [ ] terminal client: fix missing comma in mat table, behind "Iron Oxide"
+- [x] terminal client: fix missing comma in mat table, behind "Iron Oxide"
+This caused a crash when switching to last mat, and name mismatches.
+
 - [ ] terminal client: add cmdline functionality
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
