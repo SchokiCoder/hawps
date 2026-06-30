@@ -386,9 +386,11 @@ Now it cannot fall onto my feet anymore.
 ...Remembering this as struggle from Ebiten... that was easy.
 
 - [x] terminal client: add basic cmdline
+- [x] terminal client: add mat switch binds
+- [ ] terminal client: fix missing comma in mat table, behind "Iron Oxide"
 - [ ] terminal client: add cmdline functionality
 - [ ] terminal client: add flags
-- [ ] terminal client: remove todos
+- [ ] terminal client: resolve todos (by fixing or adding here)
 - [ ] terminal client: update help text
 - [ ] terminal client: performance: add lookup table for int to str conversion
 (removing last sprintf calls, and don't forget scanf)

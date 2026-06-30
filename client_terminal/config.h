@@ -16,6 +16,8 @@
 #define KEY_QUIT          'q'
 #define KEY_USE           'e'
 #define KEY_SWITCH_VISION 't'
+#define KEY_PREVIOUS_MAT  'u'
+#define KEY_NEXT_MAT      'i'
 #define KEY_BRUSH         'a'
 #define KEY_SPAWNER       's'
 #define KEY_ERASER        'd'

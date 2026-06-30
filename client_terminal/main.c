@@ -133,7 +133,7 @@ void
 handle_input(bool           *active,
              char           *cmdline,
              size_t         *cmdline_len,
-             const enum Mat  brush_mat,
+             enum Mat       *brush_mat,
              int            *brush_radius,
              int            *cursor_x,
              int            *cursor_y,
@@ -143,7 +143,7 @@ handle_input(bool           *active,
              bool           *paused,
              enum Tool      *sel_tool,
              int            *sim_subsample,
-             const enum Mat  spawner_mat,
+             enum Mat       *spawner_mat,
              const float     temperature,
              const int       tickrate,
              bool           *th_vision,
@@ -167,7 +167,7 @@ handle_normal_csi_input(const char     *in,
 void
 handle_normal_input(const char     *in,
                     bool           *active,
-                    const enum Mat  brush_mat,
+                    enum Mat       *brush_mat,
                     int            *brush_radius,
                     int            *cursor_x,
                     int            *cursor_y,
@@ -177,7 +177,7 @@ handle_normal_input(const char     *in,
                     bool           *paused,
                     enum Tool      *sel_tool,
                     int            *sim_subsample,
-                    const enum Mat  spawner_mat,
+                    enum Mat       *spawner_mat,
                     const float     temperature,
                     const int       tickrate,
                     bool           *th_vision,
@@ -558,7 +558,7 @@ void
 handle_input(bool           *active,
              char           *cmdline,
              size_t         *cmdline_len,
-             const enum Mat  brush_mat,
+             enum Mat       *brush_mat,
              int            *brush_radius,
              int            *cursor_x,
              int            *cursor_y,
@@ -568,7 +568,7 @@ handle_input(bool           *active,
              bool           *paused,
              enum Tool      *sel_tool,
              int            *sim_subsample,
-             const enum Mat  spawner_mat,
+             enum Mat       *spawner_mat,
              const float     temperature,
              const int       tickrate,
              bool           *th_vision,
@@ -731,7 +731,7 @@ handle_normal_csi_input(const char     *in,
 void
 handle_normal_input(const char     *in,
                     bool           *active,
-                    const enum Mat  brush_mat,
+                    enum Mat       *brush_mat,
                     int            *brush_radius,
                     int            *cursor_x,
                     int            *cursor_y,
@@ -741,7 +741,7 @@ handle_normal_input(const char     *in,
                     bool           *paused,
                     enum Tool      *sel_tool,
                     int            *sim_subsample,
-                    const enum Mat  spawner_mat,
+                    enum Mat       *spawner_mat,
                     const float     temperature,
                     const int       tickrate,
                     bool           *th_vision,
@@ -754,13 +754,13 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_USE:
-		use_tool(brush_mat,
+		use_tool(*brush_mat,
 		         *brush_radius,
 		         *cursor_x,
 		         *cursor_y,
 		         *eraser_radius,
 		         *sel_tool,
-		         spawner_mat,
+		         *spawner_mat,
 		         temperature,
 		         *thermo_radius,
 		         world);
@@ -771,6 +771,50 @@ handle_normal_input(const char     *in,
 			*th_vision = false;
 		else
 			*th_vision = true;
+		break;
+
+	case KEY_PREVIOUS_MAT:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			if (*brush_mat > FIRST_REAL_MAT) {
+				*brush_mat -= 1;
+			}
+			break;
+
+		case TOOL_SPAWNER:
+			if (*spawner_mat > MAT_NONE) {
+				*spawner_mat -= 1;
+			}
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			break;
+		}
+		break;
+
+	case KEY_NEXT_MAT:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			if (*brush_mat < MAT_COUNT - 1) {
+				*brush_mat += 1;
+			}
+			break;
+
+		case TOOL_SPAWNER:
+			if (*spawner_mat < MAT_COUNT - 1) {
+				*spawner_mat += 1;
+			}
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			break;
+		}
 		break;
 
 	case KEY_BRUSH:
@@ -877,14 +921,14 @@ handle_normal_input(const char     *in,
 
 	case CHAR_ESCAPE:
 		handle_normal_csi_input(in,
-		                        brush_mat,
+		                        *brush_mat,
 		                        brush_radius,
 		                        cursor_x,
 		                        cursor_y,
 		                        eraser_radius,
 		                        mouse_pressed,
 		                        *sel_tool,
-		                        spawner_mat,
+		                        *spawner_mat,
 		                        temperature,
 		                        thermo_radius,
 		                        world);
@@ -1167,7 +1211,7 @@ main(int    argc,
 		handle_input(&active,
 		             cmdline,
 		             &cmdline_len,
-		             brush_mat,
+		             &brush_mat,
 		             &brush_radius,
 		             &cursor_x,
 		             &cursor_y,
@@ -1177,7 +1221,7 @@ main(int    argc,
 		             &paused,
 		             &sel_tool,
 		             &sim_subsample,
-		             spawner_mat,
+		             &spawner_mat,
 		             temperature,
 		             tickrate,
 		             &th_vision,
