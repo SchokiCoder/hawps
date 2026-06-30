@@ -712,12 +712,14 @@ handle_input(const char     *in,
 		                thermo_radius);
 		break;
 
+	case '-':
 	case KEY_SIMSPEED_DOWN:
 		if (*sim_subsample < tickrate) {
 			*sim_subsample *= 2;
 		}
 		break;
 
+	case '+':
 	case KEY_SIMSPEED_UP:
 		if (*sim_subsample > 1) {
 			*sim_subsample /= 2;
