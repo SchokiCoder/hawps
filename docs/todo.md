@@ -381,6 +381,9 @@ Thought it would stay theoretical but it didn't.
 The `input_len` can practically be as long as the size.
 Now it cannot fall onto my feet anymore.
 
+- [x] terminal client: add binds for simspeed change
+- [ ] terminal client: add plus and minus keys as alias for simspeed change
+
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos

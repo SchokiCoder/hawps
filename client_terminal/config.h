@@ -31,6 +31,8 @@
 #define KEY_SUPERRIGHT    'L'
 #define KEY_RADIUS_DOWN   'c'
 #define KEY_RADIUS_UP     'v'
+#define KEY_SIMSPEED_DOWN 'b'
+#define KEY_SIMSPEED_UP   'n'
 #define KEY_CMD           ':'
 #define KEY_PAUSE         ' '
 

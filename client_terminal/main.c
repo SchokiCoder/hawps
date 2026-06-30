@@ -141,8 +141,10 @@ handle_input(const char     *in,
              bool           *mouse_pressed,
              bool           *paused,
              enum Tool      *sel_tool,
+             int            *sim_subsample,
              const enum Mat  spawner_mat,
              const float     temperature,
+             const int       tickrate,
              bool           *th_vision,
              int            *thermo_radius,
              struct World   *world);
@@ -605,8 +607,10 @@ handle_input(const char     *in,
              bool           *mouse_pressed,
              bool           *paused,
              enum Tool      *sel_tool,
+             int            *sim_subsample,
              const enum Mat  spawner_mat,
              const float     temperature,
+             const int       tickrate,
              bool           *th_vision,
              int            *thermo_radius,
              struct World   *world)
@@ -706,6 +710,18 @@ handle_input(const char     *in,
 		                eraser_radius,
 		                *sel_tool,
 		                thermo_radius);
+		break;
+
+	case KEY_SIMSPEED_DOWN:
+		if (*sim_subsample < tickrate) {
+			*sim_subsample *= 2;
+		}
+		break;
+
+	case KEY_SIMSPEED_UP:
+		if (*sim_subsample > 1) {
+			*sim_subsample /= 2;
+		}
 		break;
 
 	case KEY_CMD:
@@ -1025,8 +1041,10 @@ main(int    argc,
 			             &mouse_pressed,
 			             &paused,
 			             &sel_tool,
+			             &sim_subsample,
 			             spawner_mat,
 			             temperature,
+			             tickrate,
 			             &th_vision,
 			             &thermo_radius,
 			             &world);
