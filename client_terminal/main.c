@@ -661,9 +661,17 @@ handle_input(const char     *in,
 			*cursor_x -= 1;
 		break;
 
+	case KEY_SUPERLEFT:
+		*cursor_x = 0;
+		break;
+
 	case KEY_DOWN:
 		if (*cursor_y < world->h - 1)
 			*cursor_y += 1;
+		break;
+
+	case KEY_SUPERDOWN:
+		*cursor_y = world->h - 1;
 		break;
 
 	case KEY_UP:
@@ -671,9 +679,17 @@ handle_input(const char     *in,
 			*cursor_y -= 1;
 		break;
 
+	case KEY_SUPERUP:
+		*cursor_y = 0;
+		break;
+
 	case KEY_RIGHT:
 		if (*cursor_x < world->w - 1)
 			*cursor_x += 1;
+		break;
+
+	case KEY_SUPERRIGHT:
+		*cursor_x = world->w - 1;
 		break;
 
 	case KEY_RADIUS_DOWN:
