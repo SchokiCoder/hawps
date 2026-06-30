@@ -27,21 +27,25 @@
 #define CSI_CURSOR_HIDE   CSI_ESCAPE "[?25l"
 #define CSI_CURSOR_SHOW   CSI_ESCAPE "[?25h"
 
-#define CSI_KEY_UP        CSI_ESCAPE "[A"
-#define CSI_KEY_DOWN      CSI_ESCAPE "[B"
-#define CSI_KEY_RIGHT     CSI_ESCAPE "[C"
-#define CSI_KEY_LEFT      CSI_ESCAPE "[D"
-#define CSI_KEY_HOME      CSI_ESCAPE "[H"
-#define CSI_KEY_INSERT    CSI_ESCAPE "[2~"
-#define CSI_KEY_DELETE    CSI_ESCAPE "[3~"
-#define CSI_KEY_PGUP      CSI_ESCAPE "[5~"
-#define CSI_KEY_PGDOWN    CSI_ESCAPE "[6~"
-#define CSI_KEY_END       CSI_ESCAPE "[F"
+#define CSI_KEY_UP         CSI_ESCAPE "[A"
+#define CSI_KEY_DOWN       CSI_ESCAPE "[B"
+#define CSI_KEY_RIGHT      CSI_ESCAPE "[C"
+#define CSI_KEY_LEFT       CSI_ESCAPE "[D"
+#define CSI_KEY_INSERT     CSI_ESCAPE "[2~"
+#define CSI_KEY_DELETE     CSI_ESCAPE "[3~"
+#define CSI_KEY_HOME       CSI_ESCAPE "[H"
+#define CSI_KEY_END        CSI_ESCAPE "[F"
+#define CSI_KEY_PGUP       CSI_ESCAPE "[5~"
+#define CSI_KEY_PGDOWN     CSI_ESCAPE "[6~"
+#define CSI_KEY_CTRLHOME   CSI_ESCAPE "[1;5H"
+#define CSI_KEY_CTRLEND    CSI_ESCAPE "[1;5F"
+#define CSI_KEY_CTRLPGUP   CSI_ESCAPE "[5;5~"
+#define CSI_KEY_CTRLPGDOWN CSI_ESCAPE "[6;5~"
 
 /* This is a double sequence for clear and cursor to top-left pos.
  * Without this, empty lines remain in the scrollback.
  */
-#define CSI_CLEAR         CSI_ESCAPE "[2J" CSI_ESCAPE "[H"
+#define CSI_CLEAR         CSI_ESCAPE "[2J" CSI_KEY_HOME
 
 #define CSI_ENABLE_MOUSE  CSI_ESCAPE "[?1003h" CSI_ESCAPE "[?1006h"
 #define CSI_DISABLE_MOUSE CSI_ESCAPE "[?1003l" CSI_ESCAPE "[?1006l"

@@ -363,7 +363,14 @@ so it is kind of transparent in a way.
 Also clean up csi.h quite a bit.
 
 - [x] terminal client: replace own tool names with libextra's for draw
-- [ ] terminal client: add pgup, pgdn, pos1, end keys for tool navigation
+- [x] terminal client: add pgup, pgdn, home, end keys for tool navigation
+- [ ] terminal client: add uppercase vim nav keys for extreme tool navigation
+
+- [ ] terminal client: arrow, pgup, pgdn, home, end key nav doesn't work after
+ctrl-home, ctrl-end key nav
+AND more confusing chains of nav X disabling nav Y
+mouse nav disables everything else (except og vim motions OORAH)
+...oh the input buffer isn't cleaned huh? I bet it's that.
 
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags

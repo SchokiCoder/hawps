@@ -519,6 +519,20 @@ handle_csi_input(const char     *in,
 		if (*cursor_x < world->w - 1) {
 			*cursor_x += 1;
 		}
+	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
+		*cursor_x = 0;
+	} else if (strcmp(in, CSI_KEY_END) == 0) {
+		*cursor_x = world->w - 1;
+	} else if (strcmp(in, CSI_KEY_PGUP) == 0) {
+		*cursor_y = 0;
+	} else if (strcmp(in, CSI_KEY_PGDOWN) == 0) {
+		*cursor_y = world->h - 1;
+	} else if (strcmp(in, CSI_KEY_CTRLHOME) == 0) {
+		*cursor_x = 0;
+		*cursor_y = 0;
+	} else if (strcmp(in, CSI_KEY_CTRLEND) == 0) {
+		*cursor_x = world->w - 1;
+		*cursor_y = world->h - 1;
 	} else if (in[1] == '[' &&
 	           in[2] == '<') {
 		/* mouse device reporting */
