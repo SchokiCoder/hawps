@@ -1012,7 +1012,8 @@ main(int    argc,
 
 	while (active) {
 		input_len = read(STDIN_FILENO, &input, INPUT_SIZE);
-		if (input_len > 0) {
+		if (input_len > 0 &&
+		    input_len < INPUT_SIZE) {
 			input[input_len] = '\0';
 			handle_input(input,
 			             &active,

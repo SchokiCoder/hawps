@@ -376,6 +376,11 @@ I didn't even notice that. You may think I did,
 because Iron and Alu oxidation have a small value given,
 but that was just an easteregg, I swear.
 
+- [x] terminal client: fix input buffer overflow crash
+Thought it would stay theoretical but it didn't.
+The `input_len` can practically be as long as the size.
+Now it cannot fall onto my feet anymore.
+
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
