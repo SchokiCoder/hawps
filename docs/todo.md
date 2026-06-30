@@ -51,7 +51,7 @@ Thus redo all the conductivity values to remove the artifical flattening?
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented
 
-# Hot Air Update
+# "Waiting for an update"-Anniversary Update
 
 - [x] add some missing phonies to Makefile
 - [x] unify critical errors into panics
@@ -385,7 +385,8 @@ Now it cannot fall onto my feet anymore.
 - [x] terminal client: add plus and minus keys as alias for simspeed change
 ...Remembering this as struggle from Ebiten... that was easy.
 
-- [ ] terminal client: add cmdline
+- [x] terminal client: add basic cmdline
+- [ ] terminal client: add cmdline functionality
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
 - [ ] terminal client: update help text
@@ -393,18 +394,12 @@ Now it cannot fall onto my feet anymore.
 (removing last sprintf calls, and don't forget scanf)
 - [ ] performance review of both clients
 
-- [ ] core chemical sim: touch's parenting if is unnecessary?
+- [ ] core chemical sim: touch's parenting `if` is unnecessary?
 remove and decrease indent of content
 
 - [ ] add wet cement and concrete
 I fear this needs a new system for changing mats when going from liquid to solid,
 or a system where grains can generally absorb water
-
-- [ ] remove the `_oxidRandom` property allows removal of an if: `if _oxidRandom[i] {`,
-which guards two ifs.
-current best case = no ifs; worst case = three ifs
-removal means always two ifs
-Do that?
 
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 

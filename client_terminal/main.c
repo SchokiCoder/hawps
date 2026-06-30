@@ -24,6 +24,11 @@
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
 
+enum InputMode {
+	IM_NORMAL,
+	IM_COMMAND,
+};
+
 static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
 "licensed under the %s at:\n"
 "%s\n"
@@ -82,11 +87,13 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 
 void
 draw(const enum Mat        brush_mat,
-     const bool            cmdmode,
+     const char           *cmdline,
+     const size_t          cmdline_len,
      const int             cursor_x,
      const int             cursor_y,
      char                 *display,
      const size_t          display_size,
+     const enum InputMode  input_mode,
      const char           *ip_address,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
@@ -117,27 +124,21 @@ handle_args(int     argc,
             int    *tickrate);
 
 void
-handle_csi_input(const char     *in,
-                 const enum Mat  brush_mat,
-                 int            *brush_radius,
-                 int            *cursor_x,
-                 int            *cursor_y,
-                 int            *eraser_radius,
-                 bool           *mouse_pressed,
-                 const enum Tool sel_tool,
-                 const enum Mat  spawner_mat,
-                 const float     temperature,
-                 int            *thermo_radius,
-                 struct World   *world);
+handle_command_input(const char     *in,
+                     char           *cmdline,
+                     size_t         *cmdline_len,
+                     enum InputMode *input_mode);
 
 void
-handle_input(const char     *in,
-             bool           *active,
+handle_input(bool           *active,
+             char           *cmdline,
+             size_t         *cmdline_len,
              const enum Mat  brush_mat,
              int            *brush_radius,
              int            *cursor_x,
              int            *cursor_y,
              int            *eraser_radius,
+             enum InputMode *input_mode,
              bool           *mouse_pressed,
              bool           *paused,
              enum Tool      *sel_tool,
@@ -148,6 +149,40 @@ handle_input(const char     *in,
              bool           *th_vision,
              int            *thermo_radius,
              struct World   *world);
+
+void
+handle_normal_csi_input(const char     *in,
+                        const enum Mat  brush_mat,
+                        int            *brush_radius,
+                        int            *cursor_x,
+                        int            *cursor_y,
+                        int            *eraser_radius,
+                        bool           *mouse_pressed,
+                        const enum Tool sel_tool,
+                        const enum Mat  spawner_mat,
+                        const float     temperature,
+                        int            *thermo_radius,
+                        struct World   *world);
+
+void
+handle_normal_input(const char     *in,
+                    bool           *active,
+                    const enum Mat  brush_mat,
+                    int            *brush_radius,
+                    int            *cursor_x,
+                    int            *cursor_y,
+                    int            *eraser_radius,
+                    enum InputMode *input_mode,
+                    bool           *mouse_pressed,
+                    bool           *paused,
+                    enum Tool      *sel_tool,
+                    int            *sim_subsample,
+                    const enum Mat  spawner_mat,
+                    const float     temperature,
+                    const int       tickrate,
+                    bool           *th_vision,
+                    int            *thermo_radius,
+                    struct World   *world);
 
 bool
 int_flag_parse(int    argc,
@@ -188,11 +223,13 @@ use_tool(const enum Mat   brush_mat,
 
 void
 draw(const enum Mat        brush_mat,
-     const bool            cmdmode,
+     const char           *cmdline,
+     const size_t          cmdline_len,
      const int             cursor_x,
      const int             cursor_y,
      char                 *display,
      const size_t          display_size,
+     const enum InputMode  input_mode,
      const char           *ip_address,
      const enum Tool       sel_tool,
      const enum Mat        spawner_mat,
@@ -332,14 +369,8 @@ draw(const enum Mat        brush_mat,
 	                          display_len,
 	                          buf);
 
-	if (cmdmode) {
-		// TODO implement
-		display_len += string_cat(display,
-		                          display_size,
-		                          display_len,
-		                          ":cmd input currently not implemented");
-		// TODO draw ' ' until row end
-	} else {
+	switch (input_mode) {
+	case IM_NORMAL:
 		buf[0] = '\0';
 		buf_len = 0;
 
@@ -363,6 +394,17 @@ draw(const enum Mat        brush_mat,
 		space_len = win_w - buf_len;
 		memset(&display[display_len], ' ', space_len);
 		display_len += space_len;
+		break;
+
+	case IM_COMMAND:
+		display_len += string_cat(display,
+		                          display_size,
+		                          display_len,
+		                          cmdline);
+		space_len = win_w - cmdline_len;
+		memset(&display[display_len], ' ', space_len);
+		display_len += space_len;
+		break;
 	}
 
 	display[display_len] = '\0';
@@ -487,18 +529,108 @@ handle_args(int     argc,
 }
 
 void
-handle_csi_input(const char     *in,
-                 const enum Mat  brush_mat,
-                 int            *brush_radius,
-                 int            *cursor_x,
-                 int            *cursor_y,
-                 int            *eraser_radius,
-                 bool           *mouse_pressed,
-                 const enum Tool sel_tool,
-                 const enum Mat  spawner_mat,
-                 const float     temperature,
-                 int            *thermo_radius,
-                 struct World   *world)
+handle_command_input(const char     *in,
+                     char           *cmdline,
+                     size_t         *cmdline_len,
+                     enum InputMode *input_mode)
+{
+	switch (in[0]) {
+	case '\n':
+		// TODO interpret cmdline
+		/* fallthrough */
+	case SIG_INT:
+	case SIG_TSTP:
+		cmdline[0] = '\0';
+		*cmdline_len = 0;
+		*input_mode = IM_NORMAL;
+		break;
+
+	default:
+		if (*cmdline_len < CMDLINE_SIZE - 1) {
+			cmdline[*cmdline_len] = in[0];
+			cmdline[*cmdline_len + 1] = '\0';
+			*cmdline_len += 1;
+		}
+	}
+}
+
+void
+handle_input(bool           *active,
+             char           *cmdline,
+             size_t         *cmdline_len,
+             const enum Mat  brush_mat,
+             int            *brush_radius,
+             int            *cursor_x,
+             int            *cursor_y,
+             int            *eraser_radius,
+             enum InputMode *input_mode,
+             bool           *mouse_pressed,
+             bool           *paused,
+             enum Tool      *sel_tool,
+             int            *sim_subsample,
+             const enum Mat  spawner_mat,
+             const float     temperature,
+             const int       tickrate,
+             bool           *th_vision,
+             int            *thermo_radius,
+             struct World   *world)
+{
+	ssize_t input_len = 0;
+	char    input[INPUT_SIZE];
+
+	input_len = read(STDIN_FILENO, &input, INPUT_SIZE);
+
+	switch (*input_mode) {
+	case IM_NORMAL:
+		if (input_len > 0 &&
+		    input_len < INPUT_SIZE) {
+			input[input_len] = '\0';
+			handle_normal_input(input,
+			                    active,
+			                    brush_mat,
+			                    brush_radius,
+			                    cursor_x,
+			                    cursor_y,
+			                    eraser_radius,
+			                    input_mode,
+			                    mouse_pressed,
+			                    paused,
+			                    sel_tool,
+			                    sim_subsample,
+			                    spawner_mat,
+			                    temperature,
+			                    tickrate,
+			                    th_vision,
+			                    thermo_radius,
+			                    world);
+		}
+		break;
+
+	case IM_COMMAND:
+		if (input_len > 0 &&
+		    input_len < 2) {
+			handle_command_input(input,
+			                     cmdline,
+			                     cmdline_len,
+			                     input_mode);
+		}
+		break;
+	}
+}
+
+void
+handle_normal_csi_input(const char     *in,
+                        const enum Mat  brush_mat,
+                        int            *brush_radius,
+                        int            *cursor_x,
+                        int            *cursor_y,
+                        int            *eraser_radius,
+                        bool           *mouse_pressed,
+                        const enum Tool sel_tool,
+                        const enum Mat  spawner_mat,
+                        const float     temperature,
+                        int            *thermo_radius,
+                        struct World   *world)
 {
 	int   b;
 	char  pressed;
@@ -597,23 +729,24 @@ handle_csi_input(const char     *in,
 }
 
 void
-handle_input(const char     *in,
-             bool           *active,
-             const enum Mat  brush_mat,
-             int            *brush_radius,
-             int            *cursor_x,
-             int            *cursor_y,
-             int            *eraser_radius,
-             bool           *mouse_pressed,
-             bool           *paused,
-             enum Tool      *sel_tool,
-             int            *sim_subsample,
-             const enum Mat  spawner_mat,
-             const float     temperature,
-             const int       tickrate,
-             bool           *th_vision,
-             int            *thermo_radius,
-             struct World   *world)
+handle_normal_input(const char     *in,
+                    bool           *active,
+                    const enum Mat  brush_mat,
+                    int            *brush_radius,
+                    int            *cursor_x,
+                    int            *cursor_y,
+                    int            *eraser_radius,
+                    enum InputMode *input_mode,
+                    bool           *mouse_pressed,
+                    bool           *paused,
+                    enum Tool      *sel_tool,
+                    int            *sim_subsample,
+                    const enum Mat  spawner_mat,
+                    const float     temperature,
+                    const int       tickrate,
+                    bool           *th_vision,
+                    int            *thermo_radius,
+                    struct World   *world)
 {
 	switch (in[0]) {
 	case KEY_QUIT:
@@ -727,7 +860,7 @@ handle_input(const char     *in,
 		break;
 
 	case KEY_CMD:
-		// TODO *imode = IM_CMD;
+		*input_mode = IM_COMMAND;
 		break;
 
 	case KEY_PAUSE:
@@ -743,18 +876,18 @@ handle_input(const char     *in,
 		break;
 
 	case CHAR_ESCAPE:
-		handle_csi_input(in,
-		                 brush_mat,
-		                 brush_radius,
-		                 cursor_x,
-		                 cursor_y,
-		                 eraser_radius,
-		                 mouse_pressed,
-		                 *sel_tool,
-		                 spawner_mat,
-		                 temperature,
-		                 thermo_radius,
-		                 world);
+		handle_normal_csi_input(in,
+		                        brush_mat,
+		                        brush_radius,
+		                        cursor_x,
+		                        cursor_y,
+		                        eraser_radius,
+		                        mouse_pressed,
+		                        *sel_tool,
+		                        spawner_mat,
+		                        temperature,
+		                        thermo_radius,
+		                        world);
 		break;
 	}
 }
@@ -979,14 +1112,14 @@ main(int    argc,
 	bool           active = true;
 	enum Mat       brush_mat = FIRST_REAL_MAT;
 	int            brush_radius = STD_BRUSH_RADIUS;
-	bool           cmdmode = false;
+	char           cmdline[CMDLINE_SIZE];
+	size_t         cmdline_len = 0;
 	int            cursor_x = 0;
 	int            cursor_y = 0;
 	char          *display = NULL;
 	size_t         display_size = 0;
 	int            eraser_radius = STD_ERASER_RADIUS;
-	ssize_t        input_len = 0;
-	char           input[INPUT_SIZE];
+	enum InputMode input_mode = IM_NORMAL;
 	bool           paused = false;
 	bool           mouse_pressed = false;
 	clock_t        now;
@@ -1023,34 +1156,33 @@ main(int    argc,
 	win_w = tempws.ws_col;
 	win_h = tempws.ws_row;
 
+	cmdline[0] = '\0';
+
 	display_size = win_w * win_h * (CSI_COLORSTRING_LEN + 1);
 	display = malloc(display_size);
 
 	world = world_new(win_w, win_h - 2, temperature);
 
 	while (active) {
-		input_len = read(STDIN_FILENO, &input, INPUT_SIZE);
-		if (input_len > 0 &&
-		    input_len < INPUT_SIZE) {
-			input[input_len] = '\0';
-			handle_input(input,
-			             &active,
-			             brush_mat,
-			             &brush_radius,
-			             &cursor_x,
-			             &cursor_y,
-			             &eraser_radius,
-			             &mouse_pressed,
-			             &paused,
-			             &sel_tool,
-			             &sim_subsample,
-			             spawner_mat,
-			             temperature,
-			             tickrate,
-			             &th_vision,
-			             &thermo_radius,
-			             &world);
-		}
+		handle_input(&active,
+		             cmdline,
+		             &cmdline_len,
+		             brush_mat,
+		             &brush_radius,
+		             &cursor_x,
+		             &cursor_y,
+		             &eraser_radius,
+		             &input_mode,
+		             &mouse_pressed,
+		             &paused,
+		             &sel_tool,
+		             &sim_subsample,
+		             spawner_mat,
+		             temperature,
+		             tickrate,
+		             &th_vision,
+		             &thermo_radius,
+		             &world);
 
 		switch (sel_tool) {
 		case TOOL_BRUSH:
@@ -1131,11 +1263,13 @@ main(int    argc,
 			}
 
 			draw(brush_mat,
-			     cmdmode,
+			     cmdline,
+			     cmdline_len,
 			     cursor_x,
 			     cursor_y,
 			     display,
 			     display_size,
+			     input_mode,
 			     "localhost", // TODO implement actual backend
 			     sel_tool,
 			     spawner_mat,

@@ -58,7 +58,7 @@
 /* size values
  * Consider only touching them when you have special hardware or problems.
  */
-// TODO allow for dynamic size via display string being on heap
+#define CMDLINE_SIZE 64
 #define BUF_SIZE     64
 #define INPUT_SIZE   16
 
