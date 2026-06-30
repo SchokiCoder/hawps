@@ -366,11 +366,10 @@ Also clean up csi.h quite a bit.
 - [x] terminal client: add pgup, pgdn, home, end keys for tool navigation
 - [x] terminal client: add uppercase vim nav keys for extreme tool navigation
 
-- [ ] terminal client: arrow, pgup, pgdn, home, end key nav doesn't work after
-ctrl-home, ctrl-end key nav
-AND more confusing chains of nav X disabling nav Y
-mouse nav disables everything else (except og vim motions OORAH)
-...oh the input buffer isn't cleaned huh? I bet it's that.
+- [x] terminal client: fix input buffer not getting null terminated
+`read` doesn't care, so I have to.
+This fixes certain nav methods disabling other nav methods
+For example, mouse nav disabled everything else, except og vim nav.
 
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags

@@ -967,6 +967,7 @@ main(int    argc,
 	char          *display = NULL;
 	size_t         display_size = 0;
 	int            eraser_radius = STD_ERASER_RADIUS;
+	ssize_t        input_len = 0;
 	char           input[INPUT_SIZE];
 	bool           paused = false;
 	bool           mouse_pressed = false;
@@ -1010,7 +1011,9 @@ main(int    argc,
 	world = world_new(win_w, win_h - 2, temperature);
 
 	while (active) {
-		if (read(STDIN_FILENO, &input, INPUT_SIZE) > 0) {
+		input_len = read(STDIN_FILENO, &input, INPUT_SIZE);
+		if (input_len > 0) {
+			input[input_len] = '\0';
 			handle_input(input,
 			             &active,
 			             brush_mat,
