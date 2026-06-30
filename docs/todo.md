@@ -371,6 +371,11 @@ Also clean up csi.h quite a bit.
 This fixes certain nav methods disabling other nav methods
 For example, mouse nav disabled everything else, except og vim nav.
 
+- [x] libcore: change oxidation base condition from released heat to speed
+I didn't even notice that. You may think I did,
+because Iron and Alu oxidation have a small value given,
+but that was just an easteregg, I swear.
+
 - [ ] terminal client: add cmdline
 - [ ] terminal client: add flags
 - [ ] terminal client: remove todos
@@ -381,11 +386,6 @@ For example, mouse nav disabled everything else, except og vim nav.
 
 - [ ] core chemical sim: touch's parenting if is unnecessary?
 remove and decrease indent of content
-
-- [ ] oxidation only happens when oxidTh is given, change it to check oxidSpd instead
-I didn't even notice that. You may think I did,
-because Iron and Alu oxidation have that value given,
-but that was just a joke, I swear.
 
 - [ ] add wet cement and concrete
 I fear this needs a new system for changing mats when going from liquid to solid,

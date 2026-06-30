@@ -420,7 +420,7 @@ world_sim_chemical_reaction(struct World *w,
 		world_clear_dot(w, x, y);
 	}
 
-	if (MAT_OXID_HEAT[w->dot[x][y]] > 0.0) {
+	if (MAT_OXID_SPEED[w->dot[x][y]] > 0.0) {
 		if (MAT_OXYGEN == w->dot[dx][dy]) {
 			if (w->thermo[x][y] > MAT_IGN_P[w->dot[x][y]]) {
 				th = MAT_OXID_HEAT[w->dot[x][y]] *
