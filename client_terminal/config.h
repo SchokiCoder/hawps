@@ -15,6 +15,31 @@
 #define THERMAL_VISION_G 0
 #define THERMAL_VISION_B 0
 
+/* command settings
+ */
+#define CMD_BRUSH              "brush"
+#define CMD_BRUSH_SHORT        "b"
+#define CMD_CLEAR              "clear"
+#define CMD_CLEAR_SHORT        "cl"
+#define CMD_COOLER             "cooler"
+#define CMD_COOLER_SHORT       "c"
+#define CMD_DEFAULTS           "defaults"
+#define CMD_DEFAULTS_SHORT     "def"
+#define CMD_ERASER             "eraser"
+#define CMD_ERASER_SHORT       "e"
+#define CMD_HEATER             "heater"
+#define CMD_HEATER_SHORT       "h"
+#define CMD_NORMALVISION       "normalvision"
+#define CMD_NORMALVISION_SHORT "nv"
+#define CMD_PAUSE              "pause"
+#define CMD_PAUSE_SHORT        "p"
+#define CMD_QUIT               "quit"
+#define CMD_QUIT_SHORT         "q"
+#define CMD_SPAWNER            "spawner"
+#define CMD_SPAWNER_SHORT      "s"
+#define CMD_THERMOVISION       "thermovision"
+#define CMD_THERMOVISION_SHORT "tv"
+
 /* key binds
  */
 #define KEY_QUIT          'q'

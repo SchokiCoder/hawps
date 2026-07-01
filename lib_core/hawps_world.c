@@ -13,11 +13,6 @@
 
 static void (*body_sim) (struct World*, int*, const int);
 
-static void
-world_clear_dot(struct World *w,
-                const int     x,
-                const int     y);
-
 static bool
 world_collapse_gas_stack(struct World *w,
                          const int     x,
@@ -159,7 +154,7 @@ world_can_displace(struct World *w,
 	return false;
 }
 
-static void
+void
 world_clear_dot(struct World *w,
                 const int     x,
                 const int     y)

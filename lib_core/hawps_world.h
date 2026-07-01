@@ -44,6 +44,11 @@ world_can_displace(struct World *w,
                    const int     dx,
                    const int     dy);
 
+void
+world_clear_dot(struct World *w,
+                const int     x,
+                const int     y);
+
 /* You may want to call world_sim after this.
  */
 void

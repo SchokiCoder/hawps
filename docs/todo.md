@@ -396,7 +396,19 @@ If it is removed, compilation fails.
 
 - [x] terminal client: add cmdline simple functionality and feedback
 - [x] terminal client: add cmdline backspace
-- [ ] terminal client: add cmds for everything that has a bind
+- [x] terminal client: add many simple cmds
+Also make libcore's `world_clear_dot` public.
+
+- [ ] terminal client: add cmds for direct mat change per tool
+eg: "brushmat Water"
+- [ ] terminal client: add cmd for setting the temperature of new dots
+eg: "temperature 20"
+- [ ] terminal client: add cmd for setting the temperature of all current dots
+- [ ] terminal client: add cmd for setting the thermodelta
+- [ ] terminal client: add cmd for setting the tickrate
+
+- [ ] terminal client: scrap bindings for runtime help texts and instead add simspeed display
+Also not aligned to the right anymore.
 
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
