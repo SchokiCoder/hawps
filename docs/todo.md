@@ -390,6 +390,10 @@ Now it cannot fall onto my feet anymore.
 - [x] terminal client: fix missing comma in mat table, behind "Iron Oxide"
 This caused a crash when switching to last mat, and name mismatches.
 
+- [x] terminal client: add small snippet about static config in help text
+This comes with a dev reminder in `config.h`.
+If it is removed, compilation fails.
+
 - [ ] terminal client: add cmdline functionality
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)

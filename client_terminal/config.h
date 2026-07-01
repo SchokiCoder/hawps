@@ -64,4 +64,11 @@
 #define BUF_SIZE     64
 #define INPUT_SIZE   16
 
+/* @User, DO NOT TOUCH!
+ * This constant is not meant to stick around,
+ * if the configuration method changes.
+ * This just a reminder for devs to remove a chapter in the help text.
+ */
+#define CONFIGURED_AT "compile time"
+
 #endif /* _CONFIG_H */

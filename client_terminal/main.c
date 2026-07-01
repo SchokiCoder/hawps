@@ -63,7 +63,11 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "    -v -version\n"
 "        prints version information then exits\n"
 "\n"
-"Default keybinds:\n"
+"Keybinds:\n"
+"\n"
+"    Currently, this program is configured at %s.\n"
+"    It is static.\n"
+"    Therefore you can't just change binds.\n"
 "\n"
 "    /\n"
 "        enter the command line\n"
@@ -491,6 +495,7 @@ handle_args(int     argc,
 			       CELSIUS_TO_KELVIN,
 			       STD_TEMPERATURE,
 			       STD_TICKRATE,
+			       CONFIGURED_AT,
 			       (float) STD_TICKRATE / (float) STD_SIM_SUBSAMPLE,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
