@@ -97,6 +97,7 @@ draw(const enum Mat        brush_mat,
      const int             cursor_y,
      char                 *display,
      const size_t          display_size,
+     const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
      const enum Tool       sel_tool,
@@ -128,31 +129,45 @@ handle_args(int     argc,
             int    *tickrate);
 
 void
-handle_command_input(const char     *in,
-                     char           *cmdline,
-                     size_t         *cmdline_len,
-                     enum InputMode *input_mode);
+handle_command(const char  *cmdline,
+               bool        *active,
+               char       **feedback,
+               clock_t     *feedback_expiration,
+               clock_t      now);
 
 void
-handle_input(bool           *active,
-             char           *cmdline,
-             size_t         *cmdline_len,
-             enum Mat       *brush_mat,
-             int            *brush_radius,
-             int            *cursor_x,
-             int            *cursor_y,
-             int            *eraser_radius,
-             enum InputMode *input_mode,
-             bool           *mouse_pressed,
-             bool           *paused,
-             enum Tool      *sel_tool,
-             int            *sim_subsample,
-             enum Mat       *spawner_mat,
-             const float     temperature,
-             const int       tickrate,
-             bool           *th_vision,
-             int            *thermo_radius,
-             struct World   *world);
+handle_command_input(const char      *in,
+                     bool            *active,
+                     char            *cmdline,
+                     size_t          *cmdline_len,
+                     char           **feedback,
+                     clock_t         *feedback_expiration,
+                     enum InputMode  *input_mode,
+                     clock_t          now);
+
+void
+handle_input(bool            *active,
+             char            *cmdline,
+             size_t          *cmdline_len,
+             enum Mat        *brush_mat,
+             int             *brush_radius,
+             int             *cursor_x,
+             int             *cursor_y,
+             int             *eraser_radius,
+             char           **feedback,
+             clock_t         *feedback_expiration,
+             enum InputMode  *input_mode,
+             bool            *mouse_pressed,
+             clock_t          now,
+             bool            *paused,
+             enum Tool       *sel_tool,
+             int             *sim_subsample,
+             enum Mat        *spawner_mat,
+             const float      temperature,
+             const int        tickrate,
+             bool            *th_vision,
+             int             *thermo_radius,
+             struct World    *world);
 
 void
 handle_normal_csi_input(const char     *in,
@@ -233,6 +248,7 @@ draw(const enum Mat        brush_mat,
      const int             cursor_y,
      char                 *display,
      const size_t          display_size,
+     const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
      const enum Tool       sel_tool,
@@ -377,6 +393,17 @@ draw(const enum Mat        brush_mat,
 	case IM_NORMAL:
 		buf[0] = '\0';
 		buf_len = 0;
+
+		if (feedback != NULL) {
+			display_len += string_cat(display,
+			                          display_size,
+			                          display_len,
+			                          feedback);
+			space_len = win_w - strlen(feedback);
+			memset(&display[display_len], ' ', space_len);
+			display_len += space_len;
+			break;
+		}
 
 		buf_len += string_cat(buf, BUF_SIZE, buf_len, TOOL_NAME[sel_tool]);
 
@@ -534,14 +561,39 @@ handle_args(int     argc,
 }
 
 void
-handle_command_input(const char     *in,
-                     char           *cmdline,
-                     size_t         *cmdline_len,
-                     enum InputMode *input_mode)
+handle_command(const char  *cmdline,
+               bool        *active,
+               char       **feedback,
+               clock_t     *feedback_expiration,
+               clock_t      now)
+{
+	if (strcmp(cmdline, "exit") == 0 ||
+	    strcmp(cmdline, "quit") == 0 ||
+	    strcmp(cmdline, "q") == 0) {
+		*active = false;
+	} else {
+		*feedback = "Command not recognized.";
+		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+	}
+}
+
+void
+handle_command_input(const char      *in,
+                     bool            *active,
+                     char            *cmdline,
+                     size_t          *cmdline_len,
+                     char           **feedback,
+                     clock_t         *feedback_expiration,
+                     enum InputMode  *input_mode,
+                     clock_t          now)
 {
 	switch (in[0]) {
 	case '\n':
-		// TODO interpret cmdline
+		handle_command(cmdline,
+		               active,
+		               feedback,
+		               feedback_expiration,
+		               now);
 		/* fallthrough */
 	case SIG_INT:
 	case SIG_TSTP:
@@ -560,25 +612,28 @@ handle_command_input(const char     *in,
 }
 
 void
-handle_input(bool           *active,
-             char           *cmdline,
-             size_t         *cmdline_len,
-             enum Mat       *brush_mat,
-             int            *brush_radius,
-             int            *cursor_x,
-             int            *cursor_y,
-             int            *eraser_radius,
-             enum InputMode *input_mode,
-             bool           *mouse_pressed,
-             bool           *paused,
-             enum Tool      *sel_tool,
-             int            *sim_subsample,
-             enum Mat       *spawner_mat,
-             const float     temperature,
-             const int       tickrate,
-             bool           *th_vision,
-             int            *thermo_radius,
-             struct World   *world)
+handle_input(bool            *active,
+             char            *cmdline,
+             size_t          *cmdline_len,
+             enum Mat        *brush_mat,
+             int             *brush_radius,
+             int             *cursor_x,
+             int             *cursor_y,
+             int             *eraser_radius,
+             char           **feedback,
+             clock_t         *feedback_expiration,
+             enum InputMode  *input_mode,
+             bool            *mouse_pressed,
+             clock_t          now,
+             bool            *paused,
+             enum Tool       *sel_tool,
+             int             *sim_subsample,
+             enum Mat        *spawner_mat,
+             const float      temperature,
+             const int        tickrate,
+             bool            *th_vision,
+             int             *thermo_radius,
+             struct World    *world)
 {
 	ssize_t input_len = 0;
 	char    input[INPUT_SIZE];
@@ -615,9 +670,13 @@ handle_input(bool           *active,
 		if (input_len > 0 &&
 		    input_len < 2) {
 			handle_command_input(input,
+			                     active,
 			                     cmdline,
 			                     cmdline_len,
-			                     input_mode);
+			                     feedback,
+			                     feedback_expiration,
+			                     input_mode,
+			                     now);
 		}
 		break;
 	}
@@ -1034,9 +1093,9 @@ render_world(char               *out,
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
 			if (world.spawner[x][y] == true) {
-				out_len += CSI_color_to_string(COLOR_SPAWNER_R,
-				                               COLOR_SPAWNER_G,
-				                               COLOR_SPAWNER_B,
+				out_len += CSI_color_to_string(SPAWNER_R,
+				                               SPAWNER_G,
+				                               SPAWNER_B,
 				                               true,
 				                               &out[out_len],
 				                               out_size - out_len);
@@ -1168,6 +1227,8 @@ main(int    argc,
 	char          *display = NULL;
 	size_t         display_size = 0;
 	int            eraser_radius = STD_ERASER_RADIUS;
+	char          *feedback = NULL;
+	clock_t        feedback_expiration = 0;
 	enum InputMode input_mode = IM_NORMAL;
 	bool           paused = false;
 	bool           mouse_pressed = false;
@@ -1221,8 +1282,11 @@ main(int    argc,
 		             &cursor_x,
 		             &cursor_y,
 		             &eraser_radius,
+		             &feedback,
+		             &feedback_expiration,
 		             &input_mode,
 		             &mouse_pressed,
+		             now,
 		             &paused,
 		             &sel_tool,
 		             &sim_subsample,
@@ -1275,6 +1339,10 @@ main(int    argc,
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
 
+			if (now > feedback_expiration) {
+				feedback = NULL;
+			}
+
 			if (mouse_pressed) {
 				use_tool(brush_mat,
 					 brush_radius,
@@ -1318,6 +1386,7 @@ main(int    argc,
 			     cursor_y,
 			     display,
 			     display_size,
+			     feedback,
 			     input_mode,
 			     "localhost", // TODO implement actual backend
 			     sel_tool,

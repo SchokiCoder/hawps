@@ -394,7 +394,10 @@ This caused a crash when switching to last mat, and name mismatches.
 This comes with a dev reminder in `config.h`.
 If it is removed, compilation fails.
 
-- [ ] terminal client: add cmdline functionality
+- [x] terminal client: add cmdline simple functionality and feedback
+- [ ] terminal client: add cmdline backspace
+- [ ] terminal client: add cmds for everything that has a bind
+
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
 - [ ] terminal client: update help text

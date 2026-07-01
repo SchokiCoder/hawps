@@ -7,9 +7,13 @@
 
 /* color settings
  */
-#define COLOR_SPAWNER_R 128
-#define COLOR_SPAWNER_G 0
-#define COLOR_SPAWNER_B 128
+#define SPAWNER_R 128
+#define SPAWNER_G 0
+#define SPAWNER_B 128
+
+#define THERMAL_VISION_R 100
+#define THERMAL_VISION_G 0
+#define THERMAL_VISION_B 0
 
 /* key binds
  */
@@ -40,11 +44,9 @@
 
 /* settings
  */
+#define FEEDBACK_LIFETIME    3    /* in seconds */
 #define MAX_RADIUS           16
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
-#define THERMAL_VISION_R 100
-#define THERMAL_VISION_G 0
-#define THERMAL_VISION_B 0
 
 /* startup settings
  */
