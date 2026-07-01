@@ -399,6 +399,13 @@ If it is removed, compilation fails.
 - [x] terminal client: add many simple cmds
 Also make libcore's `world_clear_dot` public.
 
+- [x] terminal client: add simspeed display to status bar
+This bindings for runtime help texts from st bar display,
+because the feature will also be scrapped.
+Why bother when `-h` exists?
+
+- [ ] terminal client: how to handle extremely small terminals? are there crashes?
+
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"
 - [ ] terminal client: add cmd for setting the temperature of new dots
@@ -407,9 +414,6 @@ eg: "temperature 20"
 - [ ] terminal client: add cmd for setting the thermodelta
 - [ ] terminal client: add cmd for setting the tickrate
 
-- [ ] terminal client: scrap bindings for runtime help texts and instead add simspeed display
-Also not aligned to the right anymore.
-
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
 - [ ] terminal client: update help text
@@ -417,7 +421,7 @@ Also not aligned to the right anymore.
 (removing last sprintf calls, and don't forget scanf)
 - [ ] performance review of both clients
 
-- [ ] core chemical sim: touch's parenting `if` is unnecessary?
+- [ ] libcore: chemical sim touch's parenting `if` is unnecessary?
 remove and decrease indent of content
 
 - [ ] add wet cement and concrete

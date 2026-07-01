@@ -100,8 +100,11 @@ draw(const enum Mat        brush_mat,
      const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
+     const bool            paused,
      const enum Tool       sel_tool,
+     const int             sim_subsample,
      const enum Mat        spawner_mat,
+     const int             tickrate,
      const bool            th_vision,
      const int             tool_x1,
      const int             tool_y1,
@@ -277,8 +280,11 @@ draw(const enum Mat        brush_mat,
      const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
+     const bool            paused,
      const enum Tool       sel_tool,
+     const int             sim_subsample,
      const enum Mat        spawner_mat,
+     const int             tickrate,
      const bool            th_vision,
      const int             tool_x1,
      const int             tool_y1,
@@ -292,9 +298,9 @@ draw(const enum Mat        brush_mat,
 	char   buf[BUF_SIZE];
 	size_t buf_len = 0;
 	size_t display_len = 0;
-	size_t left_st_bar_len = 0;
-	size_t right_st_bar_len = 0;
+	float  sim_speed = 0.0;
 	size_t space_len = 0;
+	size_t st_bar_len = 0;
 	char  *vision = NULL;
 	int    world_draw_w = 0;
 	int    world_draw_h = 0;
@@ -347,7 +353,13 @@ draw(const enum Mat        brush_mat,
 		vision = "Normal";
 	}
 
-	left_st_bar_len = display_len;
+	if (paused) {
+		sim_speed = 0.0;
+	} else {
+		sim_speed = (float) tickrate / (float) sim_subsample;
+	}
+
+	st_bar_len = display_len;
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
@@ -379,41 +391,25 @@ draw(const enum Mat        brush_mat,
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
-	                          " | ");
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          ip_address);
-	left_st_bar_len = display_len - left_st_bar_len;
-
-	buf[0] = '\0';
-	buf_len = 0;
-	buf_len += string_cat(buf,
-	                      BUF_SIZE,
-	                      buf_len,
-	                      "bind1");
-	buf_len += string_cat(buf,
-	                      BUF_SIZE,
-	                      buf_len,
-	                      ": bindings, ");
-	buf_len += string_cat(buf,
-	                      BUF_SIZE,
-	                      buf_len,
-	                      "bind2");
-	buf_len += string_cat(buf,
-	                      BUF_SIZE,
-	                      buf_len,
-	                      ": help");
-	right_st_bar_len = buf_len;
-
-	space_len = win_w - (left_st_bar_len + right_st_bar_len);
-	memset(&display[display_len], ' ', space_len);
-	display_len += space_len;
-
+	                          " | Speed:");
+	snprintf(buf, BUF_SIZE, "%.1f", sim_speed);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
 	                          buf);
+	display_len += string_cat(display,
+	                          display_size,
+	                          display_len,
+	                          "/s | ");
+	display_len += string_cat(display,
+	                          display_size,
+	                          display_len,
+	                          ip_address);
+	st_bar_len = display_len - st_bar_len;
+
+	space_len = win_w - st_bar_len;
+	memset(&display[display_len], ' ', space_len);
+	display_len += space_len;
 
 	switch (input_mode) {
 	case IM_NORMAL:
@@ -449,8 +445,6 @@ draw(const enum Mat        brush_mat,
 
 		display_len += string_cat(display, display_size, display_len, buf);
 		space_len = win_w - buf_len;
-		memset(&display[display_len], ' ', space_len);
-		display_len += space_len;
 		break;
 
 	case IM_COMMAND:
@@ -459,10 +453,10 @@ draw(const enum Mat        brush_mat,
 		                          display_len,
 		                          cmdline);
 		space_len = win_w - cmdline_len;
-		memset(&display[display_len], ' ', space_len);
-		display_len += space_len;
 		break;
 	}
+	memset(&display[display_len], ' ', space_len);
+	display_len += space_len;
 
 	display[display_len] = '\0';
 
@@ -1524,8 +1518,11 @@ main(int    argc,
 			     feedback,
 			     input_mode,
 			     "localhost", // TODO implement actual backend
+			     paused,
 			     sel_tool,
+			     sim_subsample,
 			     spawner_mat,
+			     tickrate,
 			     th_vision,
 			     tool_x1,
 			     tool_y1,
