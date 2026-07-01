@@ -588,6 +588,13 @@ handle_command_input(const char      *in,
                      clock_t          now)
 {
 	switch (in[0]) {
+	case CHAR_BACKSPACE:
+		if (*cmdline_len > 0) {
+			cmdline[*cmdline_len - 1] = '\0';
+			*cmdline_len -= 1;
+		}
+		break;
+
 	case '\n':
 		handle_command(cmdline,
 		               active,
