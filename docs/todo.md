@@ -404,7 +404,7 @@ This bindings for runtime help texts from st bar display,
 because the feature will also be scrapped.
 Why bother when `-h` exists?
 
-- [ ] terminal client: how to handle extremely small terminals? are there crashes?
+- [x] change license to MPL-2.0  and update copyright
 
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"
@@ -416,19 +416,22 @@ eg: "temperature 20"
 
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
-- [ ] terminal client: update help text
-- [ ] terminal client: performance: add lookup table for int to str conversion
-(removing last sprintf calls, and don't forget scanf)
-- [ ] performance review of both clients
 
-- [ ] libcore: chemical sim touch's parenting `if` is unnecessary?
-remove and decrease indent of content
+- [ ] terminal client: update help text
+- [ ] terminal client: add a Tool overview to help text
+- [ ] terminal client: add a Mat overview to help text
 
 - [ ] add wet cement and concrete
 I fear this needs a new system for changing mats when going from liquid to solid,
 or a system where grains can generally absorb water
 
+- [ ] libcore: chemical sim touch's parenting `if` is unnecessary?
+remove and decrease indent of content
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
+- [ ] terminal client: how to handle extremely small terminals? are there crashes?
+- [ ] terminal client: performance: add lookup table for int to str conversion
+(removing last sprintf calls, and don't forget scanf)
+- [ ] performance review of both clients
 
 - [ ] add core test against gravity
 - [ ] add core test against grain stack collapse

@@ -1,7 +1,7 @@
 #!/usr/bin/tclsh
 
-# SPDX-License-Identifier: LGPL-2.1-only
-# Copyright (C) 2024 - 2025  Andy Frank Schoknecht
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2024 - 2026  Andy Frank Schoknecht
 
 package require Tk
 

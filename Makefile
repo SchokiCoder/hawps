@@ -1,9 +1,9 @@
-# SPDX-License-Identifier: LGPL-2.1-only
+# SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2024 - 2026  Andy Frank Schoknecht
 
 APP_NAME         :=hawps
 APP_NAME_FORMAL  :=Half Assed Wannabe Physics Simulator
-LICENSE          :=LGPL-2.1-only
+LICENSE          :=MPL-2.0
 LICENSE_URL      :=https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
 REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
