@@ -4,7 +4,7 @@
 APP_NAME         :=hawps
 APP_NAME_FORMAL  :=Half Assed Wannabe Physics Simulator
 LICENSE          :=MPL-2.0
-LICENSE_URL      :=https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
+LICENSE_URL      :=https://mozilla.org/MPL/2.0
 REPOSITORY       :=https://github.com/SchokiCoder/hawps
 VERSION          :=v0.6
 

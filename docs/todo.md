@@ -413,6 +413,7 @@ Why bother when `-h` exists?
 This is not using the "real" cursor,
 because restoring that one is a non-trivial amount of work.
 
+- [x] update license url in Makefile
 - [ ] add more uppercase keybind versions
 
 - [ ] terminal client: add cmds for direct mat change per tool
@@ -422,8 +423,6 @@ eg: "temperature 20"
 - [ ] terminal client: add cmd for setting the temperature of all current dots
 - [ ] terminal client: add cmd for setting the thermodelta
 - [ ] terminal client: add cmd for setting the tickrate
-
-- [ ] update license url in Makefile
 
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
