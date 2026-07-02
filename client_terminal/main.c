@@ -617,6 +617,14 @@ handle_command(const char    *cmdline,
 				world_clear_dot(world, x, y);
 			}
 		}
+	} else if (strcmp(cmdline, CMD_CLEARALL) == 0 ||
+	           strcmp(cmdline, CMD_CLEARALL_SHORT) == 0) {
+		for (x = 0; x < world->w; x++) {
+			for (y = 0; y < world->h; y++) {
+				world_clear_dot(world, x, y);
+				world->spawner[x][y] = false;
+			}
+		}
 	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
 	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
 		*sel_tool = TOOL_COOLER;

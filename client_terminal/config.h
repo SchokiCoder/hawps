@@ -21,6 +21,8 @@
 #define CMD_BRUSH_SHORT        "b"
 #define CMD_CLEAR              "clear"
 #define CMD_CLEAR_SHORT        "cl"
+#define CMD_CLEARALL           "clearall"
+#define CMD_CLEARALL_SHORT     "cla"
 #define CMD_COOLER             "cooler"
 #define CMD_COOLER_SHORT       "c"
 #define CMD_DEFAULTS           "defaults"
