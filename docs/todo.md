@@ -407,9 +407,10 @@ Why bother when `-h` exists?
 - [x] change license to MPL-2.0  and update copyright
 
 - [x] terminal client: add a ':' to cmdline display
+- [x] terminal client: fix cmdline feedback generating too many clear spaces
+
+- [ ] terminal client: fix old cmdline feedback persisting through new command
 - [ ] terminal client: add cursor during cmdline display
-- [ ] terminal client: fix cmdline feedback messing with row clear?
-It's generating too many visible characters for output.
 
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"

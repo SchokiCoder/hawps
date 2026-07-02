@@ -422,8 +422,6 @@ draw(const enum Mat        brush_mat,
 			                          display_len,
 			                          feedback);
 			space_len = win_w - strlen(feedback);
-			memset(&display[display_len], ' ', space_len);
-			display_len += space_len;
 			break;
 		}
 
