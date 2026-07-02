@@ -601,6 +601,8 @@ handle_command(const char    *cmdline,
 {
 	int x, y;
 
+	*feedback = NULL;
+
 	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
 	    strcmp(cmdline, CMD_BRUSH_SHORT) == 0) {
 		*sel_tool = TOOL_BRUSH;
