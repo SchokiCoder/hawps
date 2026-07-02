@@ -448,11 +448,14 @@ draw(const enum Mat        brush_mat,
 		break;
 
 	case IM_COMMAND:
+		display[display_len] = ':';
+		display_len += 1;
+
 		display_len += string_cat(display,
 		                          display_size,
 		                          display_len,
 		                          cmdline);
-		space_len = win_w - cmdline_len;
+		space_len = win_w - 1 - cmdline_len;
 		break;
 	}
 	memset(&display[display_len], ' ', space_len);

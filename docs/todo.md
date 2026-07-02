@@ -406,6 +406,11 @@ Why bother when `-h` exists?
 
 - [x] change license to MPL-2.0  and update copyright
 
+- [x] terminal client: add a ':' to cmdline display
+- [ ] terminal client: add cursor during cmdline display
+- [ ] terminal client: fix cmdline feedback messing with row clear?
+It's generating too many visible characters for output.
+
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"
 - [ ] terminal client: add cmd for setting the temperature of new dots
@@ -414,10 +419,12 @@ eg: "temperature 20"
 - [ ] terminal client: add cmd for setting the thermodelta
 - [ ] terminal client: add cmd for setting the tickrate
 
+- [ ] update license url in Makefile
+
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
-
 - [ ] terminal client: update help text
+
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
 
@@ -430,7 +437,7 @@ remove and decrease indent of content
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] terminal client: performance: add lookup table for int to str conversion
-(removing last sprintf calls, and don't forget scanf)
+(removing last sprintf calls, and don't forget reaplacing scanf with strtol)
 - [ ] performance review of both clients
 
 - [ ] add core test against gravity
