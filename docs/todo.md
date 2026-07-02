@@ -409,7 +409,11 @@ Why bother when `-h` exists?
 - [x] terminal client: add a ':' to cmdline display
 - [x] terminal client: fix cmdline feedback generating too many clear spaces
 - [x] terminal client: fix old cmdline feedback persisting through new command
-- [ ] terminal client: add cursor during cmdline display
+- [x] terminal client: add cursor during cmdline display
+This is not using the "real" cursor,
+because restoring that one is a non-trivial amount of work.
+
+- [ ] add more uppercase keybind versions
 
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"

@@ -453,7 +453,11 @@ draw(const enum Mat        brush_mat,
 		                          display_size,
 		                          display_len,
 		                          cmdline);
-		space_len = win_w - 1 - cmdline_len;
+
+		display[display_len] = '<';
+		display_len += 1;
+
+		space_len = win_w - 1 - cmdline_len - 1;
 		break;
 	}
 	memset(&display[display_len], ' ', space_len);
