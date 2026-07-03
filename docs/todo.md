@@ -419,6 +419,15 @@ because restoring that one is a non-trivial amount of work.
 - [x] make status bar separator configurable
 - [x] add more extreme / uppercase keybind versions
 
+- [x] libcore: add Quicklime and Slaked Lime
+This is much easier than actual Cement.
+
+- [ ] libcore: add random chance for touch reaction
+This is so that the Slaked Lime + Carbon Dioxide -> Limestone
+doesn't always consume the Carbon Dioxide.
+The creation of Quicklime also doesn't always create Carbon Dioxide.
+The chance for both CO2 creation and consumption should be 5%.
+
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"
 - [ ] terminal client: add cmd for setting the temperature of new dots
@@ -433,10 +442,6 @@ eg: "temperature 20"
 
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
-
-- [ ] add wet cement and concrete
-I fear this needs a new system for changing mats when going from liquid to solid,
-or a system where grains can generally absorb water
 
 - [ ] libcore: chemical sim touch's parenting `if` is unnecessary?
 remove and decrease indent of content
