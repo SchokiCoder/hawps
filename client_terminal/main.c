@@ -998,6 +998,24 @@ handle_normal_input(const char     *in,
 		}
 		break;
 
+	case KEY_FIRST_MAT:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			*brush_mat = FIRST_REAL_MAT;
+			break;
+
+		case TOOL_SPAWNER:
+			*spawner_mat = MAT_NONE;
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			break;
+		}
+		break;
+
 	case KEY_NEXT_MAT:
 		switch (*sel_tool) {
 		case TOOL_BRUSH:
@@ -1010,6 +1028,24 @@ handle_normal_input(const char     *in,
 			if (*spawner_mat < MAT_COUNT - 1) {
 				*spawner_mat += 1;
 			}
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			break;
+		}
+		break;
+
+	case KEY_LAST_MAT:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			*brush_mat = MAT_COUNT - 1;
+			break;
+
+		case TOOL_SPAWNER:
+			*spawner_mat = MAT_COUNT - 1;
 			break;
 
 		case TOOL_ERASER:
@@ -1045,7 +1081,7 @@ handle_normal_input(const char     *in,
 			*cursor_x -= 1;
 		break;
 
-	case KEY_SUPERLEFT:
+	case KEY_LEFT_MAX:
 		*cursor_x = 0;
 		break;
 
@@ -1054,7 +1090,7 @@ handle_normal_input(const char     *in,
 			*cursor_y += 1;
 		break;
 
-	case KEY_SUPERDOWN:
+	case KEY_DOWN_MAX:
 		*cursor_y = world->h - 1;
 		break;
 
@@ -1063,7 +1099,7 @@ handle_normal_input(const char     *in,
 			*cursor_y -= 1;
 		break;
 
-	case KEY_SUPERUP:
+	case KEY_UP_MAX:
 		*cursor_y = 0;
 		break;
 
@@ -1072,7 +1108,7 @@ handle_normal_input(const char     *in,
 			*cursor_x += 1;
 		break;
 
-	case KEY_SUPERRIGHT:
+	case KEY_RIGHT_MAX:
 		*cursor_x = world->w - 1;
 		break;
 
@@ -1084,12 +1120,58 @@ handle_normal_input(const char     *in,
 		                thermo_radius);
 		break;
 
+	case KEY_RADIUS_MIN:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			*brush_radius = 0;
+			break;
+
+		case TOOL_SPAWNER:
+			break;
+
+		case TOOL_ERASER:
+			*eraser_radius = 0;
+			break;
+
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+			*thermo_radius = 0;
+			break;
+
+		case TOOL_COUNT:
+			break;
+		}
+		break;
+
 	case KEY_RADIUS_UP:
 		tool_radius_add(1,
 		                brush_radius,
 		                eraser_radius,
 		                *sel_tool,
 		                thermo_radius);
+		break;
+
+	case KEY_RADIUS_MAX:
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			*brush_radius = MAX_RADIUS;
+			break;
+
+		case TOOL_SPAWNER:
+			break;
+
+		case TOOL_ERASER:
+			*eraser_radius = MAX_RADIUS;
+			break;
+
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+			*thermo_radius = MAX_RADIUS;
+			break;
+
+		case TOOL_COUNT:
+			break;
+		}
 		break;
 
 	case '-':
@@ -1099,11 +1181,21 @@ handle_normal_input(const char     *in,
 		}
 		break;
 
+	case KEY_SIMSPEED_MIN:
+		while (*sim_subsample < tickrate) {
+			*sim_subsample *= 2;
+		}
+		break;
+
 	case '+':
 	case KEY_SIMSPEED_UP:
 		if (*sim_subsample > 1) {
 			*sim_subsample /= 2;
 		}
+		break;
+
+	case KEY_SIMSPEED_MAX:
+		*sim_subsample = 1;
 		break;
 
 	case KEY_CMD:
