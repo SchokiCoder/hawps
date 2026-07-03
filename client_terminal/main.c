@@ -446,7 +446,7 @@ draw(const enum Mat        brush_mat,
 		break;
 
 	case IM_COMMAND:
-		display[display_len] = ':';
+		display[display_len] = CMDLINE_INDICATOR;
 		display_len += 1;
 
 		display_len += string_cat(display,
@@ -454,7 +454,7 @@ draw(const enum Mat        brush_mat,
 		                          display_len,
 		                          cmdline);
 
-		display[display_len] = '<';
+		display[display_len] = CMDLINE_CURSOR;
 		display_len += 1;
 
 		space_len = win_w - 1 - cmdline_len - 1;

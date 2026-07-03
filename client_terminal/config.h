@@ -15,6 +15,11 @@
 #define THERMAL_VISION_G 0
 #define THERMAL_VISION_B 0
 
+/* looks settings
+ */
+#define CMDLINE_CURSOR    '<'
+#define CMDLINE_INDICATOR ':'
+
 /* command settings
  */
 #define CMD_BRUSH              "brush"
@@ -75,7 +80,7 @@
 #define MAX_RADIUS           16
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
 
-/* startup settings
+/* defaults for runtime settings
  */
 #define STD_BRUSH_RADIUS  2
 #define STD_ERASER_RADIUS 5
