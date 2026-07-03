@@ -416,6 +416,7 @@ because restoring that one is a non-trivial amount of work.
 - [x] update license url in Makefile
 - [x] add "clearall" command to also remove spawners
 - [x] make cmdline ':' and '<' configurable
+- [x] make status bar separator configurable
 - [ ] add more uppercase keybind versions
 
 - [ ] terminal client: add cmds for direct mat change per tool

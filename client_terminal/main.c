@@ -383,7 +383,7 @@ draw(const enum Mat        brush_mat,
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
-	                          ") | View:");
+	                          ")" STATUSBAR_SEPARATOR "View:");
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
@@ -391,7 +391,7 @@ draw(const enum Mat        brush_mat,
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
-	                          " | Speed:");
+	                          STATUSBAR_SEPARATOR "Speed:");
 	snprintf(buf, BUF_SIZE, "%.1f", sim_speed);
 	display_len += string_cat(display,
 	                          display_size,
@@ -400,7 +400,7 @@ draw(const enum Mat        brush_mat,
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
-	                          "/s | ");
+	                          "/s" STATUSBAR_SEPARATOR);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,

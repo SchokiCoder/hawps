@@ -17,8 +17,9 @@
 
 /* looks settings
  */
-#define CMDLINE_CURSOR    '<'
-#define CMDLINE_INDICATOR ':'
+#define CMDLINE_CURSOR      '<'
+#define CMDLINE_INDICATOR   ':'
+#define STATUSBAR_SEPARATOR " | "
 
 /* command settings
  */
