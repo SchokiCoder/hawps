@@ -39,6 +39,8 @@
 #define CMD_ERASER_SHORT       "e"
 #define CMD_HEATER             "heater"
 #define CMD_HEATER_SHORT       "h"
+#define CMD_MAT                "mat"
+#define CMD_MAT_SHORT          "m"
 #define CMD_NORMALVISION       "normalvision"
 #define CMD_NORMALVISION_SHORT "nv"
 #define CMD_PAUSE              "pause"

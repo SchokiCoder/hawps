@@ -290,6 +290,12 @@ render_world(char               *out,
              const int           world_draw_h);
 
 void
+set_feedback(char          **feedback,
+             clock_t        *feedback_expiration,
+             const clock_t   now,
+             char           *str);
+
+void
 use_tool(const enum Mat   brush_mat,
          const int        brush_radius,
          const int        cursor_x,
@@ -565,35 +571,56 @@ handle_advanced_command(const char     *cmd,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat)
 {
-	size_t i;
-
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
 		*sel_tool = TOOL_BRUSH;
-		for (i = 0; i < MAT_COUNT; i++) {
-			if (strcmp(arg, MAT_NAME[i]) == 0) {
-				*brush_mat = i;
-				return;
-			}
+		if (mat_from_string(arg, brush_mat)) {
+			return;
 		}
 
-		*feedback = "Material not recognized.";
-		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+		set_feedback(feedback, feedback_expiration, now,
+		             "Material not recognized.");
+	} else if (strcmp(cmd, CMD_MAT) == 0 ||
+	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
+		switch (*sel_tool) {
+		case TOOL_BRUSH:
+			if (mat_from_string(arg, brush_mat)) {
+				return;
+			}
+
+			set_feedback(feedback, feedback_expiration, now,
+			             "Material not recognized.");
+			break;
+
+		case TOOL_SPAWNER:
+			if (mat_from_string(arg, spawner_mat)) {
+				return;
+			}
+
+			set_feedback(feedback, feedback_expiration, now,
+			             "Material not recognized.");
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			set_feedback(feedback, feedback_expiration, now,
+			             "Unsupported tool selected.");
+			break;
+		}
 	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
-	         strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
+	           strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
 		*sel_tool = TOOL_SPAWNER;
-		for (i = 0; i < MAT_COUNT; i++) {
-			if (strcmp(arg, MAT_NAME[i]) == 0) {
-				*spawner_mat = i;
-				return;
-			}
+		if (mat_from_string(arg, spawner_mat)) {
+			return;
 		}
 
-		*feedback = "Material not recognized.";
-		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+		set_feedback(feedback, feedback_expiration, now,
+		             "Material not recognized.");
 	} else {
-		*feedback = "Command not recognized.";
-		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+		set_feedback(feedback, feedback_expiration, now,
+		             "Command not recognized.");
 	}
 }
 
@@ -1381,8 +1408,8 @@ handle_simple_command(const char    *cmdline,
 	           strcmp(cmdline, CMD_THERMOVISION_SHORT) == 0) {
 		*th_vision = true;
 	} else {
-		*feedback = "Command not recognized.";
-		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+		set_feedback(feedback, feedback_expiration, now,
+		             "Command not recognized.");
 	}
 }
 
@@ -1542,6 +1569,16 @@ render_world(char               *out,
 	out[out_len] = '\0';
 
 	return out_len;
+}
+
+void
+set_feedback(char          **feedback,
+             clock_t        *feedback_expiration,
+             const clock_t   now,
+             char           *str)
+{
+	*feedback = str;
+	*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
 }
 
 void

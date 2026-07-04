@@ -3,8 +3,25 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "hawps_mat.h"
+
+bool
+mat_from_string(const char *str,
+                enum Mat   *mat)
+{
+	size_t i;
+
+	for (i = 0; i < MAT_COUNT; i++) {
+		if (strcmp(str, MAT_NAME[i]) == 0) {
+			*mat = i;
+			return true;
+		}
+	}
+
+	return false;
+}
 
 enum Mat
 mat_melt_prdct(const enum Mat mat)

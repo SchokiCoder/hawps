@@ -74,6 +74,15 @@ static const short MAT_R[]                    = {0,         238,       237,     
 static const short MAT_G[]                    = {0,         217,       237,       150,       175,            200,       200,        200,              65,                 30,                 9,                 200,                225,              59,          200,                  240,               169,              240,               60,                  255,             139,            191,          223,                240,                   215};                   /* G */
 static const short MAT_B[]                    = {0,         86,        237,       255,       175,            255,       255,        255,              65,                 30,                 0,                 210,                225,              65,          200,                  240,               49,               240,               60,                  255,             123,            169,          194,                240,                   215};                   /* B */
 
+/* @str: String to be examined.
+ * @mat: Result output. Not changed if nothing found.
+ *
+ * Returns if the str contained a mat name at all.
+ */
+bool
+mat_from_string(const char *str,
+                enum Mat   *mat);
+
 enum Mat
 mat_melt_prdct(const enum Mat mat);
 
