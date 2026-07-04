@@ -433,7 +433,7 @@ It's NOT unnecessary. Without it, things react to `MAT_NONE`.
 
 - [x] terminal client: add cmd for changing brush material
 - [x] terminal client: add cmd for changing spawner material
-- [ ] terminal client: add toolswitch upon mat switch via command
+- [x] terminal client: add toolswitch upon matswitch via command
 - [ ] terminal client: add cmd for changing material of current tool
 just "mat" and "m"
 

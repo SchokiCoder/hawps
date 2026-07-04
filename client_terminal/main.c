@@ -132,6 +132,7 @@ handle_advanced_command(const char     *cmd,
                         char          **feedback,
                         clock_t        *feedback_expiration,
                         const clock_t   now,
+                        enum Tool      *sel_tool,
                         enum Mat       *spawner_mat);
 
 bool
@@ -561,12 +562,14 @@ handle_advanced_command(const char     *cmd,
                         char          **feedback,
                         clock_t        *feedback_expiration,
                         const clock_t   now,
+                        enum Tool      *sel_tool,
                         enum Mat       *spawner_mat)
 {
 	size_t i;
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
+		*sel_tool = TOOL_BRUSH;
 		for (i = 0; i < MAT_COUNT; i++) {
 			if (strcmp(arg, MAT_NAME[i]) == 0) {
 				*brush_mat = i;
@@ -578,6 +581,7 @@ handle_advanced_command(const char     *cmd,
 		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
 	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
 	         strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
+		*sel_tool = TOOL_SPAWNER;
 		for (i = 0; i < MAT_COUNT; i++) {
 			if (strcmp(arg, MAT_NAME[i]) == 0) {
 				*spawner_mat = i;
@@ -697,6 +701,7 @@ handle_command(char          *cmdline,
 			                        feedback,
 			                        feedback_expiration,
 			                        now,
+			                        sel_tool,
 			                        spawner_mat);
 			return;
 			break;
