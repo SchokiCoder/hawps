@@ -25,6 +25,8 @@
  */
 #define CMD_BRUSH              "brush"
 #define CMD_BRUSH_SHORT        "b"
+#define CMD_BRUSHMAT           "brushmat"
+#define CMD_BRUSHMAT_SHORT     "bm"
 #define CMD_CLEAR              "clear"
 #define CMD_CLEAR_SHORT        "cl"
 #define CMD_CLEARALL           "clearall"

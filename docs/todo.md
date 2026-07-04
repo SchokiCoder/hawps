@@ -428,13 +428,20 @@ doesn't always consume the Carbon Dioxide.
 The creation of Quicklime also doesn't always create Carbon Dioxide.
 The chance for both CO2 creation and consumption are now 5%.
 
-- [ ] terminal client: add cmds for direct mat change per tool
-eg: "brushmat Water"
+- [x] ~libcore: remove chemical sim touch's parenting `if`~
+It's NOT unnecessary. Without it, things react to `MAT_NONE`.
+
+- [x] terminal client: add cmd for changing brush material
+- [ ] terminal client: add cmd for changing spawner material
+- [ ] terminal client: add cmd for changing material of current tool
+maybe just "mat" (both for long and short variant)?
+
 - [ ] terminal client: add cmd for setting the temperature of new dots
 eg: "temperature 20"
 - [ ] terminal client: add cmd for setting the temperature of all current dots
 - [ ] terminal client: add cmd for setting the thermodelta
 - [ ] terminal client: add cmd for setting the tickrate
+- [ ] terminal client: add function for setting feedback (DRY)
 
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)
@@ -443,8 +450,6 @@ eg: "temperature 20"
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
 
-- [ ] libcore: chemical sim touch's parenting `if` is unnecessary?
-remove and decrease indent of content
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] terminal client: performance: add lookup table for int to str conversion

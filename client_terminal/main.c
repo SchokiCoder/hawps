@@ -125,6 +125,14 @@ get_thermal_dot_color(const struct World world,
                       const int          x,
                       const int          y);
 
+void
+handle_advanced_command(const char     *cmd,
+                        const char     *arg,
+                        enum Mat       *brush_mat,
+                        char          **feedback,
+                        clock_t        *feedback_expiration,
+                        const clock_t   now);
+
 bool
 handle_args(int     argc,
             char  **argv,
@@ -132,13 +140,15 @@ handle_args(int     argc,
             int    *tickrate);
 
 void
-handle_command(const char    *cmdline,
+handle_command(char          *cmdline,
+               const size_t   cmdline_len,
                bool          *active,
+               enum Mat      *brush_mat,
                int           *brush_radius,
                int           *eraser_radius,
                char         **feedback,
                clock_t       *feedback_expiration,
-               clock_t        now,
+               const clock_t  now,
                bool          *paused,
                enum Tool     *sel_tool,
                int           *sim_subsample,
@@ -152,6 +162,7 @@ handle_command(const char    *cmdline,
 void
 handle_command_input(const char      *in,
                      bool            *active,
+                     enum Mat        *brush_mat,
                      int             *brush_radius,
                      char            *cmdline,
                      size_t          *cmdline_len,
@@ -230,6 +241,24 @@ handle_normal_input(const char     *in,
                     const float    *thermo_delta,
                     int            *thermo_radius,
                     struct World   *world);
+
+void
+handle_simple_command(const char    *cmdline,
+                      bool          *active,
+                      int           *brush_radius,
+                      int           *eraser_radius,
+                      char         **feedback,
+                      clock_t       *feedback_expiration,
+                      clock_t        now,
+                      bool          *paused,
+                      enum Tool     *sel_tool,
+                      int           *sim_subsample,
+                      float         *temperature,
+                      bool          *th_vision,
+                      float         *thermo_delta,
+                      int           *thermo_radius,
+                      int           *tickrate,
+                      struct World  *world);
 
 bool
 int_flag_parse(int    argc,
@@ -522,6 +551,33 @@ get_thermal_dot_color(const struct World world,
 	return ret;
 }
 
+void
+handle_advanced_command(const char     *cmd,
+                        const char     *arg,
+                        enum Mat       *brush_mat,
+                        char          **feedback,
+                        clock_t        *feedback_expiration,
+                        const clock_t   now)
+{
+	size_t i;
+
+	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
+	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
+		for (i = 0; i < MAT_COUNT; i++) {
+			if (strcmp(arg, MAT_NAME[i]) == 0) {
+				*brush_mat = i;
+				return;
+			}
+		}
+
+		*feedback = "Material not recognized.";
+		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+	} else {
+		*feedback = "Command not recognized.";
+		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+	}
+}
+
 bool
 handle_args(int     argc,
             char  **argv,
@@ -586,13 +642,15 @@ handle_args(int     argc,
 }
 
 void
-handle_command(const char    *cmdline,
+handle_command(char          *cmdline,
+               const size_t   cmdline_len,
                bool          *active,
+               enum Mat      *brush_mat,
                int           *brush_radius,
                int           *eraser_radius,
                char         **feedback,
                clock_t       *feedback_expiration,
-               clock_t        now,
+               const clock_t  now,
                bool          *paused,
                enum Tool     *sel_tool,
                int           *sim_subsample,
@@ -603,76 +661,59 @@ handle_command(const char    *cmdline,
                int           *tickrate,
                struct World  *world)
 {
-	int x, y;
+	char buf1[BUF_SIZE];
+	char buf2[BUF_SIZE];
+	size_t i;
 
-	*feedback = NULL;
+	buf1[0] = '\0';
+	buf2[0] = '\0';
 
-	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
-	    strcmp(cmdline, CMD_BRUSH_SHORT) == 0) {
-		*sel_tool = TOOL_BRUSH;
-	} else if (strcmp(cmdline, CMD_CLEAR) == 0 ||
-	           strcmp(cmdline, CMD_CLEAR_SHORT) == 0) {
-		for (x = 0; x < world->w; x++) {
-			for (y = 0; y < world->h; y++) {
-				world_clear_dot(world, x, y);
-			}
+	for (i = 0; i < cmdline_len; i++) {
+		switch (cmdline[i]) {
+		case ' ':
+			cmdline[i] = '\0';
+			string_cat(buf1, BUF_SIZE, 0, cmdline);
+			cmdline[i] = ' ';
+			string_cat(buf2, BUF_SIZE, 0, &cmdline[i + 1]);
+
+			handle_advanced_command(buf1, buf2,
+			                        brush_mat,
+			                        feedback,
+			                        feedback_expiration,
+			                        now);
+			return;
+			break;
+
+		case '\n':
+		case '\r':
+		case '\0':
+			i = cmdline_len;
+			break;
 		}
-	} else if (strcmp(cmdline, CMD_CLEARALL) == 0 ||
-	           strcmp(cmdline, CMD_CLEARALL_SHORT) == 0) {
-		for (x = 0; x < world->w; x++) {
-			for (y = 0; y < world->h; y++) {
-				world_clear_dot(world, x, y);
-				world->spawner[x][y] = false;
-			}
-		}
-	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
-	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
-		*sel_tool = TOOL_COOLER;
-	} else if (strcmp(cmdline, CMD_DEFAULTS) == 0 ||
-	           strcmp(cmdline, CMD_DEFAULTS_SHORT) == 0) {
-		*brush_radius = STD_BRUSH_RADIUS;
-		*eraser_radius = STD_ERASER_RADIUS;
-		*sel_tool = STD_SELECTED_TOOL;
-		*sim_subsample = STD_SIM_SUBSAMPLE;
-		*temperature = STD_TEMPERATURE;
-		*thermo_delta = STD_THERMO_DELTA;
-		*thermo_radius = STD_THERMO_RADIUS;
-		*tickrate = STD_TICKRATE;
-	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
-	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
-		*sel_tool = TOOL_ERASER;
-	} else if (strcmp(cmdline, CMD_HEATER) == 0 ||
-	           strcmp(cmdline, CMD_HEATER_SHORT) == 0) {
-		*sel_tool = TOOL_HEATER;
-	} else if (strcmp(cmdline, CMD_NORMALVISION) == 0 ||
-	           strcmp(cmdline, CMD_NORMALVISION_SHORT) == 0) {
-		*th_vision = false;
-	} else if (strcmp(cmdline, CMD_PAUSE) == 0 ||
-	           strcmp(cmdline, CMD_PAUSE_SHORT) == 0) {
-		if (*paused) {
-			*paused = false;
-		} else {
-			*paused = true;
-		}
-	} else if (strcmp(cmdline, CMD_QUIT) == 0 ||
-	           strcmp(cmdline, CMD_QUIT_SHORT) == 0 ||
-	           strcmp(cmdline, "exit") == 0) {
-		*active = false;
-	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
-	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
-		*sel_tool = TOOL_SPAWNER;
-	} else if (strcmp(cmdline, CMD_THERMOVISION) == 0 ||
-	           strcmp(cmdline, CMD_THERMOVISION_SHORT) == 0) {
-		*th_vision = true;
-	} else {
-		*feedback = "Command not recognized.";
-		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
 	}
+
+	handle_simple_command(cmdline,
+	                      active,
+	                      brush_radius,
+	                      eraser_radius,
+	                      feedback,
+	                      feedback_expiration,
+	                      now,
+	                      paused,
+	                      sel_tool,
+	                      sim_subsample,
+	                      temperature,
+	                      th_vision,
+	                      thermo_delta,
+	                      thermo_radius,
+	                      tickrate,
+	                      world);
 }
 
 void
 handle_command_input(const char      *in,
                      bool            *active,
+                     enum Mat        *brush_mat,
                      int             *brush_radius,
                      char            *cmdline,
                      size_t          *cmdline_len,
@@ -701,7 +742,9 @@ handle_command_input(const char      *in,
 
 	case '\n':
 		handle_command(cmdline,
+		               *cmdline_len,
 		               active,
+		               brush_mat,
 		               brush_radius,
 		               eraser_radius,
 		               feedback,
@@ -795,6 +838,7 @@ handle_input(bool            *active,
 		    input_len < 2) {
 			handle_command_input(input,
 			                     active,
+			                     brush_mat,
 			                     brush_radius,
 			                     cmdline,
 			                     cmdline_len,
@@ -1229,6 +1273,91 @@ handle_normal_input(const char     *in,
 		                        thermo_radius,
 		                        world);
 		break;
+	}
+}
+
+void
+handle_simple_command(const char    *cmdline,
+                      bool          *active,
+                      int           *brush_radius,
+                      int           *eraser_radius,
+                      char         **feedback,
+                      clock_t       *feedback_expiration,
+                      clock_t        now,
+                      bool          *paused,
+                      enum Tool     *sel_tool,
+                      int           *sim_subsample,
+                      float         *temperature,
+                      bool          *th_vision,
+                      float         *thermo_delta,
+                      int           *thermo_radius,
+                      int           *tickrate,
+                      struct World  *world)
+{
+	int x, y;
+
+	*feedback = NULL;
+
+	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
+	    strcmp(cmdline, CMD_BRUSH_SHORT) == 0) {
+		*sel_tool = TOOL_BRUSH;
+	} else if (strcmp(cmdline, CMD_CLEAR) == 0 ||
+	           strcmp(cmdline, CMD_CLEAR_SHORT) == 0) {
+		for (x = 0; x < world->w; x++) {
+			for (y = 0; y < world->h; y++) {
+				world_clear_dot(world, x, y);
+			}
+		}
+	} else if (strcmp(cmdline, CMD_CLEARALL) == 0 ||
+	           strcmp(cmdline, CMD_CLEARALL_SHORT) == 0) {
+		for (x = 0; x < world->w; x++) {
+			for (y = 0; y < world->h; y++) {
+				world_clear_dot(world, x, y);
+				world->spawner[x][y] = false;
+			}
+		}
+	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
+	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
+		*sel_tool = TOOL_COOLER;
+	} else if (strcmp(cmdline, CMD_DEFAULTS) == 0 ||
+	           strcmp(cmdline, CMD_DEFAULTS_SHORT) == 0) {
+		*brush_radius = STD_BRUSH_RADIUS;
+		*eraser_radius = STD_ERASER_RADIUS;
+		*sel_tool = STD_SELECTED_TOOL;
+		*sim_subsample = STD_SIM_SUBSAMPLE;
+		*temperature = STD_TEMPERATURE;
+		*thermo_delta = STD_THERMO_DELTA;
+		*thermo_radius = STD_THERMO_RADIUS;
+		*tickrate = STD_TICKRATE;
+	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
+	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
+		*sel_tool = TOOL_ERASER;
+	} else if (strcmp(cmdline, CMD_HEATER) == 0 ||
+	           strcmp(cmdline, CMD_HEATER_SHORT) == 0) {
+		*sel_tool = TOOL_HEATER;
+	} else if (strcmp(cmdline, CMD_NORMALVISION) == 0 ||
+	           strcmp(cmdline, CMD_NORMALVISION_SHORT) == 0) {
+		*th_vision = false;
+	} else if (strcmp(cmdline, CMD_PAUSE) == 0 ||
+	           strcmp(cmdline, CMD_PAUSE_SHORT) == 0) {
+		if (*paused) {
+			*paused = false;
+		} else {
+			*paused = true;
+		}
+	} else if (strcmp(cmdline, CMD_QUIT) == 0 ||
+	           strcmp(cmdline, CMD_QUIT_SHORT) == 0 ||
+	           strcmp(cmdline, "exit") == 0) {
+		*active = false;
+	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
+	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
+		*sel_tool = TOOL_SPAWNER;
+	} else if (strcmp(cmdline, CMD_THERMOVISION) == 0 ||
+	           strcmp(cmdline, CMD_THERMOVISION_SHORT) == 0) {
+		*th_vision = true;
+	} else {
+		*feedback = "Command not recognized.";
+		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
 	}
 }
 
