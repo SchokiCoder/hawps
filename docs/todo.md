@@ -422,11 +422,11 @@ because restoring that one is a non-trivial amount of work.
 - [x] libcore: add Quicklime and Slaked Lime
 This is much easier than actual Cement.
 
-- [ ] libcore: add random chance for touch reaction
-This is so that the Slaked Lime + Carbon Dioxide -> Limestone
+- [x] libcore: add random chance for alternative touch reaction product 2
+This is so that the Slaked Lime + Carbon Dioxide -> Limestone reaction
 doesn't always consume the Carbon Dioxide.
 The creation of Quicklime also doesn't always create Carbon Dioxide.
-The chance for both CO2 creation and consumption should be 5%.
+The chance for both CO2 creation and consumption are now 5%.
 
 - [ ] terminal client: add cmds for direct mat change per tool
 eg: "brushmat Water"

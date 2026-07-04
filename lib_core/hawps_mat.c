@@ -54,3 +54,17 @@ mat_thermo_to_state(const enum Mat mat,
 
 	return ret;
 }
+
+void
+mat_touch_prdcts(const enum Mat     mat,
+                 enum Mat *restrict out1,
+                 enum Mat *restrict out2)
+{
+	*out1 = MAT_TOUCH_PRDCT1[mat];
+
+	if ((rand() % 100) <= MAT_TOUCH_ALTPRDCT2_CHANCE[mat]) {
+		*out2 = MAT_TOUCH_ALTPRDCT2[mat];
+	} else {
+		*out2 = MAT_TOUCH_PRDCT2[mat];
+	}
+}

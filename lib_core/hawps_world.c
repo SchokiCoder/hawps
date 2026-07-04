@@ -436,11 +436,9 @@ world_sim_chemical_reaction(struct World *w,
 		}
 	}
 
-	if (MAT_TOUCH_REAGENT[w->dot[x][y]] != MAT_NONE) {
-		if (MAT_TOUCH_REAGENT[w->dot[x][y]] == w->dot[dx][dy]) {
-			w->dot[x][y] = MAT_TOUCH_PRDCT1[w->dot[x][y]];
-			w->dot[dx][dy] = MAT_TOUCH_PRDCT2[w->dot[x][y]];
-		}
+	if (MAT_TOUCH_REAGENT[w->dot[x][y]] != MAT_NONE &&
+	    MAT_TOUCH_REAGENT[w->dot[x][y]] == w->dot[dx][dy]) {
+		mat_touch_prdcts(w->dot[x][y], &w->dot[x][y], &w->dot[dx][dy]);
 	}
 }
 
