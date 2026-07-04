@@ -47,6 +47,8 @@
 #define CMD_QUIT_SHORT         "q"
 #define CMD_SPAWNER            "spawner"
 #define CMD_SPAWNER_SHORT      "s"
+#define CMD_SPAWNERMAT         "spawnermat"
+#define CMD_SPAWNERMAT_SHORT   "sm"
 #define CMD_THERMOVISION       "thermovision"
 #define CMD_THERMOVISION_SHORT "tv"
 

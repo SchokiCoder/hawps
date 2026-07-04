@@ -131,7 +131,8 @@ handle_advanced_command(const char     *cmd,
                         enum Mat       *brush_mat,
                         char          **feedback,
                         clock_t        *feedback_expiration,
-                        const clock_t   now);
+                        const clock_t   now,
+                        enum Mat       *spawner_mat);
 
 bool
 handle_args(int     argc,
@@ -152,6 +153,7 @@ handle_command(char          *cmdline,
                bool          *paused,
                enum Tool     *sel_tool,
                int           *sim_subsample,
+               enum Mat      *spawner_mat,
                float         *temperature,
                bool          *th_vision,
                float         *thermo_delta,
@@ -174,6 +176,7 @@ handle_command_input(const char      *in,
                      bool            *paused,
                      enum Tool       *sel_tool,
                      int             *sim_subsample,
+                     enum Mat        *spawner_mat,
                      float           *temperature,
                      bool            *th_vision,
                      float           *thermo_delta,
@@ -557,7 +560,8 @@ handle_advanced_command(const char     *cmd,
                         enum Mat       *brush_mat,
                         char          **feedback,
                         clock_t        *feedback_expiration,
-                        const clock_t   now)
+                        const clock_t   now,
+                        enum Mat       *spawner_mat)
 {
 	size_t i;
 
@@ -566,6 +570,17 @@ handle_advanced_command(const char     *cmd,
 		for (i = 0; i < MAT_COUNT; i++) {
 			if (strcmp(arg, MAT_NAME[i]) == 0) {
 				*brush_mat = i;
+				return;
+			}
+		}
+
+		*feedback = "Material not recognized.";
+		*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
+	         strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
+		for (i = 0; i < MAT_COUNT; i++) {
+			if (strcmp(arg, MAT_NAME[i]) == 0) {
+				*spawner_mat = i;
 				return;
 			}
 		}
@@ -654,6 +669,7 @@ handle_command(char          *cmdline,
                bool          *paused,
                enum Tool     *sel_tool,
                int           *sim_subsample,
+               enum Mat      *spawner_mat,
                float         *temperature,
                bool          *th_vision,
                float         *thermo_delta,
@@ -680,7 +696,8 @@ handle_command(char          *cmdline,
 			                        brush_mat,
 			                        feedback,
 			                        feedback_expiration,
-			                        now);
+			                        now,
+			                        spawner_mat);
 			return;
 			break;
 
@@ -725,6 +742,7 @@ handle_command_input(const char      *in,
                      bool            *paused,
                      enum Tool       *sel_tool,
                      int             *sim_subsample,
+                     enum Mat        *spawner_mat,
                      float           *temperature,
                      bool            *th_vision,
                      float           *thermo_delta,
@@ -753,6 +771,7 @@ handle_command_input(const char      *in,
 		               paused,
 		               sel_tool,
 		               sim_subsample,
+		               spawner_mat,
 		               temperature,
 		               th_vision,
 		               thermo_delta,
@@ -850,6 +869,7 @@ handle_input(bool            *active,
 			                     paused,
 			                     sel_tool,
 			                     sim_subsample,
+			                     spawner_mat,
 			                     temperature,
 			                     th_vision,
 			                     thermo_delta,

@@ -432,9 +432,10 @@ The chance for both CO2 creation and consumption are now 5%.
 It's NOT unnecessary. Without it, things react to `MAT_NONE`.
 
 - [x] terminal client: add cmd for changing brush material
-- [ ] terminal client: add cmd for changing spawner material
+- [x] terminal client: add cmd for changing spawner material
+- [ ] terminal client: add toolswitch upon mat switch via command
 - [ ] terminal client: add cmd for changing material of current tool
-maybe just "mat" (both for long and short variant)?
+just "mat" and "m"
 
 - [ ] terminal client: add cmd for setting the temperature of new dots
 eg: "temperature 20"
