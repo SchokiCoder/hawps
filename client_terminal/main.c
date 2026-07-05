@@ -133,7 +133,8 @@ handle_advanced_command(const char     *cmd,
                         clock_t        *feedback_expiration,
                         const clock_t   now,
                         enum Tool      *sel_tool,
-                        enum Mat       *spawner_mat);
+                        enum Mat       *spawner_mat,
+                        float          *temperature);
 
 bool
 handle_args(int     argc,
@@ -569,8 +570,11 @@ handle_advanced_command(const char     *cmd,
                         clock_t        *feedback_expiration,
                         const clock_t   now,
                         enum Tool      *sel_tool,
-                        enum Mat       *spawner_mat)
+                        enum Mat       *spawner_mat,
+                        float          *temperature)
 {
+	float st = 0.0;
+
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
 		*sel_tool = TOOL_BRUSH;
@@ -618,6 +622,28 @@ handle_advanced_command(const char     *cmd,
 
 		set_feedback(feedback, feedback_expiration, now,
 		             "Material not recognized.");
+	} else if (strcmp(cmd, CMD_SPAWNTEMPERATURE) == 0 ||
+	           strcmp(cmd, CMD_SPAWNTEMPERATURE_SHORT) == 0) {
+		errno = 0;
+		st = strtof(arg, NULL);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			*temperature = st + CELSIUS_TO_KELVIN;
+		}
+	} else if (strcmp(cmd, CMD_SPAWNTEMPERATUREK) == 0 ||
+	           strcmp(cmd, CMD_SPAWNTEMPERATUREK_SHORT) == 0) {
+		errno = 0;
+		st = strtof(arg, NULL);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			*temperature = st;
+		}
 	} else {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Command not recognized.");
@@ -729,7 +755,8 @@ handle_command(char          *cmdline,
 			                        feedback_expiration,
 			                        now,
 			                        sel_tool,
-			                        spawner_mat);
+			                        spawner_mat,
+			                        temperature);
 			return;
 			break;
 

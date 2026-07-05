@@ -436,8 +436,7 @@ It's NOT unnecessary. Without it, things react to `MAT_NONE`.
 - [x] terminal client: add toolswitch upon matswitch via command
 - [x] terminal client: add cmd for changing material of current tool
 
-- [ ] terminal client: add cmd for setting the temperature of new dots
-eg: "temperature 20"
+- [x] terminal client: add cmd for setting the temperature of new dots
 - [ ] terminal client: add cmd for setting the temperature of all current dots
 - [ ] terminal client: add cmd for setting the thermodelta
 - [ ] terminal client: add cmd for setting the tickrate
@@ -450,6 +449,7 @@ eg: "temperature 20"
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
 
+- [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] terminal client: performance: add lookup table for int to str conversion
