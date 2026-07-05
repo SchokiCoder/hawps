@@ -21,6 +21,17 @@
 
 #define FIRST_REAL_MAT MAT_SAND
 
+#define FLAG_ABOUT            "-about"
+#define FLAG_ABOUT_SHORT      "-a"
+#define FLAG_HELP             "-help"
+#define FLAG_HELP_SHORT       "-h"
+#define FLAG_SPAWNTEMPERATURE "-spawntemperature"
+
+#define FLAG_TICKRATE         "-tickrate"
+
+#define FLAG_VERSION          "-version"
+#define FLAG_VERSION_SHORT    "-v"
+
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
 
@@ -43,24 +54,24 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "\n"
 "Options:\n"
 "\n"
-"    -a -about\n"
+"    " FLAG_ABOUT_SHORT " " FLAG_ABOUT "\n"
 "        prints program name, version, license and repository information then exits\n"
 "\n"
-"    -h -help\n"
+"    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
 "\n"
-"    -spawntemperature\n"
+"    " FLAG_SPAWNTEMPERATURE "\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
 "        default: %.2f\n"
 "\n"
-"    -tickrate NUMBER\n"
+"    " FLAG_TICKRATE " NUMBER\n"
 "        sets the tickrate (ticks per second),\n"
 "        which also effects simulation speed\n"
 "        only use when otherwise performance problems occur\n"
 "        default: %i\n"
 "\n"
-"    -v -version\n"
+"    " FLAG_VERSION_SHORT " " FLAG_VERSION "\n"
 "        prints version information then exits\n"
 "\n"
 "Keybinds:\n"
@@ -660,16 +671,16 @@ handle_args(int     argc,
 	long l;
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-a") == 0 ||
-		    strcmp(argv[i], "-about") == 0) {
+		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
+		    strcmp(argv[i], FLAG_ABOUT) == 0) {
 			printf(APP_ABOUT,
 			       APP_NAME_FORMAL, APP_NAME, APP_VERSION,
 			       APP_LICENSE,
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return false;
-		} else if (strcmp(argv[i], "-h") == 0 ||
-		           strcmp(argv[i], "-help") == 0) {
+		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
+		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
 			printf(APP_HELP,
 			       APP_NAME,
 			       CELSIUS_TO_KELVIN,
@@ -680,7 +691,7 @@ handle_args(int     argc,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
-		} else if (strcmp(argv[i], "-spawntemperature") == 0) {
+		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0) {
 			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
@@ -692,14 +703,14 @@ handle_args(int     argc,
 				return false;
 			}
 			i++;
-		} else if (strcmp(argv[i], "-tickrate") == 0) {
+		} else if (strcmp(argv[i], FLAG_TICKRATE) == 0) {
 			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
 			*tickrate = l;
 			i++;
-		} else if (strcmp(argv[i], "-v") == 0 ||
-		           strcmp(argv[i],  "-version") == 0) {
+		} else if (strcmp(argv[i], FLAG_VERSION_SHORT) == 0 ||
+		           strcmp(argv[i], FLAG_VERSION) == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
 		} else {

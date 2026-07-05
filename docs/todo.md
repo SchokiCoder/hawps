@@ -438,7 +438,7 @@ It's NOT unnecessary. Without it, things react to `MAT_NONE`.
 
 - [x] terminal client: add cmd for setting the temperature of new dots
 - [x] terminal client: rename temperature flag and variable to spawntemperature
-- [ ] terminal client: add app flags as defines and inject into help text
+- [x] terminal client: add app flags as constants / defines
 - [ ] terminal client: add cmd for setting the temperature of all current dots
 - [ ] terminal client: add cmd for setting the thermodelta
 - [ ] terminal client: add cmd for setting the tickrate
