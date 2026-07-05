@@ -49,7 +49,7 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "    -h -help\n"
 "        prints this message then exits\n"
 "\n"
-"    -temperature\n"
+"    -spawntemperature\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
 "        default: %.2f\n"
@@ -134,12 +134,12 @@ handle_advanced_command(const char     *cmd,
                         const clock_t   now,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
-                        float          *temperature);
+                        float          *spawntemperature);
 
 bool
 handle_args(int     argc,
             char  **argv,
-            float  *temperature,
+            float  *spawntemperature,
             int    *tickrate);
 
 void
@@ -156,7 +156,7 @@ handle_command(char          *cmdline,
                enum Tool     *sel_tool,
                int           *sim_subsample,
                enum Mat      *spawner_mat,
-               float         *temperature,
+               float         *spawntemperature,
                bool          *th_vision,
                float         *thermo_delta,
                int           *thermo_radius,
@@ -179,7 +179,7 @@ handle_command_input(const char      *in,
                      enum Tool       *sel_tool,
                      int             *sim_subsample,
                      enum Mat        *spawner_mat,
-                     float           *temperature,
+                     float           *spawntemperature,
                      bool            *th_vision,
                      float           *thermo_delta,
                      int             *thermo_radius,
@@ -204,7 +204,7 @@ handle_input(bool            *active,
              enum Tool       *sel_tool,
              int             *sim_subsample,
              enum Mat        *spawner_mat,
-             float           *temperature,
+             float           *spawntemperature,
              int             *tickrate,
              bool            *th_vision,
              float           *thermo_delta,
@@ -221,7 +221,7 @@ handle_normal_csi_input(const char     *in,
                         bool           *mouse_pressed,
                         const enum Tool sel_tool,
                         const enum Mat  spawner_mat,
-                        const float     temperature,
+                        const float     spawntemperature,
                         const float     thermo_delta,
                         int            *thermo_radius,
                         struct World   *world);
@@ -240,7 +240,7 @@ handle_normal_input(const char     *in,
                     enum Tool      *sel_tool,
                     int            *sim_subsample,
                     enum Mat       *spawner_mat,
-                    const float     temperature,
+                    const float     spawntemperature,
                     const int       tickrate,
                     bool           *th_vision,
                     const float    *thermo_delta,
@@ -258,7 +258,7 @@ handle_simple_command(const char    *cmdline,
                       bool          *paused,
                       enum Tool     *sel_tool,
                       int           *sim_subsample,
-                      float         *temperature,
+                      float         *spawntemperature,
                       bool          *th_vision,
                       float         *thermo_delta,
                       int           *thermo_radius,
@@ -304,7 +304,7 @@ use_tool(const enum Mat   brush_mat,
          const int        eraser_radius,
          const enum Tool  sel_tool,
          const enum Mat   spawner_mat,
-         const float      temperature,
+         const float      spawntemperature,
          const float      thermo_delta,
          const int        thermo_radius,
          struct World    *world);
@@ -571,7 +571,7 @@ handle_advanced_command(const char     *cmd,
                         const clock_t   now,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
-                        float          *temperature)
+                        float          *spawntemperature)
 {
 	float st = 0.0;
 
@@ -631,7 +631,7 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*temperature = st + CELSIUS_TO_KELVIN;
+			*spawntemperature = st + CELSIUS_TO_KELVIN;
 		}
 	} else if (strcmp(cmd, CMD_SPAWNTEMPERATUREK) == 0 ||
 	           strcmp(cmd, CMD_SPAWNTEMPERATUREK_SHORT) == 0) {
@@ -642,7 +642,7 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*temperature = st;
+			*spawntemperature = st;
 		}
 	} else {
 		set_feedback(feedback, feedback_expiration, now,
@@ -653,7 +653,7 @@ handle_advanced_command(const char     *cmd,
 bool
 handle_args(int     argc,
             char  **argv,
-            float  *temperature,
+            float  *spawntemperature,
             int    *tickrate)
 {
 	int i;
@@ -673,19 +673,19 @@ handle_args(int     argc,
 			printf(APP_HELP,
 			       APP_NAME,
 			       CELSIUS_TO_KELVIN,
-			       STD_TEMPERATURE,
+			       STD_SPAWNTEMPERATURE,
 			       STD_TICKRATE,
 			       CONFIGURED_AT,
 			       (float) STD_TICKRATE / (float) STD_SIM_SUBSAMPLE,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
-		} else if (strcmp(argv[i], "-temperature") == 0) {
+		} else if (strcmp(argv[i], "-spawntemperature") == 0) {
 			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
-			*temperature = l;
-			if (*temperature < 0) {
+			*spawntemperature = l;
+			if (*spawntemperature < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
 				        argv[i]);
@@ -727,7 +727,7 @@ handle_command(char          *cmdline,
                enum Tool     *sel_tool,
                int           *sim_subsample,
                enum Mat      *spawner_mat,
-               float         *temperature,
+               float         *spawntemperature,
                bool          *th_vision,
                float         *thermo_delta,
                int           *thermo_radius,
@@ -756,7 +756,7 @@ handle_command(char          *cmdline,
 			                        now,
 			                        sel_tool,
 			                        spawner_mat,
-			                        temperature);
+			                        spawntemperature);
 			return;
 			break;
 
@@ -778,7 +778,7 @@ handle_command(char          *cmdline,
 	                      paused,
 	                      sel_tool,
 	                      sim_subsample,
-	                      temperature,
+	                      spawntemperature,
 	                      th_vision,
 	                      thermo_delta,
 	                      thermo_radius,
@@ -802,7 +802,7 @@ handle_command_input(const char      *in,
                      enum Tool       *sel_tool,
                      int             *sim_subsample,
                      enum Mat        *spawner_mat,
-                     float           *temperature,
+                     float           *spawntemperature,
                      bool            *th_vision,
                      float           *thermo_delta,
                      int             *thermo_radius,
@@ -831,7 +831,7 @@ handle_command_input(const char      *in,
 		               sel_tool,
 		               sim_subsample,
 		               spawner_mat,
-		               temperature,
+		               spawntemperature,
 		               th_vision,
 		               thermo_delta,
 		               thermo_radius,
@@ -872,7 +872,7 @@ handle_input(bool            *active,
              enum Tool       *sel_tool,
              int             *sim_subsample,
              enum Mat        *spawner_mat,
-             float           *temperature,
+             float           *spawntemperature,
              int             *tickrate,
              bool            *th_vision,
              float           *thermo_delta,
@@ -902,7 +902,7 @@ handle_input(bool            *active,
 			                    sel_tool,
 			                    sim_subsample,
 			                    spawner_mat,
-			                    *temperature,
+			                    *spawntemperature,
 			                    *tickrate,
 			                    th_vision,
 			                    thermo_delta,
@@ -929,7 +929,7 @@ handle_input(bool            *active,
 			                     sel_tool,
 			                     sim_subsample,
 			                     spawner_mat,
-			                     temperature,
+			                     spawntemperature,
 			                     th_vision,
 			                     thermo_delta,
 			                     thermo_radius,
@@ -950,7 +950,7 @@ handle_normal_csi_input(const char     *in,
                         bool           *mouse_pressed,
                         const enum Tool sel_tool,
                         const enum Mat  spawner_mat,
-                        const float     temperature,
+                        const float     spawntemperature,
                         const float     thermo_delta,
                         int            *thermo_radius,
                         struct World   *world)
@@ -1009,7 +1009,7 @@ handle_normal_csi_input(const char     *in,
 				 *eraser_radius,
 				 sel_tool,
 				 spawner_mat,
-				 temperature,
+				 spawntemperature,
 				 thermo_delta,
 				 *thermo_radius,
 				 world);
@@ -1066,7 +1066,7 @@ handle_normal_input(const char     *in,
                     enum Tool      *sel_tool,
                     int            *sim_subsample,
                     enum Mat       *spawner_mat,
-                    const float     temperature,
+                    const float     spawntemperature,
                     const int       tickrate,
                     bool           *th_vision,
                     const float    *thermo_delta,
@@ -1086,7 +1086,7 @@ handle_normal_input(const char     *in,
 		         *eraser_radius,
 		         *sel_tool,
 		         *spawner_mat,
-		         temperature,
+		         spawntemperature,
 		         *thermo_delta,
 		         *thermo_radius,
 		         world);
@@ -1347,7 +1347,7 @@ handle_normal_input(const char     *in,
 		                        mouse_pressed,
 		                        *sel_tool,
 		                        *spawner_mat,
-		                        temperature,
+		                        spawntemperature,
 		                        *thermo_delta,
 		                        thermo_radius,
 		                        world);
@@ -1366,7 +1366,7 @@ handle_simple_command(const char    *cmdline,
                       bool          *paused,
                       enum Tool     *sel_tool,
                       int           *sim_subsample,
-                      float         *temperature,
+                      float         *spawntemperature,
                       bool          *th_vision,
                       float         *thermo_delta,
                       int           *thermo_radius,
@@ -1404,7 +1404,7 @@ handle_simple_command(const char    *cmdline,
 		*eraser_radius = STD_ERASER_RADIUS;
 		*sel_tool = STD_SELECTED_TOOL;
 		*sim_subsample = STD_SIM_SUBSAMPLE;
-		*temperature = STD_TEMPERATURE;
+		*spawntemperature = STD_SPAWNTEMPERATURE;
 		*thermo_delta = STD_THERMO_DELTA;
 		*thermo_radius = STD_THERMO_RADIUS;
 		*tickrate = STD_TICKRATE;
@@ -1616,7 +1616,7 @@ use_tool(const enum Mat   brush_mat,
          const int        eraser_radius,
          const enum Tool  sel_tool,
          const enum Mat   spawner_mat,
-         const float      temperature,
+         const float      spawntemperature,
          const float      thermo_delta,
          const int        thermo_radius,
          struct World    *world)
@@ -1625,7 +1625,7 @@ use_tool(const enum Mat   brush_mat,
 	case TOOL_BRUSH:
 		world_use_brush(world,
 		                brush_mat,
-		                temperature,
+		                spawntemperature,
 		                cursor_x,
 		                cursor_y,
 		                brush_radius);
@@ -1688,7 +1688,7 @@ main(int    argc,
 	enum Tool      sel_tool = STD_SELECTED_TOOL;
 	int            sim_subsample = STD_SIM_SUBSAMPLE;
 	enum Mat       spawner_mat = FIRST_REAL_MAT;
-	float          temperature = STD_TEMPERATURE;
+	float          spawntemperature = STD_SPAWNTEMPERATURE;
 	struct winsize tempws;
 	bool           th_vision = false;
 	float          thermo_delta = STD_THERMO_DELTA;
@@ -1704,7 +1704,7 @@ main(int    argc,
 	int            win_h;
 	struct World   world;
 
-	if (!handle_args(argc, argv, &temperature, &tickrate)) {
+	if (!handle_args(argc, argv, &spawntemperature, &tickrate)) {
 		return 0;
 	}
 
@@ -1723,7 +1723,7 @@ main(int    argc,
 	display_size = win_w * win_h * (CSI_COLORSTRING_LEN + 1);
 	display = malloc(display_size);
 
-	world = world_new(win_w, win_h - 2, temperature);
+	world = world_new(win_w, win_h - 2, spawntemperature);
 
 	while (active) {
 		handle_input(&active,
@@ -1743,7 +1743,7 @@ main(int    argc,
 		             &sel_tool,
 		             &sim_subsample,
 		             &spawner_mat,
-		             &temperature,
+		             &spawntemperature,
 		             &tickrate,
 		             &th_vision,
 		             &thermo_delta,
@@ -1804,13 +1804,13 @@ main(int    argc,
 					 eraser_radius,
 					 sel_tool,
 					 spawner_mat,
-					 temperature,
+					 spawntemperature,
 					 thermo_delta,
 					 thermo_radius,
 					 &world);
 			}
 
-			world_update(&world, temperature);
+			world_update(&world, spawntemperature);
 			if (!paused) {
 				if (ts_since_sim >= sim_subsample) {
 					world_sim(&world);

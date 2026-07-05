@@ -99,14 +99,14 @@
 
 /* defaults for runtime settings
  */
-#define STD_BRUSH_RADIUS  2
-#define STD_ERASER_RADIUS 5
-#define STD_SELECTED_TOOL TOOL_BRUSH
-#define STD_SIM_SUBSAMPLE 4
-#define STD_TEMPERATURE   (20.0 + CELSIUS_TO_KELVIN)
-#define STD_THERMO_DELTA  5.0
-#define STD_THERMO_RADIUS STD_BRUSH_RADIUS
-#define STD_TICKRATE      120
+#define STD_BRUSH_RADIUS     2
+#define STD_ERASER_RADIUS    5
+#define STD_SELECTED_TOOL    TOOL_BRUSH
+#define STD_SIM_SUBSAMPLE    4
+#define STD_SPAWNTEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
+#define STD_THERMO_DELTA     5.0
+#define STD_THERMO_RADIUS    STD_BRUSH_RADIUS
+#define STD_TICKRATE         120
 
 /* size values
  * Consider only touching them when you have special hardware or problems.
