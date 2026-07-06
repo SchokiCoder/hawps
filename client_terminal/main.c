@@ -146,6 +146,7 @@ handle_advanced_command(const char     *cmd,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
                         float          *spawntemperature,
+                        float          *thermo_delta,
                         int            *tickrate,
                         struct World   *world);
 
@@ -585,11 +586,12 @@ handle_advanced_command(const char     *cmd,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
                         float          *spawntemperature,
+                        float          *thermo_delta,
                         int            *tickrate,
                         struct World   *world)
 {
-	float st = 0.0;
-	long t;
+	float f = 0.0;
+	long l;
 	int x, y;
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
@@ -642,29 +644,29 @@ handle_advanced_command(const char     *cmd,
 	} else if (strcmp(cmd, CMD_SPAWNTEMPERATURE) == 0 ||
 	           strcmp(cmd, CMD_SPAWNTEMPERATURE_SHORT) == 0) {
 		errno = 0;
-		st = strtof(arg, NULL);
+		f = strtof(arg, NULL);
 
 		if (errno != 0) {
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*spawntemperature = st + CELSIUS_TO_KELVIN;
+			*spawntemperature = f + CELSIUS_TO_KELVIN;
 		}
 	} else if (strcmp(cmd, CMD_SPAWNTEMPERATUREK) == 0 ||
 	           strcmp(cmd, CMD_SPAWNTEMPERATUREK_SHORT) == 0) {
 		errno = 0;
-		st = strtof(arg, NULL);
+		f = strtof(arg, NULL);
 
 		if (errno != 0) {
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*spawntemperature = st;
+			*spawntemperature = f;
 		}
 	} else if (strcmp(cmd, CMD_TEMPERATURE) == 0 ||
 	           strcmp(cmd, CMD_TEMPERATURE_SHORT) == 0) {
 		errno = 0;
-		st = strtof(arg, NULL);
+		f = strtof(arg, NULL);
 
 		if (errno != 0) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -672,7 +674,7 @@ handle_advanced_command(const char     *cmd,
 		} else {
 			for (x = 0; x < world->w; x++) {
 				for (y = 0; y < world->h; y++) {
-					world->thermo[x][y] = st +
+					world->thermo[x][y] = f +
 					                      CELSIUS_TO_KELVIN;
 				}
 			}
@@ -680,7 +682,7 @@ handle_advanced_command(const char     *cmd,
 	} else if (strcmp(cmd, CMD_TEMPERATUREK) == 0 ||
 	           strcmp(cmd, CMD_TEMPERATUREK_SHORT) == 0) {
 		errno = 0;
-		st = strtof(arg, NULL);
+		f = strtof(arg, NULL);
 
 		if (errno != 0) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -688,14 +690,14 @@ handle_advanced_command(const char     *cmd,
 		} else {
 			for (x = 0; x < world->w; x++) {
 				for (y = 0; y < world->h; y++) {
-					world->thermo[x][y] = st;
+					world->thermo[x][y] = f;
 				}
 			}
 		}
-	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
-	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
+	} else if (strcmp(cmd, CMD_THERMODELTA) == 0 ||
+	           strcmp(cmd, CMD_THERMODELTA_SHORT) == 0) {
 		errno = 0;
-		t = strtol(arg, NULL, 10);
+		f = strtof(arg, NULL);
 
 		if (errno != 0) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -703,13 +705,30 @@ handle_advanced_command(const char     *cmd,
 			return;
 		}
 
-		if (t <= 0) {
+		if (f == 0.0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "That's dumb, but okay.");
+		}
+
+		*thermo_delta = f;
+	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
+	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
+		errno = 0;
+		l = strtol(arg, NULL, 10);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+			return;
+		}
+
+		if (l <= 0) {
 			set_feedback(feedback, feedback_expiration, now,
 			             "No.");
 			return;
 		}
 
-		*tickrate = t;
+		*tickrate = l;
 	} else {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Command not recognized.");
@@ -823,6 +842,7 @@ handle_command(char          *cmdline,
 			                        sel_tool,
 			                        spawner_mat,
 			                        spawntemperature,
+			                        thermo_delta,
 			                        tickrate,
 			                        world);
 			return;

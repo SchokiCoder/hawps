@@ -441,8 +441,7 @@ It's NOT unnecessary. Without it, things react to `MAT_NONE`.
 - [x] terminal client: add app flags as constants / defines
 - [x] terminal client: add cmd for setting the temperature of all current dots
 - [x] terminal client: add cmd for setting the tickrate
-- [ ] terminal client: add cmd for setting the thermodelta
-- [ ] terminal client: add function for setting feedback (DRY)
+- [x] terminal client: add cmd for setting the thermodelta
 
 - [ ] terminal client: add flags
 - [ ] terminal client: resolve todos (by fixing or adding here)

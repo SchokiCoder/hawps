@@ -59,6 +59,8 @@
 #define CMD_TEMPERATURE_SHORT       "t"
 #define CMD_TEMPERATUREK            "temperaturek"
 #define CMD_TEMPERATUREK_SHORT      "tk"
+#define CMD_THERMODELTA             "thermodelta"
+#define CMD_THERMODELTA_SHORT       "td"
 #define CMD_THERMOVISION            "thermovision"
 #define CMD_THERMOVISION_SHORT      "tv"
 #define CMD_TICKRATE                "tickrate"
