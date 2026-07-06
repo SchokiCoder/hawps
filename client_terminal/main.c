@@ -146,6 +146,7 @@ handle_advanced_command(const char     *cmd,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
                         float          *spawntemperature,
+                        int            *tickrate,
                         struct World   *world);
 
 bool
@@ -584,9 +585,11 @@ handle_advanced_command(const char     *cmd,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
                         float          *spawntemperature,
+                        int            *tickrate,
                         struct World   *world)
 {
 	float st = 0.0;
+	long t;
 	int x, y;
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
@@ -689,6 +692,24 @@ handle_advanced_command(const char     *cmd,
 				}
 			}
 		}
+	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
+	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
+		errno = 0;
+		t = strtol(arg, NULL, 10);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+			return;
+		}
+
+		if (t <= 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "No.");
+			return;
+		}
+
+		*tickrate = t;
 	} else {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Command not recognized.");
@@ -802,6 +823,7 @@ handle_command(char          *cmdline,
 			                        sel_tool,
 			                        spawner_mat,
 			                        spawntemperature,
+			                        tickrate,
 			                        world);
 			return;
 			break;

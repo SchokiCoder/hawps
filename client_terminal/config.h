@@ -61,6 +61,8 @@
 #define CMD_TEMPERATUREK_SHORT      "tk"
 #define CMD_THERMOVISION            "thermovision"
 #define CMD_THERMOVISION_SHORT      "tv"
+#define CMD_TICKRATE                "tickrate"
+#define CMD_TICKRATE_SHORT          "tr"
 
 /* key binds
  */
