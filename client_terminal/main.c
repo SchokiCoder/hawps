@@ -145,7 +145,8 @@ handle_advanced_command(const char     *cmd,
                         const clock_t   now,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
-                        float          *spawntemperature);
+                        float          *spawntemperature,
+                        struct World   *world);
 
 bool
 handle_args(int     argc,
@@ -582,9 +583,11 @@ handle_advanced_command(const char     *cmd,
                         const clock_t   now,
                         enum Tool      *sel_tool,
                         enum Mat       *spawner_mat,
-                        float          *spawntemperature)
+                        float          *spawntemperature,
+                        struct World   *world)
 {
 	float st = 0.0;
+	int x, y;
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
@@ -654,6 +657,37 @@ handle_advanced_command(const char     *cmd,
 			             "Number is invalid.");
 		} else {
 			*spawntemperature = st;
+		}
+	} else if (strcmp(cmd, CMD_TEMPERATURE) == 0 ||
+	           strcmp(cmd, CMD_TEMPERATURE_SHORT) == 0) {
+		errno = 0;
+		st = strtof(arg, NULL);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			for (x = 0; x < world->w; x++) {
+				for (y = 0; y < world->h; y++) {
+					world->thermo[x][y] = st +
+					                      CELSIUS_TO_KELVIN;
+				}
+			}
+		}
+	} else if (strcmp(cmd, CMD_TEMPERATUREK) == 0 ||
+	           strcmp(cmd, CMD_TEMPERATUREK_SHORT) == 0) {
+		errno = 0;
+		st = strtof(arg, NULL);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			for (x = 0; x < world->w; x++) {
+				for (y = 0; y < world->h; y++) {
+					world->thermo[x][y] = st;
+				}
+			}
 		}
 	} else {
 		set_feedback(feedback, feedback_expiration, now,
@@ -767,7 +801,8 @@ handle_command(char          *cmdline,
 			                        now,
 			                        sel_tool,
 			                        spawner_mat,
-			                        spawntemperature);
+			                        spawntemperature,
+			                        world);
 			return;
 			break;
 

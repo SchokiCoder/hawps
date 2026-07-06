@@ -55,6 +55,10 @@
 #define CMD_SPAWNTEMPERATURE_SHORT  "st"
 #define CMD_SPAWNTEMPERATUREK       "spawntemperaturek"
 #define CMD_SPAWNTEMPERATUREK_SHORT "stk"
+#define CMD_TEMPERATURE             "temperature"
+#define CMD_TEMPERATURE_SHORT       "t"
+#define CMD_TEMPERATUREK            "temperaturek"
+#define CMD_TEMPERATUREK_SHORT      "tk"
 #define CMD_THERMOVISION            "thermovision"
 #define CMD_THERMOVISION_SHORT      "tv"
 
