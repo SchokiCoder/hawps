@@ -443,7 +443,9 @@ It's NOT unnecessary. Without it, things react to `MAT_NONE`.
 - [x] terminal client: add cmd for setting the tickrate
 - [x] terminal client: add cmd for setting the thermodelta
 
-- [ ] terminal client: add flags
+- [x] terminal client: add flags for various settings
+- [ ] terminal client: change short for thermo commands to contain "th"
+- [ ] terminal client: add commands for tool radii
 - [ ] terminal client: resolve todos (by fixing or adding here)
 - [ ] terminal client: update help text
 

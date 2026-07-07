@@ -21,16 +21,26 @@
 
 #define FIRST_REAL_MAT MAT_SAND
 
-#define FLAG_ABOUT            "-about"
-#define FLAG_ABOUT_SHORT      "-a"
-#define FLAG_HELP             "-help"
-#define FLAG_HELP_SHORT       "-h"
-#define FLAG_SPAWNTEMPERATURE "-spawntemperature"
-
-#define FLAG_TICKRATE         "-tickrate"
-
-#define FLAG_VERSION          "-version"
-#define FLAG_VERSION_SHORT    "-v"
+#define FLAG_ABOUT                  "-about"
+#define FLAG_ABOUT_SHORT            "-a"
+#define FLAG_BRUSHRADIUS            "-brushradius"
+#define FLAG_BRUSHRADIUS_SHORT      "-br"
+#define FLAG_ERASERRADIUS           "-eraserradius"
+#define FLAG_ERASERRADIUS_SHORT     "-er"
+#define FLAG_HELP                   "-help"
+#define FLAG_HELP_SHORT             "-h"
+#define FLAG_SIMSUBSAMPLE           "-simsubsample"
+#define FLAG_SIMSUBSAMPLE_SHORT     "-sss"
+#define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
+#define FLAG_SPAWNTEMPERATURE_SHORT "-st"
+#define FLAG_THERMODELTA            "-thermodelta"
+#define FLAG_THERMODELTA_SHORT      "-thd"
+#define FLAG_THERMORADIUS           "-thermoradius"
+#define FLAG_THERMORADIUS_SHORT     "-thr"
+#define FLAG_TICKRATE               "-tickrate"
+#define FLAG_TICKRATE_SHORT         "-tr"
+#define FLAG_VERSION                "-version"
+#define FLAG_VERSION_SHORT          "-v"
 
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
@@ -60,12 +70,12 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
 "\n"
-"    " FLAG_SPAWNTEMPERATURE "\n"
+"    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE "\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
 "        default: %.2f\n"
 "\n"
-"    " FLAG_TICKRATE " NUMBER\n"
+"    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " NUMBER\n"
 "        sets the tickrate (ticks per second),\n"
 "        which also effects simulation speed\n"
 "        only use when otherwise performance problems occur\n"
@@ -153,7 +163,12 @@ handle_advanced_command(const char     *cmd,
 bool
 handle_args(int     argc,
             char  **argv,
+            int    *brush_radius,
+            int    *eraser_radius,
+            int    *sim_subsample,
             float  *spawntemperature,
+            float  *thermo_delta,
+            int    *thermo_radius,
             int    *tickrate);
 
 void
@@ -738,7 +753,12 @@ handle_advanced_command(const char     *cmd,
 bool
 handle_args(int     argc,
             char  **argv,
+            int    *brush_radius,
+            int    *eraser_radius,
+            int    *sim_subsample,
             float  *spawntemperature,
+            float  *thermo_delta,
+            int    *thermo_radius,
             int    *tickrate)
 {
 	int i;
@@ -753,6 +773,32 @@ handle_args(int     argc,
 			       APP_REPOSITORY,
 			       APP_LICENSE_URL);
 			return false;
+		} else if (strcmp(argv[i], FLAG_BRUSHRADIUS) == 0 ||
+		           strcmp(argv[i], FLAG_BRUSHRADIUS_SHORT) == 0) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
+				return false;
+			}
+			*brush_radius = l;
+			if (*brush_radius < 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must not be negative",
+				        argv[i]);
+				return false;
+			}
+			i++;
+		} else if (strcmp(argv[i], FLAG_ERASERRADIUS) == 0 ||
+		           strcmp(argv[i], FLAG_ERASERRADIUS_SHORT) == 0) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
+				return false;
+			}
+			*eraser_radius = l;
+			if (*eraser_radius < 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must not be negative",
+				        argv[i]);
+				return false;
+			}
+			i++;
 		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
 		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
 			printf(APP_HELP,
@@ -765,7 +811,21 @@ handle_args(int     argc,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
-		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0) {
+		} else if (strcmp(argv[i], FLAG_SIMSUBSAMPLE) == 0 ||
+		           strcmp(argv[i], FLAG_SIMSUBSAMPLE_SHORT) == 0) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
+				return false;
+			}
+			*sim_subsample = l;
+			if (*sim_subsample <= 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must be positive",
+				        argv[i]);
+				return false;
+			}
+			i++;
+		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
+		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
 			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
@@ -777,11 +837,44 @@ handle_args(int     argc,
 				return false;
 			}
 			i++;
-		} else if (strcmp(argv[i], FLAG_TICKRATE) == 0) {
+		} else if (strcmp(argv[i], FLAG_THERMODELTA) == 0 ||
+		           strcmp(argv[i], FLAG_THERMODELTA_SHORT) == 0) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
+				return false;
+			}
+			*thermo_delta = l;
+			if (*thermo_delta < 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must not be negative",
+				        argv[i]);
+				return false;
+			}
+			i++;
+		} else if (strcmp(argv[i], FLAG_THERMORADIUS) == 0 ||
+		           strcmp(argv[i], FLAG_THERMORADIUS_SHORT) == 0) {
+			if (!int_flag_parse(argc, argv, &i, &l)) {
+				return false;
+			}
+			*thermo_radius = l;
+			if (*thermo_radius < 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must not be negative",
+				        argv[i]);
+				return false;
+			}
+			i++;
+		} else if (strcmp(argv[i], FLAG_TICKRATE) == 0 ||
+		           strcmp(argv[i], FLAG_TICKRATE_SHORT) == 0) {
 			if (!int_flag_parse(argc, argv, &i, &l)) {
 				return false;
 			}
 			*tickrate = l;
+			if (*tickrate <= 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must be positive",
+				        argv[i]);
+				return false;
+			}
 			i++;
 		} else if (strcmp(argv[i], FLAG_VERSION_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_VERSION) == 0) {
@@ -1792,7 +1885,14 @@ main(int    argc,
 	int            win_h;
 	struct World   world;
 
-	if (!handle_args(argc, argv, &spawntemperature, &tickrate)) {
+	if (!handle_args(argc, argv,
+	                 &brush_radius,
+	                 &eraser_radius,
+	                 &sim_subsample,
+	                 &spawntemperature,
+	                 &thermo_delta,
+	                 &thermo_radius,
+	                 &tickrate)) {
 		return 0;
 	}
 
