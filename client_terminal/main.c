@@ -150,6 +150,8 @@ void
 handle_advanced_command(const char     *cmd,
                         const char     *arg,
                         enum Mat       *brush_mat,
+                        int            *brush_radius,
+                        int            *eraser_radius,
                         char          **feedback,
                         clock_t        *feedback_expiration,
                         const clock_t   now,
@@ -157,6 +159,7 @@ handle_advanced_command(const char     *cmd,
                         enum Mat       *spawner_mat,
                         float          *spawntemperature,
                         float          *thermo_delta,
+                        int            *thermo_radius,
                         int            *tickrate,
                         struct World   *world);
 
@@ -595,6 +598,8 @@ void
 handle_advanced_command(const char     *cmd,
                         const char     *arg,
                         enum Mat       *brush_mat,
+                        int            *brush_radius,
+                        int            *eraser_radius,
                         char          **feedback,
                         clock_t        *feedback_expiration,
                         const clock_t   now,
@@ -602,6 +607,7 @@ handle_advanced_command(const char     *cmd,
                         enum Mat       *spawner_mat,
                         float          *spawntemperature,
                         float          *thermo_delta,
+                        int            *thermo_radius,
                         int            *tickrate,
                         struct World   *world)
 {
@@ -618,6 +624,30 @@ handle_advanced_command(const char     *cmd,
 
 		set_feedback(feedback, feedback_expiration, now,
 		             "Material not recognized.");
+	} else if (strcmp(cmd, CMD_BRUSHRADIUS) == 0 ||
+	           strcmp(cmd, CMD_BRUSHRADIUS_SHORT) == 0) {
+		errno = 0;
+		l = strtol(arg, NULL, 10);
+
+		if (errno != 0 ||
+		    l < 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			*brush_radius = l;
+		}
+	} else if (strcmp(cmd, CMD_ERASERRADIUS) == 0 ||
+	           strcmp(cmd, CMD_ERASERRADIUS_SHORT) == 0) {
+		errno = 0;
+		l = strtol(arg, NULL, 10);
+
+		if (errno != 0 ||
+		    l < 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			*eraser_radius = l;
+		}
 	} else if (strcmp(cmd, CMD_MAT) == 0 ||
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
 		switch (*sel_tool) {
@@ -726,6 +756,18 @@ handle_advanced_command(const char     *cmd,
 		}
 
 		*thermo_delta = f;
+	} else if (strcmp(cmd, CMD_THERMORADIUS) == 0 ||
+	           strcmp(cmd, CMD_THERMORADIUS_SHORT) == 0) {
+		errno = 0;
+		l = strtol(arg, NULL, 10);
+
+		if (errno != 0 ||
+		    l < 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			*thermo_radius = l;
+		}
 	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
 	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
 		errno = 0;
@@ -929,6 +971,8 @@ handle_command(char          *cmdline,
 
 			handle_advanced_command(buf1, buf2,
 			                        brush_mat,
+			                        brush_radius,
+			                        eraser_radius,
 			                        feedback,
 			                        feedback_expiration,
 			                        now,
@@ -936,6 +980,7 @@ handle_command(char          *cmdline,
 			                        spawner_mat,
 			                        spawntemperature,
 			                        thermo_delta,
+			                        thermo_radius,
 			                        tickrate,
 			                        world);
 			return;
