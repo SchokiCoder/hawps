@@ -2,8 +2,8 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#ifndef _HAWPS_GLOWCOLOR_H
-#define _HAWPS_GLOWCOLOR_H
+#ifndef _HAWPS_COLOR_H
+#define _HAWPS_COLOR_H
 
 struct Rgba {
 	unsigned char r;
@@ -16,6 +16,10 @@ void
 glowcolor_init(void);
 
 struct Rgba
+rgba_blend(const struct Rgba src,
+           const struct Rgba dest);
+
+struct Rgba
 thermo_to_color(const float thermo);
 
-#endif /* _HAWPS_GLOWCOLOR_H */
+#endif /* _HAWPS_COLOR_H */

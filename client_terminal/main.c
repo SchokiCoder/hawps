@@ -558,7 +558,7 @@ get_normal_dot_color(const struct World world,
                      const int          x,
                      const int          y)
 {
-	struct Rgba a, b, ret;
+	struct Rgba a, b;
 
 	a = thermo_to_color(world.thermo[x][y]);
 
@@ -567,12 +567,7 @@ get_normal_dot_color(const struct World world,
 	b.b = MAT_B[world.dot[x][y]];
 	b.a = 255;
 
-	ret.r = ((a.r * a.a) + b.r * (255 - a.a)) >> 8;
-	ret.g = ((a.g * a.a) + b.g * (255 - a.a)) >> 8;
-	ret.b = ((a.b * a.a) + b.b * (255 - a.a)) >> 8;
-	ret.a = 255;
-
-	return ret;
+	return rgba_blend(a, b);
 }
 
 struct Rgba

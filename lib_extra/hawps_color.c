@@ -7,7 +7,7 @@
  * which we then iterate through based on dot temperature.
  */
 
-#include "hawps_glowcolor.h"
+#include "hawps_color.h"
 
 #define GLOW_MAX_ALPHA 200
 // Kelvin / 100
@@ -123,6 +123,20 @@ glow_range_def_to_glow_color_step(const float i1,
                                   const float c2)
 {
 	return (c2 - c1) / (i2 - i1);
+}
+
+struct Rgba
+rgba_blend(const struct Rgba src,
+           const struct Rgba dest)
+{
+	struct Rgba ret;
+
+	ret.r = ((src.r * src.a) + dest.r * (255 - src.a)) >> 8;
+	ret.g = ((src.g * src.a) + dest.g * (255 - src.a)) >> 8;
+	ret.b = ((src.b * src.a) + dest.b * (255 - src.a)) >> 8;
+	ret.a = dest.a;
+
+	return ret;
 }
 
 struct Rgba

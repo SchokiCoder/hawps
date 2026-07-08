@@ -479,8 +479,7 @@ This is to avoid incoming name collisions.
 - [x] terminal client: add float parsing for various flags
 - [x] terminal client: add newline char at end of error messages
 
-- [ ] make blending a libextra function (see main.c:`get_normal_dot_color`)
-(blend the entire color struct at once)
+- [x] move color blending from terminal client to libextra
 
 - [ ] terminal client: update help text
 

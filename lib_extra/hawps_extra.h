@@ -5,7 +5,7 @@
 #ifndef _HAWPS_EXTRA_H
 #define _HAWPS_EXTRA_H
 
-#include "hawps_glowcolor.h"
+#include "hawps_color.h"
 #include "hawps_tool.h"
 
 void
