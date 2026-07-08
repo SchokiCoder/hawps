@@ -830,7 +830,7 @@ handle_args(int     argc,
 			*brush_radius = flagargi;
 			if (*brush_radius < 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must not be negative",
+				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
 				return false;
 			}
@@ -843,7 +843,7 @@ handle_args(int     argc,
 			*eraser_radius = flagargi;
 			if (*eraser_radius < 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must not be negative",
+				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
 				return false;
 			}
@@ -868,7 +868,7 @@ handle_args(int     argc,
 			*sim_subsample = flagargi;
 			if (*sim_subsample <= 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must be positive",
+				        "The value for \"%s\" must be positive\n",
 				        argv[i]);
 				return false;
 			}
@@ -881,7 +881,7 @@ handle_args(int     argc,
 			*spawntemperature = flagargf;
 			if (*spawntemperature < 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must not be negative",
+				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
 				return false;
 			}
@@ -894,7 +894,7 @@ handle_args(int     argc,
 			*thermo_delta = flagargf;
 			if (*thermo_delta < 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must not be negative",
+				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
 				return false;
 			}
@@ -907,7 +907,7 @@ handle_args(int     argc,
 			*thermo_radius = flagargi;
 			if (*thermo_radius < 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must not be negative",
+				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
 				return false;
 			}
@@ -920,7 +920,7 @@ handle_args(int     argc,
 			*tickrate = flagargi;
 			if (*tickrate <= 0) {
 				fprintf(stderr,
-				        "The value for \"%s\" must be positive",
+				        "The value for \"%s\" must be positive\n",
 				        argv[i]);
 				return false;
 			}
@@ -931,7 +931,7 @@ handle_args(int     argc,
 			return false;
 		} else {
 			fprintf(stderr,
-			        "Argument \"%s\" is not recognized",
+			        "Argument \"%s\" is not recognized\n",
 			        argv[i]);
 			return false;
 		}
@@ -1095,7 +1095,7 @@ handle_flag_float_arg(int    argc,
 {
 	if (argc <= *idx + 1) {
 		fprintf(stderr,
-		        "The argument \"%s\" needs to be followed by a value",
+		        "The argument \"%s\" needs to be followed by a value\n",
 		        argv[*idx]);
 		return false;
 	}
@@ -1105,7 +1105,7 @@ handle_flag_float_arg(int    argc,
 	*out = strtof(argv[*idx], NULL);
 	if (errno != 0) {
 		fprintf(stderr,
-		        "\"%s\" could not be converted to a float",
+		        "\"%s\" could not be converted to a float\n",
 		        argv[*idx - 1]);
 		return false;
 	}
@@ -1121,7 +1121,7 @@ handle_flag_int_arg(int    argc,
 {
 	if (argc <= *idx + 1) {
 		fprintf(stderr,
-		        "The argument \"%s\" needs to be followed by a value",
+		        "The argument \"%s\" needs to be followed by a value\n",
 		        argv[*idx]);
 		return false;
 	}
@@ -1131,7 +1131,7 @@ handle_flag_int_arg(int    argc,
 	*out = strtol(argv[*idx], NULL, 10);
 	if (errno != 0) {
 		fprintf(stderr,
-		        "\"%s\" could not be converted to an int",
+		        "\"%s\" could not be converted to an int\n",
 		        argv[*idx - 1]);
 		return false;
 	}

@@ -449,7 +449,7 @@ This is to avoid incoming name collisions.
 
 - [x] terminal client: add commands for tool radii
 - [x] terminal client: add float parsing for various flags
-- [ ] terminal client: add newline char at end of error messages
+- [x] terminal client: add newline char at end of error messages
 - [ ] terminal client: resolve todos (by fixing or adding here)
 - [ ] terminal client: update help text
 
