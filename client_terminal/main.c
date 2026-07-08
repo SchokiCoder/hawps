@@ -567,7 +567,6 @@ get_normal_dot_color(const struct World world,
 	b.b = MAT_B[world.dot[x][y]];
 	b.a = 255;
 
-	// TODO make blending a lib_extra function (blend the entire color struct)
 	ret.r = ((a.r * a.a) + b.r * (255 - a.a)) >> 8;
 	ret.g = ((a.g * a.a) + b.g * (255 - a.a)) >> 8;
 	ret.b = ((a.b * a.a) + b.b * (255 - a.a)) >> 8;
@@ -2108,7 +2107,7 @@ main(int    argc,
 			     display_size,
 			     feedback,
 			     input_mode,
-			     "localhost", // TODO implement actual backend
+			     "localhost",
 			     paused,
 			     sel_tool,
 			     sim_subsample,
@@ -2122,7 +2121,7 @@ main(int    argc,
 			     win_w,
 			     win_h,
 			     world,
-			     "worldname"); // TODO implement actual backend
+			     "worldname");
 		}
 	}
 

@@ -26,10 +26,6 @@ But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
 
-# Web Update
-
-- [ ] look at ca22d7451c87b6d090e35328ae6994459117e86c, the commit before networking got removed
-
 # Beauty Update
 
 - [ ] fix temperature glow (see black body radiation)
@@ -50,6 +46,38 @@ Thus redo all the conductivity values to remove the artifical flattening?
 
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented
+
+# Web Update
+
+- [ ] libcore: add saving world to file functionality
+Serialization stuff. Mind endianness.
+
+- [ ] libcore: add loading world from file functionality
+
+- [ ] terminal client: add cmd for saving world to file
+- [ ] terminal client: add flag for loading world from file
+Remember to update the world name display to reflect this.
+
+- [ ] terminal client: add auto-saving world to file and flag to disable it
+Saves to "default" and by default loads it at startup?
+
+- [ ] terminal client: add cmd for loading world from file
+
+- [ ] terminal client: add networking
+How? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
+the commit before networking got removed.
+This should be able to piggyback off the saving/loading serialization.
+Remember to update the ip address display to reflect this.
+
+- [ ] terminal client: add flag to enable hosting a server
+- [ ] terminal client: add flag to enable hosting a dedicated server
+- [ ] terminal client: add flag for connecting to an ip address
+- [ ] terminal client: add cmd for connecting to an ip address
+
+- [ ] terminal client: update help text
+- [ ] update README
+
+- [ ] set version to 0.8
 
 # "Waiting for an update"-Anniversary Update
 
@@ -450,7 +478,10 @@ This is to avoid incoming name collisions.
 - [x] terminal client: add commands for tool radii
 - [x] terminal client: add float parsing for various flags
 - [x] terminal client: add newline char at end of error messages
-- [ ] terminal client: resolve todos (by fixing or adding here)
+
+- [ ] make blending a libextra function (see main.c:`get_normal_dot_color`)
+(blend the entire color struct at once)
+
 - [ ] terminal client: update help text
 
 - [ ] terminal client: add a Tool overview to help text
