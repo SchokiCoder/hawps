@@ -218,6 +218,18 @@ handle_command_input(const char      *in,
                      int             *tickrate,
                      struct World    *world);
 
+bool
+handle_flag_float_arg(int    argc,
+                      char **argv,
+                      int   *idx,
+                      float *out);
+
+bool
+handle_flag_int_arg(int    argc,
+                    char **argv,
+                    int   *idx,
+                    int   *out);
+
 void
 handle_input(bool            *active,
              char            *cmdline,
@@ -296,12 +308,6 @@ handle_simple_command(const char    *cmdline,
                       int           *thermo_radius,
                       int           *tickrate,
                       struct World  *world);
-
-bool
-int_flag_parse(int    argc,
-               char **argv,
-               int   *idx,
-               long  *out);
 
 void
 tool_radius_add(const int        radius_change,
@@ -803,8 +809,9 @@ handle_args(int     argc,
             int    *thermo_radius,
             int    *tickrate)
 {
-	int i;
-	long l;
+	float flagargf;
+	int   flagargi;
+	int   i;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
@@ -817,10 +824,10 @@ handle_args(int     argc,
 			return false;
 		} else if (strcmp(argv[i], FLAG_BRUSHRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_BRUSHRADIUS_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*brush_radius = l;
+			*brush_radius = flagargi;
 			if (*brush_radius < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
@@ -830,10 +837,10 @@ handle_args(int     argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_ERASERRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_ERASERRADIUS_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*eraser_radius = l;
+			*eraser_radius = flagargi;
 			if (*eraser_radius < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
@@ -855,10 +862,10 @@ handle_args(int     argc,
 			return false;
 		} else if (strcmp(argv[i], FLAG_SIMSUBSAMPLE) == 0 ||
 		           strcmp(argv[i], FLAG_SIMSUBSAMPLE_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*sim_subsample = l;
+			*sim_subsample = flagargi;
 			if (*sim_subsample <= 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must be positive",
@@ -868,10 +875,10 @@ handle_args(int     argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
 		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
 				return false;
 			}
-			*spawntemperature = l;
+			*spawntemperature = flagargf;
 			if (*spawntemperature < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
@@ -881,10 +888,10 @@ handle_args(int     argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_THERMODELTA) == 0 ||
 		           strcmp(argv[i], FLAG_THERMODELTA_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
 				return false;
 			}
-			*thermo_delta = l;
+			*thermo_delta = flagargf;
 			if (*thermo_delta < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
@@ -894,10 +901,10 @@ handle_args(int     argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_THERMORADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_THERMORADIUS_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*thermo_radius = l;
+			*thermo_radius = flagargi;
 			if (*thermo_radius < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative",
@@ -907,10 +914,10 @@ handle_args(int     argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_TICKRATE) == 0 ||
 		           strcmp(argv[i], FLAG_TICKRATE_SHORT) == 0) {
-			if (!int_flag_parse(argc, argv, &i, &l)) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*tickrate = l;
+			*tickrate = flagargi;
 			if (*tickrate <= 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must be positive",
@@ -1078,6 +1085,58 @@ handle_command_input(const char      *in,
 			*cmdline_len += 1;
 		}
 	}
+}
+
+bool
+handle_flag_float_arg(int    argc,
+                      char **argv,
+                      int   *idx,
+                      float *out)
+{
+	if (argc <= *idx + 1) {
+		fprintf(stderr,
+		        "The argument \"%s\" needs to be followed by a value",
+		        argv[*idx]);
+		return false;
+	}
+	*idx += 1;
+
+	errno = 0;
+	*out = strtof(argv[*idx], NULL);
+	if (errno != 0) {
+		fprintf(stderr,
+		        "\"%s\" could not be converted to a float",
+		        argv[*idx - 1]);
+		return false;
+	}
+
+	return true;
+}
+
+bool
+handle_flag_int_arg(int    argc,
+                    char **argv,
+                    int   *idx,
+                    int   *out)
+{
+	if (argc <= *idx + 1) {
+		fprintf(stderr,
+		        "The argument \"%s\" needs to be followed by a value",
+		        argv[*idx]);
+		return false;
+	}
+	*idx += 1;
+
+	errno = 0;
+	*out = strtol(argv[*idx], NULL, 10);
+	if (errno != 0) {
+		fprintf(stderr,
+		        "\"%s\" could not be converted to an int",
+		        argv[*idx - 1]);
+		return false;
+	}
+
+	return true;
 }
 
 void
@@ -1664,32 +1723,6 @@ handle_simple_command(const char    *cmdline,
 		set_feedback(feedback, feedback_expiration, now,
 		             "Command not recognized.");
 	}
-}
-
-bool
-int_flag_parse(int    argc,
-               char **argv,
-               int   *idx,
-               long  *out)
-{
-	if (argc <= *idx + 1) {
-		fprintf(stderr,
-		        "The argument \"%s\" needs to be followed by a value",
-		        argv[*idx]);
-		return false;
-	}
-	*idx += 1;
-
-	errno = 0;
-	*out = strtol(argv[*idx], NULL, 10);
-	if (errno != 0) {
-		fprintf(stderr,
-		        "\"%s\" could not be converted to an int",
-		        argv[*idx - 1]);
-		return false;
-	}
-
-	return true;
 }
 
 void
