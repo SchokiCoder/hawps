@@ -78,7 +78,7 @@ static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is availabl
 "If you did not receive a copy of the license, see below:\n"
 "%s\n";
 
-static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
+static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "Silly program to simulate physics in *very* convincing ways.\n"
 "It'll be great. Trust me.\n"
@@ -88,17 +88,45 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "    " FLAG_ABOUT_SHORT " " FLAG_ABOUT "\n"
 "        prints program name, version, license and repository information then exits\n"
 "\n"
+"    " FLAG_BRUSHRADIUS_SHORT " " FLAG_BRUSHRADIUS "\n"
+"        sets the radius of the brush\n"
+"        default: %i\n"
+"\n"
+"    " FLAG_ERASERRADIUS_SHORT " " FLAG_ERASERRADIUS "\n"
+"        sets the radius of the eraser\n"
+"        default: %i\n"
+"\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
+"\n"
+"    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
+"        disables all world dot coloring\n"
+"\n"
+"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
+"        disables dot glow coloring\n"
+"\n"
+"    " FLAG_SIMSUBSAMPLE_SHORT " " FLAG_SIMSUBSAMPLE "\n"
+"        sets the simulation subsample, which affects the simulation speed\n"
+"        visible simulation speed roughly == tickrate / sim-subsample \n"
+"        default: %i\n"
 "\n"
 "    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE "\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
 "        default: %.2f\n"
 "\n"
+"    " FLAG_THERMODELTA_SHORT " " FLAG_THERMODELTA "\n"
+"        sets the delta of thermo tools, with which heating/cooling occurs\n"
+"        the delta is applied once per tick\n"
+"        default: %.2f\n"
+"\n"
+"    " FLAG_THERMORADIUS_SHORT " " FLAG_THERMORADIUS "\n"
+"        sets the radius of thermo tools\n"
+"        default: %i\n"
+"\n"
 "    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " NUMBER\n"
 "        sets the tickrate (ticks per second),\n"
-"        which also effects simulation speed\n"
+"        which also affects simulation speed\n"
 "        only use when otherwise performance problems occur\n"
 "        default: %i\n"
 "\n"
@@ -817,9 +845,13 @@ handle_args(int                  argc,
 		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
 		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
 			printf(APP_HELP,
-			       APP_NAME,
+			       STD_BRUSH_RADIUS,
+			       STD_ERASER_RADIUS,
+			       STD_SIM_SUBSAMPLE,
 			       CELSIUS_TO_KELVIN,
 			       STD_SPAWN_TEMPERATURE,
+			       STD_THERMO_DELTA,
+			       STD_THERMO_RADIUS,
 			       STD_TICKRATE,
 			       CONFIGURED_AT,
 			       (float) STD_TICKRATE / (float) STD_SIM_SUBSAMPLE,

@@ -489,7 +489,12 @@ This is to avoid incoming name collisions.
 
 - [x] remove obsolete go workspace files
 
-- [ ] terminal client: update help text
+- [x] terminal client: add new flags to help text
+
+- [ ] terminal client: add cmd to toggle glowcolor
+
+- [ ] terminal client: add commands to help text
+- [ ] terminal client: update keybinds in help text
 
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
