@@ -1,9 +1,0 @@
-go 1.25.0
-
-use (
-	./client_ebiten
-	./client_ebiten/ui
-	./core
-	./core/mat
-	./extra
-)

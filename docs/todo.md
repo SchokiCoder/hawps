@@ -486,15 +486,13 @@ This is to avoid incoming name collisions.
 
 - [x] terminal client: add struct for tool options
 - [x] terminal client: microoptimize an if
+
+- [x] remove obsolete go workspace files
+
 - [ ] terminal client: update help text
 
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
-
-- [ ] remove obsolete go workspace files
-
-- [ ] performance: function pointer vs if; test
-Color options could benefit from this.
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
@@ -503,14 +501,19 @@ Color options could benefit from this.
 (removing last sprintf calls, and don't forget reaplacing scanf with strtol)
 - [ ] performance review of both clients
 
-- [ ] add core test against gravity
-- [ ] add core test against grain stack collapse
-- [ ] add core test against liquid stack collapse
-- [ ] add core test against gas stack collapse
-- [ ] add core test against thermal conduction
-- [ ] add core test against chemical reactions
-- [ ] add core test against loss of mass upon heat up
-- [ ] add core test against spawners
+- [ ] add proper profiling procedure to Makefile with `gcc -pg`
+- [ ] performance: function pointer vs if; test
+Color options could benefit from this.
+
+- [ ] libcore: add test against gravity
+- [ ] libcore: add test against grain stack collapse
+- [ ] libcore: add test against liquid stack collapse
+- [ ] libcore: add test against gas stack collapse
+- [ ] libcore: add test against thermal conduction
+- [ ] libcore: add test against chemical reactions
+- [ ] libcore: add test against loss of mass upon heat up
+- [ ] libcore: add test against spawners
+- [ ] libcore: add test against mat table property array length miscount
 
 - [ ] update README
 - [ ] update copyright?
