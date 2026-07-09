@@ -125,9 +125,10 @@
 /* size values
  * Consider only touching them when you have special hardware or problems.
  */
-#define CMDLINE_SIZE 64
-#define BUF_SIZE     64
-#define INPUT_SIZE   16
+#define BUF_SIZE              64
+#define CMDLINE_SIZE          64
+#define DISPLAY_SIZE_MODIFIER 1.25
+#define INPUT_SIZE            16
 
 /* @User, DO NOT TOUCH!
  * This constant is not meant to stick around,

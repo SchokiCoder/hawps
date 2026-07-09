@@ -482,7 +482,7 @@ This is to avoid incoming name collisions.
 - [x] move color blending from terminal client to libextra
 
 - [x] terminal client: add flag to disable glowcolor
-- [ ] terminal client: add flag to disable all csi coloring
+- [x] terminal client: add flag to disable all csi coloring
 
 - [ ] terminal client: update help text
 

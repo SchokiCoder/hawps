@@ -29,6 +29,8 @@
 #define FLAG_ERASERRADIUS_SHORT     "-er"
 #define FLAG_HELP                   "-help"
 #define FLAG_HELP_SHORT             "-h"
+#define FLAG_NOCOLOR                "-nocolor"
+#define FLAG_NOCOLOR_SHORT          "-noc"
 #define FLAG_NOGLOWCOLOR            "-noglowcolor"
 #define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #define FLAG_SIMSUBSAMPLE           "-simsubsample"
@@ -120,9 +122,11 @@ draw(const enum Mat        brush_mat,
      const int             cursor_y,
      char                 *display,
      const size_t          display_size,
+     const size_t          dot_depth,
      const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
+     const bool            no_color,
      const bool            no_glowcolor,
      const bool            paused,
      const enum Tool       sel_tool,
@@ -176,6 +180,7 @@ handle_args(int     argc,
             char  **argv,
             int    *brush_radius,
             int    *eraser_radius,
+            bool   *no_color,
             bool   *no_glowcolor,
             int    *sim_subsample,
             float  *spawntemperature,
@@ -326,8 +331,21 @@ tool_radius_add(const int        radius_change,
                 int             *thermo_radius);
 
 size_t
+render_dot(char               *out,
+           const size_t        out_size,
+           struct Rgba       (*get_dot_color)(const struct World,
+	                                      const int    x,
+	                                      const int    y),
+           const bool          no_color,
+           const struct World  world,
+           const int           x,
+           const int           y);
+
+size_t
 render_world(char               *out,
              const size_t        out_size,
+             const size_t        dot_depth,
+             const bool          no_color,
              const bool          no_glowcolor,
              const bool          th_vision,
              const int           tool_x1,
@@ -365,9 +383,11 @@ draw(const enum Mat        brush_mat,
      const int             cursor_y,
      char                 *display,
      const size_t          display_size,
+     const size_t          dot_depth,
      const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
+     const bool            no_color,
      const bool            no_glowcolor,
      const bool            paused,
      const enum Tool       sel_tool,
@@ -418,6 +438,8 @@ draw(const enum Mat        brush_mat,
 
 	display_len += render_world(&display[display_len],
 	                            display_size - display_len,
+	                            dot_depth,
+	                            no_color,
 	                            no_glowcolor,
 	                            th_vision,
 	                            tool_x1,
@@ -824,6 +846,7 @@ handle_args(int     argc,
             char  **argv,
             int    *brush_radius,
             int    *eraser_radius,
+            bool   *no_color,
             bool   *no_glowcolor,
             int    *sim_subsample,
             float  *spawntemperature,
@@ -882,6 +905,9 @@ handle_args(int     argc,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
+		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
+		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
+			*no_color = true;
 		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
 			*no_glowcolor = true;
@@ -1790,8 +1816,82 @@ tool_radius_add(const int        radius_change,
 }
 
 size_t
+render_dot(char               *out,
+           const size_t        out_size,
+           struct Rgba       (*get_dot_color)(const struct World,
+	                                      const int    x,
+	                                      const int    y),
+           const bool          no_color,
+           const struct World  world,
+           const int           x,
+           const int           y)
+{
+	struct Rgba dot_color;
+	size_t      written = 0;
+
+	if (world.spawner[x][y] == true) {
+		if (!no_color) {
+			written += CSI_color_to_string(SPAWNER_R,
+				                       SPAWNER_G,
+				                       SPAWNER_B,
+				                       true,
+				                       &out[written],
+				                       out_size - written);
+		}
+		out[written] = 'O';
+		written += 1;
+	} else if (world.dot[x][y] == MAT_NONE) {
+		if (!no_color) {
+			written += CSI_color_to_string(255, 255, 255,
+				                       true,
+				                       &out[written],
+				                       out_size - written);
+		}
+		out[written] = ' ';
+		written += 1;
+	} else {
+		if (!no_color) {
+			dot_color = get_dot_color(world, x, y);
+			written += CSI_color_to_string(dot_color.r,
+					               dot_color.g,
+					               dot_color.b,
+					               true,
+					               &out[written],
+					               out_size - written);
+		}
+		switch (world.state[x][y]) {
+		case MS_STATIC:
+		case MS_GRAIN:
+			out[written] = 'X';
+			written += 1;
+			break;
+
+		case MS_LIQUID:
+			out[written] = '+';
+			written += 1;
+			break;
+
+		case MS_GAS:
+			out[written] = '-';
+			written += 1;
+			break;
+
+		default:
+			out[written] = '?';
+			written += 1;
+			break;
+		}
+	}
+
+	out[written] = '\0';
+	return written;
+}
+
+size_t
 render_world(char               *out,
              const size_t        out_size,
+             const size_t        dot_depth,
+             const bool          no_color,
              const bool          no_glowcolor,
              const bool          th_vision,
              const int           tool_x1,
@@ -1802,11 +1902,10 @@ render_world(char               *out,
              const int           world_draw_w,
              const int           world_draw_h)
 {
-	struct Rgba dot_color;
 	struct Rgba (*get_dot_color)(const struct World,
 	                             const int    x,
 	                             const int    y);
-	size_t out_len = 0;
+	size_t written = 0;
 	int    x, y;
 
 	if (th_vision) {
@@ -1821,70 +1920,23 @@ render_world(char               *out,
 
 	for (y = 0; y < world_draw_h; y++) {
 		for (x = 0; x < world_draw_w; x++) {
-			if (world.spawner[x][y] == true) {
-				out_len += CSI_color_to_string(SPAWNER_R,
-				                               SPAWNER_G,
-				                               SPAWNER_B,
-				                               true,
-				                               &out[out_len],
-				                               out_size - out_len);
-				out[out_len] = 'O';
-				out_len += 1;
-				continue;
-			}
-
-			if (world.dot[x][y] == MAT_NONE) {
-				out_len += CSI_color_to_string(255, 255, 255,
-				                               true,
-				                               &out[out_len],
-				                               out_size - out_len);
-				out[out_len] = ' ';
-				out_len += 1;
-				continue;
-			}
-
-			dot_color = get_dot_color(world, x, y);
-			out_len += CSI_color_to_string(dot_color.r,
-			                               dot_color.g,
-			                               dot_color.b,
-			                               true,
-			                               &out[out_len],
-			                               out_size - out_len);
-			switch (world.state[x][y]) {
-			case MS_STATIC:
-			case MS_GRAIN:
-				out[out_len] = 'X';
-				out_len += 1;
-				break;
-
-			case MS_LIQUID:
-				out[out_len] = '+';
-				out_len += 1;
-				break;
-
-			case MS_GAS:
-				out[out_len] = '-';
-				out_len += 1;
-				break;
-
-			default:
-				out[out_len] = '?';
-				out_len += 1;
-				break;
-			}
+			written += render_dot(&out[written],
+			                      out_size - written,
+			                      get_dot_color,
+			                      no_color,
+			                      world,
+			                      x,
+			                      y);
 		}
 	}
 
 	for (x = tool_x1; x < tool_x2; x++) {
 		for (y = tool_y1; y < tool_y2; y++) {
-			out[((y * world.w) + x + 1) *
-			    (CSI_COLORSTRING_LEN + 1) -
-			    1] = '^';
+			out[((y * world.w) + x + 1) * dot_depth - 1] = '^';
 		}
 	}
-	out[out_len] = '\0';
 
-	return out_len;
+	return written;
 }
 
 void
@@ -1966,6 +2018,7 @@ main(int    argc,
 	int            cursor_y = 0;
 	char          *display = NULL;
 	size_t         display_size = 0;
+	size_t         dot_depth = 0;
 	int            eraser_radius = STD_ERASER_RADIUS;
 	char          *feedback = NULL;
 	clock_t        feedback_expiration = 0;
@@ -1973,6 +2026,7 @@ main(int    argc,
 	bool           paused = false;
 	clock_t        last_tick = 0;
 	bool           mouse_pressed = false;
+	bool           no_color = false;
 	bool           no_glowcolor = false;
 	clock_t        now;
 	enum Tool      sel_tool = STD_SELECTED_TOOL;
@@ -1997,6 +2051,7 @@ main(int    argc,
 	if (!handle_args(argc, argv,
 	                 &brush_radius,
 	                 &eraser_radius,
+	                 &no_color,
 	                 &no_glowcolor,
 	                 &sim_subsample,
 	                 &spawntemperature,
@@ -2017,8 +2072,14 @@ main(int    argc,
 	win_h = tempws.ws_row;
 
 	cmdline[0] = '\0';
+	if (no_color) {
+		dot_depth = 1;
+	} else {
+		dot_depth = CSI_COLORSTRING_LEN + 1;
+	}
 
-	display_size = win_w * win_h * (CSI_COLORSTRING_LEN + 1);
+	display_size = (size_t) (win_w * win_h * DISPLAY_SIZE_MODIFIER) *
+	               dot_depth;
 	display = malloc(display_size);
 
 	world = world_new(win_w, win_h - 2, spawntemperature);
@@ -2125,9 +2186,10 @@ main(int    argc,
 				win_h = tempws.ws_row;
 
 				free(display);
-				display_size = win_w *
-				               win_h *
-				               (CSI_COLORSTRING_LEN + 1);
+				display_size = (size_t) (win_w *
+				                         win_h *
+				                         DISPLAY_SIZE_MODIFIER) *
+				               dot_depth;
 				display = malloc(display_size);
 			}
 
@@ -2138,9 +2200,11 @@ main(int    argc,
 			     cursor_y,
 			     display,
 			     display_size,
+			     dot_depth,
 			     feedback,
 			     input_mode,
 			     "localhost",
+			     no_color,
 			     no_glowcolor,
 			     paused,
 			     sel_tool,
