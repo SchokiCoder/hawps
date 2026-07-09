@@ -484,6 +484,8 @@ This is to avoid incoming name collisions.
 - [x] terminal client: add flag to disable glowcolor
 - [x] terminal client: add flag to disable all csi coloring
 
+- [x] terminal client: add struct for tool options
+- [ ] `if (input_len > 0 && input_len < 2)` -> `if (input_len == 1)` smh
 - [ ] terminal client: update help text
 
 - [ ] terminal client: add a Tool overview to help text

@@ -54,6 +54,23 @@ enum InputMode {
 	IM_COMMAND,
 };
 
+struct ToolOptions {
+	enum Mat  brush_mat;
+	int       brush_radius;
+	int       eraser_radius;
+	enum Tool sel_tool;
+	float     spawn_temperature;
+	enum Mat  spawner_mat;
+	float     thermo_delta;
+	int       thermo_radius;
+	int       x;
+	int       y;
+	int       x1;
+	int       y1;
+	int       x2;
+	int       y2;
+};
+
 static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
 "licensed under the %s at:\n"
 "%s\n"
@@ -115,11 +132,8 @@ static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "\n";
 
 void
-draw(const enum Mat        brush_mat,
-     const char           *cmdline,
+draw(const char           *cmdline,
      const size_t          cmdline_len,
-     const int             cursor_x,
-     const int             cursor_y,
      char                 *display,
      const size_t          display_size,
      const size_t          dot_depth,
@@ -129,15 +143,10 @@ draw(const enum Mat        brush_mat,
      const bool            no_color,
      const bool            no_glowcolor,
      const bool            paused,
-     const enum Tool       sel_tool,
      const int             sim_subsample,
-     const enum Mat        spawner_mat,
      const int             tickrate,
      const bool            th_vision,
-     const int             tool_x1,
-     const int             tool_y1,
-     const int             tool_x2,
-     const int             tool_y2,
+     struct ToolOptions    tool_opts,
      const int             win_w,
      const int             win_h,
      const struct World    world,
@@ -159,78 +168,53 @@ get_thermal_dot_color(const struct World world,
                       const int          y);
 
 void
-handle_advanced_command(const char     *cmd,
-                        const char     *arg,
-                        enum Mat       *brush_mat,
-                        int            *brush_radius,
-                        int            *eraser_radius,
-                        char          **feedback,
-                        clock_t        *feedback_expiration,
-                        const clock_t   now,
-                        enum Tool      *sel_tool,
-                        enum Mat       *spawner_mat,
-                        float          *spawntemperature,
-                        float          *thermo_delta,
-                        int            *thermo_radius,
-                        int            *tickrate,
-                        struct World   *world);
+handle_advanced_command(const char          *cmd,
+                        const char          *arg,
+                        char               **feedback,
+                        clock_t             *feedback_expiration,
+                        const clock_t        now,
+                        int                 *tickrate,
+                        struct ToolOptions  *tool_opts,
+                        struct World        *world);
 
 bool
-handle_args(int     argc,
-            char  **argv,
-            int    *brush_radius,
-            int    *eraser_radius,
-            bool   *no_color,
-            bool   *no_glowcolor,
-            int    *sim_subsample,
-            float  *spawntemperature,
-            float  *thermo_delta,
-            int    *thermo_radius,
-            int    *tickrate);
+handle_args(int                  argc,
+            char               **argv,
+            bool                *no_color,
+            bool                *no_glowcolor,
+            int                 *sim_subsample,
+            int                 *tickrate,
+            struct ToolOptions  *tool_opts);
 
 void
-handle_command(char          *cmdline,
-               const size_t   cmdline_len,
-               bool          *active,
-               enum Mat      *brush_mat,
-               int           *brush_radius,
-               int           *eraser_radius,
-               char         **feedback,
-               clock_t       *feedback_expiration,
-               const clock_t  now,
-               bool          *paused,
-               enum Tool     *sel_tool,
-               int           *sim_subsample,
-               enum Mat      *spawner_mat,
-               float         *spawntemperature,
-               bool          *th_vision,
-               float         *thermo_delta,
-               int           *thermo_radius,
-               int           *tickrate,
-               struct World  *world);
+handle_command(char                *cmdline,
+               const size_t         cmdline_len,
+               bool                *active,
+               char               **feedback,
+               clock_t             *feedback_expiration,
+               const clock_t        now,
+               bool                *paused,
+               int                 *sim_subsample,
+               bool                *th_vision,
+               int                 *tickrate,
+               struct ToolOptions  *tool_opts,
+               struct World        *world);
 
 void
-handle_command_input(const char      *in,
-                     bool            *active,
-                     enum Mat        *brush_mat,
-                     int             *brush_radius,
-                     char            *cmdline,
-                     size_t          *cmdline_len,
-                     int             *eraser_radius,
-                     char           **feedback,
-                     clock_t         *feedback_expiration,
-                     enum InputMode  *input_mode,
-                     clock_t          now,
-                     bool            *paused,
-                     enum Tool       *sel_tool,
-                     int             *sim_subsample,
-                     enum Mat        *spawner_mat,
-                     float           *spawntemperature,
-                     bool            *th_vision,
-                     float           *thermo_delta,
-                     int             *thermo_radius,
-                     int             *tickrate,
-                     struct World    *world);
+handle_command_input(const char          *in,
+                     bool                *active,
+                     char                *cmdline,
+                     size_t              *cmdline_len,
+                     char               **feedback,
+                     clock_t             *feedback_expiration,
+                     enum InputMode      *input_mode,
+                     clock_t              now,
+                     bool                *paused,
+                     int                 *sim_subsample,
+                     bool                *th_vision,
+                     int                 *tickrate,
+                     struct ToolOptions  *tool_opts,
+                     struct World        *world);
 
 bool
 handle_flag_float_arg(int    argc,
@@ -245,90 +229,58 @@ handle_flag_int_arg(int    argc,
                     int   *out);
 
 void
-handle_input(bool            *active,
-             char            *cmdline,
-             size_t          *cmdline_len,
-             enum Mat        *brush_mat,
-             int             *brush_radius,
-             int             *cursor_x,
-             int             *cursor_y,
-             int             *eraser_radius,
-             char           **feedback,
-             clock_t         *feedback_expiration,
-             enum InputMode  *input_mode,
-             bool            *mouse_pressed,
-             clock_t          now,
-             bool            *paused,
-             enum Tool       *sel_tool,
-             int             *sim_subsample,
-             enum Mat        *spawner_mat,
-             float           *spawntemperature,
-             int             *tickrate,
-             bool            *th_vision,
-             float           *thermo_delta,
-             int             *thermo_radius,
-             struct World    *world);
+handle_input(bool                *active,
+             char                *cmdline,
+             size_t              *cmdline_len,
+             char               **feedback,
+             clock_t             *feedback_expiration,
+             enum InputMode      *input_mode,
+             bool                *mouse_pressed,
+             clock_t              now,
+             bool                *paused,
+             int                 *sim_subsample,
+             int                 *tickrate,
+             bool                *th_vision,
+             struct ToolOptions  *tool_opts,
+             struct World        *world);
 
 void
-handle_normal_csi_input(const char     *in,
-                        const enum Mat  brush_mat,
-                        int            *brush_radius,
-                        int            *cursor_x,
-                        int            *cursor_y,
-                        int            *eraser_radius,
-                        bool           *mouse_pressed,
-                        const enum Tool sel_tool,
-                        const enum Mat  spawner_mat,
-                        const float     spawntemperature,
-                        const float     thermo_delta,
-                        int            *thermo_radius,
-                        struct World   *world);
+handle_normal_csi_input(const char         *in,
+                        bool               *mouse_pressed,
+                        struct ToolOptions *tool_opts,
+                        struct World       *world);
 
 void
-handle_normal_input(const char     *in,
-                    bool           *active,
-                    enum Mat       *brush_mat,
-                    int            *brush_radius,
-                    int            *cursor_x,
-                    int            *cursor_y,
-                    int            *eraser_radius,
-                    enum InputMode *input_mode,
-                    bool           *mouse_pressed,
-                    bool           *paused,
-                    enum Tool      *sel_tool,
-                    int            *sim_subsample,
-                    enum Mat       *spawner_mat,
-                    const float     spawntemperature,
-                    const int       tickrate,
-                    bool           *th_vision,
-                    const float    *thermo_delta,
-                    int            *thermo_radius,
-                    struct World   *world);
+handle_normal_input(const char         *in,
+                    bool               *active,
+                    enum InputMode     *input_mode,
+                    bool               *mouse_pressed,
+                    bool               *paused,
+                    int                *sim_subsample,
+                    const int           tickrate,
+                    bool               *th_vision,
+                    struct ToolOptions *tool_opts,
+                    struct World       *world);
 
 void
-handle_simple_command(const char    *cmdline,
-                      bool          *active,
-                      int           *brush_radius,
-                      int           *eraser_radius,
-                      char         **feedback,
-                      clock_t       *feedback_expiration,
-                      clock_t        now,
-                      bool          *paused,
-                      enum Tool     *sel_tool,
-                      int           *sim_subsample,
-                      float         *spawntemperature,
-                      bool          *th_vision,
-                      float         *thermo_delta,
-                      int           *thermo_radius,
-                      int           *tickrate,
-                      struct World  *world);
+handle_simple_command(const char          *cmdline,
+                      bool                *active,
+                      char               **feedback,
+                      clock_t             *feedback_expiration,
+                      clock_t              now,
+                      bool                *paused,
+                      int                 *sim_subsample,
+                      bool                *th_vision,
+                      int                 *tickrate,
+                      struct ToolOptions  *tool_opts,
+                      struct World        *world);
+
+struct ToolOptions
+new_tool_options();
 
 void
-tool_radius_add(const int        radius_change,
-                int             *brush_radius,
-                int             *eraser_radius,
-                const enum Tool  sel_tool,
-                int             *thermo_radius);
+tool_radius_add(const int           radius_change,
+                struct ToolOptions *tool_opts);
 
 size_t
 render_dot(char               *out,
@@ -348,10 +300,7 @@ render_world(char               *out,
              const bool          no_color,
              const bool          no_glowcolor,
              const bool          th_vision,
-             const int           tool_x1,
-             const int           tool_y1,
-             const int           tool_x2,
-             const int           tool_y2,
+             struct ToolOptions  tool_opts,
              const struct World  world,
              const int           world_draw_w,
              const int           world_draw_h);
@@ -363,24 +312,12 @@ set_feedback(char          **feedback,
              char           *str);
 
 void
-use_tool(const enum Mat   brush_mat,
-         const int        brush_radius,
-         const int        cursor_x,
-         const int        cursor_y,
-         const int        eraser_radius,
-         const enum Tool  sel_tool,
-         const enum Mat   spawner_mat,
-         const float      spawntemperature,
-         const float      thermo_delta,
-         const int        thermo_radius,
-         struct World    *world);
+use_tool(struct ToolOptions  tool_opts,
+         struct World       *world);
 
 void
-draw(const enum Mat        brush_mat,
-     const char           *cmdline,
+draw(const char           *cmdline,
      const size_t          cmdline_len,
-     const int             cursor_x,
-     const int             cursor_y,
      char                 *display,
      const size_t          display_size,
      const size_t          dot_depth,
@@ -390,15 +327,10 @@ draw(const enum Mat        brush_mat,
      const bool            no_color,
      const bool            no_glowcolor,
      const bool            paused,
-     const enum Tool       sel_tool,
      const int             sim_subsample,
-     const enum Mat        spawner_mat,
      const int             tickrate,
      const bool            th_vision,
-     const int             tool_x1,
-     const int             tool_y1,
-     const int             tool_x2,
-     const int             tool_y2,
+     struct ToolOptions    tool_opts,
      const int             win_w,
      const int             win_h,
      const struct World    world,
@@ -442,10 +374,7 @@ draw(const enum Mat        brush_mat,
 	                            no_color,
 	                            no_glowcolor,
 	                            th_vision,
-	                            tool_x1,
-	                            tool_y1,
-	                            tool_x2,
-	                            tool_y2,
+	                            tool_opts,
 	                            world,
 	                            world_draw_w,
 	                            world_draw_h);
@@ -480,14 +409,14 @@ draw(const enum Mat        brush_mat,
 	                          display_size,
 	                          display_len,
 	                          " (");
-	snprintf(buf, BUF_SIZE, "%i", cursor_x);
+	snprintf(buf, BUF_SIZE, "%i", tool_opts.x);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
 	                          buf);
 	display[display_len] = ',';
 	display_len += 1;
-	snprintf(buf, BUF_SIZE, "%i", cursor_y);
+	snprintf(buf, BUF_SIZE, "%i", tool_opts.y);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
@@ -537,20 +466,23 @@ draw(const enum Mat        brush_mat,
 			break;
 		}
 
-		buf_len += string_cat(buf, BUF_SIZE, buf_len, TOOL_NAME[sel_tool]);
+		buf_len += string_cat(buf,
+		                      BUF_SIZE,
+		                      buf_len,
+		                      TOOL_NAME[tool_opts.sel_tool]);
 
-		if (sel_tool == TOOL_BRUSH) {
+		if (tool_opts.sel_tool == TOOL_BRUSH) {
 			buf_len += string_cat(buf, BUF_SIZE, buf_len, " ");
 			buf_len += string_cat(buf,
 			                      BUF_SIZE,
 			                      buf_len,
-			                      MAT_NAME[brush_mat]);
-		} else if (sel_tool == TOOL_SPAWNER) {
+			                      MAT_NAME[tool_opts.brush_mat]);
+		} else if (tool_opts.sel_tool == TOOL_SPAWNER) {
 			buf_len += string_cat(buf, BUF_SIZE, buf_len, " ");
 			buf_len += string_cat(buf,
 			                      BUF_SIZE,
 			                      buf_len,
-			                      MAT_NAME[spawner_mat]);
+			                      MAT_NAME[tool_opts.spawner_mat]);
 		}
 
 		display_len += string_cat(display, display_size, display_len, buf);
@@ -644,21 +576,14 @@ get_thermal_dot_color(const struct World world,
 }
 
 void
-handle_advanced_command(const char     *cmd,
-                        const char     *arg,
-                        enum Mat       *brush_mat,
-                        int            *brush_radius,
-                        int            *eraser_radius,
-                        char          **feedback,
-                        clock_t        *feedback_expiration,
-                        const clock_t   now,
-                        enum Tool      *sel_tool,
-                        enum Mat       *spawner_mat,
-                        float          *spawntemperature,
-                        float          *thermo_delta,
-                        int            *thermo_radius,
-                        int            *tickrate,
-                        struct World   *world)
+handle_advanced_command(const char          *cmd,
+                        const char          *arg,
+                        char               **feedback,
+                        clock_t             *feedback_expiration,
+                        const clock_t        now,
+                        int                 *tickrate,
+                        struct ToolOptions  *tool_opts,
+                        struct World        *world)
 {
 	float f = 0.0;
 	long l;
@@ -666,8 +591,8 @@ handle_advanced_command(const char     *cmd,
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
-		*sel_tool = TOOL_BRUSH;
-		if (mat_from_string(arg, brush_mat)) {
+		tool_opts->sel_tool = TOOL_BRUSH;
+		if (mat_from_string(arg, &tool_opts->brush_mat)) {
 			return;
 		}
 
@@ -683,7 +608,7 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*brush_radius = l;
+			tool_opts->brush_radius = l;
 		}
 	} else if (strcmp(cmd, CMD_ERASERRADIUS) == 0 ||
 	           strcmp(cmd, CMD_ERASERRADIUS_SHORT) == 0) {
@@ -695,13 +620,13 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*eraser_radius = l;
+			tool_opts->eraser_radius = l;
 		}
 	} else if (strcmp(cmd, CMD_MAT) == 0 ||
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			if (mat_from_string(arg, brush_mat)) {
+			if (mat_from_string(arg, &tool_opts->brush_mat)) {
 				return;
 			}
 
@@ -710,7 +635,7 @@ handle_advanced_command(const char     *cmd,
 			break;
 
 		case TOOL_SPAWNER:
-			if (mat_from_string(arg, spawner_mat)) {
+			if (mat_from_string(arg, &tool_opts->spawner_mat)) {
 				return;
 			}
 
@@ -728,8 +653,8 @@ handle_advanced_command(const char     *cmd,
 		}
 	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
 	           strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
-		*sel_tool = TOOL_SPAWNER;
-		if (mat_from_string(arg, spawner_mat)) {
+		tool_opts->sel_tool = TOOL_SPAWNER;
+		if (mat_from_string(arg, &tool_opts->spawner_mat)) {
 			return;
 		}
 
@@ -744,7 +669,7 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*spawntemperature = f + CELSIUS_TO_KELVIN;
+			tool_opts->spawn_temperature = f + CELSIUS_TO_KELVIN;
 		}
 	} else if (strcmp(cmd, CMD_SPAWNTEMPERATUREK) == 0 ||
 	           strcmp(cmd, CMD_SPAWNTEMPERATUREK_SHORT) == 0) {
@@ -755,7 +680,7 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*spawntemperature = f;
+			tool_opts->spawn_temperature = f;
 		}
 	} else if (strcmp(cmd, CMD_TEMPERATURE) == 0 ||
 	           strcmp(cmd, CMD_TEMPERATURE_SHORT) == 0) {
@@ -804,7 +729,7 @@ handle_advanced_command(const char     *cmd,
 			             "That's dumb, but okay.");
 		}
 
-		*thermo_delta = f;
+		tool_opts->thermo_delta = f;
 	} else if (strcmp(cmd, CMD_THERMORADIUS) == 0 ||
 	           strcmp(cmd, CMD_THERMORADIUS_SHORT) == 0) {
 		errno = 0;
@@ -815,7 +740,7 @@ handle_advanced_command(const char     *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			*thermo_radius = l;
+			tool_opts->thermo_radius = l;
 		}
 	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
 	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
@@ -842,17 +767,13 @@ handle_advanced_command(const char     *cmd,
 }
 
 bool
-handle_args(int     argc,
-            char  **argv,
-            int    *brush_radius,
-            int    *eraser_radius,
-            bool   *no_color,
-            bool   *no_glowcolor,
-            int    *sim_subsample,
-            float  *spawntemperature,
-            float  *thermo_delta,
-            int    *thermo_radius,
-            int    *tickrate)
+handle_args(int                  argc,
+            char               **argv,
+            bool                *no_color,
+            bool                *no_glowcolor,
+            int                 *sim_subsample,
+            int                 *tickrate,
+            struct ToolOptions  *tool_opts)
 {
 	float flagargf;
 	int   flagargi;
@@ -872,8 +793,8 @@ handle_args(int     argc,
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*brush_radius = flagargi;
-			if (*brush_radius < 0) {
+			tool_opts->brush_radius = flagargi;
+			if (tool_opts->brush_radius < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
@@ -885,8 +806,8 @@ handle_args(int     argc,
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*eraser_radius = flagargi;
-			if (*eraser_radius < 0) {
+			tool_opts->eraser_radius = flagargi;
+			if (tool_opts->eraser_radius < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
@@ -898,7 +819,7 @@ handle_args(int     argc,
 			printf(APP_HELP,
 			       APP_NAME,
 			       CELSIUS_TO_KELVIN,
-			       STD_SPAWNTEMPERATURE,
+			       STD_SPAWN_TEMPERATURE,
 			       STD_TICKRATE,
 			       CONFIGURED_AT,
 			       (float) STD_TICKRATE / (float) STD_SIM_SUBSAMPLE,
@@ -929,8 +850,8 @@ handle_args(int     argc,
 			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
 				return false;
 			}
-			*spawntemperature = flagargf;
-			if (*spawntemperature < 0) {
+			tool_opts->spawn_temperature = flagargf;
+			if (tool_opts->spawn_temperature < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
@@ -942,8 +863,8 @@ handle_args(int     argc,
 			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
 				return false;
 			}
-			*thermo_delta = flagargf;
-			if (*thermo_delta < 0) {
+			tool_opts->thermo_delta = flagargf;
+			if (tool_opts->thermo_delta < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
@@ -955,8 +876,8 @@ handle_args(int     argc,
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
 				return false;
 			}
-			*thermo_radius = flagargi;
-			if (*thermo_radius < 0) {
+			tool_opts->thermo_radius = flagargi;
+			if (tool_opts->thermo_radius < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
@@ -992,25 +913,18 @@ handle_args(int     argc,
 }
 
 void
-handle_command(char          *cmdline,
-               const size_t   cmdline_len,
-               bool          *active,
-               enum Mat      *brush_mat,
-               int           *brush_radius,
-               int           *eraser_radius,
-               char         **feedback,
-               clock_t       *feedback_expiration,
-               const clock_t  now,
-               bool          *paused,
-               enum Tool     *sel_tool,
-               int           *sim_subsample,
-               enum Mat      *spawner_mat,
-               float         *spawntemperature,
-               bool          *th_vision,
-               float         *thermo_delta,
-               int           *thermo_radius,
-               int           *tickrate,
-               struct World  *world)
+handle_command(char                *cmdline,
+               const size_t         cmdline_len,
+               bool                *active,
+               char               **feedback,
+               clock_t             *feedback_expiration,
+               const clock_t        now,
+               bool                *paused,
+               int                 *sim_subsample,
+               bool                *th_vision,
+               int                 *tickrate,
+               struct ToolOptions  *tool_opts,
+               struct World        *world)
 {
 	char buf1[BUF_SIZE];
 	char buf2[BUF_SIZE];
@@ -1028,18 +942,11 @@ handle_command(char          *cmdline,
 			string_cat(buf2, BUF_SIZE, 0, &cmdline[i + 1]);
 
 			handle_advanced_command(buf1, buf2,
-			                        brush_mat,
-			                        brush_radius,
-			                        eraser_radius,
 			                        feedback,
 			                        feedback_expiration,
 			                        now,
-			                        sel_tool,
-			                        spawner_mat,
-			                        spawntemperature,
-			                        thermo_delta,
-			                        thermo_radius,
 			                        tickrate,
+			                        tool_opts,
 			                        world);
 			return;
 			break;
@@ -1054,44 +961,32 @@ handle_command(char          *cmdline,
 
 	handle_simple_command(cmdline,
 	                      active,
-	                      brush_radius,
-	                      eraser_radius,
 	                      feedback,
 	                      feedback_expiration,
 	                      now,
 	                      paused,
-	                      sel_tool,
 	                      sim_subsample,
-	                      spawntemperature,
 	                      th_vision,
-	                      thermo_delta,
-	                      thermo_radius,
 	                      tickrate,
+	                      tool_opts,
 	                      world);
 }
 
 void
-handle_command_input(const char      *in,
-                     bool            *active,
-                     enum Mat        *brush_mat,
-                     int             *brush_radius,
-                     char            *cmdline,
-                     size_t          *cmdline_len,
-                     int             *eraser_radius,
-                     char           **feedback,
-                     clock_t         *feedback_expiration,
-                     enum InputMode  *input_mode,
-                     clock_t          now,
-                     bool            *paused,
-                     enum Tool       *sel_tool,
-                     int             *sim_subsample,
-                     enum Mat        *spawner_mat,
-                     float           *spawntemperature,
-                     bool            *th_vision,
-                     float           *thermo_delta,
-                     int             *thermo_radius,
-                     int             *tickrate,
-                     struct World    *world)
+handle_command_input(const char          *in,
+                     bool                *active,
+                     char                *cmdline,
+                     size_t              *cmdline_len,
+                     char               **feedback,
+                     clock_t             *feedback_expiration,
+                     enum InputMode      *input_mode,
+                     clock_t              now,
+                     bool                *paused,
+                     int                 *sim_subsample,
+                     bool                *th_vision,
+                     int                 *tickrate,
+                     struct ToolOptions  *tool_opts,
+                     struct World        *world)
 {
 	switch (in[0]) {
 	case CHAR_BACKSPACE:
@@ -1105,21 +1000,14 @@ handle_command_input(const char      *in,
 		handle_command(cmdline,
 		               *cmdline_len,
 		               active,
-		               brush_mat,
-		               brush_radius,
-		               eraser_radius,
 		               feedback,
 		               feedback_expiration,
 		               now,
 		               paused,
-		               sel_tool,
 		               sim_subsample,
-		               spawner_mat,
-		               spawntemperature,
 		               th_vision,
-		               thermo_delta,
-		               thermo_radius,
 		               tickrate,
+		               tool_opts,
 		               world);
 		/* fallthrough */
 	case SIG_INT:
@@ -1191,29 +1079,20 @@ handle_flag_int_arg(int    argc,
 }
 
 void
-handle_input(bool            *active,
-             char            *cmdline,
-             size_t          *cmdline_len,
-             enum Mat        *brush_mat,
-             int             *brush_radius,
-             int             *cursor_x,
-             int             *cursor_y,
-             int             *eraser_radius,
-             char           **feedback,
-             clock_t         *feedback_expiration,
-             enum InputMode  *input_mode,
-             bool            *mouse_pressed,
-             clock_t          now,
-             bool            *paused,
-             enum Tool       *sel_tool,
-             int             *sim_subsample,
-             enum Mat        *spawner_mat,
-             float           *spawntemperature,
-             int             *tickrate,
-             bool            *th_vision,
-             float           *thermo_delta,
-             int             *thermo_radius,
-             struct World    *world)
+handle_input(bool                *active,
+             char                *cmdline,
+             size_t              *cmdline_len,
+             char               **feedback,
+             clock_t             *feedback_expiration,
+             enum InputMode      *input_mode,
+             bool                *mouse_pressed,
+             clock_t              now,
+             bool                *paused,
+             int                 *sim_subsample,
+             int                 *tickrate,
+             bool                *th_vision,
+             struct ToolOptions  *tool_opts,
+             struct World        *world)
 {
 	ssize_t input_len = 0;
 	char    input[INPUT_SIZE];
@@ -1227,22 +1106,13 @@ handle_input(bool            *active,
 			input[input_len] = '\0';
 			handle_normal_input(input,
 			                    active,
-			                    brush_mat,
-			                    brush_radius,
-			                    cursor_x,
-			                    cursor_y,
-			                    eraser_radius,
 			                    input_mode,
 			                    mouse_pressed,
 			                    paused,
-			                    sel_tool,
 			                    sim_subsample,
-			                    spawner_mat,
-			                    *spawntemperature,
 			                    *tickrate,
 			                    th_vision,
-			                    thermo_delta,
-			                    thermo_radius,
+			                    tool_opts,
 			                    world);
 		}
 		break;
@@ -1252,24 +1122,17 @@ handle_input(bool            *active,
 		    input_len < 2) {
 			handle_command_input(input,
 			                     active,
-			                     brush_mat,
-			                     brush_radius,
 			                     cmdline,
 			                     cmdline_len,
-			                     eraser_radius,
 			                     feedback,
 			                     feedback_expiration,
 			                     input_mode,
 			                     now,
 			                     paused,
-			                     sel_tool,
 			                     sim_subsample,
-			                     spawner_mat,
-			                     spawntemperature,
 			                     th_vision,
-			                     thermo_delta,
-			                     thermo_radius,
 			                     tickrate,
+			                     tool_opts,
 			                     world);
 		}
 		break;
@@ -1277,19 +1140,10 @@ handle_input(bool            *active,
 }
 
 void
-handle_normal_csi_input(const char     *in,
-                        const enum Mat  brush_mat,
-                        int            *brush_radius,
-                        int            *cursor_x,
-                        int            *cursor_y,
-                        int            *eraser_radius,
-                        bool           *mouse_pressed,
-                        const enum Tool sel_tool,
-                        const enum Mat  spawner_mat,
-                        const float     spawntemperature,
-                        const float     thermo_delta,
-                        int            *thermo_radius,
-                        struct World   *world)
+handle_normal_csi_input(const char         *in,
+                        bool               *mouse_pressed,
+                        struct ToolOptions *tool_opts,
+                        struct World       *world)
 {
 	int   b;
 	char  pressed;
@@ -1297,35 +1151,35 @@ handle_normal_csi_input(const char     *in,
 	int   y;
 
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
-		if (*cursor_x > 0) {
-			*cursor_x -= 1;
+		if (tool_opts->x > 0) {
+			tool_opts->x -= 1;
 		}
 	} else if (strcmp(in, CSI_KEY_DOWN) == 0) {
-		if (*cursor_y < world->h - 1) {
-			*cursor_y += 1;
+		if (tool_opts->y < world->h - 1) {
+			tool_opts->y += 1;
 		}
 	} else if (strcmp(in, CSI_KEY_UP) == 0) {
-		if (*cursor_y > 0) {
-			*cursor_y -= 1;
+		if (tool_opts->y > 0) {
+			tool_opts->y -= 1;
 		}
 	} else if (strcmp(in, CSI_KEY_RIGHT) == 0) {
-		if (*cursor_x < world->w - 1) {
-			*cursor_x += 1;
+		if (tool_opts->x < world->w - 1) {
+			tool_opts->x += 1;
 		}
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
-		*cursor_x = 0;
+		tool_opts->x = 0;
 	} else if (strcmp(in, CSI_KEY_END) == 0) {
-		*cursor_x = world->w - 1;
+		tool_opts->x = world->w - 1;
 	} else if (strcmp(in, CSI_KEY_PGUP) == 0) {
-		*cursor_y = 0;
+		tool_opts->y = 0;
 	} else if (strcmp(in, CSI_KEY_PGDOWN) == 0) {
-		*cursor_y = world->h - 1;
+		tool_opts->y = world->h - 1;
 	} else if (strcmp(in, CSI_KEY_CTRLHOME) == 0) {
-		*cursor_x = 0;
-		*cursor_y = 0;
+		tool_opts->x = 0;
+		tool_opts->y = 0;
 	} else if (strcmp(in, CSI_KEY_CTRLEND) == 0) {
-		*cursor_x = world->w - 1;
-		*cursor_y = world->h - 1;
+		tool_opts->x = world->w - 1;
+		tool_opts->y = world->h - 1;
 	} else if (in[1] == '[' &&
 	           in[2] == '<') {
 		/* mouse device reporting */
@@ -1336,19 +1190,9 @@ handle_normal_csi_input(const char     *in,
 		switch (b) {
 		case CSI_MB_LEFT:
 		case CSI_MB_LEFT_DRAG:
-			*cursor_x = x;
-			*cursor_y = y;
-			use_tool(brush_mat,
-				 *brush_radius,
-				 *cursor_x,
-				 *cursor_y,
-				 *eraser_radius,
-				 sel_tool,
-				 spawner_mat,
-				 spawntemperature,
-				 thermo_delta,
-				 *thermo_radius,
-				 world);
+			tool_opts->x = x;
+			tool_opts->y = y;
+			use_tool(*tool_opts, world);
 
 			if ('M' == pressed) {
 				*mouse_pressed = true;
@@ -1358,8 +1202,8 @@ handle_normal_csi_input(const char     *in,
 			break;
 
 		case CSI_MB_HOVER:
-			*cursor_x = x;
-			*cursor_y = y;
+			tool_opts->x = x;
+			tool_opts->y = y;
 			*mouse_pressed = false;
 			break;
 
@@ -1370,44 +1214,27 @@ handle_normal_csi_input(const char     *in,
 			break;
 
 		case CSI_MB_WHEELUP:
-			tool_radius_add(1,
-				        brush_radius,
-				        eraser_radius,
-				        sel_tool,
-				        thermo_radius);
+			tool_radius_add(1, tool_opts);
 			break;
 
 		case CSI_MB_WHEELDOWN:
-			tool_radius_add(-1,
-				        brush_radius,
-				        eraser_radius,
-				        sel_tool,
-				        thermo_radius);
+			tool_radius_add(-1, tool_opts);
 			break;
 		}
 	}
 }
 
 void
-handle_normal_input(const char     *in,
-                    bool           *active,
-                    enum Mat       *brush_mat,
-                    int            *brush_radius,
-                    int            *cursor_x,
-                    int            *cursor_y,
-                    int            *eraser_radius,
-                    enum InputMode *input_mode,
-                    bool           *mouse_pressed,
-                    bool           *paused,
-                    enum Tool      *sel_tool,
-                    int            *sim_subsample,
-                    enum Mat       *spawner_mat,
-                    const float     spawntemperature,
-                    const int       tickrate,
-                    bool           *th_vision,
-                    const float    *thermo_delta,
-                    int            *thermo_radius,
-                    struct World   *world)
+handle_normal_input(const char         *in,
+                    bool               *active,
+                    enum InputMode     *input_mode,
+                    bool               *mouse_pressed,
+                    bool               *paused,
+                    int                *sim_subsample,
+                    const int           tickrate,
+                    bool               *th_vision,
+                    struct ToolOptions *tool_opts,
+                    struct World       *world)
 {
 	switch (in[0]) {
 	case KEY_QUIT:
@@ -1415,17 +1242,7 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_USE:
-		use_tool(*brush_mat,
-		         *brush_radius,
-		         *cursor_x,
-		         *cursor_y,
-		         *eraser_radius,
-		         *sel_tool,
-		         *spawner_mat,
-		         spawntemperature,
-		         *thermo_delta,
-		         *thermo_radius,
-		         world);
+		use_tool(*tool_opts, world);
 		break;
 
 	case KEY_SWITCH_VISION:
@@ -1436,16 +1253,16 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_PREVIOUS_MAT:
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			if (*brush_mat > FIRST_REAL_MAT) {
-				*brush_mat -= 1;
+			if (tool_opts->brush_mat > FIRST_REAL_MAT) {
+				tool_opts->brush_mat -= 1;
 			}
 			break;
 
 		case TOOL_SPAWNER:
-			if (*spawner_mat > MAT_NONE) {
-				*spawner_mat -= 1;
+			if (tool_opts->spawner_mat > MAT_NONE) {
+				tool_opts->spawner_mat -= 1;
 			}
 			break;
 
@@ -1458,13 +1275,13 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_FIRST_MAT:
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			*brush_mat = FIRST_REAL_MAT;
+			tool_opts->brush_mat = FIRST_REAL_MAT;
 			break;
 
 		case TOOL_SPAWNER:
-			*spawner_mat = MAT_NONE;
+			tool_opts->spawner_mat = MAT_NONE;
 			break;
 
 		case TOOL_ERASER:
@@ -1476,16 +1293,16 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_NEXT_MAT:
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			if (*brush_mat < MAT_COUNT - 1) {
-				*brush_mat += 1;
+			if (tool_opts->brush_mat < MAT_COUNT - 1) {
+				tool_opts->brush_mat += 1;
 			}
 			break;
 
 		case TOOL_SPAWNER:
-			if (*spawner_mat < MAT_COUNT - 1) {
-				*spawner_mat += 1;
+			if (tool_opts->spawner_mat < MAT_COUNT - 1) {
+				tool_opts->spawner_mat += 1;
 			}
 			break;
 
@@ -1498,13 +1315,13 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_LAST_MAT:
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			*brush_mat = MAT_COUNT - 1;
+			tool_opts->brush_mat = MAT_COUNT - 1;
 			break;
 
 		case TOOL_SPAWNER:
-			*spawner_mat = MAT_COUNT - 1;
+			tool_opts->spawner_mat = MAT_COUNT - 1;
 			break;
 
 		case TOOL_ERASER:
@@ -1516,85 +1333,81 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_BRUSH:
-		*sel_tool = TOOL_BRUSH;
+		tool_opts->sel_tool = TOOL_BRUSH;
 		break;
 
 	case KEY_SPAWNER:
-		*sel_tool = TOOL_SPAWNER;
+		tool_opts->sel_tool = TOOL_SPAWNER;
 		break;
 
 	case KEY_ERASER:
-		*sel_tool = TOOL_ERASER;
+		tool_opts->sel_tool = TOOL_ERASER;
 		break;
 
 	case KEY_HEATER:
-		*sel_tool = TOOL_HEATER;
+		tool_opts->sel_tool = TOOL_HEATER;
 		break;
 
 	case KEY_COOLER:
-		*sel_tool = TOOL_COOLER;
+		tool_opts->sel_tool = TOOL_COOLER;
 		break;
 
 	case KEY_LEFT:
-		if (*cursor_x > 0)
-			*cursor_x -= 1;
+		if (tool_opts->x > 0)
+			tool_opts->x -= 1;
 		break;
 
 	case KEY_LEFT_MAX:
-		*cursor_x = 0;
+		tool_opts->x = 0;
 		break;
 
 	case KEY_DOWN:
-		if (*cursor_y < world->h - 1)
-			*cursor_y += 1;
+		if (tool_opts->y < world->h - 1)
+			tool_opts->y += 1;
 		break;
 
 	case KEY_DOWN_MAX:
-		*cursor_y = world->h - 1;
+		tool_opts->y = world->h - 1;
 		break;
 
 	case KEY_UP:
-		if (*cursor_y > 0)
-			*cursor_y -= 1;
+		if (tool_opts->y > 0)
+			tool_opts->y -= 1;
 		break;
 
 	case KEY_UP_MAX:
-		*cursor_y = 0;
+		tool_opts->y = 0;
 		break;
 
 	case KEY_RIGHT:
-		if (*cursor_x < world->w - 1)
-			*cursor_x += 1;
+		if (tool_opts->x < world->w - 1)
+			tool_opts->x += 1;
 		break;
 
 	case KEY_RIGHT_MAX:
-		*cursor_x = world->w - 1;
+		tool_opts->x = world->w - 1;
 		break;
 
 	case KEY_RADIUS_DOWN:
-		tool_radius_add(-1,
-		                brush_radius,
-		                eraser_radius,
-		                *sel_tool,
-		                thermo_radius);
+		tool_radius_add(-1, tool_opts);
 		break;
 
 	case KEY_RADIUS_MIN:
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			*brush_radius = 0;
+			tool_opts->brush_radius = 0;
 			break;
 
 		case TOOL_SPAWNER:
 			break;
 
 		case TOOL_ERASER:
-			*eraser_radius = 0;
+			tool_opts->eraser_radius = 0;
 			break;
 
 		case TOOL_HEATER:
 		case TOOL_COOLER:
-			*thermo_radius = 0;
+			tool_opts->thermo_radius = 0;
 			break;
 
 		case TOOL_COUNT:
@@ -1603,29 +1416,25 @@ handle_normal_input(const char     *in,
 		break;
 
 	case KEY_RADIUS_UP:
-		tool_radius_add(1,
-		                brush_radius,
-		                eraser_radius,
-		                *sel_tool,
-		                thermo_radius);
+		tool_radius_add(1, tool_opts);
 		break;
 
 	case KEY_RADIUS_MAX:
-		switch (*sel_tool) {
+		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			*brush_radius = MAX_RADIUS;
+			tool_opts->brush_radius = MAX_RADIUS;
 			break;
 
 		case TOOL_SPAWNER:
 			break;
 
 		case TOOL_ERASER:
-			*eraser_radius = MAX_RADIUS;
+			tool_opts->eraser_radius = MAX_RADIUS;
 			break;
 
 		case TOOL_HEATER:
 		case TOOL_COOLER:
-			*thermo_radius = MAX_RADIUS;
+			tool_opts->thermo_radius = MAX_RADIUS;
 			break;
 
 		case TOOL_COUNT:
@@ -1674,40 +1483,23 @@ handle_normal_input(const char     *in,
 		break;
 
 	case CHAR_ESCAPE:
-		handle_normal_csi_input(in,
-		                        *brush_mat,
-		                        brush_radius,
-		                        cursor_x,
-		                        cursor_y,
-		                        eraser_radius,
-		                        mouse_pressed,
-		                        *sel_tool,
-		                        *spawner_mat,
-		                        spawntemperature,
-		                        *thermo_delta,
-		                        thermo_radius,
-		                        world);
+		handle_normal_csi_input(in, mouse_pressed, tool_opts, world);
 		break;
 	}
 }
 
 void
-handle_simple_command(const char    *cmdline,
-                      bool          *active,
-                      int           *brush_radius,
-                      int           *eraser_radius,
-                      char         **feedback,
-                      clock_t       *feedback_expiration,
-                      clock_t        now,
-                      bool          *paused,
-                      enum Tool     *sel_tool,
-                      int           *sim_subsample,
-                      float         *spawntemperature,
-                      bool          *th_vision,
-                      float         *thermo_delta,
-                      int           *thermo_radius,
-                      int           *tickrate,
-                      struct World  *world)
+handle_simple_command(const char          *cmdline,
+                      bool                *active,
+                      char               **feedback,
+                      clock_t             *feedback_expiration,
+                      clock_t              now,
+                      bool                *paused,
+                      int                 *sim_subsample,
+                      bool                *th_vision,
+                      int                 *tickrate,
+                      struct ToolOptions  *tool_opts,
+                      struct World        *world)
 {
 	int x, y;
 
@@ -1715,7 +1507,7 @@ handle_simple_command(const char    *cmdline,
 
 	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
 	    strcmp(cmdline, CMD_BRUSH_SHORT) == 0) {
-		*sel_tool = TOOL_BRUSH;
+		tool_opts->sel_tool = TOOL_BRUSH;
 	} else if (strcmp(cmdline, CMD_CLEAR) == 0 ||
 	           strcmp(cmdline, CMD_CLEAR_SHORT) == 0) {
 		for (x = 0; x < world->w; x++) {
@@ -1733,23 +1525,23 @@ handle_simple_command(const char    *cmdline,
 		}
 	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
 	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
-		*sel_tool = TOOL_COOLER;
+		tool_opts->sel_tool = TOOL_COOLER;
 	} else if (strcmp(cmdline, CMD_DEFAULTS) == 0 ||
 	           strcmp(cmdline, CMD_DEFAULTS_SHORT) == 0) {
-		*brush_radius = STD_BRUSH_RADIUS;
-		*eraser_radius = STD_ERASER_RADIUS;
-		*sel_tool = STD_SELECTED_TOOL;
+		tool_opts->brush_radius = STD_BRUSH_RADIUS;
+		tool_opts->eraser_radius = STD_ERASER_RADIUS;
+		tool_opts->sel_tool = STD_SELECTED_TOOL;
+		tool_opts->thermo_delta = STD_THERMO_DELTA;
+		tool_opts->thermo_radius = STD_THERMO_RADIUS;
 		*sim_subsample = STD_SIM_SUBSAMPLE;
-		*spawntemperature = STD_SPAWNTEMPERATURE;
-		*thermo_delta = STD_THERMO_DELTA;
-		*thermo_radius = STD_THERMO_RADIUS;
+		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
 		*tickrate = STD_TICKRATE;
 	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
 	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
-		*sel_tool = TOOL_ERASER;
+		tool_opts->sel_tool = TOOL_ERASER;
 	} else if (strcmp(cmdline, CMD_HEATER) == 0 ||
 	           strcmp(cmdline, CMD_HEATER_SHORT) == 0) {
-		*sel_tool = TOOL_HEATER;
+		tool_opts->sel_tool = TOOL_HEATER;
 	} else if (strcmp(cmdline, CMD_NORMALVISION) == 0 ||
 	           strcmp(cmdline, CMD_NORMALVISION_SHORT) == 0) {
 		*th_vision = false;
@@ -1766,7 +1558,7 @@ handle_simple_command(const char    *cmdline,
 		*active = false;
 	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
 	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
-		*sel_tool = TOOL_SPAWNER;
+		tool_opts->sel_tool = TOOL_SPAWNER;
 	} else if (strcmp(cmdline, CMD_THERMOVISION) == 0 ||
 	           strcmp(cmdline, CMD_THERMOVISION_SHORT) == 0) {
 		*th_vision = true;
@@ -1776,18 +1568,37 @@ handle_simple_command(const char    *cmdline,
 	}
 }
 
+struct ToolOptions
+new_tool_options()
+{
+	struct ToolOptions ret = {
+		.brush_mat = FIRST_REAL_MAT,
+		.brush_radius = STD_BRUSH_RADIUS,
+		.eraser_radius = STD_ERASER_RADIUS,
+		.sel_tool = STD_SELECTED_TOOL,
+		.spawn_temperature = STD_SPAWN_TEMPERATURE,
+		.spawner_mat = FIRST_REAL_MAT,
+		.thermo_delta = STD_THERMO_DELTA,
+		.thermo_radius = STD_THERMO_RADIUS,
+		.x = 0,
+		.y = 0,
+		.x1 = 0,
+		.y1 = 0,
+		.x2 = 0,
+		.y2 = 0,
+	};
+	return ret;
+}
+
 void
-tool_radius_add(const int        radius_change,
-                int             *brush_radius,
-                int             *eraser_radius,
-                const enum Tool  sel_tool,
-                int             *thermo_radius)
+tool_radius_add(const int           radius_change,
+                struct ToolOptions *tool_opts)
 {
 	int  *target = NULL;
 
-	switch (sel_tool) {
+	switch (tool_opts->sel_tool) {
 	case TOOL_BRUSH:
-		target = brush_radius;
+		target = &tool_opts->brush_radius;
 		break;
 
 	case TOOL_SPAWNER:
@@ -1795,12 +1606,12 @@ tool_radius_add(const int        radius_change,
 		break;
 
 	case TOOL_ERASER:
-		target = eraser_radius;
+		target = &tool_opts->eraser_radius;
 		break;
 
 	case TOOL_HEATER:
 	case TOOL_COOLER:
-		target = thermo_radius;
+		target = &tool_opts->thermo_radius;
 		break;
 
 	case TOOL_COUNT:
@@ -1894,10 +1705,7 @@ render_world(char               *out,
              const bool          no_color,
              const bool          no_glowcolor,
              const bool          th_vision,
-             const int           tool_x1,
-             const int           tool_y1,
-             const int           tool_x2,
-             const int           tool_y2,
+             struct ToolOptions  tool_opts,
              const struct World  world,
              const int           world_draw_w,
              const int           world_draw_h)
@@ -1930,8 +1738,8 @@ render_world(char               *out,
 		}
 	}
 
-	for (x = tool_x1; x < tool_x2; x++) {
-		for (y = tool_y1; y < tool_y2; y++) {
+	for (x = tool_opts.x1; x < tool_opts.x2; x++) {
+		for (y = tool_opts.y1; y < tool_opts.y2; y++) {
 			out[((y * world.w) + x + 1) * dot_depth - 1] = '^';
 		}
 	}
@@ -1950,54 +1758,45 @@ set_feedback(char          **feedback,
 }
 
 void
-use_tool(const enum Mat   brush_mat,
-         const int        brush_radius,
-         const int        cursor_x,
-         const int        cursor_y,
-         const int        eraser_radius,
-         const enum Tool  sel_tool,
-         const enum Mat   spawner_mat,
-         const float      spawntemperature,
-         const float      thermo_delta,
-         const int        thermo_radius,
-         struct World    *world)
+use_tool(struct ToolOptions  tool_opts,
+         struct World       *world)
 {
-	switch (sel_tool) {
+	switch (tool_opts.sel_tool) {
 	case TOOL_BRUSH:
 		world_use_brush(world,
-		                brush_mat,
-		                spawntemperature,
-		                cursor_x,
-		                cursor_y,
-		                brush_radius);
+		                tool_opts.brush_mat,
+		                tool_opts.spawn_temperature,
+		                tool_opts.x,
+		                tool_opts.y,
+		                tool_opts.brush_radius);
 		break;
 
 	case TOOL_SPAWNER:
-		world->spawner[cursor_x][cursor_y] = true;
-		world->spawner_mat[cursor_x][cursor_y] = spawner_mat;
+		world->spawner[tool_opts.x][tool_opts.y] = true;
+		world->spawner_mat[tool_opts.x][tool_opts.y] = tool_opts.spawner_mat;
 		break;
 
 	case TOOL_ERASER:
 		world_use_eraser(world,
-		                 cursor_x,
-		                 cursor_y,
-		                 eraser_radius);
+		                 tool_opts.x,
+		                 tool_opts.y,
+		                 tool_opts.eraser_radius);
 		break;
 
 	case TOOL_HEATER:
 		world_use_heater(world,
-		                 thermo_delta,
-		                 cursor_x,
-		                 cursor_y,
-		                 thermo_radius);
+		                 tool_opts.thermo_delta,
+		                 tool_opts.x,
+		                 tool_opts.y,
+		                 tool_opts.thermo_radius);
 		break;
 
 	case TOOL_COOLER:
 		world_use_cooler(world,
-		                 thermo_delta,
-		                 cursor_x,
-		                 cursor_y,
-		                 thermo_radius);
+		                 tool_opts.thermo_delta,
+		                 tool_opts.x,
+		                 tool_opts.y,
+		                 tool_opts.thermo_radius);
 		break;
 
 	case TOOL_COUNT:
@@ -2009,60 +1808,45 @@ int
 main(int    argc,
      char **argv)
 {
-	bool           active = true;
-	enum Mat       brush_mat = FIRST_REAL_MAT;
-	int            brush_radius = STD_BRUSH_RADIUS;
-	char           cmdline[CMDLINE_SIZE];
-	size_t         cmdline_len = 0;
-	int            cursor_x = 0;
-	int            cursor_y = 0;
-	char          *display = NULL;
-	size_t         display_size = 0;
-	size_t         dot_depth = 0;
-	int            eraser_radius = STD_ERASER_RADIUS;
-	char          *feedback = NULL;
-	clock_t        feedback_expiration = 0;
-	enum InputMode input_mode = IM_NORMAL;
-	bool           paused = false;
-	clock_t        last_tick = 0;
-	bool           mouse_pressed = false;
-	bool           no_color = false;
-	bool           no_glowcolor = false;
-	clock_t        now;
-	enum Tool      sel_tool = STD_SELECTED_TOOL;
-	int            sim_subsample = STD_SIM_SUBSAMPLE;
-	enum Mat       spawner_mat = FIRST_REAL_MAT;
-	float          spawntemperature = STD_SPAWNTEMPERATURE;
-	struct winsize tempws;
-	bool           th_vision = false;
-	float          thermo_delta = STD_THERMO_DELTA;
-	int            thermo_radius = STD_THERMO_RADIUS;
-	int            tickrate = STD_TICKRATE;
-	int            ts_since_sim = 9001; /* ticks since last simulation */
-	int            tool_radius = STD_BRUSH_RADIUS;
-	int            tool_x1 = 0;
-	int            tool_y1 = 0;
-	int            tool_x2 = 0;
-	int            tool_y2 = 0;
-	int            win_w;
-	int            win_h;
-	struct World   world;
+	bool                active = true;
+	char                cmdline[CMDLINE_SIZE];
+	size_t              cmdline_len = 0;
+	char               *display = NULL;
+	size_t              display_size = 0;
+	size_t              dot_depth = 0;
+	char               *feedback = NULL;
+	clock_t             feedback_expiration = 0;
+	enum InputMode      input_mode = IM_NORMAL;
+	bool                paused = false;
+	clock_t             last_tick = 0;
+	bool                mouse_pressed = false;
+	bool                no_color = false;
+	bool                no_glowcolor = false;
+	clock_t             now;
+	int                 sim_subsample = STD_SIM_SUBSAMPLE;
+	struct winsize      tempws;
+	bool                th_vision = false;
+	int                 tickrate = STD_TICKRATE;
+	int                 ts_since_sim = 9001; /* ticks since last simulation */
+	struct ToolOptions  tool_opts;
+	int                 tool_radius = STD_BRUSH_RADIUS;
+	int                 win_w;
+	int                 win_h;
+	struct World        world;
 
 	if (!handle_args(argc, argv,
-	                 &brush_radius,
-	                 &eraser_radius,
 	                 &no_color,
 	                 &no_glowcolor,
 	                 &sim_subsample,
-	                 &spawntemperature,
-	                 &thermo_delta,
-	                 &thermo_radius,
-	                 &tickrate)) {
+	                 &tickrate,
+	                 &tool_opts)) {
 		return 0;
 	}
 
 	hawps_core_init();
 	hawps_extra_init();
+
+	tool_opts = new_tool_options();
 
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
@@ -2082,36 +1866,27 @@ main(int    argc,
 	               dot_depth;
 	display = malloc(display_size);
 
-	world = world_new(win_w, win_h - 2, spawntemperature);
+	world = world_new(win_w, win_h - 2, tool_opts.spawn_temperature);
 
 	while (active) {
 		handle_input(&active,
 		             cmdline,
 		             &cmdline_len,
-		             &brush_mat,
-		             &brush_radius,
-		             &cursor_x,
-		             &cursor_y,
-		             &eraser_radius,
 		             &feedback,
 		             &feedback_expiration,
 		             &input_mode,
 		             &mouse_pressed,
 		             now,
 		             &paused,
-		             &sel_tool,
 		             &sim_subsample,
-		             &spawner_mat,
-		             &spawntemperature,
 		             &tickrate,
 		             &th_vision,
-		             &thermo_delta,
-		             &thermo_radius,
+		             &tool_opts,
 		             &world);
 
-		switch (sel_tool) {
+		switch (tool_opts.sel_tool) {
 		case TOOL_BRUSH:
-			tool_radius = brush_radius;
+			tool_radius = tool_opts.brush_radius;
 			break;
 
 		case TOOL_SPAWNER:
@@ -2119,33 +1894,33 @@ main(int    argc,
 			break;
 
 		case TOOL_ERASER:
-			tool_radius = eraser_radius;
+			tool_radius = tool_opts.eraser_radius;
 			break;
 
 		case TOOL_HEATER:
 		case TOOL_COOLER:
-			tool_radius = thermo_radius;
+			tool_radius = tool_opts.thermo_radius;
 			break;
 
 		case TOOL_COUNT:
 			break;
 		}
 
-		tool_x1 = cursor_x - tool_radius;
-		if (tool_x1 < 0)
-			tool_x1 = 0;
+		tool_opts.x1 = tool_opts.x - tool_radius;
+		if (tool_opts.x1 < 0)
+			tool_opts.x1 = 0;
 
-		tool_y1 = cursor_y - tool_radius;
-		if (tool_y1 < 0)
-			tool_y1 = 0;
+		tool_opts.y1 = tool_opts.y - tool_radius;
+		if (tool_opts.y1 < 0)
+			tool_opts.y1 = 0;
 
-		tool_x2 = cursor_x + tool_radius + 1;
-		if (tool_x2 >= world.w)
-			tool_x2 = world.w;
+		tool_opts.x2 = tool_opts.x + tool_radius + 1;
+		if (tool_opts.x2 >= world.w)
+			tool_opts.x2 = world.w;
 
-		tool_y2 = cursor_y + tool_radius + 1;
-		if (tool_y2 >= world.h)
-			tool_y2 = world.h;
+		tool_opts.y2 = tool_opts.y + tool_radius + 1;
+		if (tool_opts.y2 >= world.h)
+			tool_opts.y2 = world.h;
 
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
@@ -2156,20 +1931,10 @@ main(int    argc,
 			}
 
 			if (mouse_pressed) {
-				use_tool(brush_mat,
-					 brush_radius,
-					 cursor_x,
-					 cursor_y,
-					 eraser_radius,
-					 sel_tool,
-					 spawner_mat,
-					 spawntemperature,
-					 thermo_delta,
-					 thermo_radius,
-					 &world);
+				use_tool(tool_opts, &world);
 			}
 
-			world_update(&world, spawntemperature);
+			world_update(&world, tool_opts.spawn_temperature);
 			if (!paused) {
 				if (ts_since_sim >= sim_subsample) {
 					world_sim(&world);
@@ -2193,11 +1958,8 @@ main(int    argc,
 				display = malloc(display_size);
 			}
 
-			draw(brush_mat,
-			     cmdline,
+			draw(cmdline,
 			     cmdline_len,
-			     cursor_x,
-			     cursor_y,
 			     display,
 			     display_size,
 			     dot_depth,
@@ -2207,15 +1969,10 @@ main(int    argc,
 			     no_color,
 			     no_glowcolor,
 			     paused,
-			     sel_tool,
 			     sim_subsample,
-			     spawner_mat,
 			     tickrate,
 			     th_vision,
-			     tool_x1,
-			     tool_y1,
-			     tool_x2,
-			     tool_y2,
+			     tool_opts,
 			     win_w,
 			     win_h,
 			     world,
