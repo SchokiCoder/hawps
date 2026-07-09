@@ -481,10 +481,18 @@ This is to avoid incoming name collisions.
 
 - [x] move color blending from terminal client to libextra
 
+- [x] terminal client: add flag to disable glowcolor
+- [ ] terminal client: add flag to disable all csi coloring
+
 - [ ] terminal client: update help text
 
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
+
+- [ ] remove obsolete go workspace files
+
+- [ ] performance: function pointer vs if; test
+Color options could benefit from this.
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid

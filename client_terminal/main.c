@@ -29,6 +29,8 @@
 #define FLAG_ERASERRADIUS_SHORT     "-er"
 #define FLAG_HELP                   "-help"
 #define FLAG_HELP_SHORT             "-h"
+#define FLAG_NOGLOWCOLOR            "-noglowcolor"
+#define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #define FLAG_SIMSUBSAMPLE           "-simsubsample"
 #define FLAG_SIMSUBSAMPLE_SHORT     "-sss"
 #define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
@@ -121,6 +123,7 @@ draw(const enum Mat        brush_mat,
      const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
+     const bool            no_glowcolor,
      const bool            paused,
      const enum Tool       sel_tool,
      const int             sim_subsample,
@@ -140,6 +143,11 @@ struct Rgba
 get_normal_dot_color(const struct World world,
                      const int          x,
                      const int          y);
+
+struct Rgba
+get_normal_dot_color_simple(const struct World world,
+                            const int          x,
+                            const int          y);
 
 struct Rgba
 get_thermal_dot_color(const struct World world,
@@ -168,6 +176,7 @@ handle_args(int     argc,
             char  **argv,
             int    *brush_radius,
             int    *eraser_radius,
+            bool   *no_glowcolor,
             int    *sim_subsample,
             float  *spawntemperature,
             float  *thermo_delta,
@@ -319,6 +328,7 @@ tool_radius_add(const int        radius_change,
 size_t
 render_world(char               *out,
              const size_t        out_size,
+             const bool          no_glowcolor,
              const bool          th_vision,
              const int           tool_x1,
              const int           tool_y1,
@@ -358,6 +368,7 @@ draw(const enum Mat        brush_mat,
      const char           *feedback,
      const enum InputMode  input_mode,
      const char           *ip_address,
+     const bool            no_glowcolor,
      const bool            paused,
      const enum Tool       sel_tool,
      const int             sim_subsample,
@@ -407,6 +418,7 @@ draw(const enum Mat        brush_mat,
 
 	display_len += render_world(&display[display_len],
 	                            display_size - display_len,
+	                            no_glowcolor,
 	                            th_vision,
 	                            tool_x1,
 	                            tool_y1,
@@ -568,6 +580,21 @@ get_normal_dot_color(const struct World world,
 	b.a = 255;
 
 	return rgba_blend(a, b);
+}
+
+struct Rgba
+get_normal_dot_color_simple(const struct World world,
+                            const int          x,
+                            const int          y)
+{
+	struct Rgba ret;
+
+	ret.r = MAT_R[world.dot[x][y]];
+	ret.g = MAT_G[world.dot[x][y]];
+	ret.b = MAT_B[world.dot[x][y]];
+	ret.a = 255;
+
+	return ret;
 }
 
 struct Rgba
@@ -797,6 +824,7 @@ handle_args(int     argc,
             char  **argv,
             int    *brush_radius,
             int    *eraser_radius,
+            bool   *no_glowcolor,
             int    *sim_subsample,
             float  *spawntemperature,
             float  *thermo_delta,
@@ -854,6 +882,9 @@ handle_args(int     argc,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
 			return false;
+		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
+		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
+			*no_glowcolor = true;
 		} else if (strcmp(argv[i], FLAG_SIMSUBSAMPLE) == 0 ||
 		           strcmp(argv[i], FLAG_SIMSUBSAMPLE_SHORT) == 0) {
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
@@ -1761,6 +1792,7 @@ tool_radius_add(const int        radius_change,
 size_t
 render_world(char               *out,
              const size_t        out_size,
+             const bool          no_glowcolor,
              const bool          th_vision,
              const int           tool_x1,
              const int           tool_y1,
@@ -1780,7 +1812,11 @@ render_world(char               *out,
 	if (th_vision) {
 		get_dot_color = get_thermal_dot_color;
 	} else {
-		get_dot_color = get_normal_dot_color;
+		if (no_glowcolor) {
+			get_dot_color = get_normal_dot_color_simple;
+		} else {
+			get_dot_color = get_normal_dot_color;
+		}
 	}
 
 	for (y = 0; y < world_draw_h; y++) {
@@ -1937,6 +1973,7 @@ main(int    argc,
 	bool           paused = false;
 	clock_t        last_tick = 0;
 	bool           mouse_pressed = false;
+	bool           no_glowcolor = false;
 	clock_t        now;
 	enum Tool      sel_tool = STD_SELECTED_TOOL;
 	int            sim_subsample = STD_SIM_SUBSAMPLE;
@@ -1960,6 +1997,7 @@ main(int    argc,
 	if (!handle_args(argc, argv,
 	                 &brush_radius,
 	                 &eraser_radius,
+	                 &no_glowcolor,
 	                 &sim_subsample,
 	                 &spawntemperature,
 	                 &thermo_delta,
@@ -2103,6 +2141,7 @@ main(int    argc,
 			     feedback,
 			     input_mode,
 			     "localhost",
+			     no_glowcolor,
 			     paused,
 			     sel_tool,
 			     sim_subsample,
