@@ -1118,8 +1118,7 @@ handle_input(bool                *active,
 		break;
 
 	case IM_COMMAND:
-		if (input_len > 0 &&
-		    input_len < 2) {
+		if (input_len == 1) {
 			handle_command_input(input,
 			                     active,
 			                     cmdline,
