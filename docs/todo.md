@@ -491,7 +491,7 @@ This is to avoid incoming name collisions.
 
 - [x] terminal client: add new flags to help text
 
-- [ ] terminal client: add cmd to toggle glowcolor
+- [x] terminal client: add cmds to set glowcolor
 
 - [ ] terminal client: add commands to help text
 - [ ] terminal client: update keybinds in help text
