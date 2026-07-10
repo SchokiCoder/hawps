@@ -82,83 +82,9 @@ static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
 "Silly program to simulate physics in *very* convincing ways.\n"
 "It'll be great. Trust me.\n"
-"\n"
-"Options:\n"
-"\n"
-"    " FLAG_ABOUT_SHORT " " FLAG_ABOUT "\n"
-"        prints program name, version, license and repository information then exits\n"
-"\n"
-"    " FLAG_BRUSHRADIUS_SHORT " " FLAG_BRUSHRADIUS " NUMBER\n"
-"        sets the radius of the brush\n"
-"        default: %i\n"
-"\n"
-"    " FLAG_ERASERRADIUS_SHORT " " FLAG_ERASERRADIUS " NUMBER\n"
-"        sets the radius of the eraser\n"
-"        default: %i\n"
-"\n"
-"    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
-"        prints this message then exits\n"
-"\n"
-"    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
-"        disables all world dot coloring\n"
-"\n"
-"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
-"        disables dot glow coloring\n"
-"\n"
-"    " FLAG_SIMSUBSAMPLE_SHORT " " FLAG_SIMSUBSAMPLE " NUMBER\n"
-"        sets the simulation subsample, which affects the simulation speed\n"
-"        visible simulation speed roughly == tickrate / sim-subsample \n"
-"        default: %i\n"
-"\n"
-"    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE " DECIMAL\n"
-"        sets the temperature of every new dot in Kelvin\n"
-"        0 °C == %.2f K\n"
-"        default: %.2f\n"
-"\n"
-"    " FLAG_THERMODELTA_SHORT " " FLAG_THERMODELTA " DECIMAL\n"
-"        sets the delta of thermo tools, with which heating/cooling occurs\n"
-"        the delta is applied once per tick\n"
-"        default: %.2f\n"
-"\n"
-"    " FLAG_THERMORADIUS_SHORT " " FLAG_THERMORADIUS " NUMBER\n"
-"        sets the radius of thermo tools\n"
-"        default: %i\n"
-"\n"
-"    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " NUMBER\n"
-"        sets the tickrate (ticks per second),\n"
-"        which also affects simulation speed\n"
-"        only use when otherwise performance problems occur\n"
-"        default: %i\n"
-"\n"
-"    " FLAG_VERSION_SHORT " " FLAG_VERSION "\n"
-"        prints version information then exits\n"
-"\n"
-"Keybinds:\n"
-"\n"
-"    Currently, this program is configured at %s.\n"
-"    It is static.\n"
-"    Therefore you can't just change binds.\n"
-"\n"
-"    /\n"
-"        enter the command line\n"
-"\n"
-"    Escape\n"
-"        quit the program\n"
-"\n"
-"    Space\n"
-"        pause world\n"
-"\n"
-"    H J K L\n"
-"        move cursor left, down, up, and right, respectively\n"
-"\n"
-"    Plus and Minus\n"
-"        increase and decrease the simulation speed respectively\n"
-"        default: %.2f updates per second\n"
-"\n"
-"    T\n"
-"        toggle thermal vision (grayscale displaying %.0f to %.0f degree Celsius)\n"
-"\n"
-"Commands:\n"
+"\n";
+
+static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "\n"
 "    You can enter these commands into the internal command line.\n"
 "    There is a short and a long variant for most commands.\n"
@@ -242,6 +168,161 @@ static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
 "    " CMD_TICKRATE_SHORT " " CMD_TICKRATE " NUMBER\n"
 "        sets the tickrate (ticks per second),\n"
 "        which also affects simulation speed\n"
+"\n";
+
+static const char APP_HELP_FLAGS[] = "Options:\n"
+"\n"
+"    " FLAG_ABOUT_SHORT " " FLAG_ABOUT "\n"
+"        prints program name, version, license and repository information then exits\n"
+"\n"
+"    " FLAG_BRUSHRADIUS_SHORT " " FLAG_BRUSHRADIUS " NUMBER\n"
+"        sets the radius of the brush\n"
+"        default: %i\n"
+"\n"
+"    " FLAG_ERASERRADIUS_SHORT " " FLAG_ERASERRADIUS " NUMBER\n"
+"        sets the radius of the eraser\n"
+"        default: %i\n"
+"\n"
+"    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
+"        prints this message then exits\n"
+"\n"
+"    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
+"        disables all world dot coloring\n"
+"\n"
+"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
+"        disables dot glow coloring\n"
+"\n"
+"    " FLAG_SIMSUBSAMPLE_SHORT " " FLAG_SIMSUBSAMPLE " NUMBER\n"
+"        sets the simulation subsample, which affects the simulation speed\n"
+"        visible simulation speed roughly == tickrate / sim-subsample \n"
+"        default: %i\n"
+"\n"
+"    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE " DECIMAL\n"
+"        sets the temperature of every new dot in Kelvin\n"
+"        0 °C == %.2f K\n"
+"        default: %.2f\n"
+"\n"
+"    " FLAG_THERMODELTA_SHORT " " FLAG_THERMODELTA " DECIMAL\n"
+"        sets the delta of thermo tools, with which heating/cooling occurs\n"
+"        the delta is applied once per tick\n"
+"        default: %.2f\n"
+"\n"
+"    " FLAG_THERMORADIUS_SHORT " " FLAG_THERMORADIUS " NUMBER\n"
+"        sets the radius of thermo tools\n"
+"        default: %i\n"
+"\n"
+"    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " NUMBER\n"
+"        sets the tickrate (ticks per second),\n"
+"        which also affects simulation speed\n"
+"        only use when otherwise performance problems occur\n"
+"        default: %i\n"
+"\n"
+"    " FLAG_VERSION_SHORT " " FLAG_VERSION "\n"
+"        prints version information then exits\n"
+"\n";
+
+static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
+"\n"
+"    Currently, this program is configured at " CONFIGURED_AT ".\n"
+"    It is static.\n"
+"    Therefore you can't just change binds.\n"
+"\n"
+"    %c Escape\n"
+"        quit the program\n"
+"\n"
+"    %c\n"
+"        use currently active tool\n"
+"\n"
+"    %c\n"
+"        toggle thermal vision\n"
+"        the grayscale displays from %.0f to %.0f degrees Celsius\n"
+"\n"
+"    %c\n"
+"        select an upper material from the material list, for current tool\n"
+"\n"
+"    %c\n"
+"        select uppermost material from the material list, for current tool\n"
+"\n"
+"    %c\n"
+"        select a lower material from the material list, for current tool\n"
+"\n"
+"    %c\n"
+"        select a lowest material from the material list, for current tool\n"
+"\n"
+"    %c\n"
+"        set brush as current tool\n"
+"\n"
+"    %c\n"
+"        set spawner as current tool\n"
+"\n"
+"    %c\n"
+"        set eraser as current tool\n"
+"\n"
+"    %c\n"
+"        set heater as current tool\n"
+"\n"
+"    %c\n"
+"        set cooler as current tool\n"
+"\n"
+"    %c Left\n"
+"        move tool cursor left\n"
+"\n"
+"    %c Home\n"
+"        move tool cursor leftmost\n"
+"\n"
+"    %c Down\n"
+"        move tool cursor down\n"
+"\n"
+"    %c PgDn\n"
+"        move tool cursor to bottom\n"
+"\n"
+"    %c Up\n"
+"        move tool cursor up\n"
+"\n"
+"    %c PgUp\n"
+"        move tool cursor to top\n"
+"\n"
+"    %c Right\n"
+"        move tool cursor right\n"
+"\n"
+"    %c End\n"
+"        move tool cursor rightmost\n"
+"\n"
+"    Ctrl+Home\n"
+"        move tool cursor leftmost and top\n"
+"\n"
+"    Ctrl+End\n"
+"        move tool cursor rightmost and bottom\n"
+"\n"
+"    %c\n"
+"        decrease tool radius\n"
+"\n"
+"    %c\n"
+"        set smallest tool radius\n"
+"\n"
+"    %c\n"
+"        increase tool radius\n"
+"\n"
+"    %c\n"
+"        set biggest tool radius\n"
+"\n"
+"    %c\n"
+"        decrease the simulation speed\n"
+"\n"
+"    %c\n"
+"        set to slowest simulation speed\n"
+"\n"
+"    %c\n"
+"        increase the simulation speed\n"
+"\n"
+"    %c\n"
+"        set to fastest simulation speed\n"
+"\n"
+"    %c\n"
+"        enter the command line\n"
+"\n"
+"    %s\n"
+"        pause world\n"
 "\n";
 
 void
@@ -895,6 +976,7 @@ handle_args(int                  argc,
 	float flagargf;
 	int   flagargi;
 	int   i;
+	char  key_pause[8] = "Space";
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
@@ -933,7 +1015,9 @@ handle_args(int                  argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
 		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
-			printf(APP_HELP,
+			printf(APP_HELP);
+
+			printf(APP_HELP_FLAGS,
 			       STD_BRUSH_RADIUS,
 			       STD_ERASER_RADIUS,
 			       STD_SIM_SUBSAMPLE,
@@ -941,11 +1025,47 @@ handle_args(int                  argc,
 			       STD_SPAWN_TEMPERATURE,
 			       STD_THERMO_DELTA,
 			       STD_THERMO_RADIUS,
-			       STD_TICKRATE,
-			       CONFIGURED_AT,
-			       (float) STD_TICKRATE / (float) STD_SIM_SUBSAMPLE,
+			       STD_TICKRATE);
+
+			if (KEY_PAUSE != ' ') {
+				key_pause[0] = KEY_PAUSE;
+				key_pause[1] = '\0';
+			}
+			printf(APP_HELP_KEYBINDS,
+			       KEY_QUIT,
+			       KEY_USE,
+			       KEY_SWITCH_VISION,
 			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN,
-			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255);
+			       THERMAL_VISION_MIN_T - CELSIUS_TO_KELVIN + 255,
+			       KEY_PREVIOUS_MAT,
+			       KEY_FIRST_MAT,
+			       KEY_NEXT_MAT,
+			       KEY_LAST_MAT,
+			       KEY_BRUSH,
+			       KEY_SPAWNER,
+			       KEY_ERASER,
+			       KEY_HEATER,
+			       KEY_COOLER,
+			       KEY_LEFT,
+			       KEY_LEFT_MAX,
+			       KEY_DOWN,
+			       KEY_DOWN_MAX,
+			       KEY_UP,
+			       KEY_UP_MAX,
+			       KEY_RIGHT,
+			       KEY_RIGHT_MAX,
+			       KEY_RADIUS_DOWN,
+			       KEY_RADIUS_MIN,
+			       KEY_RADIUS_UP,
+			       KEY_RADIUS_MAX,
+			       KEY_SIMSPEED_DOWN,
+			       KEY_SIMSPEED_MIN,
+			       KEY_SIMSPEED_UP,
+			       KEY_SIMSPEED_MAX,
+			       KEY_CMD,
+			       key_pause);
+
+			printf(APP_HELP_COMMANDS);
 			return false;
 		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {

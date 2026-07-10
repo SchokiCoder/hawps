@@ -495,7 +495,8 @@ This is to avoid incoming name collisions.
 
 - [x] terminal client: add commands to help text
 - [x] terminal client: add forgotten flag args to help text
-- [ ] terminal client: update keybinds in help text
+- [x] terminal client: update keybinds in help text
+Also split help string because ISO C99 supports only so much :/
 
 - [ ] terminal client: add a Tool overview to help text
 - [ ] terminal client: add a Mat overview to help text
