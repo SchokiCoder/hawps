@@ -498,8 +498,11 @@ This is to avoid incoming name collisions.
 - [x] terminal client: update keybinds in help text
 Also split help string because ISO C99 supports only so much :/
 
-- [ ] terminal client: add a Tool overview to help text
-- [ ] terminal client: add a Mat overview to help text
+- [x] ~terminal client: add a Tool overview to help text~
+Tools are mentioned in the keybinds,
+and it's pretty self explanatory what a "heater" does.
+
+- [x] terminal client: add a Mat list to help text
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid

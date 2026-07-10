@@ -221,6 +221,9 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        prints version information then exits\n"
 "\n";
 
+static const char APP_HELP_MATERIALS[] = "Material list:\n"
+"\n";
+
 static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "\n"
 "    Currently, this program is configured at " CONFIGURED_AT ".\n"
@@ -1066,6 +1069,13 @@ handle_args(int                  argc,
 			       key_pause);
 
 			printf(APP_HELP_COMMANDS);
+
+			printf(APP_HELP_MATERIALS);
+			for (i = 0; i < MAT_COUNT; i++) {
+				printf("    %s\n", MAT_NAME[i]);
+			}
+			printf("\n");
+
 			return false;
 		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
