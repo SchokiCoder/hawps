@@ -493,7 +493,8 @@ This is to avoid incoming name collisions.
 
 - [x] terminal client: add cmds to set glowcolor
 
-- [ ] terminal client: add commands to help text
+- [x] terminal client: add commands to help text
+- [ ] terminal client: add forgotten flag args to help text
 - [ ] terminal client: update keybinds in help text
 
 - [ ] terminal client: add a Tool overview to help text
