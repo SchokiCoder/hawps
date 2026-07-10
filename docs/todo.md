@@ -504,11 +504,12 @@ and it's pretty self explanatory what a "heater" does.
 
 - [x] terminal client: add a Mat list to help text
 
+- [x] terminal client: replace sscanf with strtoul for performance
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] terminal client: performance: add lookup table for int to str conversion
-(removing last sprintf calls, and don't forget reaplacing scanf with strtol)
+(removing last sprintf calls)
 - [ ] performance review of both clients
 
 - [ ] add proper profiling procedure to Makefile with `gcc -pg`

@@ -445,6 +445,12 @@ handle_input(bool                *active,
              struct World        *world);
 
 void
+handle_mouse_input(const char         *in,
+                   bool               *mouse_pressed,
+                   struct ToolOptions *tool_opts,
+                   struct World       *world);
+
+void
 handle_normal_csi_input(const char         *in,
                         bool               *mouse_pressed,
                         struct ToolOptions *tool_opts,
@@ -1396,16 +1402,77 @@ handle_input(bool                *active,
 }
 
 void
+handle_mouse_input(const char         *in,
+                   bool               *mouse_pressed,
+                   struct ToolOptions *tool_opts,
+                   struct World       *world)
+{
+	int      b;
+	size_t   i;
+	char    *l_end = NULL;
+	size_t   l_start = 3;
+	char     pressed;
+	int      report_vals[3];
+	int      x;
+	int      y;
+
+	/* we ignore errno here
+	 */
+	for (i = 0; i < 3; i++) {
+		report_vals[i] = strtoul(&in[l_start], &l_end, 10);
+		l_start += l_end - &in[l_start] + 1;
+	}
+	b = report_vals[0];
+	x = report_vals[1];
+	y = report_vals[2];
+	x -= 1;
+	y -= 1;
+
+	l_start -= 1;
+	pressed = in[l_start];
+
+	switch (b) {
+	case CSI_MB_LEFT:
+	case CSI_MB_LEFT_DRAG:
+		tool_opts->x = x;
+		tool_opts->y = y;
+		use_tool(*tool_opts, world);
+
+		if ('M' == pressed) {
+			*mouse_pressed = true;
+		} else {
+			*mouse_pressed = false;
+		}
+		break;
+
+	case CSI_MB_HOVER:
+		tool_opts->x = x;
+		tool_opts->y = y;
+		*mouse_pressed = false;
+		break;
+
+	case CSI_MB_MIDDLE:
+	case CSI_MB_MIDDLE_DRAG:
+	case CSI_MB_RIGHT:
+	case CSI_MB_RIGHT_DRAG:
+		break;
+
+	case CSI_MB_WHEELUP:
+		tool_radius_add(1, tool_opts);
+		break;
+
+	case CSI_MB_WHEELDOWN:
+		tool_radius_add(-1, tool_opts);
+		break;
+	}
+}
+
+void
 handle_normal_csi_input(const char         *in,
                         bool               *mouse_pressed,
                         struct ToolOptions *tool_opts,
                         struct World       *world)
 {
-	int   b;
-	char  pressed;
-	int   x;
-	int   y;
-
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
 		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
@@ -1438,45 +1505,7 @@ handle_normal_csi_input(const char         *in,
 		tool_opts->y = world->h - 1;
 	} else if (in[1] == '[' &&
 	           in[2] == '<') {
-		/* mouse device reporting */
-		sscanf(in, CSI_ESCAPE "[<%i;%i;%i%c", &b, &x, &y, &pressed);
-		x -= 1;
-		y -= 1;
-
-		switch (b) {
-		case CSI_MB_LEFT:
-		case CSI_MB_LEFT_DRAG:
-			tool_opts->x = x;
-			tool_opts->y = y;
-			use_tool(*tool_opts, world);
-
-			if ('M' == pressed) {
-				*mouse_pressed = true;
-			} else {
-				*mouse_pressed = false;
-			}
-			break;
-
-		case CSI_MB_HOVER:
-			tool_opts->x = x;
-			tool_opts->y = y;
-			*mouse_pressed = false;
-			break;
-
-		case CSI_MB_MIDDLE:
-		case CSI_MB_MIDDLE_DRAG:
-		case CSI_MB_RIGHT:
-		case CSI_MB_RIGHT_DRAG:
-			break;
-
-		case CSI_MB_WHEELUP:
-			tool_radius_add(1, tool_opts);
-			break;
-
-		case CSI_MB_WHEELDOWN:
-			tool_radius_add(-1, tool_opts);
-			break;
-		}
+		handle_mouse_input(in, mouse_pressed, tool_opts, world);
 	}
 }
 
