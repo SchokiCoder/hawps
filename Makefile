@@ -22,6 +22,7 @@ all: bin/$(DEFAULT_CLIENT)
 
 clean:
 	rm -f bin/*
+	rm -f *.out
 
 prerun:
 	rm -f bin/$(DEFAULT_CLIENT)

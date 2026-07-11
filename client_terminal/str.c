@@ -27,3 +27,17 @@ string_cat(char *restrict       dst,
 
 	return copy_len;
 }
+
+size_t
+string_to_uint(const char   *str,
+               unsigned int *out)
+{
+	size_t i;
+
+	*out = 0;
+	for (i = 0; str[i] >= '0' && str[i] <= '9'; i++) {
+		*out = *out * 10 + (str[i] - '0');
+	}
+
+	return i;
+}

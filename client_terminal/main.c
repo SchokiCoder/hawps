@@ -1407,20 +1407,16 @@ handle_mouse_input(const char         *in,
                    struct ToolOptions *tool_opts,
                    struct World       *world)
 {
-	int      b;
-	size_t   i;
-	char    *l_end = NULL;
-	size_t   l_start = 3;
-	char     pressed;
-	int      report_vals[3];
-	int      x;
-	int      y;
+	unsigned int  b;
+	size_t        i;
+	size_t        l_start = 3;
+	char          pressed;
+	unsigned int  report_vals[3];
+	unsigned int  x;
+	unsigned int  y;
 
-	/* we ignore errno here
-	 */
 	for (i = 0; i < 3; i++) {
-		report_vals[i] = strtoul(&in[l_start], &l_end, 10);
-		l_start += l_end - &in[l_start] + 1;
+		l_start += string_to_uint(&in[l_start], &report_vals[i]) + 1;
 	}
 	b = report_vals[0];
 	x = report_vals[1];

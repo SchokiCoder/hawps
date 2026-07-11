@@ -20,4 +20,13 @@ string_cat(char *restrict       dst,
            const size_t         cat_pos,
            const char *restrict src);
 
+/* @str: String to be converted.
+ * @out: Resulting number.
+ *
+ * Returns the amount of read bytes.
+ */
+size_t
+string_to_uint(const char   *str,
+               unsigned int *out);
+
 #endif /* _STR_H */
