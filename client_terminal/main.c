@@ -15,6 +15,7 @@
 
 #include "csi.h"
 #include "config.h"
+#include "int_to_string.h"
 #include "str.h"
 
 #define CELSIUS_TO_KELVIN 273.15
@@ -616,18 +617,16 @@ draw(const char           *cmdline,
 	                          display_size,
 	                          display_len,
 	                          " (");
-	snprintf(buf, BUF_SIZE, "%i", tool_opts.x);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
-	                          buf);
+	                          NUMBERSTRING[tool_opts.x]);
 	display[display_len] = ',';
 	display_len += 1;
-	snprintf(buf, BUF_SIZE, "%i", tool_opts.y);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
-	                          buf);
+	                          NUMBERSTRING[tool_opts.y]);
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,

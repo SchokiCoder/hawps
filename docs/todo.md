@@ -506,11 +506,17 @@ and it's pretty self explanatory what a "heater" does.
 
 - [x] terminal client: replace sscanf with strtoul for performance
 - [x] terminal client: replace strtoul with custom conversion for performance
+- [x] terminal client: add lookup table for int to str conversion
+This replaces most snprintf calls in draw for performance.
+
+- [ ] terminal client: replace last snprintf with custom int to str
+problem is it's sim speed, which is float, not int
+just print it as int?
+find an alternative display that doesn't need fractions?
+
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
-- [ ] terminal client: performance: add lookup table for int to str conversion
-(removing last sprintf calls)
 - [ ] performance review of both clients
 
 - [ ] add proper profiling procedure to Makefile with `gcc -pg`
