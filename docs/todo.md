@@ -509,10 +509,9 @@ and it's pretty self explanatory what a "heater" does.
 - [x] terminal client: add lookup table for int to str conversion
 This replaces most snprintf calls in draw for performance.
 
-- [ ] terminal client: replace last snprintf with custom int to str
-problem is it's sim speed, which is float, not int
-just print it as int?
-find an alternative display that doesn't need fractions?
+- [x] terminal client: replace last snprintf with custom int to str conversion
+Problem is it was sim speed, which was a float, not int.
+I changed the display a bit.
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid

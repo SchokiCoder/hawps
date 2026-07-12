@@ -547,7 +547,7 @@ draw(const char           *cmdline,
 	char   buf[BUF_SIZE];
 	size_t buf_len = 0;
 	size_t display_len = 0;
-	float  sim_speed = 0.0;
+	int    sim_speed = 0;
 	size_t space_len = 0;
 	size_t st_bar_len = 0;
 	char  *vision = NULL;
@@ -602,12 +602,6 @@ draw(const char           *cmdline,
 		vision = "Normal";
 	}
 
-	if (paused) {
-		sim_speed = 0.0;
-	} else {
-		sim_speed = (float) tickrate / (float) sim_subsample;
-	}
-
 	st_bar_len = display_len;
 	display_len += string_cat(display,
 	                          display_size,
@@ -639,15 +633,22 @@ draw(const char           *cmdline,
 	                          display_size,
 	                          display_len,
 	                          STATUSBAR_SEPARATOR "Speed:");
-	snprintf(buf, BUF_SIZE, "%.1f", sim_speed);
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          buf);
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          "/s" STATUSBAR_SEPARATOR);
+	if (paused) {
+		display_len += string_cat(display,
+		                          display_size,
+		                          display_len,
+		                          "None" STATUSBAR_SEPARATOR);
+	} else {
+		sim_speed = (float) tickrate / (float) sim_subsample;
+		display_len += string_cat(display,
+		                          display_size,
+		                          display_len,
+		                          NUMBERSTRING[sim_speed]);
+		display_len += string_cat(display,
+		                          display_size,
+		                          display_len,
+		                          "/s" STATUSBAR_SEPARATOR);
+	}
 	display_len += string_cat(display,
 	                          display_size,
 	                          display_len,
