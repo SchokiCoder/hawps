@@ -513,14 +513,23 @@ This replaces most snprintf calls in draw for performance.
 Problem is it was sim speed, which was a float, not int.
 I changed the display a bit.
 
+- [x] ~performance: replace function pointers with ifs~
+This **might** give about 2% performance with gcc -O3 and the likes... maybe,
+but it screws tcc over big time.
+
+- [x] terminal client: optimize `render_world`'s function pointer away
+Will gcc devirtualize the function call? No. Does if work with tcc?
+Fine, I'll do it myself.
+Just have a loop for each case. No function pointers, no ifs, no tears.
+
+- [ ] terminal client: optimize `render_dot`'s `if (!no_color) {`
+
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] performance review of both clients
 
 - [ ] add proper profiling procedure to Makefile with `gcc -pg`
-- [ ] performance: function pointer vs if; test
-Color options could benefit from this.
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse

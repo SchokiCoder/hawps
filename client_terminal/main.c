@@ -493,9 +493,7 @@ tool_radius_add(const int           radius_change,
 size_t
 render_dot(char               *out,
            const size_t        out_size,
-           struct Rgba       (*get_dot_color)(const struct World,
-	                                      const int    x,
-	                                      const int    y),
+           const struct Rgba   color,
            const bool          no_color,
            const struct World  world,
            const int           x,
@@ -1917,15 +1915,12 @@ tool_radius_add(const int           radius_change,
 size_t
 render_dot(char               *out,
            const size_t        out_size,
-           struct Rgba       (*get_dot_color)(const struct World,
-	                                      const int    x,
-	                                      const int    y),
+           const struct Rgba   color,
            const bool          no_color,
            const struct World  world,
            const int           x,
            const int           y)
 {
-	struct Rgba dot_color;
 	size_t      written = 0;
 
 	if (world.spawner[x][y] == true) {
@@ -1950,10 +1945,9 @@ render_dot(char               *out,
 		written += 1;
 	} else {
 		if (!no_color) {
-			dot_color = get_dot_color(world, x, y);
-			written += CSI_color_to_string(dot_color.r,
-					               dot_color.g,
-					               dot_color.b,
+			written += CSI_color_to_string(color.r,
+					               color.g,
+					               color.b,
 					               true,
 					               &out[written],
 					               out_size - written);
@@ -1998,31 +1992,44 @@ render_world(char               *out,
              const int           world_draw_w,
              const int           world_draw_h)
 {
-	struct Rgba (*get_dot_color)(const struct World,
-	                             const int    x,
-	                             const int    y);
 	size_t written = 0;
 	int    x, y;
 
 	if (th_vision) {
-		get_dot_color = get_thermal_dot_color;
-	} else {
-		if (no_glowcolor) {
-			get_dot_color = get_normal_dot_color_simple;
-		} else {
-			get_dot_color = get_normal_dot_color;
+		for (y = 0; y < world_draw_h; y++) {
+			for (x = 0; x < world_draw_w; x++) {
+				written += render_dot(&out[written],
+						      out_size - written,
+						      get_thermal_dot_color(world, x, y),
+						      no_color,
+						      world,
+						      x,
+						      y);
+			}
 		}
-	}
-
-	for (y = 0; y < world_draw_h; y++) {
-		for (x = 0; x < world_draw_w; x++) {
-			written += render_dot(&out[written],
-			                      out_size - written,
-			                      get_dot_color,
-			                      no_color,
-			                      world,
-			                      x,
-			                      y);
+	} else if (no_glowcolor) {
+		for (y = 0; y < world_draw_h; y++) {
+			for (x = 0; x < world_draw_w; x++) {
+				written += render_dot(&out[written],
+						      out_size - written,
+						      get_normal_dot_color_simple(world, x, y),
+						      no_color,
+						      world,
+						      x,
+						      y);
+			}
+		}
+	} else {
+		for (y = 0; y < world_draw_h; y++) {
+			for (x = 0; x < world_draw_w; x++) {
+				written += render_dot(&out[written],
+						      out_size - written,
+						      get_normal_dot_color(world, x, y),
+						      no_color,
+						      world,
+						      x,
+						      y);
+			}
 		}
 	}
 

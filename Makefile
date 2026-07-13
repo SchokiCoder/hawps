@@ -12,9 +12,11 @@ DEFAULT_CLIENT :=$(APP_NAME)_terminal
 
 GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
 
-CC        :=cc
-C_FLAGS   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g -pg
-C_DEFINES :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(LICENSE)"' -D APP_LICENSE_URL='"$(LICENSE_URL)"' -D APP_REPOSITORY='"$(REPOSITORY)"' -D APP_VERSION='"$(VERSION)"'
+CC              :=cc
+C_FLAGS_DEBUG   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
+C_FLAGS_PROFILE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -g -O3 -pg
+C_FLAGS_RELEASE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -O3
+C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(LICENSE)"' -D APP_LICENSE_URL='"$(LICENSE_URL)"' -D APP_REPOSITORY='"$(REPOSITORY)"' -D APP_VERSION='"$(VERSION)"'
 
 .PHONY: all build clean generate run test vet
 
@@ -39,7 +41,7 @@ bin/$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
 bin/$(APP_NAME)_terminal: client_terminal/* client_terminal/int_to_string.h lib_core/* lib_extra/*
-	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ -I lib_core -I lib_extra \
+	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ -I lib_core -I lib_extra \
 		client_terminal/*.c lib_core/*.c lib_extra/*.c
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
