@@ -524,8 +524,7 @@ Just have a loop for each case. No function pointers, no ifs, no tears.
 
 - [x] terminal client: optimize `render_dot`'s no-color-ifs away
 - [x] libcore: optimize `world_sim`'s body-sim-function-pointer away
-- [ ] terminal client: optimize `render_dot`'s `switch (world.state[x][y]) {` away with an array (state is index)
-mind the `no_color` variant
+- [x] terminal client: optimize `render_dot`'s switch for dot appearance away
 
 - [ ] terminal client: fix compile warnings from release build
 

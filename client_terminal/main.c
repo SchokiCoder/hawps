@@ -363,6 +363,13 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "        pause world\n"
 "\n";
 
+static const char DOT_APPEARANCE[] = {
+	'X',
+	'X',
+	'+',
+	'-',
+};
+
 /* Function declarations
  */
 
@@ -1990,28 +1997,8 @@ render_dot(char               *out,
 		                               true,
 		                               &out[written],
 		                               out_size - written);
-		switch (world.state[x][y]) {
-		case MS_STATIC:
-		case MS_GRAIN:
-			out[written] = 'X';
-			written += 1;
-			break;
-
-		case MS_LIQUID:
-			out[written] = '+';
-			written += 1;
-			break;
-
-		case MS_GAS:
-			out[written] = '-';
-			written += 1;
-			break;
-
-		default:
-			out[written] = '?';
-			written += 1;
-			break;
-		}
+		out[written] = DOT_APPEARANCE[world.state[x][y]];
+		written += 1;
 	}
 
 	out[written] = '\0';
@@ -2033,28 +2020,8 @@ render_dot_no_color(char               *out,
 		out[written] = ' ';
 		written += 1;
 	} else {
-		switch (world.state[x][y]) {
-		case MS_STATIC:
-		case MS_GRAIN:
-			out[written] = 'X';
-			written += 1;
-			break;
-
-		case MS_LIQUID:
-			out[written] = '+';
-			written += 1;
-			break;
-
-		case MS_GAS:
-			out[written] = '-';
-			written += 1;
-			break;
-
-		default:
-			out[written] = '?';
-			written += 1;
-			break;
-		}
+		out[written] = DOT_APPEARANCE[world.state[x][y]];
+		written += 1;
 	}
 
 	out[written] = '\0';
