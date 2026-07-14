@@ -11,8 +11,6 @@
 #define WEIGHT_FACTOR_GAS    0.90
 #define WEIGHTLOSS_LIMIT_GAS 5000.0
 
-static void (*body_sim) (struct World*, int*, const int);
-
 static bool
 world_collapse_gas_stack(struct World *w,
                          const int     x,
@@ -310,9 +308,19 @@ world_sim(struct World *w)
 		world_sim_chemical_reaction(w, x, y, x, y - 1);
 	}
 
-	body_sim = world_sim_to_right;
-	for (y = w->h - 2; y > 0; y--) {
-		body_sim(w, &x, y);
+	y = w->h - 2;
+	while (1) {
+		if (y <= 0) {
+			break;
+		}
+		world_sim_to_right(w, &x, y);
+		y -= 1;
+
+		if (y <= 0) {
+			break;
+		}
+		world_sim_to_left(w, &x, y);
+		y -= 1;
 	}
 
 	y = 0;
@@ -374,7 +382,6 @@ world_sim_to_right(struct World *w,
 		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
 		world_sim_gravity(w, *x, y);
 	}
-	body_sim = world_sim_to_left;
 }
 
 static void
@@ -396,7 +403,6 @@ world_sim_to_left(struct World *w,
 		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
 		world_sim_gravity(w, *x, y);
 	}
-	body_sim = world_sim_to_right;
 }
 
 static void
