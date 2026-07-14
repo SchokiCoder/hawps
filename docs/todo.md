@@ -522,7 +522,11 @@ Will gcc devirtualize the function call? No. Does if work with tcc?
 Fine, I'll do it myself.
 Just have a loop for each case. No function pointers, no ifs, no tears.
 
-- [ ] terminal client: optimize `render_dot`'s `if (!no_color) {`
+- [x] terminal client: optimize `render_dot`'s no-color-ifs away
+- [ ] terminal client: optimize `render_dot`'s `switch (world.state[x][y]) {` away with an array (state is index)
+mind the `no_color` variant
+
+- [ ] terminal client: fix compile warnings from release build
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid

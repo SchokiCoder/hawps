@@ -18,6 +18,34 @@
 #include "int_to_string.h"
 #include "str.h"
 
+/* Macros
+ */
+
+#define DOT_RENDER_LOOP(COLOR) \
+	for (y = 0; y < world_draw_h; y++) { \
+		for (x = 0; x < world_draw_w; x++) { \
+			written += render_dot(&out[written], \
+			                      out_size - written, \
+			                      COLOR, \
+			                      world, \
+			                      x, \
+			                      y); \
+		} \
+	}
+
+#define DOT_RENDER_LOOP_NO_COLOR \
+	for (y = 0; y < world_draw_h; y++) { \
+		for (x = 0; x < world_draw_w; x++) { \
+			written += render_dot_no_color(&out[written], \
+			                               world, \
+			                               x, \
+			                               y); \
+		} \
+	}
+
+/* Constant defines
+ */
+
 #define CELSIUS_TO_KELVIN 273.15
 
 #define FIRST_REAL_MAT MAT_SAND
@@ -50,6 +78,9 @@
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
 
+/* Types
+ */
+
 enum InputMode {
 	IM_NORMAL,
 	IM_COMMAND,
@@ -71,6 +102,9 @@ struct ToolOptions {
 	int       x2;
 	int       y2;
 };
+
+/* Constants
+ */
 
 static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
 "licensed under the %s at:\n"
@@ -329,6 +363,9 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "        pause world\n"
 "\n";
 
+/* Function declarations
+ */
+
 void
 draw(const char           *cmdline,
      const size_t          cmdline_len,
@@ -494,10 +531,15 @@ size_t
 render_dot(char               *out,
            const size_t        out_size,
            const struct Rgba   color,
-           const bool          no_color,
            const struct World  world,
            const int           x,
            const int           y);
+
+size_t
+render_dot_no_color(char               *out,
+                    const struct World  world,
+                    const int           x,
+                    const int           y);
 
 size_t
 render_world(char               *out,
@@ -520,6 +562,9 @@ set_feedback(char          **feedback,
 void
 use_tool(struct ToolOptions  tool_opts,
          struct World       *world);
+
+/* Function definitions
+ */
 
 void
 draw(const char           *cmdline,
@@ -1916,42 +1961,78 @@ size_t
 render_dot(char               *out,
            const size_t        out_size,
            const struct Rgba   color,
-           const bool          no_color,
            const struct World  world,
            const int           x,
            const int           y)
 {
-	size_t      written = 0;
+	size_t written = 0;
 
 	if (world.spawner[x][y] == true) {
-		if (!no_color) {
-			written += CSI_color_to_string(SPAWNER_R,
-				                       SPAWNER_G,
-				                       SPAWNER_B,
-				                       true,
-				                       &out[written],
-				                       out_size - written);
-		}
+		written += CSI_color_to_string(SPAWNER_R,
+		                               SPAWNER_G,
+		                               SPAWNER_B,
+		                               true,
+		                               &out[written],
+		                               out_size - written);
 		out[written] = 'O';
 		written += 1;
 	} else if (world.dot[x][y] == MAT_NONE) {
-		if (!no_color) {
-			written += CSI_color_to_string(255, 255, 255,
-				                       true,
-				                       &out[written],
-				                       out_size - written);
-		}
+		written += CSI_color_to_string(255, 255, 255,
+		                               true,
+		                               &out[written],
+		                               out_size - written);
 		out[written] = ' ';
 		written += 1;
 	} else {
-		if (!no_color) {
-			written += CSI_color_to_string(color.r,
-					               color.g,
-					               color.b,
-					               true,
-					               &out[written],
-					               out_size - written);
+		written += CSI_color_to_string(color.r,
+		                               color.g,
+		                               color.b,
+		                               true,
+		                               &out[written],
+		                               out_size - written);
+		switch (world.state[x][y]) {
+		case MS_STATIC:
+		case MS_GRAIN:
+			out[written] = 'X';
+			written += 1;
+			break;
+
+		case MS_LIQUID:
+			out[written] = '+';
+			written += 1;
+			break;
+
+		case MS_GAS:
+			out[written] = '-';
+			written += 1;
+			break;
+
+		default:
+			out[written] = '?';
+			written += 1;
+			break;
 		}
+	}
+
+	out[written] = '\0';
+	return written;
+}
+
+size_t
+render_dot_no_color(char               *out,
+                    const struct World  world,
+                    const int           x,
+                    const int           y)
+{
+	size_t written = 0;
+
+	if (world.spawner[x][y] == true) {
+		out[written] = 'O';
+		written += 1;
+	} else if (world.dot[x][y] == MAT_NONE) {
+		out[written] = ' ';
+		written += 1;
+	} else {
 		switch (world.state[x][y]) {
 		case MS_STATIC:
 		case MS_GRAIN:
@@ -1996,40 +2077,22 @@ render_world(char               *out,
 	int    x, y;
 
 	if (th_vision) {
-		for (y = 0; y < world_draw_h; y++) {
-			for (x = 0; x < world_draw_w; x++) {
-				written += render_dot(&out[written],
-						      out_size - written,
-						      get_thermal_dot_color(world, x, y),
-						      no_color,
-						      world,
-						      x,
-						      y);
-			}
+		if (no_color) {
+			DOT_RENDER_LOOP_NO_COLOR
+		} else {
+			DOT_RENDER_LOOP(get_thermal_dot_color(world, x, y))
 		}
 	} else if (no_glowcolor) {
-		for (y = 0; y < world_draw_h; y++) {
-			for (x = 0; x < world_draw_w; x++) {
-				written += render_dot(&out[written],
-						      out_size - written,
-						      get_normal_dot_color_simple(world, x, y),
-						      no_color,
-						      world,
-						      x,
-						      y);
-			}
+		if (no_color) {
+			DOT_RENDER_LOOP_NO_COLOR
+		} else {
+			DOT_RENDER_LOOP(get_normal_dot_color_simple(world, x, y))
 		}
 	} else {
-		for (y = 0; y < world_draw_h; y++) {
-			for (x = 0; x < world_draw_w; x++) {
-				written += render_dot(&out[written],
-						      out_size - written,
-						      get_normal_dot_color(world, x, y),
-						      no_color,
-						      world,
-						      x,
-						      y);
-			}
+		if (no_color) {
+			DOT_RENDER_LOOP_NO_COLOR
+		} else {
+			DOT_RENDER_LOOP(get_normal_dot_color(world, x, y))
 		}
 	}
 

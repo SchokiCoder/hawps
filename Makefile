@@ -41,7 +41,7 @@ bin/$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
 bin/$(APP_NAME)_terminal: client_terminal/* client_terminal/int_to_string.h lib_core/* lib_extra/*
-	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ -I lib_core -I lib_extra \
+	$(CC) $(C_FLAGS_DEBUG) $(C_DEFINES) -o $@ -I lib_core -I lib_extra \
 		client_terminal/*.c lib_core/*.c lib_extra/*.c
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
