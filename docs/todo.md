@@ -77,7 +77,7 @@ Remember to update the ip address display to reflect this.
 - [ ] terminal client: update help text
 - [ ] update README
 
-- [ ] set version to 0.8
+- git tag to update APP_VERSION
 
 # "Waiting for an update"-Anniversary Update
 
@@ -529,6 +529,13 @@ Just have a loop for each case. No function pointers, no ifs, no tears.
 - [x] add proper profiling procedure to Makefile
 Also delete obsolete mock up file for terminal client.
 
+- [x] update app variables in Makefile
+Firstly prefix all names.
+Secondly update the version to draw from most recent git tag.
+
+- [ ] terminal client: change about-print to be statically concatenated
+This isn't super necessary but triggers me.
+
 - [ ] terminal client: fix compile warnings from release build
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
@@ -549,7 +556,7 @@ Also delete obsolete mock up file for terminal client.
 - [ ] update README
 - [ ] update copyright?
 
-- [ ] set version to 0.7
+- git tag to update APP_VERSION
 
 -----
 

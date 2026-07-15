@@ -3,16 +3,16 @@
 
 APP_NAME         :=hawps
 APP_NAME_FORMAL  :=Half Assed Wannabe Physics Simulator
-LICENSE          :=MPL-2.0
-LICENSE_URL      :=https://mozilla.org/MPL/2.0
-REPOSITORY       :=https://github.com/SchokiCoder/hawps
-VERSION          :=v0.6
+APP_LICENSE      :=MPL-2.0
+APP_LICENSE_URL  :=https://mozilla.org/MPL/2.0
+APP_REPOSITORY   :=https://github.com/SchokiCoder/hawps
+APP_VERSION      !=git describe --abbrev=0 --tags
 
 CC              :=cc
 C_FLAGS_DEBUG   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
 C_FLAGS_PROFILE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -g -O3 -pg
 C_FLAGS_RELEASE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -O3
-C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(LICENSE)"' -D APP_LICENSE_URL='"$(LICENSE_URL)"' -D APP_REPOSITORY='"$(REPOSITORY)"' -D APP_VERSION='"$(VERSION)"'
+C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
 
 CLIENT_TERMINAL_INCLUDE_DIRS :=-I lib_core -I lib_extra
 CLIENT_TERMINAL_FILE_DEPS    :=client_terminal/* client_terminal/int_to_string.h lib_core/* lib_extra/*
@@ -22,7 +22,7 @@ DEFAULT_CLIENT :=$(APP_NAME)_terminal
 
 GIT_HEAD !=git rev-parse --short HEAD
 
-GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(LICENSE)' -X 'main.AppLicenseUrl=$(LICENSE_URL)' -X 'main.AppRepository=$(REPOSITORY)' -X 'main.AppVersion=$(VERSION)'"
+GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(APP_LICENSE)' -X 'main.AppLicenseUrl=$(APP_LICENSE_URL)' -X 'main.AppRepository=$(APP_REPOSITORY)' -X 'main.AppVersion=$(APP_VERSION)'"
 
 .PHONY: all build clean generate profile run test vet
 
