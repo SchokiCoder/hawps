@@ -106,12 +106,13 @@ struct ToolOptions {
 /* Constants
  */
 
-static const char APP_ABOUT[] = "The source code of \"%s\" aka %s %s is available,\n"
-"licensed under the %s at:\n"
-"%s\n"
+static const char APP_ABOUT[] = "The source code of \"" APP_NAME_FORMAL "\" "
+"aka " APP_NAME " " APP_VERSION " is available,\n"
+"licensed under the " APP_LICENSE " at:\n"
+APP_REPOSITORY "\n"
 "\n"
 "If you did not receive a copy of the license, see below:\n"
-"%s\n";
+APP_LICENSE_URL "\n";
 
 static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
 "\n"
@@ -1040,11 +1041,7 @@ handle_args(int                  argc,
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
 		    strcmp(argv[i], FLAG_ABOUT) == 0) {
-			printf(APP_ABOUT,
-			       APP_NAME_FORMAL, APP_NAME, APP_VERSION,
-			       APP_LICENSE,
-			       APP_REPOSITORY,
-			       APP_LICENSE_URL);
+			printf(APP_ABOUT);
 			return false;
 		} else if (strcmp(argv[i], FLAG_BRUSHRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_BRUSHRADIUS_SHORT) == 0) {

@@ -533,8 +533,8 @@ Also delete obsolete mock up file for terminal client.
 Firstly prefix all names.
 Secondly update the version to draw from most recent git tag.
 
-- [ ] terminal client: change about-print to be statically concatenated
-This isn't super necessary but triggers me.
+- [x] terminal client: change about-print to be statically concatenated
+This isn't super necessary but triggered me.
 
 - [ ] terminal client: fix compile warnings from release build
 
