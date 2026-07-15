@@ -526,14 +526,15 @@ Just have a loop for each case. No function pointers, no ifs, no tears.
 - [x] libcore: optimize `world_sim`'s body-sim-function-pointer away
 - [x] terminal client: optimize `render_dot`'s switch for dot appearance away
 
+- [x] add proper profiling procedure to Makefile
+Also delete obsolete mock up file for terminal client.
+
 - [ ] terminal client: fix compile warnings from release build
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
 - [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] performance review of both clients
-
-- [ ] add proper profiling procedure to Makefile with `gcc -pg`
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse
