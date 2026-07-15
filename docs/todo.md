@@ -538,11 +538,11 @@ This isn't super necessary but triggered me.
 
 - [x] terminal client: DRY redundant resize code
 
-- [ ] terminal client: fix status-bar-overflow crash with too small terminals
+- [x] terminal client: fix status-bar-overflow crash with too small terminals
 It would overflow into the next line,
 causing a heap-buffer-overflow on display string.
 This adds a priority system for each label in the status bar.
-The smaller the terminal gets, the more low priority things are hidden.
+The smaller the terminal gets, the more low priority things get hidden.
 
 - [ ] terminal client: fix cmdline-overflow crash with too small terminals
 It would overflow, causing a heap-buffer-overflow on display string.

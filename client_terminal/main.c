@@ -17,6 +17,7 @@
 #include "config.h"
 #include "int_to_string.h"
 #include "str.h"
+#include "types.h"
 
 /* Macros
  */
@@ -77,31 +78,6 @@
 
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
-
-/* Types
- */
-
-enum InputMode {
-	IM_NORMAL,
-	IM_COMMAND,
-};
-
-struct ToolOptions {
-	enum Mat  brush_mat;
-	int       brush_radius;
-	int       eraser_radius;
-	enum Tool sel_tool;
-	float     spawn_temperature;
-	enum Mat  spawner_mat;
-	float     thermo_delta;
-	int       thermo_radius;
-	int       x;
-	int       y;
-	int       x1;
-	int       y1;
-	int       x2;
-	int       y2;
-};
 
 /* Constants
  */
@@ -375,25 +351,27 @@ static const char DOT_APPEARANCE[] = {
  */
 
 void
-draw(const char           *cmdline,
-     const size_t          cmdline_len,
-     char                 *display,
-     const size_t          display_size,
-     const size_t          dot_depth,
-     const char           *feedback,
-     const enum InputMode  input_mode,
-     const char           *ip_address,
-     const bool            no_color,
-     const bool            no_glowcolor,
-     const bool            paused,
-     const int             sim_subsample,
-     const int             tickrate,
-     const bool            th_vision,
-     struct ToolOptions    tool_opts,
-     const int             win_w,
-     const int             win_h,
-     const struct World    world,
-     const char           *world_name);
+draw(const char                  *cmdline,
+     const size_t                 cmdline_len,
+     char                        *display,
+     const size_t                 display_size,
+     const size_t                 dot_depth,
+     const char                  *feedback,
+     const enum InputMode         input_mode,
+     const char                  *ip_address,
+     const bool                   no_color,
+     const bool                   no_glowcolor,
+     const bool                   paused,
+     const int                    sim_subsample,
+     const size_t                 statusbar_elems,
+     const enum StatusbarElement *statusbar_elem,
+     const int                    tickrate,
+     const bool                   th_vision,
+     struct ToolOptions           tool_opts,
+     const int                    win_w,
+     const int                    win_h,
+     const struct World           world,
+     const char                  *world_name);
 
 struct Rgba
 get_normal_dot_color(const struct World world,
@@ -515,11 +493,15 @@ handle_normal_input(const char         *in,
                     struct World       *world);
 
 void
-handle_resize(char         **display,
-              size_t        *display_size,
-              const size_t   dot_depth,
-              int           *win_w,
-              int           *win_h);
+handle_resize(char                  **display,
+              size_t                 *display_size,
+              const size_t            dot_depth,
+              const char             *ip_address,
+              size_t                 *statusbar_elems,
+              enum StatusbarElement  *statusbar_elem,
+              int                    *win_w,
+              int                    *win_h,
+              const char             *world_name);
 
 void
 handle_simple_command(const char          *cmdline,
@@ -541,6 +523,18 @@ new_tool_options();
 void
 tool_radius_add(const int           radius_change,
                 struct ToolOptions *tool_opts);
+
+size_t
+render_statusbar_display(char                        *out,
+                         const size_t                 out_size,
+                         const char                  *ip_address,
+                         const bool                   paused,
+                         const enum StatusbarElement  sbe,
+                         const int                    sim_subsample,
+                         const int                    tickrate,
+                         const bool                   th_vision,
+                         struct ToolOptions           tool_opts,
+                         const char                  *world_name);
 
 size_t
 render_dot(char               *out,
@@ -582,33 +576,34 @@ use_tool(struct ToolOptions  tool_opts,
  */
 
 void
-draw(const char           *cmdline,
-     const size_t          cmdline_len,
-     char                 *display,
-     const size_t          display_size,
-     const size_t          dot_depth,
-     const char           *feedback,
-     const enum InputMode  input_mode,
-     const char           *ip_address,
-     const bool            no_color,
-     const bool            no_glowcolor,
-     const bool            paused,
-     const int             sim_subsample,
-     const int             tickrate,
-     const bool            th_vision,
-     struct ToolOptions    tool_opts,
-     const int             win_w,
-     const int             win_h,
-     const struct World    world,
-     const char           *world_name)
+draw(const char                  *cmdline,
+     const size_t                 cmdline_len,
+     char                        *display,
+     const size_t                 display_size,
+     const size_t                 dot_depth,
+     const char                  *feedback,
+     const enum InputMode         input_mode,
+     const char                  *ip_address,
+     const bool                   no_color,
+     const bool                   no_glowcolor,
+     const bool                   paused,
+     const int                    sim_subsample,
+     const size_t                 statusbar_elems,
+     const enum StatusbarElement *statusbar_elem,
+     const int                    tickrate,
+     const bool                   th_vision,
+     struct ToolOptions           tool_opts,
+     const int                    win_w,
+     const int                    win_h,
+     const struct World           world,
+     const char                  *world_name)
 {
 	char   buf[BUF_SIZE];
 	size_t buf_len = 0;
 	size_t display_len = 0;
-	int    sim_speed = 0;
+	size_t i;
 	size_t space_len = 0;
 	size_t st_bar_len = 0;
-	char  *vision = NULL;
 	int    world_draw_w = 0;
 	int    world_draw_h = 0;
 
@@ -654,63 +649,32 @@ draw(const char           *cmdline,
 	                          display_len,
 	                          CSI_BG_DEFAULT);
 
-	if (th_vision) {
-		vision = "Thermal";
-	} else {
-		vision = "Normal";
+	st_bar_len = display_len;
+
+	i = 0;
+	while (1) {
+		display_len += render_statusbar_display(&display[display_len],
+		                                        display_size - display_len,
+		                                        ip_address,
+		                                        paused,
+		                                        statusbar_elem[i],
+		                                        sim_subsample,
+		                                        tickrate,
+		                                        th_vision,
+		                                        tool_opts,
+		                                        world_name);
+
+		i++;
+		if (i >= statusbar_elems) {
+			break;
+		}
+
+		display_len += string_cat(display,
+		                          display_size,
+		                          display_len,
+		                          STATUSBAR_SEPARATOR);
 	}
 
-	st_bar_len = display_len;
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          world_name);
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          " (");
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          NUMBERSTRING[tool_opts.x]);
-	display[display_len] = ',';
-	display_len += 1;
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          NUMBERSTRING[tool_opts.y]);
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          ")" STATUSBAR_SEPARATOR "View:");
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          vision);
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          STATUSBAR_SEPARATOR "Speed:");
-	if (paused) {
-		display_len += string_cat(display,
-		                          display_size,
-		                          display_len,
-		                          "None" STATUSBAR_SEPARATOR);
-	} else {
-		sim_speed = (float) tickrate / (float) sim_subsample;
-		display_len += string_cat(display,
-		                          display_size,
-		                          display_len,
-		                          NUMBERSTRING[sim_speed]);
-		display_len += string_cat(display,
-		                          display_size,
-		                          display_len,
-		                          "/s" STATUSBAR_SEPARATOR);
-	}
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          ip_address);
 	st_bar_len = display_len - st_bar_len;
 
 	space_len = win_w - st_bar_len;
@@ -1824,13 +1788,25 @@ handle_normal_input(const char         *in,
 }
 
 void
-handle_resize(char         **display,
-              size_t        *display_size,
-              const size_t   dot_depth,
-              int           *win_w,
-              int           *win_h)
+handle_resize(char                  **display,
+              size_t                 *display_size,
+              const size_t            dot_depth,
+              const char             *ip_address,
+              size_t                 *statusbar_elems,
+              enum StatusbarElement  *statusbar_elem,
+              int                    *win_w,
+              int                    *win_h,
+              const char             *world_name)
 {
-	struct winsize ws;
+	size_t             a, b;
+	char               buf[BUF_SIZE];
+	struct ToolOptions dummy_to = {
+		.x = 999,
+		.y = 999,
+	};
+	size_t             statusbar_len = 0;
+	size_t             statusbar_max_elems = 0;
+	struct winsize     ws;
 
 	ws = CSI_get_size();
 	if (*win_w != ws.ws_col ||
@@ -1843,6 +1819,40 @@ handle_resize(char         **display,
 		                          (float) DISPLAY_SIZE_MODIFIER) *
 		                dot_depth;
 		*display = realloc(*display, *display_size);
+
+		for (a = 0; a < SBE_COUNT; a++) {
+			buf[0] = '\0';
+			/* Here it is important to render the biggest possible
+			 * thing, unless it's not expected to change.
+			 * Only in that case use real data.
+			 */
+			statusbar_len += render_statusbar_display(buf,
+		                                                  BUF_SIZE,
+		                                                  ip_address,
+		                                                  false,
+		                                                  STATUSBAR_DISPLAY_PRIORITY[a],
+		                                                  1,
+		                                                  120,
+		                                                  true,
+		                                                  dummy_to,
+		                                                  world_name);
+
+			if (statusbar_len > (size_t) *win_w) {
+				break;
+			}
+
+			statusbar_len += strlen(STATUSBAR_SEPARATOR);
+		}
+		statusbar_max_elems = a;
+
+		for (a = 0; a < SBE_COUNT; a++) {
+			for (b = 0; b < statusbar_max_elems; b++) {
+				if (STATUSBAR_DISPLAY_ORDER[a] == STATUSBAR_DISPLAY_PRIORITY[b]) {
+					statusbar_elem[*statusbar_elems] = STATUSBAR_DISPLAY_ORDER[a];
+					*statusbar_elems += 1;
+				}
+			}
+		}
 	}
 }
 
@@ -1989,6 +1999,98 @@ tool_radius_add(const int           radius_change,
 	} else if (*target > MAX_RADIUS) {
 		*target = MAX_RADIUS;
 	}
+}
+
+size_t
+render_statusbar_display(char                        *out,
+                         const size_t                 out_size,
+                         const char                  *ip_address,
+                         const bool                   paused,
+                         const enum StatusbarElement  sbe,
+                         const int                    sim_subsample,
+                         const int                    tickrate,
+                         const bool                   th_vision,
+                         struct ToolOptions           tool_opts,
+                         const char                  *world_name)
+{
+	int    sim_speed = 0;
+	char  *vision = NULL;
+	size_t written = 0;
+
+	switch (sbe) {
+	case SBE_WORLD_NAME:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      world_name);
+		break;
+
+	case SBE_COORDS:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      NUMBERSTRING[tool_opts.x]);
+		out[written] = ',';
+		written += 1;
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      NUMBERSTRING[tool_opts.y]);
+		break;
+
+	case SBE_VIEW:
+		if (th_vision) {
+			vision = "Thermal";
+		} else {
+			vision = "Normal";
+		}
+
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      "View:");
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      vision);
+		break;
+
+	case SBE_SPEED:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      "Speed:");
+		if (paused) {
+			written += string_cat(out,
+			                      out_size,
+			                      written,
+			                      "None");
+		} else {
+			sim_speed = (float) tickrate /
+			            (float) sim_subsample;
+			written += string_cat(out,
+			                      out_size,
+			                      written,
+			                      NUMBERSTRING[sim_speed]);
+			written += string_cat(out,
+			                      out_size,
+			                      written,
+			                      "/s");
+		}
+		break;
+
+	case SBE_IP_ADDRESS:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      ip_address);
+		break;
+
+	case SBE_COUNT:
+		break;
+	}
+
+	return written;
 }
 
 size_t
@@ -2160,30 +2262,34 @@ int
 main(int    argc,
      char **argv)
 {
-	bool                active = true;
-	char                cmdline[CMDLINE_SIZE];
-	size_t              cmdline_len = 0;
-	char               *display = NULL;
-	size_t              display_size = 0;
-	size_t              dot_depth = 0;
-	char               *feedback = NULL;
-	clock_t             feedback_expiration = 0;
-	enum InputMode      input_mode = IM_NORMAL;
-	bool                paused = false;
-	clock_t             last_tick = 0;
-	bool                mouse_pressed = false;
-	bool                no_color = false;
-	bool                no_glowcolor = false;
-	clock_t             now = 0;
-	int                 sim_subsample = STD_SIM_SUBSAMPLE;
-	bool                th_vision = false;
-	int                 tickrate = STD_TICKRATE;
-	int                 ts_since_sim = 9001; /* ticks since last simulation */
-	struct ToolOptions  tool_opts;
-	int                 tool_radius = STD_BRUSH_RADIUS;
-	int                 win_w = 0;
-	int                 win_h = 0;
-	struct World        world;
+	bool                   active = true;
+	char                   cmdline[CMDLINE_SIZE];
+	size_t                 cmdline_len = 0;
+	char                  *display = NULL;
+	size_t                 display_size = 0;
+	size_t                 dot_depth = 0;
+	char                  *feedback = NULL;
+	clock_t                feedback_expiration = 0;
+	enum InputMode         input_mode = IM_NORMAL;
+	char                  *ip_address = "localhost";
+	bool                   paused = false;
+	clock_t                last_tick = 0;
+	bool                   mouse_pressed = false;
+	bool                   no_color = false;
+	bool                   no_glowcolor = false;
+	clock_t                now = 0;
+	int                    sim_subsample = STD_SIM_SUBSAMPLE;
+	size_t                 statusbar_elems = 0;
+	enum StatusbarElement  statusbar_elem[SBE_COUNT];
+	bool                   th_vision = false;
+	int                    tickrate = STD_TICKRATE;
+	int                    ts_since_sim = 9001; /* ticks since last simulation */
+	struct ToolOptions     tool_opts;
+	int                    tool_radius = STD_BRUSH_RADIUS;
+	int                    win_w = 0;
+	int                    win_h = 0;
+	struct World           world;
+	char                  *world_name = "worldname";
 
 	if (!handle_args(argc, argv,
 	                 &no_color,
@@ -2210,11 +2316,16 @@ main(int    argc,
 	}
 
 	display = malloc(1); /* we love hacks (next function ONLY reallocs) */
+
 	handle_resize(&display,
 	              &display_size,
 	              dot_depth,
+	              ip_address,
+	              &statusbar_elems,
+	              statusbar_elem,
 	              &win_w,
-	              &win_h);
+	              &win_h,
+	              world_name);
 
 	world = world_new(win_w, win_h - 2, tool_opts.spawn_temperature);
 
@@ -2298,8 +2409,12 @@ main(int    argc,
 			handle_resize(&display,
 			              &display_size,
 			              dot_depth,
+			              ip_address,
+			              &statusbar_elems,
+			              statusbar_elem,
 			              &win_w,
-			              &win_h);
+			              &win_h,
+			              world_name);
 
 			draw(cmdline,
 			     cmdline_len,
@@ -2308,18 +2423,20 @@ main(int    argc,
 			     dot_depth,
 			     feedback,
 			     input_mode,
-			     "localhost",
+			     ip_address,
 			     no_color,
 			     no_glowcolor,
 			     paused,
 			     sim_subsample,
+			     statusbar_elems,
+			     statusbar_elem,
 			     tickrate,
 			     th_vision,
 			     tool_opts,
 			     win_w,
 			     win_h,
 			     world,
-			     "worldname");
+			     world_name);
 		}
 	}
 

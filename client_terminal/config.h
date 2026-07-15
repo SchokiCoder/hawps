@@ -5,6 +5,8 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#include "types.h"
+
 /* color settings
  */
 #define SPAWNER_R 128
@@ -111,6 +113,22 @@
 
 /* settings
  */
+static enum StatusbarElement STATUSBAR_DISPLAY_ORDER[SBE_COUNT] = {
+	SBE_WORLD_NAME, /* first */
+	SBE_COORDS,
+	SBE_VIEW,
+	SBE_SPEED,
+	SBE_IP_ADDRESS,
+};
+
+static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[SBE_COUNT] = {
+	SBE_SPEED,      /* most important */
+	SBE_VIEW,
+	SBE_COORDS,
+	SBE_IP_ADDRESS,
+	SBE_WORLD_NAME,
+};
+
 #define FEEDBACK_LIFETIME    3    /* in seconds */
 #define MAX_RADIUS           16
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
