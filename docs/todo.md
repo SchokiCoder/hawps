@@ -536,11 +536,28 @@ Secondly update the version to draw from most recent git tag.
 - [x] terminal client: change about-print to be statically concatenated
 This isn't super necessary but triggered me.
 
+- [x] terminal client: DRY redundant resize code
+
+- [ ] terminal client: fix status-bar-overflow crash with too small terminals
+It would overflow into the next line,
+causing a heap-buffer-overflow on display string.
+This adds a priority system for each label in the status bar.
+The smaller the terminal gets, the more low priority things are hidden.
+
+- [ ] terminal client: fix cmdline-overflow crash with too small terminals
+It would overflow, causing a heap-buffer-overflow on display string.
+This shifts cmdline display, once it gets too long.
+
+- [ ] terminal client: fix tool-display-overflow crash with too small terminals
+It would overflow, causing a heap-buffer-overflow on display string.
+This just hides it altogether.
+
+- [ ] terminal client: fix tool hover draw crash after resize
+
 - [ ] terminal client: fix compile warnings from release build
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
-- [ ] terminal client: how to handle extremely small terminals? are there crashes?
 - [ ] performance review of both clients
 
 - [ ] libcore: add test against gravity

@@ -515,6 +515,13 @@ handle_normal_input(const char         *in,
                     struct World       *world);
 
 void
+handle_resize(char         **display,
+              size_t        *display_size,
+              const size_t   dot_depth,
+              int           *win_w,
+              int           *win_h);
+
+void
 handle_simple_command(const char          *cmdline,
                       bool                *active,
                       char               **feedback,
@@ -1817,6 +1824,29 @@ handle_normal_input(const char         *in,
 }
 
 void
+handle_resize(char         **display,
+              size_t        *display_size,
+              const size_t   dot_depth,
+              int           *win_w,
+              int           *win_h)
+{
+	struct winsize ws;
+
+	ws = CSI_get_size();
+	if (*win_w != ws.ws_col ||
+	    *win_h != ws.ws_row) {
+		*win_w = ws.ws_col;
+		*win_h = ws.ws_row;
+
+		*display_size = (size_t) ((float) *win_w *
+		                          (float) *win_h *
+		                          (float) DISPLAY_SIZE_MODIFIER) *
+		                dot_depth;
+		*display = realloc(*display, *display_size);
+	}
+}
+
+void
 handle_simple_command(const char          *cmdline,
                       bool                *active,
                       char               **feedback,
@@ -2144,16 +2174,15 @@ main(int    argc,
 	bool                mouse_pressed = false;
 	bool                no_color = false;
 	bool                no_glowcolor = false;
-	clock_t             now;
+	clock_t             now = 0;
 	int                 sim_subsample = STD_SIM_SUBSAMPLE;
-	struct winsize      tempws;
 	bool                th_vision = false;
 	int                 tickrate = STD_TICKRATE;
 	int                 ts_since_sim = 9001; /* ticks since last simulation */
 	struct ToolOptions  tool_opts;
 	int                 tool_radius = STD_BRUSH_RADIUS;
-	int                 win_w;
-	int                 win_h;
+	int                 win_w = 0;
+	int                 win_h = 0;
 	struct World        world;
 
 	if (!handle_args(argc, argv,
@@ -2173,10 +2202,6 @@ main(int    argc,
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
 
-	tempws = CSI_get_size();
-	win_w = tempws.ws_col;
-	win_h = tempws.ws_row;
-
 	cmdline[0] = '\0';
 	if (no_color) {
 		dot_depth = 1;
@@ -2184,9 +2209,12 @@ main(int    argc,
 		dot_depth = CSI_COLORSTRING_LEN + 1;
 	}
 
-	display_size = (size_t) (win_w * win_h * DISPLAY_SIZE_MODIFIER) *
-	               dot_depth;
-	display = malloc(display_size);
+	display = malloc(1); /* we love hacks (next function ONLY reallocs) */
+	handle_resize(&display,
+	              &display_size,
+	              dot_depth,
+	              &win_w,
+	              &win_h);
 
 	world = world_new(win_w, win_h - 2, tool_opts.spawn_temperature);
 
@@ -2267,19 +2295,11 @@ main(int    argc,
 				}
 			}
 
-			tempws = CSI_get_size();
-			if (win_w != tempws.ws_col ||
-			    win_h != tempws.ws_row) {
-				win_w = tempws.ws_col;
-				win_h = tempws.ws_row;
-
-				free(display);
-				display_size = (size_t) (win_w *
-				                         win_h *
-				                         DISPLAY_SIZE_MODIFIER) *
-				               dot_depth;
-				display = malloc(display_size);
-			}
+			handle_resize(&display,
+			              &display_size,
+			              dot_depth,
+			              &win_w,
+			              &win_h);
 
 			draw(cmdline,
 			     cmdline_len,
