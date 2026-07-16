@@ -22,6 +22,12 @@
 /* Macros
  */
 
+#define DOT_EMPTY_LINES_RENDER_LOOP \
+	for (y = 0; y < world_draw_space_h; y++) { \
+		memset(&out[written], ' ', world_draw_w + world_draw_space_w); \
+		written += world_draw_w + world_draw_space_w;\
+	}
+
 #define DOT_RENDER_LOOP(COLOR) \
 	for (y = 0; y < world_draw_h; y++) { \
 		for (x = 0; x < world_draw_w; x++) { \
@@ -32,7 +38,10 @@
 			                      x, \
 			                      y); \
 		} \
-	}
+		memset(&out[written], ' ', world_draw_space_w); \
+		written += world_draw_space_w;\
+	} \
+	DOT_EMPTY_LINES_RENDER_LOOP
 
 #define DOT_RENDER_LOOP_NO_COLOR \
 	for (y = 0; y < world_draw_h; y++) { \
@@ -42,7 +51,10 @@
 			                               x, \
 			                               y); \
 		} \
-	}
+		memset(&out[written], ' ', world_draw_space_w); \
+		written += world_draw_space_w;\
+	} \
+	DOT_EMPTY_LINES_RENDER_LOOP
 
 /* Constant defines
  */
@@ -370,10 +382,11 @@ draw(const char                  *cmdline,
      const bool                   th_vision,
      const struct ToolOptions     tool_opts,
      const int                    win_w,
-     const int                    win_h,
      const struct World           world,
      const int                    world_draw_w,
      const int                    world_draw_h,
+     const int                    world_draw_space_w,
+     const int                    world_draw_space_h,
      const char                  *world_name);
 
 struct Rgba
@@ -519,6 +532,8 @@ handle_resize(const size_t            cmdline_len,
               const struct World      world,
               int                    *world_draw_w,
               int                    *world_draw_h,
+              int                    *world_draw_space_w,
+              int                    *world_draw_space_h,
               const char             *world_name);
 
 void
@@ -583,7 +598,9 @@ render_world(char               *out,
              struct ToolOptions  tool_opts,
              const struct World  world,
              const int           world_draw_w,
-             const int           world_draw_h);
+             const int           world_draw_h,
+             const int           world_draw_space_w,
+             const int           world_draw_space_h);
 
 void
 set_feedback(char          **feedback,
@@ -618,10 +635,11 @@ draw(const char                  *cmdline,
      const bool                   th_vision,
      const struct ToolOptions     tool_opts,
      const int                    win_w,
-     const int                    win_h,
      const struct World           world,
      const int                    world_draw_w,
      const int                    world_draw_h,
+     const int                    world_draw_space_w,
+     const int                    world_draw_space_h,
      const char                  *world_name)
 {
 	char   buf[BUF_SIZE];
@@ -652,7 +670,9 @@ draw(const char                  *cmdline,
 	                            tool_opts,
 	                            world,
 	                            world_draw_w,
-	                            world_draw_h);
+	                            world_draw_h,
+	                            world_draw_space_w,
+	                            world_draw_space_h);
 
 	display_len += string_cat(display,
 	                          display_size,
@@ -1837,6 +1857,8 @@ handle_resize(const size_t            cmdline_len,
               const struct World      world,
               int                    *world_draw_w,
               int                    *world_draw_h,
+              int                    *world_draw_space_w,
+              int                    *world_draw_space_h,
               const char             *world_name)
 {
 	size_t             a, b;
@@ -1860,11 +1882,13 @@ handle_resize(const size_t            cmdline_len,
 			*world_draw_w = *win_w;
 		} else {
 			*world_draw_w = world.w;
+			*world_draw_space_w = *win_w - world.w;
 		}
 		if (world.h > *win_h - 2) {
 			*world_draw_h = *win_h - 2;
 		} else {
 			*world_draw_h = world.h;
+			*world_draw_space_h = *win_h - 2 - world.h;
 		}
 
 		*display_size = (size_t) ((float) *win_w *
@@ -2256,7 +2280,9 @@ render_world(char               *out,
              struct ToolOptions  tool_opts,
              const struct World  world,
              const int           world_draw_w,
-             const int           world_draw_h)
+             const int           world_draw_h,
+             const int           world_draw_space_w,
+             const int           world_draw_space_h)
 {
 	size_t written = 0;
 	int    x, y;
@@ -2283,7 +2309,9 @@ render_world(char               *out,
 
 	for (x = tool_opts.x1; x < tool_opts.x2; x++) {
 		for (y = tool_opts.y1; y < tool_opts.y2; y++) {
-			out[((y * world.w) + x + 1) * dot_depth - 1] = '^';
+			out[((y * world.w) + x + 1) * dot_depth +
+			    (y * world_draw_space_w) -
+			    1] = '^';
 		}
 	}
 
@@ -2381,6 +2409,8 @@ main(int    argc,
 	struct World           world;
 	int                    world_draw_w = 0;
 	int                    world_draw_h = 0;
+	int                    world_draw_space_w = 0;
+	int                    world_draw_space_h = 0;
 	char                  *world_name = "worldname";
 	struct winsize         ws;
 
@@ -2427,6 +2457,8 @@ main(int    argc,
 	              world,
 	              &world_draw_w,
 	              &world_draw_h,
+	              &world_draw_space_w,
+	              &world_draw_space_h,
 	              world_name);
 
 	while (active) {
@@ -2522,6 +2554,8 @@ main(int    argc,
 			              world,
 			              &world_draw_w,
 			              &world_draw_h,
+			              &world_draw_space_w,
+			              &world_draw_space_h,
 			              world_name);
 
 			draw(cmdline,
@@ -2543,10 +2577,11 @@ main(int    argc,
 			     th_vision,
 			     tool_opts,
 			     win_w,
-			     win_h,
 			     world,
 			     world_draw_w,
 			     world_draw_h,
+			     world_draw_space_w,
+			     world_draw_space_h,
 			     world_name);
 		}
 	}

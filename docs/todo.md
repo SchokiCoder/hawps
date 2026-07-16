@@ -561,11 +561,12 @@ This crashed resize code at a live resize.
 - [x] terminal client: move world draw area calculation to resize code
 I guess this is an optimization.
 
-- [ ] terminal client: fix world draw not spacing line remainders
+- [x] terminal client: fix world draw not spacing line remainders
 If the world is smaller than the drawing area,
 draw just keeps going instead of using spaces until next line.
 
 - [ ] terminal client: fix tool hover draw being munted after resize
+(and crashes... still)
 
 - [ ] libcore: fix Quicklime going under Sand?
 (heavier grains shouldn't just be able to go beneath lighter ones)
