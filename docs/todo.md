@@ -548,11 +548,17 @@ The smaller the terminal gets, the more low priority things get hidden.
 It would overflow, causing a heap-buffer-overflow on display string.
 This shifts cmdline display, once it gets too long.
 
-- [ ] terminal client: fix tool-display-overflow crash with too small terminals
+- [x] terminal client: fix tool-display-overflow crash with too small terminals
 It would overflow, causing a heap-buffer-overflow on display string.
-This just hides it altogether.
+This just cuts tool-display off at the end.
+
+- [ ] terminal client: fix overflow crash from feedback with too small terminals
+This just cuts feedback off at the end.
 
 - [ ] terminal client: fix tool hover draw crash after resize
+
+- [ ] libcore: fix Quicklime going under Sand?
+(heavier grains shouldn't just be able to go beneath lighter ones)
 
 - [ ] terminal client: how to scroll a world?
 

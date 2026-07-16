@@ -368,7 +368,7 @@ draw(const char                  *cmdline,
      const enum StatusbarElement *statusbar_elem,
      const int                    tickrate,
      const bool                   th_vision,
-     struct ToolOptions           tool_opts,
+     const struct ToolOptions     tool_opts,
      const int                    win_w,
      const int                    win_h,
      const struct World           world,
@@ -411,7 +411,6 @@ handle_args(int                  argc,
 void
 handle_cmdline_shift(const size_t          cmdline_len,
                      size_t               *cmdline_shift,
-                     const enum InputMode  input_mode,
                      const int             win_w);
 
 void
@@ -539,18 +538,6 @@ tool_radius_add(const int           radius_change,
                 struct ToolOptions *tool_opts);
 
 size_t
-render_statusbar_display(char                        *out,
-                         const size_t                 out_size,
-                         const char                  *ip_address,
-                         const bool                   paused,
-                         const enum StatusbarElement  sbe,
-                         const int                    sim_subsample,
-                         const int                    tickrate,
-                         const bool                   th_vision,
-                         struct ToolOptions           tool_opts,
-                         const char                  *world_name);
-
-size_t
 render_dot(char               *out,
            const size_t        out_size,
            const struct Rgba   color,
@@ -563,6 +550,23 @@ render_dot_no_color(char               *out,
                     const struct World  world,
                     const int           x,
                     const int           y);
+
+size_t
+render_statusbar_display(char                        *out,
+                         const size_t                 out_size,
+                         const char                  *ip_address,
+                         const bool                   paused,
+                         const enum StatusbarElement  sbe,
+                         const int                    sim_subsample,
+                         const int                    tickrate,
+                         const bool                   th_vision,
+                         struct ToolOptions           tool_opts,
+                         const char                  *world_name);
+
+size_t
+render_tool_hint(char                     *out,
+                 const size_t              out_size,
+                 const struct ToolOptions  tool_opts);
 
 size_t
 render_world(char               *out,
@@ -607,7 +611,7 @@ draw(const char                  *cmdline,
      const enum StatusbarElement *statusbar_elem,
      const int                    tickrate,
      const bool                   th_vision,
-     struct ToolOptions           tool_opts,
+     const struct ToolOptions     tool_opts,
      const int                    win_w,
      const int                    win_h,
      const struct World           world,
@@ -698,9 +702,6 @@ draw(const char                  *cmdline,
 
 	switch (input_mode) {
 	case IM_NORMAL:
-		buf[0] = '\0';
-		buf_len = 0;
-
 		if (feedback != NULL) {
 			display_len += string_cat(display,
 			                          display_size,
@@ -710,26 +711,17 @@ draw(const char                  *cmdline,
 			break;
 		}
 
-		buf_len += string_cat(buf,
-		                      BUF_SIZE,
-		                      buf_len,
-		                      TOOL_NAME[tool_opts.sel_tool]);
+		buf[0] = '\0';
+		buf_len = 0;
+		buf_len = render_tool_hint(buf, BUF_SIZE, tool_opts);
 
-		if (tool_opts.sel_tool == TOOL_BRUSH) {
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, " ");
-			buf_len += string_cat(buf,
-			                      BUF_SIZE,
-			                      buf_len,
-			                      MAT_NAME[tool_opts.brush_mat]);
-		} else if (tool_opts.sel_tool == TOOL_SPAWNER) {
-			buf_len += string_cat(buf, BUF_SIZE, buf_len, " ");
-			buf_len += string_cat(buf,
-			                      BUF_SIZE,
-			                      buf_len,
-			                      MAT_NAME[tool_opts.spawner_mat]);
+		if (buf_len > (size_t) win_w) {
+			buf_len -= buf_len - win_w;
+			buf[buf_len] = '\0';
 		}
 
 		display_len += string_cat(display, display_size, display_len, buf);
+
 		space_len = win_w - buf_len;
 		break;
 
@@ -1206,11 +1198,9 @@ handle_args(int                  argc,
 void
 handle_cmdline_shift(const size_t          cmdline_len,
                      size_t               *cmdline_shift,
-                     const enum InputMode  input_mode,
                      const int             win_w)
 {
-	if (input_mode == IM_COMMAND &&
-	    1 + cmdline_len + 1 > (size_t) win_w) {
+	if (1 + cmdline_len + 1 > (size_t) win_w) {
 		*cmdline_shift = 1 + cmdline_len + 1 - win_w;
 	} else {
 		*cmdline_shift = 0;
@@ -1305,7 +1295,6 @@ handle_command_input(const char          *in,
 			*cmdline_len -= 1;
 			handle_cmdline_shift(*cmdline_len,
 			                     cmdline_shift,
-			                     *input_mode,
 			                     win_w);
 		}
 		break;
@@ -1329,11 +1318,10 @@ handle_command_input(const char          *in,
 	case SIG_TSTP:
 		cmdline[0] = '\0';
 		*cmdline_len = 0;
+		*input_mode = IM_NORMAL;
 		handle_cmdline_shift(*cmdline_len,
 		                     cmdline_shift,
-		                     *input_mode,
 		                     win_w);
-		*input_mode = IM_NORMAL;
 		break;
 
 	default:
@@ -1343,7 +1331,6 @@ handle_command_input(const char          *in,
 			*cmdline_len += 1;
 			handle_cmdline_shift(*cmdline_len,
 			                     cmdline_shift,
-			                     *input_mode,
 			                     win_w);
 		}
 	}
@@ -1851,7 +1838,8 @@ handle_resize(const size_t            cmdline_len,
 {
 	size_t             a, b;
 	char               buf[BUF_SIZE];
-	struct ToolOptions dummy_to = {
+	size_t             buf_len;
+	struct ToolOptions maxcoords_to = {
 		.x = 999,
 		.y = 999,
 	};
@@ -1885,7 +1873,7 @@ handle_resize(const size_t            cmdline_len,
 		                                                  1,
 		                                                  120,
 		                                                  true,
-		                                                  dummy_to,
+		                                                  maxcoords_to,
 		                                                  world_name);
 
 			if (statusbar_len > (size_t) *win_w) {
@@ -1905,10 +1893,11 @@ handle_resize(const size_t            cmdline_len,
 			}
 		}
 
-		handle_cmdline_shift(cmdline_len,
-		                     cmdline_shift,
-		                     input_mode,
-		                     *win_w);
+		if (input_mode == IM_COMMAND) {
+			handle_cmdline_shift(cmdline_len,
+			                     cmdline_shift,
+			                     *win_w);
+		}
 	}
 }
 
@@ -2058,6 +2047,70 @@ tool_radius_add(const int           radius_change,
 }
 
 size_t
+render_dot(char               *out,
+           const size_t        out_size,
+           const struct Rgba   color,
+           const struct World  world,
+           const int           x,
+           const int           y)
+{
+	size_t written = 0;
+
+	if (world.spawner[x][y] == true) {
+		written += CSI_color_to_string(SPAWNER_R,
+		                               SPAWNER_G,
+		                               SPAWNER_B,
+		                               true,
+		                               &out[written],
+		                               out_size - written);
+		out[written] = 'O';
+		written += 1;
+	} else if (world.dot[x][y] == MAT_NONE) {
+		written += CSI_color_to_string(255, 255, 255,
+		                               true,
+		                               &out[written],
+		                               out_size - written);
+		out[written] = ' ';
+		written += 1;
+	} else {
+		written += CSI_color_to_string(color.r,
+		                               color.g,
+		                               color.b,
+		                               true,
+		                               &out[written],
+		                               out_size - written);
+		out[written] = DOT_APPEARANCE[world.state[x][y]];
+		written += 1;
+	}
+
+	out[written] = '\0';
+	return written;
+}
+
+size_t
+render_dot_no_color(char               *out,
+                    const struct World  world,
+                    const int           x,
+                    const int           y)
+{
+	size_t written = 0;
+
+	if (world.spawner[x][y] == true) {
+		out[written] = 'O';
+		written += 1;
+	} else if (world.dot[x][y] == MAT_NONE) {
+		out[written] = ' ';
+		written += 1;
+	} else {
+		out[written] = DOT_APPEARANCE[world.state[x][y]];
+		written += 1;
+	}
+
+	out[written] = '\0';
+	return written;
+}
+
+size_t
 render_statusbar_display(char                        *out,
                          const size_t                 out_size,
                          const char                  *ip_address,
@@ -2150,66 +2203,31 @@ render_statusbar_display(char                        *out,
 }
 
 size_t
-render_dot(char               *out,
-           const size_t        out_size,
-           const struct Rgba   color,
-           const struct World  world,
-           const int           x,
-           const int           y)
+render_tool_hint(char                     *out,
+                 const size_t              out_size,
+                 const struct ToolOptions  tool_opts)
 {
 	size_t written = 0;
 
-	if (world.spawner[x][y] == true) {
-		written += CSI_color_to_string(SPAWNER_R,
-		                               SPAWNER_G,
-		                               SPAWNER_B,
-		                               true,
-		                               &out[written],
-		                               out_size - written);
-		out[written] = 'O';
-		written += 1;
-	} else if (world.dot[x][y] == MAT_NONE) {
-		written += CSI_color_to_string(255, 255, 255,
-		                               true,
-		                               &out[written],
-		                               out_size - written);
-		out[written] = ' ';
-		written += 1;
-	} else {
-		written += CSI_color_to_string(color.r,
-		                               color.g,
-		                               color.b,
-		                               true,
-		                               &out[written],
-		                               out_size - written);
-		out[written] = DOT_APPEARANCE[world.state[x][y]];
-		written += 1;
+	written += string_cat(out,
+	                      out_size,
+	                      written,
+	                      TOOL_NAME[tool_opts.sel_tool]);
+
+	if (tool_opts.sel_tool == TOOL_BRUSH) {
+		written += string_cat(out, out_size, written, " ");
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      MAT_NAME[tool_opts.brush_mat]);
+	} else if (tool_opts.sel_tool == TOOL_SPAWNER) {
+		written += string_cat(out, out_size, written, " ");
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      MAT_NAME[tool_opts.spawner_mat]);
 	}
 
-	out[written] = '\0';
-	return written;
-}
-
-size_t
-render_dot_no_color(char               *out,
-                    const struct World  world,
-                    const int           x,
-                    const int           y)
-{
-	size_t written = 0;
-
-	if (world.spawner[x][y] == true) {
-		out[written] = 'O';
-		written += 1;
-	} else if (world.dot[x][y] == MAT_NONE) {
-		out[written] = ' ';
-		written += 1;
-	} else {
-		out[written] = DOT_APPEARANCE[world.state[x][y]];
-		written += 1;
-	}
-
-	out[written] = '\0';
 	return written;
 }
 
