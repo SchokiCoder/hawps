@@ -558,7 +558,14 @@ This just cuts feedback off at the end.
 - [x] terminal client: fix missing int reset
 This crashed resize code at a live resize.
 
-- [ ] terminal client: fix tool hover draw crash after resize
+- [x] terminal client: move world draw area calculation to resize code
+I guess this is an optimization.
+
+- [ ] terminal client: fix world draw not spacing line remainders
+If the world is smaller than the drawing area,
+draw just keeps going instead of using spaces until next line.
+
+- [ ] terminal client: fix tool hover draw being munted after resize
 
 - [ ] libcore: fix Quicklime going under Sand?
 (heavier grains shouldn't just be able to go beneath lighter ones)

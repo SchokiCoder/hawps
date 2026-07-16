@@ -372,6 +372,8 @@ draw(const char                  *cmdline,
      const int                    win_w,
      const int                    win_h,
      const struct World           world,
+     const int                    world_draw_w,
+     const int                    world_draw_h,
      const char                  *world_name);
 
 struct Rgba
@@ -514,6 +516,9 @@ handle_resize(const size_t            cmdline_len,
               enum StatusbarElement  *statusbar_elem,
               int                    *win_w,
               int                    *win_h,
+              const struct World      world,
+              int                    *world_draw_w,
+              int                    *world_draw_h,
               const char             *world_name);
 
 void
@@ -615,6 +620,8 @@ draw(const char                  *cmdline,
      const int                    win_w,
      const int                    win_h,
      const struct World           world,
+     const int                    world_draw_w,
+     const int                    world_draw_h,
      const char                  *world_name)
 {
 	char   buf[BUF_SIZE];
@@ -624,21 +631,8 @@ draw(const char                  *cmdline,
 	size_t i;
 	size_t space_len = 0;
 	size_t st_bar_len = 0;
-	int    world_draw_w = 0;
-	int    world_draw_h = 0;
 
 	display[0] = '\0';
-
-	if (world.w > win_w) {
-		world_draw_w = win_w;
-	} else {
-		world_draw_w = world.w;
-	}
-	if (world.h > win_h - 2) {
-		world_draw_h = win_h - 2;
-	} else {
-		world_draw_h = world.h;
-	}
 
 	if (th_vision) {
 		display_len += CSI_color_to_string(THERMAL_VISION_R,
@@ -1840,6 +1834,9 @@ handle_resize(const size_t            cmdline_len,
               enum StatusbarElement  *statusbar_elem,
               int                    *win_w,
               int                    *win_h,
+              const struct World      world,
+              int                    *world_draw_w,
+              int                    *world_draw_h,
               const char             *world_name)
 {
 	size_t             a, b;
@@ -1858,6 +1855,17 @@ handle_resize(const size_t            cmdline_len,
 	    *win_h != ws.ws_row) {
 		*win_w = ws.ws_col;
 		*win_h = ws.ws_row;
+
+		if (world.w > *win_w) {
+			*world_draw_w = *win_w;
+		} else {
+			*world_draw_w = world.w;
+		}
+		if (world.h > *win_h - 2) {
+			*world_draw_h = *win_h - 2;
+		} else {
+			*world_draw_h = world.h;
+		}
 
 		*display_size = (size_t) ((float) *win_w *
 		                          (float) *win_h *
@@ -2371,7 +2379,10 @@ main(int    argc,
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
+	int                    world_draw_w = 0;
+	int                    world_draw_h = 0;
 	char                  *world_name = "worldname";
+	struct winsize         ws;
 
 	if (!handle_args(argc, argv,
 	                 &no_color,
@@ -2397,6 +2408,9 @@ main(int    argc,
 		dot_depth = CSI_COLORSTRING_LEN + 1;
 	}
 
+	ws = CSI_get_size();
+	world = world_new(ws.ws_col, ws.ws_row - 2, tool_opts.spawn_temperature);
+
 	display = malloc(1); /* we love hacks (next function ONLY reallocs) */
 
 	handle_resize(cmdline_len,
@@ -2410,9 +2424,10 @@ main(int    argc,
 	              statusbar_elem,
 	              &win_w,
 	              &win_h,
+	              world,
+	              &world_draw_w,
+	              &world_draw_h,
 	              world_name);
-
-	world = world_new(win_w, win_h - 2, tool_opts.spawn_temperature);
 
 	while (active) {
 		handle_input(&active,
@@ -2504,6 +2519,9 @@ main(int    argc,
 			              statusbar_elem,
 			              &win_w,
 			              &win_h,
+			              world,
+			              &world_draw_w,
+			              &world_draw_h,
 			              world_name);
 
 			draw(cmdline,
@@ -2527,6 +2545,8 @@ main(int    argc,
 			     win_w,
 			     win_h,
 			     world,
+			     world_draw_w,
+			     world_draw_h,
 			     world_name);
 		}
 	}
