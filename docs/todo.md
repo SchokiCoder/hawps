@@ -544,7 +544,7 @@ causing a heap-buffer-overflow on display string.
 This adds a priority system for each label in the status bar.
 The smaller the terminal gets, the more low priority things get hidden.
 
-- [ ] terminal client: fix cmdline-overflow crash with too small terminals
+- [x] terminal client: fix cmdline-overflow crash with too small terminals
 It would overflow, causing a heap-buffer-overflow on display string.
 This shifts cmdline display, once it gets too long.
 
@@ -553,6 +553,8 @@ It would overflow, causing a heap-buffer-overflow on display string.
 This just hides it altogether.
 
 - [ ] terminal client: fix tool hover draw crash after resize
+
+- [ ] terminal client: how to scroll a world?
 
 - [ ] terminal client: fix compile warnings from release build
 

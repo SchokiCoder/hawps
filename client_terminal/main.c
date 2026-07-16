@@ -353,6 +353,7 @@ static const char DOT_APPEARANCE[] = {
 void
 draw(const char                  *cmdline,
      const size_t                 cmdline_len,
+     const size_t                 cmdline_shift,
      char                        *display,
      const size_t                 display_size,
      const size_t                 dot_depth,
@@ -408,6 +409,12 @@ handle_args(int                  argc,
             struct ToolOptions  *tool_opts);
 
 void
+handle_cmdline_shift(const size_t          cmdline_len,
+                     size_t               *cmdline_shift,
+                     const enum InputMode  input_mode,
+                     const int             win_w);
+
+void
 handle_command(char                *cmdline,
                const size_t         cmdline_len,
                bool                *active,
@@ -427,6 +434,7 @@ handle_command_input(const char          *in,
                      bool                *active,
                      char                *cmdline,
                      size_t              *cmdline_len,
+                     size_t              *cmdline_shift,
                      char               **feedback,
                      clock_t             *feedback_expiration,
                      enum InputMode      *input_mode,
@@ -437,6 +445,7 @@ handle_command_input(const char          *in,
                      bool                *th_vision,
                      int                 *tickrate,
                      struct ToolOptions  *tool_opts,
+                     const int            win_w,
                      struct World        *world);
 
 bool
@@ -455,6 +464,7 @@ void
 handle_input(bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
+             size_t              *cmdline_shift,
              char               **feedback,
              clock_t             *feedback_expiration,
              enum InputMode      *input_mode,
@@ -466,6 +476,7 @@ handle_input(bool                *active,
              int                 *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
+             const int            win_w,
              struct World        *world);
 
 void
@@ -493,9 +504,12 @@ handle_normal_input(const char         *in,
                     struct World       *world);
 
 void
-handle_resize(char                  **display,
+handle_resize(const size_t            cmdline_len,
+              size_t                 *cmdline_shift,
+              char                  **display,
               size_t                 *display_size,
               const size_t            dot_depth,
+              const enum InputMode    input_mode,
               const char             *ip_address,
               size_t                 *statusbar_elems,
               enum StatusbarElement  *statusbar_elem,
@@ -578,6 +592,7 @@ use_tool(struct ToolOptions  tool_opts,
 void
 draw(const char                  *cmdline,
      const size_t                 cmdline_len,
+     const size_t                 cmdline_shift,
      char                        *display,
      const size_t                 display_size,
      const size_t                 dot_depth,
@@ -725,14 +740,15 @@ draw(const char                  *cmdline,
 		display_len += string_cat(display,
 		                          display_size,
 		                          display_len,
-		                          cmdline);
+		                          &cmdline[cmdline_shift]);
 
 		display[display_len] = CMDLINE_CURSOR;
 		display_len += 1;
 
-		space_len = win_w - 1 - cmdline_len - 1;
+		space_len = win_w - 1 - cmdline_len + cmdline_shift - 1;
 		break;
 	}
+
 	memset(&display[display_len], ' ', space_len);
 	display_len += space_len;
 
@@ -1188,6 +1204,20 @@ handle_args(int                  argc,
 }
 
 void
+handle_cmdline_shift(const size_t          cmdline_len,
+                     size_t               *cmdline_shift,
+                     const enum InputMode  input_mode,
+                     const int             win_w)
+{
+	if (input_mode == IM_COMMAND &&
+	    1 + cmdline_len + 1 > (size_t) win_w) {
+		*cmdline_shift = 1 + cmdline_len + 1 - win_w;
+	} else {
+		*cmdline_shift = 0;
+	}
+}
+
+void
 handle_command(char                *cmdline,
                const size_t         cmdline_len,
                bool                *active,
@@ -1254,6 +1284,7 @@ handle_command_input(const char          *in,
                      bool                *active,
                      char                *cmdline,
                      size_t              *cmdline_len,
+                     size_t              *cmdline_shift,
                      char               **feedback,
                      clock_t             *feedback_expiration,
                      enum InputMode      *input_mode,
@@ -1264,6 +1295,7 @@ handle_command_input(const char          *in,
                      bool                *th_vision,
                      int                 *tickrate,
                      struct ToolOptions  *tool_opts,
+                     const int            win_w,
                      struct World        *world)
 {
 	switch (in[0]) {
@@ -1271,6 +1303,10 @@ handle_command_input(const char          *in,
 		if (*cmdline_len > 0) {
 			cmdline[*cmdline_len - 1] = '\0';
 			*cmdline_len -= 1;
+			handle_cmdline_shift(*cmdline_len,
+			                     cmdline_shift,
+			                     *input_mode,
+			                     win_w);
 		}
 		break;
 
@@ -1293,6 +1329,10 @@ handle_command_input(const char          *in,
 	case SIG_TSTP:
 		cmdline[0] = '\0';
 		*cmdline_len = 0;
+		handle_cmdline_shift(*cmdline_len,
+		                     cmdline_shift,
+		                     *input_mode,
+		                     win_w);
 		*input_mode = IM_NORMAL;
 		break;
 
@@ -1301,6 +1341,10 @@ handle_command_input(const char          *in,
 			cmdline[*cmdline_len] = in[0];
 			cmdline[*cmdline_len + 1] = '\0';
 			*cmdline_len += 1;
+			handle_cmdline_shift(*cmdline_len,
+			                     cmdline_shift,
+			                     *input_mode,
+			                     win_w);
 		}
 	}
 }
@@ -1361,6 +1405,7 @@ void
 handle_input(bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
+             size_t              *cmdline_shift,
              char               **feedback,
              clock_t             *feedback_expiration,
              enum InputMode      *input_mode,
@@ -1372,6 +1417,7 @@ handle_input(bool                *active,
              int                 *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
+             const int            win_w,
              struct World        *world)
 {
 	ssize_t input_len = 0;
@@ -1403,6 +1449,7 @@ handle_input(bool                *active,
 			                     active,
 			                     cmdline,
 			                     cmdline_len,
+			                     cmdline_shift,
 			                     feedback,
 			                     feedback_expiration,
 			                     input_mode,
@@ -1413,6 +1460,7 @@ handle_input(bool                *active,
 			                     th_vision,
 			                     tickrate,
 			                     tool_opts,
+			                     win_w,
 			                     world);
 		}
 		break;
@@ -1788,9 +1836,12 @@ handle_normal_input(const char         *in,
 }
 
 void
-handle_resize(char                  **display,
+handle_resize(const size_t            cmdline_len,
+              size_t                 *cmdline_shift,
+              char                  **display,
               size_t                 *display_size,
               const size_t            dot_depth,
+              const enum InputMode    input_mode,
               const char             *ip_address,
               size_t                 *statusbar_elems,
               enum StatusbarElement  *statusbar_elem,
@@ -1853,6 +1904,11 @@ handle_resize(char                  **display,
 				}
 			}
 		}
+
+		handle_cmdline_shift(cmdline_len,
+		                     cmdline_shift,
+		                     input_mode,
+		                     *win_w);
 	}
 }
 
@@ -2265,6 +2321,7 @@ main(int    argc,
 	bool                   active = true;
 	char                   cmdline[CMDLINE_SIZE];
 	size_t                 cmdline_len = 0;
+	size_t                 cmdline_shift = 0;
 	char                  *display = NULL;
 	size_t                 display_size = 0;
 	size_t                 dot_depth = 0;
@@ -2317,9 +2374,12 @@ main(int    argc,
 
 	display = malloc(1); /* we love hacks (next function ONLY reallocs) */
 
-	handle_resize(&display,
+	handle_resize(cmdline_len,
+	              &cmdline_shift,
+	              &display,
 	              &display_size,
 	              dot_depth,
+	              input_mode,
 	              ip_address,
 	              &statusbar_elems,
 	              statusbar_elem,
@@ -2333,6 +2393,7 @@ main(int    argc,
 		handle_input(&active,
 		             cmdline,
 		             &cmdline_len,
+		             &cmdline_shift,
 		             &feedback,
 		             &feedback_expiration,
 		             &input_mode,
@@ -2344,6 +2405,7 @@ main(int    argc,
 		             &tickrate,
 		             &th_vision,
 		             &tool_opts,
+		             win_w,
 		             &world);
 
 		switch (tool_opts.sel_tool) {
@@ -2406,9 +2468,12 @@ main(int    argc,
 				}
 			}
 
-			handle_resize(&display,
+			handle_resize(cmdline_len,
+			              &cmdline_shift,
+			              &display,
 			              &display_size,
 			              dot_depth,
+			              input_mode,
 			              ip_address,
 			              &statusbar_elems,
 			              statusbar_elem,
@@ -2418,6 +2483,7 @@ main(int    argc,
 
 			draw(cmdline,
 			     cmdline_len,
+			     cmdline_shift,
 			     display,
 			     display_size,
 			     dot_depth,
