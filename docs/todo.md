@@ -552,7 +552,7 @@ This shifts cmdline display, once it gets too long.
 It would overflow, causing a heap-buffer-overflow on display string.
 This just cuts tool-display off at the end.
 
-- [ ] terminal client: fix overflow crash from feedback with too small terminals
+- [x] terminal client: fix overflow crash from feedback with too small terminals
 This just cuts feedback off at the end.
 
 - [ ] terminal client: fix tool hover draw crash after resize

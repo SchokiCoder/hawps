@@ -620,6 +620,7 @@ draw(const char                  *cmdline,
 	char   buf[BUF_SIZE];
 	size_t buf_len = 0;
 	size_t display_len = 0;
+	size_t feedback_len;
 	size_t i;
 	size_t space_len = 0;
 	size_t st_bar_len = 0;
@@ -703,11 +704,16 @@ draw(const char                  *cmdline,
 	switch (input_mode) {
 	case IM_NORMAL:
 		if (feedback != NULL) {
+			feedback_len = strlen(feedback);
+			if (feedback_len > (size_t) win_w) {
+				feedback_len -= feedback_len - win_w;
+			}
 			display_len += string_cat(display,
-			                          display_size,
+			                          /* hack: */
+			                          display_len + feedback_len + 1,
 			                          display_len,
 			                          feedback);
-			space_len = win_w - strlen(feedback);
+			space_len = win_w - feedback_len;
 			break;
 		}
 
