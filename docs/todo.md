@@ -555,6 +555,9 @@ This just cuts tool-display off at the end.
 - [x] terminal client: fix overflow crash from feedback with too small terminals
 This just cuts feedback off at the end.
 
+- [x] terminal client: fix missing int reset
+This crashed resize code at a live resize.
+
 - [ ] terminal client: fix tool hover draw crash after resize
 
 - [ ] libcore: fix Quicklime going under Sand?

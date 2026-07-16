@@ -1889,6 +1889,7 @@ handle_resize(const size_t            cmdline_len,
 			statusbar_len += strlen(STATUSBAR_SEPARATOR);
 		}
 		statusbar_max_elems = a;
+		*statusbar_elems = 0;
 
 		for (a = 0; a < SBE_COUNT; a++) {
 			for (b = 0; b < statusbar_max_elems; b++) {
