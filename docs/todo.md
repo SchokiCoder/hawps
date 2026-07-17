@@ -565,8 +565,11 @@ I guess this is an optimization.
 If the world is smaller than the drawing area,
 draw just keeps going instead of using spaces until next line.
 
-- [ ] terminal client: fix tool hover draw being munted after resize
-(and crashes... still)
+- [x] terminal client: fix tool hover draw using total world width
+This fixes live resize munting the tool hover draw.
+
+- [ ] terminal client: fix display string being allowed to shrink on resize
+This fixes live resize crashes.
 
 - [ ] libcore: fix Quicklime going under Sand?
 (heavier grains shouldn't just be able to go beneath lighter ones)

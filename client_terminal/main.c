@@ -2309,11 +2309,12 @@ render_world(char               *out,
 
 	for (x = tool_opts.x1; x < tool_opts.x2; x++) {
 		for (y = tool_opts.y1; y < tool_opts.y2; y++) {
-			out[((y * world.w) + x + 1) * dot_depth +
+			out[((y * world_draw_w) + x + 1) * dot_depth +
 			    (y * world_draw_space_w) -
 			    1] = '^';
 		}
 	}
+
 
 	return written;
 }
