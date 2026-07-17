@@ -571,6 +571,9 @@ This fixes live resize munting the tool hover draw.
 - [x] terminal client: fix display string being allowed to shrink on resize
 This fixes live resize crashes.
 
+- [x] terminal client: fix tool hover size calculation using total world size
+This fixes the tool hover draw going into next line after resizing down.
+
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,
 because ctrl-j is literally just '\n'.

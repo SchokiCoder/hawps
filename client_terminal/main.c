@@ -2516,12 +2516,12 @@ main(int    argc,
 			tool_opts.y1 = 0;
 
 		tool_opts.x2 = tool_opts.x + tool_radius + 1;
-		if (tool_opts.x2 >= world.w)
-			tool_opts.x2 = world.w;
+		if (tool_opts.x2 >= world_draw_w)
+			tool_opts.x2 = world_draw_w;
 
 		tool_opts.y2 = tool_opts.y + tool_radius + 1;
-		if (tool_opts.y2 >= world.h)
-			tool_opts.y2 = world.h;
+		if (tool_opts.y2 >= world_draw_h)
+			tool_opts.y2 = world_draw_h;
 
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
