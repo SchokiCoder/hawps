@@ -571,10 +571,19 @@ This fixes live resize munting the tool hover draw.
 - [x] terminal client: fix display string being allowed to shrink on resize
 This fixes live resize crashes.
 
+- [ ] terminal client: add world view scrolling
+h j k l keys can't get a direct bind for this,
+because ctrl-j is literally just '\n'.
+So for keyboard input, scrolling happens on demand,
+when the cursor would leave the visible range.
+For the mouse we just drag with right mouse button.
+
+- [ ] terminal client: add material copy from under cursor into current tool on middle mouse
+
+- [ ] terminal client: update help text
+
 - [ ] libcore: fix Quicklime going under Sand?
 (heavier grains shouldn't just be able to go beneath lighter ones)
-
-- [ ] terminal client: how to scroll a world?
 
 - [ ] terminal client: fix compile warnings from release build
 
