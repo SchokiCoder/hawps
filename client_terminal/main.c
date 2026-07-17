@@ -527,6 +527,7 @@ handle_resize(const size_t            cmdline_len,
               const char             *ip_address,
               size_t                 *statusbar_elems,
               enum StatusbarElement  *statusbar_elem,
+              struct ToolOptions     *tool_opts,
               int                    *win_w,
               int                    *win_h,
               const struct World      world,
@@ -1852,6 +1853,7 @@ handle_resize(const size_t            cmdline_len,
               const char             *ip_address,
               size_t                 *statusbar_elems,
               enum StatusbarElement  *statusbar_elem,
+              struct ToolOptions     *tool_opts,
               int                    *win_w,
               int                    *win_h,
               const struct World      world,
@@ -1868,6 +1870,7 @@ handle_resize(const size_t            cmdline_len,
 		.x = 999,
 		.y = 999,
 	};
+	size_t             new_display_size;
 	size_t             statusbar_len = 0;
 	size_t             statusbar_max_elems = 0;
 	struct winsize     ws;
@@ -1891,11 +1894,14 @@ handle_resize(const size_t            cmdline_len,
 			*world_draw_space_h = *win_h - 2 - world.h;
 		}
 
-		*display_size = (size_t) ((float) *win_w *
-		                          (float) *win_h *
-		                          (float) DISPLAY_SIZE_MODIFIER) *
-		                dot_depth;
-		*display = realloc(*display, *display_size);
+		new_display_size = (size_t) ((float) *win_w *
+		                             (float) *win_h *
+		                             (float) DISPLAY_SIZE_MODIFIER) *
+		                   dot_depth;
+		if (new_display_size > *display_size) {
+			*display_size = new_display_size;
+			*display = realloc(*display, *display_size);
+		}
 
 		for (a = 0; a < SBE_COUNT; a++) {
 			buf[0] = '\0';
@@ -2453,6 +2459,7 @@ main(int    argc,
 	              ip_address,
 	              &statusbar_elems,
 	              statusbar_elem,
+	              &tool_opts,
 	              &win_w,
 	              &win_h,
 	              world,
@@ -2550,6 +2557,7 @@ main(int    argc,
 			              ip_address,
 			              &statusbar_elems,
 			              statusbar_elem,
+			              &tool_opts,
 			              &win_w,
 			              &win_h,
 			              world,

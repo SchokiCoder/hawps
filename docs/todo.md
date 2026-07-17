@@ -568,7 +568,7 @@ draw just keeps going instead of using spaces until next line.
 - [x] terminal client: fix tool hover draw using total world width
 This fixes live resize munting the tool hover draw.
 
-- [ ] terminal client: fix display string being allowed to shrink on resize
+- [x] terminal client: fix display string being allowed to shrink on resize
 This fixes live resize crashes.
 
 - [ ] libcore: fix Quicklime going under Sand?
