@@ -574,14 +574,21 @@ This fixes live resize crashes.
 - [x] terminal client: fix tool hover size calculation using total world size
 This fixes the tool hover draw going into next line after resizing down.
 
+- [x] terminal client: add world view scrolling via right mouse button
+
+- [ ] terminal client: fix mouse scrolling resetting itself when beginning to scroll
+- [ ] terminal client: fix tool use not adjusting to scroll offset
+
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,
 because ctrl-j is literally just '\n'.
 So for keyboard input, scrolling happens on demand,
 when the cursor would leave the visible range.
-For the mouse we just drag with right mouse button.
 
 - [ ] terminal client: add material copy from under cursor into current tool on middle mouse
+
+- [ ] terminal client: add command to reset scrolling?
+or just via defaults command?
 
 - [ ] terminal client: update help text
 

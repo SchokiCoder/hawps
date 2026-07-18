@@ -24,13 +24,13 @@
 
 #define DOT_EMPTY_LINES_RENDER_LOOP \
 	for (y = 0; y < world_draw_space_h; y++) { \
-		memset(&out[written], ' ', world_draw_w + world_draw_space_w); \
-		written += world_draw_w + world_draw_space_w;\
+		memset(&out[written], ' ', world_draw.w + world_draw_space_w); \
+		written += world_draw.w + world_draw_space_w;\
 	}
 
 #define DOT_RENDER_LOOP(COLOR) \
-	for (y = 0; y < world_draw_h; y++) { \
-		for (x = 0; x < world_draw_w; x++) { \
+	for (y = world_draw.y; y < world_draw.h + world_draw.y; y++) { \
+		for (x = world_draw.x; x < world_draw.w + world_draw.x; x++) { \
 			written += render_dot(&out[written], \
 			                      out_size - written, \
 			                      COLOR, \
@@ -44,8 +44,8 @@
 	DOT_EMPTY_LINES_RENDER_LOOP
 
 #define DOT_RENDER_LOOP_NO_COLOR \
-	for (y = 0; y < world_draw_h; y++) { \
-		for (x = 0; x < world_draw_w; x++) { \
+	for (y = world_draw.y; y < world_draw.h + world_draw.y; y++) { \
+		for (x = world_draw.x; x < world_draw.w + world_draw.x; x++) { \
 			written += render_dot_no_color(&out[written], \
 			                               world, \
 			                               x, \
@@ -383,8 +383,7 @@ draw(const char                  *cmdline,
      const struct ToolOptions     tool_opts,
      const int                    win_w,
      const struct World           world,
-     const int                    world_draw_w,
-     const int                    world_draw_h,
+     const struct Rect            world_draw,
      const int                    world_draw_space_w,
      const int                    world_draw_space_h,
      const char                  *world_name);
@@ -482,40 +481,67 @@ handle_input(bool                *active,
              char               **feedback,
              clock_t             *feedback_expiration,
              enum InputMode      *input_mode,
-             bool                *mouse_pressed,
+             bool                *lmb_pressed,
              bool                *no_glowcolor,
              clock_t              now,
              bool                *paused,
+             int                 *rmb_press_x,
+             int                 *rmb_press_y,
              int                 *sim_subsample,
              int                 *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
              const int            win_w,
-             struct World        *world);
+             const int            win_h,
+             struct World        *world,
+             struct Rect         *world_draw,
+             int                 *world_draw_space_w,
+             int                 *world_draw_space_h);
 
 void
 handle_mouse_input(const char         *in,
-                   bool               *mouse_pressed,
+                   bool               *lmb_pressed,
+                   int                *rmb_press_x,
+                   int                *rmb_press_y,
                    struct ToolOptions *tool_opts,
-                   struct World       *world);
+                   const int           win_w,
+                   const int           win_h,
+                   struct World       *world,
+                   struct Rect        *world_draw,
+                   int                *world_draw_space_w,
+                   int                *world_draw_space_h);
 
 void
 handle_normal_csi_input(const char         *in,
-                        bool               *mouse_pressed,
+                        bool               *lmb_pressed,
+                        int                *rmb_press_x,
+                        int                *rmb_press_y,
                         struct ToolOptions *tool_opts,
-                        struct World       *world);
+                        const int           win_w,
+                        const int           win_h,
+                        struct World       *world,
+                        struct Rect        *world_draw,
+                        int                *world_draw_space_w,
+                        int                *world_draw_space_h);
 
 void
 handle_normal_input(const char         *in,
                     bool               *active,
                     enum InputMode     *input_mode,
-                    bool               *mouse_pressed,
+                    bool               *lmb_pressed,
                     bool               *paused,
+                    int                *rmb_press_x,
+                    int                *rmb_press_y,
                     int                *sim_subsample,
                     const int           tickrate,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
-                    struct World       *world);
+                    const int           win_w,
+                    const int           win_h,
+                    struct World       *world,
+                    struct Rect        *world_draw,
+                    int                *world_draw_space_w,
+                    int                *world_draw_space_h);
 
 void
 handle_resize(const size_t            cmdline_len,
@@ -530,8 +556,7 @@ handle_resize(const size_t            cmdline_len,
               int                    *win_w,
               int                    *win_h,
               const struct World      world,
-              int                    *world_draw_w,
-              int                    *world_draw_h,
+              struct Rect            *world_draw,
               int                    *world_draw_space_w,
               int                    *world_draw_space_h,
               const char             *world_name);
@@ -597,8 +622,7 @@ render_world(char               *out,
              const bool          th_vision,
              struct ToolOptions  tool_opts,
              const struct World  world,
-             const int           world_draw_w,
-             const int           world_draw_h,
+             const struct Rect   world_draw,
              const int           world_draw_space_w,
              const int           world_draw_space_h);
 
@@ -636,8 +660,7 @@ draw(const char                  *cmdline,
      const struct ToolOptions     tool_opts,
      const int                    win_w,
      const struct World           world,
-     const int                    world_draw_w,
-     const int                    world_draw_h,
+     const struct Rect            world_draw,
      const int                    world_draw_space_w,
      const int                    world_draw_space_h,
      const char                  *world_name)
@@ -669,8 +692,7 @@ draw(const char                  *cmdline,
 	                            th_vision,
 	                            tool_opts,
 	                            world,
-	                            world_draw_w,
-	                            world_draw_h,
+	                            world_draw,
 	                            world_draw_space_w,
 	                            world_draw_space_h);
 
@@ -1416,16 +1438,22 @@ handle_input(bool                *active,
              char               **feedback,
              clock_t             *feedback_expiration,
              enum InputMode      *input_mode,
-             bool                *mouse_pressed,
+             bool                *lmb_pressed,
              bool                *no_glowcolor,
              clock_t              now,
              bool                *paused,
+             int                 *rmb_press_x,
+             int                 *rmb_press_y,
              int                 *sim_subsample,
              int                 *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
              const int            win_w,
-             struct World        *world)
+             const int            win_h,
+             struct World        *world,
+             struct Rect         *world_draw,
+             int                 *world_draw_space_w,
+             int                 *world_draw_space_h)
 {
 	ssize_t input_len = 0;
 	char    input[INPUT_SIZE];
@@ -1440,13 +1468,20 @@ handle_input(bool                *active,
 			handle_normal_input(input,
 			                    active,
 			                    input_mode,
-			                    mouse_pressed,
+			                    lmb_pressed,
 			                    paused,
+			                    rmb_press_x,
+			                    rmb_press_y,
 			                    sim_subsample,
 			                    *tickrate,
 			                    th_vision,
 			                    tool_opts,
-			                    world);
+			                    win_w,
+			                    win_h,
+			                    world,
+			                    world_draw,
+			                    world_draw_space_w,
+			                    world_draw_space_h);
 		}
 		break;
 
@@ -1476,9 +1511,16 @@ handle_input(bool                *active,
 
 void
 handle_mouse_input(const char         *in,
-                   bool               *mouse_pressed,
+                   bool               *lmb_pressed,
+                   int                *rmb_press_x,
+                   int                *rmb_press_y,
                    struct ToolOptions *tool_opts,
-                   struct World       *world)
+                   const int           win_w,
+                   const int           win_h,
+                   struct World       *world,
+                   struct Rect        *world_draw,
+                   int                *world_draw_space_w,
+                   int                *world_draw_space_h)
 {
 	unsigned int  b;
 	size_t        i;
@@ -1508,22 +1550,43 @@ handle_mouse_input(const char         *in,
 		use_tool(*tool_opts, world);
 
 		if ('M' == pressed) {
-			*mouse_pressed = true;
+			*lmb_pressed = true;
 		} else {
-			*mouse_pressed = false;
+			*lmb_pressed = false;
 		}
 		break;
 
 	case CSI_MB_HOVER:
 		tool_opts->x = x;
 		tool_opts->y = y;
-		*mouse_pressed = false;
+		*lmb_pressed = false;
 		break;
 
 	case CSI_MB_MIDDLE:
 	case CSI_MB_MIDDLE_DRAG:
+		break;
+
 	case CSI_MB_RIGHT:
+		*rmb_press_x = x;
+		*rmb_press_y = y;
+		break;
+
 	case CSI_MB_RIGHT_DRAG:
+		world_draw->x = *rmb_press_x - x;
+		world_draw->y = *rmb_press_y - y;
+
+		if (world_draw->x < 0) {
+			world_draw->x = 0;
+		}
+		if (world_draw->y < 0) {
+			world_draw->y = 0;
+		}
+		if (world_draw->x > world->w - world_draw->w) {
+			world_draw->x = world->w - world_draw->w;
+		}
+		if (world_draw->y > world->h - world_draw->h) {
+			world_draw->y = world->h - world_draw->h;
+		}
 		break;
 
 	case CSI_MB_WHEELUP:
@@ -1538,9 +1601,16 @@ handle_mouse_input(const char         *in,
 
 void
 handle_normal_csi_input(const char         *in,
-                        bool               *mouse_pressed,
+                        bool               *lmb_pressed,
+                        int                *rmb_press_x,
+                        int                *rmb_press_y,
                         struct ToolOptions *tool_opts,
-                        struct World       *world)
+                        const int           win_w,
+                        const int           win_h,
+                        struct World       *world,
+                        struct Rect        *world_draw,
+                        int                *world_draw_space_w,
+                        int                *world_draw_space_h)
 {
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
 		if (tool_opts->x > 0) {
@@ -1574,7 +1644,17 @@ handle_normal_csi_input(const char         *in,
 		tool_opts->y = world->h - 1;
 	} else if (in[1] == '[' &&
 	           in[2] == '<') {
-		handle_mouse_input(in, mouse_pressed, tool_opts, world);
+		handle_mouse_input(in,
+		                   lmb_pressed,
+		                   rmb_press_x,
+		                   rmb_press_y,
+		                   tool_opts,
+		                   win_w,
+		                   win_h,
+		                   world,
+		                   world_draw,
+		                   world_draw_space_w,
+		                   world_draw_space_h);
 	}
 }
 
@@ -1582,13 +1662,20 @@ void
 handle_normal_input(const char         *in,
                     bool               *active,
                     enum InputMode     *input_mode,
-                    bool               *mouse_pressed,
+                    bool               *lmb_pressed,
                     bool               *paused,
+                    int                *rmb_press_x,
+                    int                *rmb_press_y,
                     int                *sim_subsample,
                     const int           tickrate,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
-                    struct World       *world)
+                    const int           win_w,
+                    const int           win_h,
+                    struct World       *world,
+                    struct Rect        *world_draw,
+                    int                *world_draw_space_w,
+                    int                *world_draw_space_h)
 {
 	switch (in[0]) {
 	case KEY_QUIT:
@@ -1837,7 +1924,17 @@ handle_normal_input(const char         *in,
 		break;
 
 	case CHAR_ESCAPE:
-		handle_normal_csi_input(in, mouse_pressed, tool_opts, world);
+		handle_normal_csi_input(in,
+		                        lmb_pressed,
+		                        rmb_press_x,
+		                        rmb_press_y,
+		                        tool_opts,
+		                        win_w,
+		                        win_h,
+		                        world,
+		                        world_draw,
+		                        world_draw_space_w,
+                                        world_draw_space_h);
 		break;
 	}
 }
@@ -1855,8 +1952,7 @@ handle_resize(const size_t            cmdline_len,
               int                    *win_w,
               int                    *win_h,
               const struct World      world,
-              int                    *world_draw_w,
-              int                    *world_draw_h,
+              struct Rect            *world_draw,
               int                    *world_draw_space_w,
               int                    *world_draw_space_h,
               const char             *world_name)
@@ -1880,15 +1976,16 @@ handle_resize(const size_t            cmdline_len,
 		*win_h = ws.ws_row;
 
 		if (world.w > *win_w) {
-			*world_draw_w = *win_w;
+			world_draw->w = *win_w;
 		} else {
-			*world_draw_w = world.w;
+			world_draw->w = world.w;
 			*world_draw_space_w = *win_w - world.w;
 		}
+
 		if (world.h > *win_h - 2) {
-			*world_draw_h = *win_h - 2;
+			world_draw->h = *win_h - 2;
 		} else {
-			*world_draw_h = world.h;
+			world_draw->h = world.h;
 			*world_draw_space_h = *win_h - 2 - world.h;
 		}
 
@@ -2283,8 +2380,7 @@ render_world(char               *out,
              const bool          th_vision,
              struct ToolOptions  tool_opts,
              const struct World  world,
-             const int           world_draw_w,
-             const int           world_draw_h,
+             const struct Rect   world_draw,
              const int           world_draw_space_w,
              const int           world_draw_space_h)
 {
@@ -2313,7 +2409,7 @@ render_world(char               *out,
 
 	for (x = tool_opts.x1; x < tool_opts.x2; x++) {
 		for (y = tool_opts.y1; y < tool_opts.y2; y++) {
-			out[((y * world_draw_w) + x + 1) * dot_depth +
+			out[((y * world_draw.w) + x + 1) * dot_depth +
 			    (y * world_draw_space_w) -
 			    1] = '^';
 		}
@@ -2397,10 +2493,12 @@ main(int    argc,
 	char                  *ip_address = "localhost";
 	bool                   paused = false;
 	clock_t                last_tick = 0;
-	bool                   mouse_pressed = false;
+	bool                   lmb_pressed = false;
 	bool                   no_color = false;
 	bool                   no_glowcolor = false;
 	clock_t                now = 0;
+	int                    rmb_press_x;
+	int                    rmb_press_y;
 	int                    sim_subsample = STD_SIM_SUBSAMPLE;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[SBE_COUNT];
@@ -2412,8 +2510,12 @@ main(int    argc,
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
-	int                    world_draw_w = 0;
-	int                    world_draw_h = 0;
+	struct Rect            world_draw = {
+		.x = 0,
+		.y = 0,
+		.w = 0,
+		.h = 0,
+	};
 	int                    world_draw_space_w = 0;
 	int                    world_draw_space_h = 0;
 	char                  *world_name = "worldname";
@@ -2460,8 +2562,7 @@ main(int    argc,
 	              &win_w,
 	              &win_h,
 	              world,
-	              &world_draw_w,
-	              &world_draw_h,
+	              &world_draw,
 	              &world_draw_space_w,
 	              &world_draw_space_h,
 	              world_name);
@@ -2474,16 +2575,22 @@ main(int    argc,
 		             &feedback,
 		             &feedback_expiration,
 		             &input_mode,
-		             &mouse_pressed,
+		             &lmb_pressed,
 		             &no_glowcolor,
 		             now,
 		             &paused,
+		             &rmb_press_x,
+		             &rmb_press_y,
 		             &sim_subsample,
 		             &tickrate,
 		             &th_vision,
 		             &tool_opts,
 		             win_w,
-		             &world);
+		             win_h,
+		             &world,
+		             &world_draw,
+		             &world_draw_space_w,
+		             &world_draw_space_h);
 
 		switch (tool_opts.sel_tool) {
 		case TOOL_BRUSH:
@@ -2516,12 +2623,12 @@ main(int    argc,
 			tool_opts.y1 = 0;
 
 		tool_opts.x2 = tool_opts.x + tool_radius + 1;
-		if (tool_opts.x2 >= world_draw_w)
-			tool_opts.x2 = world_draw_w;
+		if (tool_opts.x2 >= world_draw.w)
+			tool_opts.x2 = world_draw.w;
 
 		tool_opts.y2 = tool_opts.y + tool_radius + 1;
-		if (tool_opts.y2 >= world_draw_h)
-			tool_opts.y2 = world_draw_h;
+		if (tool_opts.y2 >= world_draw.h)
+			tool_opts.y2 = world_draw.h;
 
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
@@ -2531,7 +2638,7 @@ main(int    argc,
 				feedback = NULL;
 			}
 
-			if (mouse_pressed) {
+			if (lmb_pressed) {
 				use_tool(tool_opts, &world);
 			}
 
@@ -2557,8 +2664,7 @@ main(int    argc,
 			              &win_w,
 			              &win_h,
 			              world,
-			              &world_draw_w,
-			              &world_draw_h,
+			              &world_draw,
 			              &world_draw_space_w,
 			              &world_draw_space_h,
 			              world_name);
@@ -2583,8 +2689,7 @@ main(int    argc,
 			     tool_opts,
 			     win_w,
 			     world,
-			     world_draw_w,
-			     world_draw_h,
+			     world_draw,
 			     world_draw_space_w,
 			     world_draw_space_h,
 			     world_name);

@@ -8,6 +8,13 @@
 /* Types
  */
 
+struct Rect {
+	int x;
+	int y;
+	int w;
+	int h;
+};
+
 enum StatusbarElement {
 	SBE_WORLD_NAME,
 	SBE_COORDS,
