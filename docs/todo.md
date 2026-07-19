@@ -591,6 +591,8 @@ This fixes tool hover draw possibly overflowing line after scroll.
 This also fixes a crash related to either rapid up-resizing,
 or up-resizing with the cursor being near the border.
 
+- [x] terminal client: fix crash when up-resizing after scroll
+
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,
 because ctrl-j is literally just '\n'.

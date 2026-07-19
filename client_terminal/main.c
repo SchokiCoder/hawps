@@ -1975,6 +1975,9 @@ handle_resize(const size_t            cmdline_len,
 		*win_w = ws.ws_col;
 		*win_h = ws.ws_row;
 
+		world_draw->x = 0;
+		world_draw->y = 0;
+
 		if (world.w > *win_w) {
 			world_draw->w = *win_w;
 		} else {
