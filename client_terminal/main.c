@@ -1545,8 +1545,8 @@ handle_mouse_input(const char         *in,
 	switch (b) {
 	case CSI_MB_LEFT:
 	case CSI_MB_LEFT_DRAG:
-		tool_opts->x = x;
-		tool_opts->y = y;
+		tool_opts->x = x + world_draw->x;
+		tool_opts->y = y + world_draw->y;
 		use_tool(*tool_opts, world);
 
 		if ('M' == pressed) {
@@ -1557,8 +1557,8 @@ handle_mouse_input(const char         *in,
 		break;
 
 	case CSI_MB_HOVER:
-		tool_opts->x = x;
-		tool_opts->y = y;
+		tool_opts->x = x + world_draw->x;
+		tool_opts->y = y + world_draw->y;
 		*lmb_pressed = false;
 		break;
 
