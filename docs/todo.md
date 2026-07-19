@@ -576,7 +576,7 @@ This fixes the tool hover draw going into next line after resizing down.
 
 - [x] terminal client: add world view scrolling via right mouse button
 
-- [ ] terminal client: fix mouse scrolling resetting itself when beginning to scroll
+- [x] terminal client: fix mouse scrolling not adjusting to scroll offset
 - [ ] terminal client: fix tool use not adjusting to scroll offset
 
 - [ ] terminal client: add world view scrolling

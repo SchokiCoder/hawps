@@ -1567,8 +1567,8 @@ handle_mouse_input(const char         *in,
 		break;
 
 	case CSI_MB_RIGHT:
-		*rmb_press_x = x;
-		*rmb_press_y = y;
+		*rmb_press_x = x + world_draw->x;
+		*rmb_press_y = y + world_draw->y;
 		break;
 
 	case CSI_MB_RIGHT_DRAG:
