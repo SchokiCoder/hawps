@@ -578,7 +578,12 @@ This fixes the tool hover draw going into next line after resizing down.
 
 - [x] terminal client: fix mouse scrolling not adjusting to scroll offset
 - [x] terminal client: fix left mouse and hover not adjusting to scroll offset
-- [ ] terminal client: fix cursor draw not adjusting to scroll offset
+- [x] terminal client: fix tool hover draw not adjusting to scroll offset
+Funnily enough this bug only appeared after the previous two fixes,
+because their wrong was its right.
+
+- [ ] terminal client: fix tool hover draw crash
+This fixes a crash when scrolling to upper left?
 
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,

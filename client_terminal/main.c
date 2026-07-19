@@ -2407,8 +2407,8 @@ render_world(char               *out,
 		}
 	}
 
-	for (x = tool_opts.x1; x < tool_opts.x2; x++) {
-		for (y = tool_opts.y1; y < tool_opts.y2; y++) {
+	for (x = tool_opts.x1 - world_draw.x; x < tool_opts.x2 - world_draw.x; x++) {
+		for (y = tool_opts.y1 - world_draw.y; y < tool_opts.y2 - world_draw.y; y++) {
 			out[((y * world_draw.w) + x + 1) * dot_depth +
 			    (y * world_draw_space_w) -
 			    1] = '^';
@@ -2623,12 +2623,12 @@ main(int    argc,
 			tool_opts.y1 = 0;
 
 		tool_opts.x2 = tool_opts.x + tool_radius + 1;
-		if (tool_opts.x2 >= world_draw.w)
-			tool_opts.x2 = world_draw.w;
+		if (tool_opts.x2 >= world_draw.x + world_draw.w)
+			tool_opts.x2 =  + world_draw.x + world_draw.w;
 
 		tool_opts.y2 = tool_opts.y + tool_radius + 1;
-		if (tool_opts.y2 >= world_draw.h)
-			tool_opts.y2 = world_draw.h;
+		if (tool_opts.y2 >= world_draw.y + world_draw.h)
+			tool_opts.y2 =  + world_draw.y + world_draw.h;
 
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
