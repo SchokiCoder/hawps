@@ -586,7 +586,10 @@ because their wrong was its right.
 This fixes a crash when scrolling the tool hover out of the screen.
 This also moves tool hover points and its math where they are actually used.
 
-- [ ] terminal client: fix tool hover line overflow being possible after scroll
+- [x] terminal client: fix tool hover end point clasping
+This fixes tool hover draw possibly overflowing line after scroll.
+This also fixes a crash related to either rapid up-resizing,
+or up-resizing with the cursor being near the border.
 
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,
@@ -598,7 +601,6 @@ when the cursor would leave the visible range.
 
 - [ ] terminal client: add command to reset scrolling?
 or just via defaults command?
-
 - [ ] terminal client: update help text
 
 - [ ] libcore: fix Quicklime going under Sand?

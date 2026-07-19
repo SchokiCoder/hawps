@@ -2435,12 +2435,12 @@ render_world(char               *out,
 		tool_y1 = 0;
 
 	tool_x2 = tool_opts.x + tool_radius + 1 - world_draw.x;
-	if (tool_x2 >= world_draw.x + world_draw.w)
-		tool_x2 =  + world_draw.x + world_draw.w;
+	if (tool_x2 >= world_draw.w)
+		tool_x2 = world_draw.w;
 
 	tool_y2 = tool_opts.y + tool_radius + 1 - world_draw.y;
-	if (tool_y2 >= world_draw.y + world_draw.h)
-		tool_y2 =  + world_draw.y + world_draw.h;
+	if (tool_y2 >= world_draw.h)
+		tool_y2 = world_draw.h;
 
 	for (x = tool_x1; x < tool_x2; x++) {
 		for (y = tool_y1; y < tool_y2; y++) {
@@ -2449,7 +2449,6 @@ render_world(char               *out,
 			    1] = '^';
 		}
 	}
-
 
 	return written;
 }
