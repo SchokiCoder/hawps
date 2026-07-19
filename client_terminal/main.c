@@ -2142,10 +2142,6 @@ new_tool_options()
 		.thermo_radius = STD_THERMO_RADIUS,
 		.x = 0,
 		.y = 0,
-		.x1 = 0,
-		.y1 = 0,
-		.x2 = 0,
-		.y2 = 0,
 	};
 	return ret;
 }
@@ -2384,6 +2380,11 @@ render_world(char               *out,
              const int           world_draw_space_w,
              const int           world_draw_space_h)
 {
+	int    tool_radius = 0;
+	int    tool_x1 = 0;
+	int    tool_y1 = 0;
+	int    tool_x2 = 0;
+	int    tool_y2 = 0;
 	size_t written = 0;
 	int    x, y;
 
@@ -2407,8 +2408,42 @@ render_world(char               *out,
 		}
 	}
 
-	for (x = tool_opts.x1 - world_draw.x; x < tool_opts.x2 - world_draw.x; x++) {
-		for (y = tool_opts.y1 - world_draw.y; y < tool_opts.y2 - world_draw.y; y++) {
+	switch (tool_opts.sel_tool) {
+	case TOOL_BRUSH:
+		tool_radius = tool_opts.brush_radius;
+		break;
+	case TOOL_SPAWNER:
+		tool_radius = 0;
+		break;
+	case TOOL_ERASER:
+		tool_radius = tool_opts.eraser_radius;
+		break;
+	case TOOL_HEATER:
+	case TOOL_COOLER:
+		tool_radius = tool_opts.thermo_radius;
+		break;
+	case TOOL_COUNT:
+		break;
+	}
+
+	tool_x1 = tool_opts.x - tool_radius - world_draw.x;
+	if (tool_x1 < 0)
+		tool_x1 = 0;
+
+	tool_y1 = tool_opts.y - tool_radius - world_draw.y;
+	if (tool_y1 < 0)
+		tool_y1 = 0;
+
+	tool_x2 = tool_opts.x + tool_radius + 1 - world_draw.x;
+	if (tool_x2 >= world_draw.x + world_draw.w)
+		tool_x2 =  + world_draw.x + world_draw.w;
+
+	tool_y2 = tool_opts.y + tool_radius + 1 - world_draw.y;
+	if (tool_y2 >= world_draw.y + world_draw.h)
+		tool_y2 =  + world_draw.y + world_draw.h;
+
+	for (x = tool_x1; x < tool_x2; x++) {
+		for (y = tool_y1; y < tool_y2; y++) {
 			out[((y * world_draw.w) + x + 1) * dot_depth +
 			    (y * world_draw_space_w) -
 			    1] = '^';
@@ -2506,7 +2541,6 @@ main(int    argc,
 	int                    tickrate = STD_TICKRATE;
 	int                    ts_since_sim = 9001; /* ticks since last simulation */
 	struct ToolOptions     tool_opts;
-	int                    tool_radius = STD_BRUSH_RADIUS;
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
@@ -2591,44 +2625,6 @@ main(int    argc,
 		             &world_draw,
 		             &world_draw_space_w,
 		             &world_draw_space_h);
-
-		switch (tool_opts.sel_tool) {
-		case TOOL_BRUSH:
-			tool_radius = tool_opts.brush_radius;
-			break;
-
-		case TOOL_SPAWNER:
-			tool_radius = 0;
-			break;
-
-		case TOOL_ERASER:
-			tool_radius = tool_opts.eraser_radius;
-			break;
-
-		case TOOL_HEATER:
-		case TOOL_COOLER:
-			tool_radius = tool_opts.thermo_radius;
-			break;
-
-		case TOOL_COUNT:
-			break;
-		}
-
-		tool_opts.x1 = tool_opts.x - tool_radius;
-		if (tool_opts.x1 < 0)
-			tool_opts.x1 = 0;
-
-		tool_opts.y1 = tool_opts.y - tool_radius;
-		if (tool_opts.y1 < 0)
-			tool_opts.y1 = 0;
-
-		tool_opts.x2 = tool_opts.x + tool_radius + 1;
-		if (tool_opts.x2 >= world_draw.x + world_draw.w)
-			tool_opts.x2 =  + world_draw.x + world_draw.w;
-
-		tool_opts.y2 = tool_opts.y + tool_radius + 1;
-		if (tool_opts.y2 >= world_draw.y + world_draw.h)
-			tool_opts.y2 =  + world_draw.y + world_draw.h;
 
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {

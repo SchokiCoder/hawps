@@ -41,10 +41,6 @@ struct ToolOptions {
 	int       thermo_radius;
 	int       x;
 	int       y;
-	int       x1;
-	int       y1;
-	int       x2;
-	int       y2;
 };
 
 #endif /* _TYPES_H */

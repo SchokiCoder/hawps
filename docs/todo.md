@@ -582,8 +582,11 @@ This fixes the tool hover draw going into next line after resizing down.
 Funnily enough this bug only appeared after the previous two fixes,
 because their wrong was its right.
 
-- [ ] terminal client: fix tool hover draw crash
-This fixes a crash when scrolling to upper left?
+- [x] terminal client: fix tool hover draw crash upon scroll close to border
+This fixes a crash when scrolling the tool hover out of the screen.
+This also moves tool hover points and its math where they are actually used.
+
+- [ ] terminal client: fix tool hover line overflow being possible after scroll
 
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,
