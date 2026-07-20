@@ -593,6 +593,15 @@ or up-resizing with the cursor being near the border.
 
 - [x] terminal client: fix crash when up-resizing after scroll
 
+- [x] terminal client: remove warning about unused params
+I initially added them,
+because they were used and then not within a single change.
+I then left them in regardless,
+thinking I will use them for the other resize/scroll changes,
+which didn't happen.
+
+- [ ] terminal client: remove clang? warnings about functions with empty param lists
+
 - [ ] terminal client: add world view scrolling
 h j k l keys can't get a direct bind for this,
 because ctrl-j is literally just '\n'.
