@@ -369,6 +369,10 @@ static const char DOT_APPEARANCE[] = {
  */
 
 void
+command_temperature(const float   new_temperature,
+                    struct World *world);
+
+void
 draw(const char                  *cmdline,
      const size_t                 cmdline_len,
      const size_t                 cmdline_shift,
@@ -629,6 +633,25 @@ use_tool(struct ToolOptions  tool_opts,
 
 /* Function definitions
  */
+
+void
+command_temperature(const float   new_temperature,
+                    struct World *world)
+{
+	int x, y;
+
+	for (x = 0; x < world->w; x++) {
+		for (y = 0; y < world->h; y++) {
+			world->thermo[x][y] = new_temperature;
+
+			if (world->thermo[x][y] >= MAT_BOIL_P[world->dot[x][y]]) {
+				if (MAT_MELT_DECOMP[world->dot[x][y]]) {
+					world->dot[x][y] = mat_melt_prdct(world->dot[x][y]);
+				}
+			}
+		}
+	}
+}
 
 void
 draw(const char                  *cmdline,
@@ -961,12 +984,7 @@ handle_advanced_command(const char          *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			for (x = 0; x < world->w; x++) {
-				for (y = 0; y < world->h; y++) {
-					world->thermo[x][y] = f +
-					                      CELSIUS_TO_KELVIN;
-				}
-			}
+			command_temperature(f + CELSIUS_TO_KELVIN, world);
 		}
 	} else if (strcmp(cmd, CMD_TEMPERATUREK) == 0 ||
 	           strcmp(cmd, CMD_TEMPERATUREK_SHORT) == 0) {
@@ -977,11 +995,7 @@ handle_advanced_command(const char          *cmd,
 			set_feedback(feedback, feedback_expiration, now,
 			             "Number is invalid.");
 		} else {
-			for (x = 0; x < world->w; x++) {
-				for (y = 0; y < world->h; y++) {
-					world->thermo[x][y] = f;
-				}
-			}
+			command_temperature(f, world);
 		}
 	} else if (strcmp(cmd, CMD_THERMODELTA) == 0 ||
 	           strcmp(cmd, CMD_THERMODELTA_SHORT) == 0) {

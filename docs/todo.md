@@ -637,7 +637,7 @@ When spawn temperature is high enough to boil,
 the natural check for melt decomp doesn't run.
 This check now also runs upon spawn explicitly.
 
-- [ ] terminal client: fix melt decomposition skip from temperature command
+- [x] terminal client: fix melt decomposition skip from temperature commands
 
 - [ ] performance review of both clients
 
