@@ -610,9 +610,7 @@ when the cursor would leave the visible range.
 
 - [x] terminal client: add material picking on middle mouse
 
-- [ ] terminal client: add command to reset scrolling?
-or just via defaults command?
-- [ ] terminal client: update help text
+- [x] terminal client: update help text, adding mouse actions
 
 - [ ] libcore: fix Quicklime going under Sand?
 (heavier grains shouldn't just be able to go beneath lighter ones)
