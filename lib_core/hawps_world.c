@@ -611,6 +611,12 @@ world_use_brush(struct World   *w,
 			w->dot[x][y] = m;
 			w->oxid[x][y] = 0.0;
 			w->thermo[x][y] = t;
+
+			if (w->thermo[x][y] >= MAT_BOIL_P[w->dot[x][y]]) {
+				if (MAT_MELT_DECOMP[w->dot[x][y]]) {
+					w->dot[x][y] = mat_melt_prdct(w->dot[x][y]);
+				}
+			}
 		}
 	}
 }

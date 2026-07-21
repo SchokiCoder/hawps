@@ -629,8 +629,16 @@ This should be faster, without changing practical robustness,
 since we always know how long the string is, thanks to the prior `strlen`.
 This... *sigh* also fixes the dumb gcc stringop-truncation warning for good.
 
-- [ ] melt decomposition is skipped when spawn temperature is meddled with
-- [ ] fix odd displacement of grain when they fall into a warmer gas or liquid
+- [x] ~fix odd displacement of grains they fall into a warmer gas or liquid~
+This just so happens to be fixed with 71d740c20bc197190d2f3a05e222c1c305efd825.
+
+- [x] libcore: fix melt decomposition skip
+When spawn temperature is high enough to boil,
+the natural check for melt decomp doesn't run.
+This check now also runs upon spawn explicitly.
+
+- [ ] terminal client: fix melt decomposition skip from temperature command
+
 - [ ] performance review of both clients
 
 - [ ] libcore: add test against gravity
