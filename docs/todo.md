@@ -600,11 +600,11 @@ I then left them in regardless,
 thinking I will use them for the other resize/scroll changes,
 which didn't happen.
 
-- [ ] terminal client: remove warnings about functions with empty param lists
+- [x] terminal client: remove warnings about functions with empty param lists
 
-- [ ] terminal client: add world view scrolling
-h j k l keys can't get a direct bind for this,
-because ctrl-j is literally just '\n'.
+- [x] terminal client: add world view scrolling via keyboard input
+h j k l keys can't get direct binds for this,
+because ctrl-j literally just sends '\n'.
 So for keyboard input, scrolling happens on demand,
 when the cursor would leave the visible range.
 

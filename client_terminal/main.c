@@ -1585,33 +1585,53 @@ handle_normal_csi_input(const char         *in,
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
 		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
+			if (tool_opts->x < world_draw->x) {
+				world_draw->x -= 1;
+			}
 		}
 	} else if (strcmp(in, CSI_KEY_DOWN) == 0) {
 		if (tool_opts->y < world->h - 1) {
 			tool_opts->y += 1;
+			if (tool_opts->y >= world_draw->y + world_draw->h) {
+				world_draw->y += 1;
+			}
 		}
 	} else if (strcmp(in, CSI_KEY_UP) == 0) {
 		if (tool_opts->y > 0) {
 			tool_opts->y -= 1;
+			if (tool_opts->y < world_draw->y) {
+				world_draw->y -= 1;
+			}
 		}
 	} else if (strcmp(in, CSI_KEY_RIGHT) == 0) {
 		if (tool_opts->x < world->w - 1) {
 			tool_opts->x += 1;
+			if (tool_opts->x >= world_draw->x + world_draw->w) {
+				world_draw->x += 1;
+			}
 		}
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
+		world_draw->x = 0;
 	} else if (strcmp(in, CSI_KEY_END) == 0) {
 		tool_opts->x = world->w - 1;
+		world_draw->x = world->w - world_draw->w;
 	} else if (strcmp(in, CSI_KEY_PGUP) == 0) {
 		tool_opts->y = 0;
+		world_draw->y = 0;
 	} else if (strcmp(in, CSI_KEY_PGDOWN) == 0) {
 		tool_opts->y = world->h - 1;
+		world_draw->y = world->h - world_draw->h;
 	} else if (strcmp(in, CSI_KEY_CTRLHOME) == 0) {
 		tool_opts->x = 0;
 		tool_opts->y = 0;
+		world_draw->x = 0;
+		world_draw->y = 0;
 	} else if (strcmp(in, CSI_KEY_CTRLEND) == 0) {
 		tool_opts->x = world->w - 1;
 		tool_opts->y = world->h - 1;
+		world_draw->x = world->w - world_draw->w;
+		world_draw->y = world->h - world_draw->h;
 	} else if (in[1] == '[' &&
 	           in[2] == '<') {
 		handle_mouse_input(in,
@@ -1756,39 +1776,59 @@ handle_normal_input(const char         *in,
 		break;
 
 	case KEY_LEFT:
-		if (tool_opts->x > 0)
+		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
+			if (tool_opts->x < world_draw->x) {
+				world_draw->x -= 1;
+			}
+		}
 		break;
 
 	case KEY_LEFT_MAX:
 		tool_opts->x = 0;
+		world_draw->x = 0;
 		break;
 
 	case KEY_DOWN:
-		if (tool_opts->y < world->h - 1)
+		if (tool_opts->y < world->h - 1) {
 			tool_opts->y += 1;
+			if (tool_opts->y >= world_draw->y + world_draw->h) {
+				world_draw->y += 1;
+			}
+		}
 		break;
 
 	case KEY_DOWN_MAX:
 		tool_opts->y = world->h - 1;
+		world_draw->y = world->h - world_draw->h;
 		break;
 
 	case KEY_UP:
-		if (tool_opts->y > 0)
+		if (tool_opts->y > 0) {
 			tool_opts->y -= 1;
+			if (tool_opts->y < world_draw->y) {
+				world_draw->y -= 1;
+			}
+		}
 		break;
 
 	case KEY_UP_MAX:
 		tool_opts->y = 0;
+		world_draw->y = 0;
 		break;
 
 	case KEY_RIGHT:
-		if (tool_opts->x < world->w - 1)
+		if (tool_opts->x < world->w - 1) {
 			tool_opts->x += 1;
+			if (tool_opts->x >= world_draw->x + world_draw->w) {
+				world_draw->x += 1;
+			}
+		}
 		break;
 
 	case KEY_RIGHT_MAX:
 		tool_opts->x = world->w - 1;
+		world_draw->x = world->w - world_draw->w;
 		break;
 
 	case KEY_RADIUS_DOWN:
