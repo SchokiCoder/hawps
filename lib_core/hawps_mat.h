@@ -87,17 +87,17 @@ enum Mat
 mat_melt_prdct(const enum Mat mat);
 
 void
-mat_oxid_prdcts(const enum Mat     mat,
-                enum Mat *restrict out1,
-                enum Mat *restrict out2);
+mat_oxid_prdcts(const enum Mat           mat,
+                enum Mat       *restrict out1,
+                enum Mat       *restrict out2);
 
 enum MatState
 mat_thermo_to_state(const enum Mat mat,
                     const float    thermo);
 
 void
-mat_touch_prdcts(const enum Mat     mat,
-                 enum Mat *restrict out1,
-                 enum Mat *restrict out2);
+mat_touch_prdcts(const enum Mat           mat,
+                 enum Mat       *restrict out1,
+                 enum Mat       *restrict out2);
 
 #endif /* _HAWPS_MAT_H */

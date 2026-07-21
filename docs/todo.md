@@ -614,7 +614,15 @@ when the cursor would leave the visible range.
 
 - [x] libcore: fix grains displacing each other
 
-- [ ] terminal client: fix compile warnings from release build
+- [x] ~terminal client: fix `strncpy` misuse in `string_cat`~
+This fixes an unnecessary gcc-only compile warning for the release build,
+about `copy_len` not being worthy to be used in `strncpy`,
+since its value isn't (based on?) `dst_size`.
+Changing this would require putting a null byte in `src`,
+which requires it to be not const anymore. This is dumb and annoying.
+For this and another reason too, I just got back to using clang.
+
+- [x] fix restrict pointer parameter formatting
 
 - [ ] melt decomposition is skipped when spawn temperature is meddled with
 - [ ] fix odd displacement of grain when they fall into a warmer gas or liquid

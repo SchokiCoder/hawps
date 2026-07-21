@@ -34,9 +34,9 @@ mat_melt_prdct(const enum Mat mat)
 }
 
 void
-mat_oxid_prdcts(const enum Mat     mat,
-                enum Mat *restrict out1,
-                enum Mat *restrict out2)
+mat_oxid_prdcts(const enum Mat           mat,
+                enum Mat       *restrict out1,
+                enum Mat       *restrict out2)
 {
 	if (MAT_OXID_RANDOM[mat]) {
 		if ((rand() % 100) <= MAT_OXID_PRDCT1_CHANCE[mat]) {
@@ -73,9 +73,9 @@ mat_thermo_to_state(const enum Mat mat,
 }
 
 void
-mat_touch_prdcts(const enum Mat     mat,
-                 enum Mat *restrict out1,
-                 enum Mat *restrict out2)
+mat_touch_prdcts(const enum Mat           mat,
+                 enum Mat       *restrict out1,
+                 enum Mat       *restrict out2)
 {
 	*out1 = MAT_TOUCH_PRDCT1[mat];
 

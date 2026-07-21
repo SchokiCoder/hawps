@@ -7,10 +7,10 @@
 #include <string.h>
 
 size_t
-string_cat(char *restrict       dst,
-           const size_t         dst_size,
-           const size_t         cat_pos,
-           const char *restrict src)
+string_cat(char         *restrict dst,
+           const size_t           dst_size,
+           const size_t           cat_pos,
+           const char   *restrict src)
 {
 	size_t copy_len;
 	size_t src_len;
