@@ -1538,6 +1538,26 @@ handle_mouse_input(const char         *in,
 
 	case CSI_MB_MIDDLE:
 	case CSI_MB_MIDDLE_DRAG:
+		if (x >= (unsigned int) world->w ||
+		    y >= (unsigned int) world->h) {
+			break;
+		}
+
+		switch (tool_opts->sel_tool) {
+		case TOOL_BRUSH:
+			tool_opts->brush_mat = world->dot[x][y];
+			break;
+
+		case TOOL_SPAWNER:
+			tool_opts->spawner_mat = world->dot[x][y];
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			break;
+		}
 		break;
 
 	case CSI_MB_RIGHT:

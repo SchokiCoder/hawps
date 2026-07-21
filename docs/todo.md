@@ -608,7 +608,7 @@ because ctrl-j literally just sends '\n'.
 So for keyboard input, scrolling happens on demand,
 when the cursor would leave the visible range.
 
-- [ ] terminal client: add material copy from under cursor into current tool on middle mouse
+- [x] terminal client: add material picking on middle mouse
 
 - [ ] terminal client: add command to reset scrolling?
 or just via defaults command?
