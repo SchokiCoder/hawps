@@ -19,7 +19,7 @@ static struct termios term_initial_settings;
 static int            term_stdin_initial_flags;
 
 struct winsize
-CSI_get_size()
+CSI_get_size(void)
 {
 	struct winsize ret;
 
@@ -70,7 +70,7 @@ CSI_set_cursorpos(const int x,
 }
 
 void
-CSI_set_normal()
+CSI_set_normal(void)
 {
 	if (!term_raw) {
 		return;
@@ -86,7 +86,7 @@ CSI_set_normal()
 }
 
 void
-CSI_set_raw()
+CSI_set_raw(void)
 {
 	struct termios raw;
 

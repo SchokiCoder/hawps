@@ -561,7 +561,7 @@ handle_simple_command(const char          *cmdline,
                       struct World        *world);
 
 struct ToolOptions
-new_tool_options();
+new_tool_options(void);
 
 void
 tool_radius_add(const int           radius_change,
@@ -2090,7 +2090,7 @@ handle_simple_command(const char          *cmdline,
 }
 
 struct ToolOptions
-new_tool_options()
+new_tool_options(void)
 {
 	struct ToolOptions ret = {
 		.brush_mat = FIRST_REAL_MAT,
