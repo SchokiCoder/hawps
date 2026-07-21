@@ -22,7 +22,7 @@ string_cat(char         *restrict dst,
 		copy_len = src_len;
 	}
 
-	strncpy(&dst[cat_pos], src, copy_len);
+	memcpy(&dst[cat_pos], src, copy_len);
 	dst[cat_pos + copy_len] = '\0';
 
 	return copy_len;
