@@ -141,12 +141,26 @@ world_can_displace(struct World *w,
 		return true;
 	}
 
-	if (MS_STATIC == w->state[dx][dy]) {
+	switch (w->state[dx][dy]) {
+	case MS_STATIC:
 		return false;
-	}
+		break;
 
-	if (w->weight[dx][dy] < w->weight[x][y]) {
-		return true;
+	case MS_GRAIN:
+		if (w->state[x][y] == MS_GRAIN) {
+			return false;
+		}
+		break;
+
+	case MS_LIQUID:
+	case MS_GAS:
+		if (w->weight[dx][dy] < w->weight[x][y]) {
+			return true;
+		}
+		break;
+
+	case MS_COUNT:
+		break;
 	}
 
 	return false;

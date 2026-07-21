@@ -612,8 +612,7 @@ when the cursor would leave the visible range.
 
 - [x] terminal client: update help text, adding mouse actions
 
-- [ ] libcore: fix Quicklime going under Sand?
-(heavier grains shouldn't just be able to go beneath lighter ones)
+- [x] libcore: fix grains displacing each other
 
 - [ ] terminal client: fix compile warnings from release build
 
