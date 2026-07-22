@@ -1,18 +1,10 @@
 # HAWPS
 
-Half assed wannabe physics simulator.  
-The name is the game.  
-I just want to have fun writing something dumb.  
+Silly program to simulate physics in *very* convincing ways.  
+It'll be great. Trust me.
 
-![heating a metal bowl and releasing an oxygen-methane mix into it](demo.gif)
-
-# Build dependencies
-
-## ebiten client
-- `go install golang.org/x/tools/cmd/stringer`
-- `sudo apt install {libx11-dev,libxrandr-dev,libglx-dev,libgl-dev,libxcursor-dev,libxinerama-dev,libxi-dev,libxxf86vm-dev}`  
-or  
-`sudo dnf install {libX11-devel,libXrandr-devel,mesa-libGL-devel,libglvnd-glx,libXcursor-devel,libXinerama-devel,libXi-devel,libXxf86vm-devel}`  
+What does this acronym stand for now?  
+Half assed wannabe physics simulator, and the name is the game.
 
 # Build
 

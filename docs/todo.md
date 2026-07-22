@@ -639,6 +639,20 @@ This check now also runs upon spawn explicitly.
 
 - [x] terminal client: fix melt decomposition skip from temperature commands
 
+- [x] update README and add a CONTRIBUTING text
+
+- [ ] borrow the install procedure from gohui's Makefile
+and update the README too!
+
+- [ ] create a demo video, upload on Odysee and embed in README
+(does Odysee do embed?)
+
+- [ ] do something about it running poorly on termux
+Its color interp is too slow.
+Detect poor performance, and decrease tickrate as a reaction,
+while also decreasing sim-subsample?
+Maybe this needs ditching sim-subsample for an easier to steer sim-rate?
+
 - [ ] performance review of both clients
 
 - [ ] libcore: add test against gravity
@@ -651,7 +665,6 @@ This check now also runs upon spawn explicitly.
 - [ ] libcore: add test against spawners
 - [ ] libcore: add test against mat table property array length miscount
 
-- [ ] update README
 - [ ] update copyright?
 
 - git tag to update APP_VERSION
