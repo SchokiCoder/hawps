@@ -28,7 +28,7 @@ GIT_HEAD !=git rev-parse --short HEAD
 
 GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(APP_LICENSE)' -X 'main.AppLicenseUrl=$(APP_LICENSE_URL)' -X 'main.AppRepository=$(APP_REPOSITORY)' -X 'main.AppVersion=$(APP_VERSION)'"
 
-.PHONY: all build clean generate install profile remove run test vet
+.PHONY: all build clean generate install preinstall prerun preprofile profile remove run test vet
 
 all: bin/$(DEFAULT_CLIENT)
 
@@ -38,9 +38,12 @@ clean:
 
 generate: client_terminal/int_to_string.h
 
-install: bin/$(DEFAULT_CLIENT)
+install: bin/$(DEFAULT_CLIENT)_release
 	mkdir -p $(BIN_DESTDIR)
 	cp $< $(BIN_DESTDIR)/$(APP_NAME)
+
+preinstall:
+	rm -f bin/$(DEFAULT_CLIENT)_release
 
 prerun:
 	rm -f bin/$(DEFAULT_CLIENT)
@@ -72,14 +75,19 @@ bin/$(APP_NAME)_terminal: $(CLIENT_TERMINAL_FILE_DEPS)
 		$(CLIENT_TERMINAL_INCLUDE_DIRS) \
 		$(CLIENT_TERMINAL_SRC_FILES)
 
+bin/$(APP_NAME)_terminal_release: $(CLIENT_TERMINAL_FILE_DEPS)
+	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
+		$(CLIENT_TERMINAL_INCLUDE_DIRS) \
+		$(CLIENT_TERMINAL_SRC_FILES)
+
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
-	$(CC) $(C_FLAGS) -o $@ -I lib_core -I lib_extra \
+	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
 		$$(pkg-config --cflags tcl tk) \
 		client_tk/*.c lib_core/*.c lib_extra/*.c \
 		$$(pkg-config --libs tcl tk)
 
 bin/gen_int_to_string_table:
-	$(CC) $(C_FLAGS) $(C_DEFINES) -o $@ \
+	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
 		client_terminal/gen/gen_int_to_string_table.c
 
 client_terminal/int_to_string.h: bin/gen_int_to_string_table

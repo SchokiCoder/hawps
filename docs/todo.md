@@ -661,7 +661,7 @@ That was an autistic need, kneecapping actual needs.
 
 - [x] terminal client: add a framerate command
 
-- [ ] make install should use the optimization build flags
+- [x] change `make install` to use the release build flags
 
 - [ ] create a demo video, upload on Odysee and embed in README
 (does Odysee do embed?)
