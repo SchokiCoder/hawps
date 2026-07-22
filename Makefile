@@ -8,6 +8,10 @@ APP_LICENSE_URL  :=https://mozilla.org/MPL/2.0
 APP_REPOSITORY   :=https://github.com/SchokiCoder/hawps
 APP_VERSION      !=git describe --abbrev=0 --tags
 
+# dest dir, uncomment below to install for only current user instead
+BIN_DESTDIR:="/usr/local/bin"
+#BIN_DESTDIR:="$(HOME)/.local/bin"
+
 CC              :=cc
 C_FLAGS_DEBUG   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
 C_FLAGS_PROFILE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -g -O3 -pg
@@ -24,7 +28,7 @@ GIT_HEAD !=git rev-parse --short HEAD
 
 GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(APP_LICENSE)' -X 'main.AppLicenseUrl=$(APP_LICENSE_URL)' -X 'main.AppRepository=$(APP_REPOSITORY)' -X 'main.AppVersion=$(APP_VERSION)'"
 
-.PHONY: all build clean generate profile run test vet
+.PHONY: all build clean generate install profile remove run test vet
 
 all: bin/$(DEFAULT_CLIENT)
 
@@ -33,6 +37,10 @@ clean:
 	rm -f *.out
 
 generate: client_terminal/int_to_string.h
+
+install: bin/$(DEFAULT_CLIENT)
+	mkdir -p $(BIN_DESTDIR)
+	cp $< $(BIN_DESTDIR)/$(APP_NAME)
 
 prerun:
 	rm -f bin/$(DEFAULT_CLIENT)
@@ -46,6 +54,9 @@ profile: preprofile profiling/$(DEFAULT_CLIENT)_$(GIT_HEAD)
 	gprof profiling/$(DEFAULT_CLIENT)_$(GIT_HEAD) \
 		profiling/gmon_$(GIT_HEAD).out > \
 		profiling/$(DEFAULT_CLIENT)_$(GIT_HEAD).txt
+
+remove:
+	rm -f $(BIN_DESTDIR)/$(APP_NAME)
 
 run: prerun bin/$(DEFAULT_CLIENT)
 	./bin/$(DEFAULT_CLIENT)

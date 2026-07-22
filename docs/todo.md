@@ -640,9 +640,7 @@ This check now also runs upon spawn explicitly.
 - [x] terminal client: fix melt decomposition skip from temperature commands
 
 - [x] update README and add a CONTRIBUTING text
-
-- [ ] borrow the install procedure from gohui's Makefile
-and update the README too!
+- [x] add install procedure to Makefile and update the README
 
 - [ ] create a demo video, upload on Odysee and embed in README
 (does Odysee do embed?)
