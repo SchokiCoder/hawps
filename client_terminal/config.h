@@ -131,18 +131,20 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[SBE_COUNT] = {
 
 #define FEEDBACK_LIFETIME    3    /* in seconds */
 #define MAX_RADIUS           16
+#define MAX_TICKRATE         (30.0 * 2.0 * 2.0)
+#define MIN_TICKRATE         (30.0 / 2.0 / 2.0 / 2.0 / 2.0 / 2.0)
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
 
 /* defaults for runtime settings
  */
 #define STD_BRUSH_RADIUS      2
 #define STD_ERASER_RADIUS     5
+#define STD_FRAMERATE         999999.99
 #define STD_SELECTED_TOOL     TOOL_BRUSH
-#define STD_SIM_SUBSAMPLE     4
 #define STD_SPAWN_TEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
 #define STD_THERMO_DELTA      5.0
 #define STD_THERMO_RADIUS     STD_BRUSH_RADIUS
-#define STD_TICKRATE          120
+#define STD_TICKRATE          30.0
 
 /* size values
  * Consider only touching them when you have special hardware or problems.

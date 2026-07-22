@@ -69,14 +69,14 @@
 #define FLAG_BRUSHRADIUS_SHORT      "-br"
 #define FLAG_ERASERRADIUS           "-eraserradius"
 #define FLAG_ERASERRADIUS_SHORT     "-er"
+#define FLAG_FRAMERATE              "-framerate"
+#define FLAG_FRAMERATE_SHORT        "-fr"
 #define FLAG_HELP                   "-help"
 #define FLAG_HELP_SHORT             "-h"
 #define FLAG_NOCOLOR                "-nocolor"
 #define FLAG_NOCOLOR_SHORT          "-noc"
 #define FLAG_NOGLOWCOLOR            "-noglowcolor"
 #define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
-#define FLAG_SIMSUBSAMPLE           "-simsubsample"
-#define FLAG_SIMSUBSAMPLE_SHORT     "-sss"
 #define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
 #define FLAG_SPAWNTEMPERATURE_SHORT "-st"
 #define FLAG_THERMODELTA            "-thermodelta"
@@ -189,9 +189,8 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_THERMOVISION_SHORT " " CMD_THERMOVISION "\n"
 "        enables thermal vision\n"
 "\n"
-"    " CMD_TICKRATE_SHORT " " CMD_TICKRATE " NUMBER\n"
-"        sets the tickrate (ticks per second),\n"
-"        which also affects simulation speed\n"
+"    " CMD_TICKRATE_SHORT " " CMD_TICKRATE " DECIMAL\n"
+"        sets the rate for ticks (simulations) per second\n"
 "\n";
 
 static const char APP_HELP_FLAGS[] = "Options:\n"
@@ -207,6 +206,10 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        sets the radius of the eraser\n"
 "        default: %i\n"
 "\n"
+"    " FLAG_FRAMERATE_SHORT " " FLAG_FRAMERATE " DECIMAL\n"
+"        sets the rate-limit for frames per second\n"
+"        default: %.2f\n"
+"\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
 "\n"
@@ -215,11 +218,6 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "\n"
 "    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
 "        disables dot glow coloring\n"
-"\n"
-"    " FLAG_SIMSUBSAMPLE_SHORT " " FLAG_SIMSUBSAMPLE " NUMBER\n"
-"        sets the simulation subsample, which affects the simulation speed\n"
-"        visible simulation speed roughly == tickrate / sim-subsample \n"
-"        default: %i\n"
 "\n"
 "    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE " DECIMAL\n"
 "        sets the temperature of every new dot in Kelvin\n"
@@ -235,11 +233,9 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        sets the radius of thermo tools\n"
 "        default: %i\n"
 "\n"
-"    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " NUMBER\n"
-"        sets the tickrate (ticks per second),\n"
-"        which also affects simulation speed\n"
-"        only use when otherwise performance problems occur\n"
-"        default: %i\n"
+"    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " DECIMAL\n"
+"        sets the rate for ticks (simulations) per second\n"
+"        default: %.2f\n"
 "\n"
 "    " FLAG_VERSION_SHORT " " FLAG_VERSION "\n"
 "        prints version information then exits\n"
@@ -385,10 +381,9 @@ draw(const char                  *cmdline,
      const bool                   no_color,
      const bool                   no_glowcolor,
      const bool                   paused,
-     const int                    sim_subsample,
      const size_t                 statusbar_elems,
      const enum StatusbarElement *statusbar_elem,
-     const int                    tickrate,
+     const float                  tickrate,
      const bool                   th_vision,
      const struct ToolOptions     tool_opts,
      const int                    win_w,
@@ -419,17 +414,17 @@ handle_advanced_command(const char          *cmd,
                         char               **feedback,
                         clock_t             *feedback_expiration,
                         const clock_t        now,
-                        int                 *tickrate,
+                        float               *tickrate,
                         struct ToolOptions  *tool_opts,
                         struct World        *world);
 
 bool
 handle_args(int                  argc,
             char               **argv,
+            float               *framerate,
             bool                *no_color,
             bool                *no_glowcolor,
-            int                 *sim_subsample,
-            int                 *tickrate,
+            float               *tickrate,
             struct ToolOptions  *tool_opts);
 
 void
@@ -443,12 +438,12 @@ handle_command(char                *cmdline,
                bool                *active,
                char               **feedback,
                clock_t             *feedback_expiration,
+               float               *framerate,
                bool                *no_glowcolor,
                const clock_t        now,
                bool                *paused,
-               int                 *sim_subsample,
                bool                *th_vision,
-               int                 *tickrate,
+               float               *tickrate,
                struct ToolOptions  *tool_opts,
                struct World        *world);
 
@@ -460,13 +455,13 @@ handle_command_input(const char          *in,
                      size_t              *cmdline_shift,
                      char               **feedback,
                      clock_t             *feedback_expiration,
+                     float               *framerate,
                      enum InputMode      *input_mode,
                      bool                *no_glowcolor,
                      clock_t              now,
                      bool                *paused,
-                     int                 *sim_subsample,
                      bool                *th_vision,
-                     int                 *tickrate,
+                     float               *tickrate,
                      struct ToolOptions  *tool_opts,
                      const int            win_w,
                      struct World        *world);
@@ -490,6 +485,7 @@ handle_input(bool                *active,
              size_t              *cmdline_shift,
              char               **feedback,
              clock_t             *feedback_expiration,
+             float               *framerate,
              enum InputMode      *input_mode,
              bool                *lmb_pressed,
              bool                *no_glowcolor,
@@ -497,8 +493,7 @@ handle_input(bool                *active,
              bool                *paused,
              int                 *rmb_press_x,
              int                 *rmb_press_y,
-             int                 *sim_subsample,
-             int                 *tickrate,
+             float               *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
              const int            win_w,
@@ -531,8 +526,7 @@ handle_normal_input(const char         *in,
                     bool               *paused,
                     int                *rmb_press_x,
                     int                *rmb_press_y,
-                    int                *sim_subsample,
-                    const int           tickrate,
+                    float              *tickrate,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
                     struct World       *world,
@@ -561,12 +555,12 @@ handle_simple_command(const char          *cmdline,
                       bool                *active,
                       char               **feedback,
                       clock_t             *feedback_expiration,
+                      float               *framerate,
                       bool                *no_glowcolor,
                       clock_t              now,
                       bool                *paused,
-                      int                 *sim_subsample,
                       bool                *th_vision,
-                      int                 *tickrate,
+                      float               *tickrate,
                       struct ToolOptions  *tool_opts,
                       struct World        *world);
 
@@ -597,8 +591,7 @@ render_statusbar_display(char                        *out,
                          const char                  *ip_address,
                          const bool                   paused,
                          const enum StatusbarElement  sbe,
-                         const int                    sim_subsample,
-                         const int                    tickrate,
+                         const float                  tickrate,
                          const bool                   th_vision,
                          struct ToolOptions           tool_opts,
                          const char                  *world_name);
@@ -666,10 +659,9 @@ draw(const char                  *cmdline,
      const bool                   no_color,
      const bool                   no_glowcolor,
      const bool                   paused,
-     const int                    sim_subsample,
      const size_t                 statusbar_elems,
      const enum StatusbarElement *statusbar_elem,
-     const int                    tickrate,
+     const float                  tickrate,
      const bool                   th_vision,
      const struct ToolOptions     tool_opts,
      const int                    win_w,
@@ -728,7 +720,6 @@ draw(const char                  *cmdline,
 		                                        ip_address,
 		                                        paused,
 		                                        statusbar_elem[i],
-		                                        sim_subsample,
 		                                        tickrate,
 		                                        th_vision,
 		                                        tool_opts,
@@ -874,7 +865,7 @@ handle_advanced_command(const char          *cmd,
                         char               **feedback,
                         clock_t             *feedback_expiration,
                         const clock_t        now,
-                        int                 *tickrate,
+                        float               *tickrate,
                         struct ToolOptions  *tool_opts,
                         struct World        *world)
 {
@@ -1029,7 +1020,7 @@ handle_advanced_command(const char          *cmd,
 	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
 	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
 		errno = 0;
-		l = strtol(arg, NULL, 10);
+		f = strtof(arg, NULL);
 
 		if (errno != 0) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -1037,13 +1028,13 @@ handle_advanced_command(const char          *cmd,
 			return;
 		}
 
-		if (l <= 0) {
+		if (f <= 0) {
 			set_feedback(feedback, feedback_expiration, now,
 			             "No.");
 			return;
 		}
 
-		*tickrate = l;
+		*tickrate = f;
 	} else {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Command not recognized.");
@@ -1053,10 +1044,10 @@ handle_advanced_command(const char          *cmd,
 bool
 handle_args(int                  argc,
             char               **argv,
+            float               *framerate,
             bool                *no_color,
             bool                *no_glowcolor,
-            int                 *sim_subsample,
-            int                 *tickrate,
+            float               *tickrate,
             struct ToolOptions  *tool_opts)
 {
 	float flagargf;
@@ -1095,6 +1086,19 @@ handle_args(int                  argc,
 				return false;
 			}
 			i++;
+		} else if (strcmp(argv[i], FLAG_FRAMERATE) == 0 ||
+		           strcmp(argv[i], FLAG_FRAMERATE_SHORT) == 0) {
+			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
+				return false;
+			}
+			*framerate = flagargf;
+			if (*framerate <= 0.0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must be positive\n",
+				        argv[i]);
+				return false;
+			}
+			i++;
 		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
 		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
 			printf(APP_HELP);
@@ -1102,7 +1106,7 @@ handle_args(int                  argc,
 			printf(APP_HELP_FLAGS,
 			       STD_BRUSH_RADIUS,
 			       STD_ERASER_RADIUS,
-			       STD_SIM_SUBSAMPLE,
+			       STD_FRAMERATE,
 			       CELSIUS_TO_KELVIN,
 			       STD_SPAWN_TEMPERATURE,
 			       STD_THERMO_DELTA,
@@ -1162,19 +1166,6 @@ handle_args(int                  argc,
 		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
 			*no_glowcolor = true;
-		} else if (strcmp(argv[i], FLAG_SIMSUBSAMPLE) == 0 ||
-		           strcmp(argv[i], FLAG_SIMSUBSAMPLE_SHORT) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
-				return false;
-			}
-			*sim_subsample = flagargi;
-			if (*sim_subsample <= 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must be positive\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
 		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
 		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
 			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
@@ -1216,11 +1207,11 @@ handle_args(int                  argc,
 			i++;
 		} else if (strcmp(argv[i], FLAG_TICKRATE) == 0 ||
 		           strcmp(argv[i], FLAG_TICKRATE_SHORT) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
 				return false;
 			}
-			*tickrate = flagargi;
-			if (*tickrate <= 0) {
+			*tickrate = flagargf;
+			if (*tickrate <= 0.0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must be positive\n",
 				        argv[i]);
@@ -1260,12 +1251,12 @@ handle_command(char                *cmdline,
                bool                *active,
                char               **feedback,
                clock_t             *feedback_expiration,
+               float               *framerate,
                bool                *no_glowcolor,
                const clock_t        now,
                bool                *paused,
-               int                 *sim_subsample,
                bool                *th_vision,
-               int                 *tickrate,
+               float               *tickrate,
                struct ToolOptions  *tool_opts,
                struct World        *world)
 {
@@ -1306,10 +1297,10 @@ handle_command(char                *cmdline,
 	                      active,
 	                      feedback,
 	                      feedback_expiration,
+	                      framerate,
 	                      no_glowcolor,
 	                      now,
 	                      paused,
-	                      sim_subsample,
 	                      th_vision,
 	                      tickrate,
 	                      tool_opts,
@@ -1324,13 +1315,13 @@ handle_command_input(const char          *in,
                      size_t              *cmdline_shift,
                      char               **feedback,
                      clock_t             *feedback_expiration,
+                     float               *framerate,
                      enum InputMode      *input_mode,
                      bool                *no_glowcolor,
                      clock_t              now,
                      bool                *paused,
-                     int                 *sim_subsample,
                      bool                *th_vision,
-                     int                 *tickrate,
+                     float               *tickrate,
                      struct ToolOptions  *tool_opts,
                      const int            win_w,
                      struct World        *world)
@@ -1352,10 +1343,10 @@ handle_command_input(const char          *in,
 		               active,
 		               feedback,
 		               feedback_expiration,
+		               framerate,
 		               no_glowcolor,
 		               now,
 		               paused,
-		               sim_subsample,
 		               th_vision,
 		               tickrate,
 		               tool_opts,
@@ -1442,6 +1433,7 @@ handle_input(bool                *active,
              size_t              *cmdline_shift,
              char               **feedback,
              clock_t             *feedback_expiration,
+             float               *framerate,
              enum InputMode      *input_mode,
              bool                *lmb_pressed,
              bool                *no_glowcolor,
@@ -1449,8 +1441,7 @@ handle_input(bool                *active,
              bool                *paused,
              int                 *rmb_press_x,
              int                 *rmb_press_y,
-             int                 *sim_subsample,
-             int                 *tickrate,
+             float               *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
              const int            win_w,
@@ -1474,8 +1465,7 @@ handle_input(bool                *active,
 			                    paused,
 			                    rmb_press_x,
 			                    rmb_press_y,
-			                    sim_subsample,
-			                    *tickrate,
+			                    tickrate,
 			                    th_vision,
 			                    tool_opts,
 			                    world,
@@ -1492,11 +1482,11 @@ handle_input(bool                *active,
 			                     cmdline_shift,
 			                     feedback,
 			                     feedback_expiration,
+			                     framerate,
 			                     input_mode,
 			                     no_glowcolor,
 			                     now,
 			                     paused,
-			                     sim_subsample,
 			                     th_vision,
 			                     tickrate,
 			                     tool_opts,
@@ -1692,8 +1682,7 @@ handle_normal_input(const char         *in,
                     bool               *paused,
                     int                *rmb_press_x,
                     int                *rmb_press_y,
-                    int                *sim_subsample,
-                    const int           tickrate,
+                    float              *tickrate,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
                     struct World       *world,
@@ -1927,26 +1916,24 @@ handle_normal_input(const char         *in,
 
 	case '-':
 	case KEY_SIMSPEED_DOWN:
-		if (*sim_subsample < tickrate) {
-			*sim_subsample *= 2;
+		if (*tickrate > MIN_TICKRATE) {
+			*tickrate /= 2;
 		}
 		break;
 
 	case KEY_SIMSPEED_MIN:
-		while (*sim_subsample < tickrate) {
-			*sim_subsample *= 2;
-		}
+		*tickrate = MIN_TICKRATE;
 		break;
 
 	case '+':
 	case KEY_SIMSPEED_UP:
-		if (*sim_subsample > 1) {
-			*sim_subsample /= 2;
+		if (*tickrate < MAX_TICKRATE) {
+			*tickrate *= 2;
 		}
 		break;
 
 	case KEY_SIMSPEED_MAX:
-		*sim_subsample = 1;
+		*tickrate = MAX_TICKRATE;
 		break;
 
 	case KEY_CMD:
@@ -2050,8 +2037,7 @@ handle_resize(const size_t            cmdline_len,
 		                                                  ip_address,
 		                                                  false,
 		                                                  STATUSBAR_DISPLAY_PRIORITY[a],
-		                                                  1,
-		                                                  120,
+		                                                  120.0,
 		                                                  true,
 		                                                  maxcoords_to,
 		                                                  world_name);
@@ -2087,12 +2073,12 @@ handle_simple_command(const char          *cmdline,
                       bool                *active,
                       char               **feedback,
                       clock_t             *feedback_expiration,
+                      float               *framerate,
                       bool                *no_glowcolor,
                       clock_t              now,
                       bool                *paused,
-                      int                 *sim_subsample,
                       bool                *th_vision,
-                      int                 *tickrate,
+                      float               *tickrate,
                       struct ToolOptions  *tool_opts,
                       struct World        *world)
 {
@@ -2123,14 +2109,14 @@ handle_simple_command(const char          *cmdline,
 		tool_opts->sel_tool = TOOL_COOLER;
 	} else if (strcmp(cmdline, CMD_DEFAULTS) == 0 ||
 	           strcmp(cmdline, CMD_DEFAULTS_SHORT) == 0) {
+		*framerate = STD_FRAMERATE;
+		*tickrate = STD_TICKRATE;
 		tool_opts->brush_radius = STD_BRUSH_RADIUS;
 		tool_opts->eraser_radius = STD_ERASER_RADIUS;
 		tool_opts->sel_tool = STD_SELECTED_TOOL;
 		tool_opts->thermo_delta = STD_THERMO_DELTA;
 		tool_opts->thermo_radius = STD_THERMO_RADIUS;
-		*sim_subsample = STD_SIM_SUBSAMPLE;
 		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
-		*tickrate = STD_TICKRATE;
 	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
 	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_ERASER;
@@ -2293,13 +2279,11 @@ render_statusbar_display(char                        *out,
                          const char                  *ip_address,
                          const bool                   paused,
                          const enum StatusbarElement  sbe,
-                         const int                    sim_subsample,
-                         const int                    tickrate,
+                         const float                  tickrate,
                          const bool                   th_vision,
                          struct ToolOptions           tool_opts,
                          const char                  *world_name)
 {
-	int    sim_speed = 0;
 	char  *vision = NULL;
 	size_t written = 0;
 
@@ -2352,12 +2336,10 @@ render_statusbar_display(char                        *out,
 			                      written,
 			                      "None");
 		} else {
-			sim_speed = (float) tickrate /
-			            (float) sim_subsample;
 			written += string_cat(out,
 			                      out_size,
 			                      written,
-			                      NUMBERSTRING[sim_speed]);
+			                      NUMBERSTRING[(int) tickrate]);
 			written += string_cat(out,
 			                      out_size,
 			                      written,
@@ -2564,9 +2546,11 @@ main(int    argc,
 	size_t                 dot_depth = 0;
 	char                  *feedback = NULL;
 	clock_t                feedback_expiration = 0;
+	float                  framerate = STD_FRAMERATE;
 	enum InputMode         input_mode = IM_NORMAL;
 	char                  *ip_address = "localhost";
 	bool                   paused = false;
+	clock_t                last_frame = 0;
 	clock_t                last_tick = 0;
 	bool                   lmb_pressed = false;
 	bool                   no_color = false;
@@ -2574,11 +2558,10 @@ main(int    argc,
 	clock_t                now = 0;
 	int                    rmb_press_x;
 	int                    rmb_press_y;
-	int                    sim_subsample = STD_SIM_SUBSAMPLE;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[SBE_COUNT];
 	bool                   th_vision = false;
-	int                    tickrate = STD_TICKRATE;
+	float                  tickrate = STD_TICKRATE;
 	int                    ts_since_sim = 9001; /* ticks since last simulation */
 	struct ToolOptions     tool_opts;
 	int                    win_w = 0;
@@ -2596,9 +2579,9 @@ main(int    argc,
 	struct winsize         ws;
 
 	if (!handle_args(argc, argv,
+	                 &framerate,
 	                 &no_color,
 	                 &no_glowcolor,
-	                 &sim_subsample,
 	                 &tickrate,
 	                 &tool_opts)) {
 		return 0;
@@ -2643,64 +2626,64 @@ main(int    argc,
 
 	while (active) {
 		handle_input(&active,
-		             cmdline,
-		             &cmdline_len,
-		             &cmdline_shift,
-		             &feedback,
-		             &feedback_expiration,
-		             &input_mode,
-		             &lmb_pressed,
-		             &no_glowcolor,
-		             now,
-		             &paused,
-		             &rmb_press_x,
-		             &rmb_press_y,
-		             &sim_subsample,
-		             &tickrate,
-		             &th_vision,
-		             &tool_opts,
-		             win_w,
-		             &world,
-		             &world_draw);
+			     cmdline,
+			     &cmdline_len,
+			     &cmdline_shift,
+			     &feedback,
+			     &feedback_expiration,
+			     &framerate,
+			     &input_mode,
+			     &lmb_pressed,
+			     &no_glowcolor,
+			     now,
+			     &paused,
+			     &rmb_press_x,
+			     &rmb_press_y,
+			     &tickrate,
+			     &th_vision,
+			     &tool_opts,
+			     win_w,
+			     &world,
+			     &world_draw);
+
+		if (lmb_pressed) {
+			use_tool(tool_opts, &world);
+		}
 
 		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
 
+			world_update(&world, tool_opts.spawn_temperature);
+
+			if (!paused) {
+				world_sim(&world);
+			}
+		}
+
+		if (now - last_frame >= (long) (CLOCKS_PER_SEC / framerate)) {
+			last_frame = now;
+
 			if (now > feedback_expiration) {
 				feedback = NULL;
 			}
 
-			if (lmb_pressed) {
-				use_tool(tool_opts, &world);
-			}
-
-			world_update(&world, tool_opts.spawn_temperature);
-			if (!paused) {
-				if (ts_since_sim >= sim_subsample) {
-					world_sim(&world);
-					ts_since_sim = 0;
-				} else {
-					ts_since_sim += 1;
-				}
-			}
-
 			handle_resize(cmdline_len,
-			              &cmdline_shift,
-			              &display,
-			              &display_size,
-			              dot_depth,
-			              input_mode,
-			              ip_address,
-			              &statusbar_elems,
-			              statusbar_elem,
-			              &win_w,
-			              &win_h,
-			              world,
-			              &world_draw,
-			              &world_draw_space_w,
-			              &world_draw_space_h,
-			              world_name);
+				      &cmdline_shift,
+				      &display,
+				      &display_size,
+				      dot_depth,
+				      input_mode,
+				      ip_address,
+				      &statusbar_elems,
+				      statusbar_elem,
+				      &win_w,
+				      &win_h,
+				      world,
+				      &world_draw,
+				      &world_draw_space_w,
+				      &world_draw_space_h,
+				      world_name);
 
 			draw(cmdline,
 			     cmdline_len,
@@ -2714,7 +2697,6 @@ main(int    argc,
 			     no_color,
 			     no_glowcolor,
 			     paused,
-			     sim_subsample,
 			     statusbar_elems,
 			     statusbar_elem,
 			     tickrate,

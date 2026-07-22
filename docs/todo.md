@@ -49,6 +49,8 @@ Some are panics, despite a graceful shutdown being implemented
 
 # Web Update
 
+- [ ] using `ARRSIZE` instead of `SBE_COUNT` allows users to completely opt out of statusbar elements in the config
+
 - [ ] libcore: add saving world to file functionality
 Serialization stuff. Mind endianness.
 
@@ -642,16 +644,27 @@ This check now also runs upon spawn explicitly.
 - [x] update README and add a CONTRIBUTING text
 - [x] add install procedure to Makefile and update the README
 
+- [x] replace tickrate-sim-subsample system with classic frame- and tickrate
+This changes things around to be probably a lot more understandable,
+because it's so classic too.
+From now on we have a framerate (prior tickrate),
+and a tickrate (prior sim-subsample... kind of).
+
+This decouples sim speed from the frame rate,
+allowing Termux users to have a reasonable sim speed,
+since its color interp, and therefore framerate, is too slow.
+
+"But what about the imprecision concern,
+that spawned sim-subsample in the first place?"
+Pff, whatever.
+That was an autistic need, kneecapping actual needs.
+
+- [ ] add a framerate command and a flag
+
+- [ ] make install should use the optimization build flags
+
 - [ ] create a demo video, upload on Odysee and embed in README
 (does Odysee do embed?)
-
-- [ ] do something about it running poorly on termux
-Its color interp is too slow.
-Detect poor performance, and decrease tickrate as a reaction,
-while also decreasing sim-subsample?
-Maybe this needs ditching sim-subsample for an easier to steer sim-rate?
-
-- [ ] performance review of both clients
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse
