@@ -43,6 +43,8 @@
 #define CMD_ERASER_SHORT            "e"
 #define CMD_ERASERRADIUS            "eraserradius"
 #define CMD_ERASERRADIUS_SHORT      "er"
+#define CMD_FRAMERATE               "framerate"
+#define CMD_FRAMERATE_SHORT         "fr"
 #define CMD_GLOWCOLOR               "glowcolor"
 #define CMD_GLOWCOLOR_SHORT         "gc"
 #define CMD_HEATER                  "heater"

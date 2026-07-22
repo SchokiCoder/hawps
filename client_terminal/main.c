@@ -141,6 +141,9 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_ERASERRADIUS_SHORT " " CMD_ERASERRADIUS " NUMBER\n"
 "        sets the eraser radius to the given number\n"
 "\n"
+"    " CMD_FRAMERATE_SHORT " " CMD_FRAMERATE " DECIMAL\n"
+"        sets the rate-limit for frames per second\n"
+"\n"
 "    " CMD_GLOWCOLOR_SHORT " " CMD_GLOWCOLOR "\n"
 "        enables dot glow coloring\n"
 "\n"
@@ -413,6 +416,7 @@ handle_advanced_command(const char          *cmd,
                         const char          *arg,
                         char               **feedback,
                         clock_t             *feedback_expiration,
+                        float               *framerate,
                         const clock_t        now,
                         float               *tickrate,
                         struct ToolOptions  *tool_opts,
@@ -864,6 +868,7 @@ handle_advanced_command(const char          *cmd,
                         const char          *arg,
                         char               **feedback,
                         clock_t             *feedback_expiration,
+                        float               *framerate,
                         const clock_t        now,
                         float               *tickrate,
                         struct ToolOptions  *tool_opts,
@@ -906,6 +911,24 @@ handle_advanced_command(const char          *cmd,
 		} else {
 			tool_opts->eraser_radius = l;
 		}
+	} else if (strcmp(cmd, CMD_FRAMERATE) == 0 ||
+	           strcmp(cmd, CMD_FRAMERATE_SHORT) == 0) {
+		errno = 0;
+		f = strtof(arg, NULL);
+
+		if (errno != 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+			return;
+		}
+
+		if (f <= 0.0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "No.");
+			return;
+		}
+
+		*framerate = f;
 	} else if (strcmp(cmd, CMD_MAT) == 0 ||
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
 		switch (tool_opts->sel_tool) {
@@ -1028,7 +1051,7 @@ handle_advanced_command(const char          *cmd,
 			return;
 		}
 
-		if (f <= 0) {
+		if (f <= 0.0) {
 			set_feedback(feedback, feedback_expiration, now,
 			             "No.");
 			return;
@@ -1278,6 +1301,7 @@ handle_command(char                *cmdline,
 			handle_advanced_command(buf1, buf2,
 			                        feedback,
 			                        feedback_expiration,
+			                        framerate,
 			                        now,
 			                        tickrate,
 			                        tool_opts,

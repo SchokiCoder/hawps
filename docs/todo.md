@@ -659,7 +659,7 @@ that spawned sim-subsample in the first place?"
 Pff, whatever.
 That was an autistic need, kneecapping actual needs.
 
-- [ ] add a framerate command and a flag
+- [x] terminal client: add a framerate command
 
 - [ ] make install should use the optimization build flags
 
