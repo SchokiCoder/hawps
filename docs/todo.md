@@ -663,6 +663,11 @@ That was an autistic need, kneecapping actual needs.
 
 - [x] change `make install` to use the release build flags
 
+- [x] fix thermotool speed depending on machine performance
+This replaces the dopey thermo-delta, a relic from sim-subsample days,
+with a thermo-rate.
+The bug could also be achieved by manually lowering the FPS limit.
+
 - [ ] create a demo video, upload on Odysee and embed in README
 (does Odysee do embed?)
 

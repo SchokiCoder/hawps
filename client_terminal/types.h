@@ -37,8 +37,8 @@ struct ToolOptions {
 	enum Tool sel_tool;
 	float     spawn_temperature;
 	enum Mat  spawner_mat;
-	float     thermo_delta;
 	int       thermo_radius;
+	float     thermo_rate;
 	int       x;
 	int       y;
 };

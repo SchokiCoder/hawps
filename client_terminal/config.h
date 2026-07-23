@@ -71,10 +71,10 @@
 #define CMD_TEMPERATURE_SHORT       "t"
 #define CMD_TEMPERATUREK            "temperaturek"
 #define CMD_TEMPERATUREK_SHORT      "tk"
-#define CMD_THERMODELTA             "thermodelta"
-#define CMD_THERMODELTA_SHORT       "thd"
 #define CMD_THERMORADIUS            "thermoradius"
-#define CMD_THERMORADIUS_SHORT      "thr"
+#define CMD_THERMORADIUS_SHORT      "thrd"
+#define CMD_THERMORATE              "thermorate"
+#define CMD_THERMORATE_SHORT        "thrt"
 #define CMD_THERMOVISION            "thermovision"
 #define CMD_THERMOVISION_SHORT      "thv"
 #define CMD_TICKRATE                "tickrate"
@@ -144,7 +144,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[SBE_COUNT] = {
 #define STD_FRAMERATE         999999.99
 #define STD_SELECTED_TOOL     TOOL_BRUSH
 #define STD_SPAWN_TEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
-#define STD_THERMO_DELTA      5.0
+#define STD_THERMO_RATE       100.0
 #define STD_THERMO_RADIUS     STD_BRUSH_RADIUS
 #define STD_TICKRATE          30.0
 

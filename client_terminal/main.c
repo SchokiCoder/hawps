@@ -79,10 +79,10 @@
 #define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
 #define FLAG_SPAWNTEMPERATURE_SHORT "-st"
-#define FLAG_THERMODELTA            "-thermodelta"
-#define FLAG_THERMODELTA_SHORT      "-thd"
 #define FLAG_THERMORADIUS           "-thermoradius"
-#define FLAG_THERMORADIUS_SHORT     "-thr"
+#define FLAG_THERMORADIUS_SHORT     "-thrd"
+#define FLAG_THERMORATE             "-thermorate"
+#define FLAG_THERMORATE_SHORT       "-thrt"
 #define FLAG_TICKRATE               "-tickrate"
 #define FLAG_TICKRATE_SHORT         "-tr"
 #define FLAG_VERSION                "-version"
@@ -183,11 +183,11 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_TEMPERATUREK_SHORT " " CMD_TEMPERATUREK " DECIMAL\n"
 "        sets the temperature of existing dots in degrees Kelvin\n"
 "\n"
-"    " CMD_THERMODELTA_SHORT " " CMD_THERMODELTA " DECIMAL\n"
-"        sets the delta of thermo tools, with which heating/cooling occurs\n"
-"\n"
 "    " CMD_THERMORADIUS_SHORT " " CMD_THERMORADIUS " NUMBER\n"
 "        sets the radius of thermo tools to the given number\n"
+"\n"
+"    " CMD_THERMORATE_SHORT " " CMD_THERMORATE " DECIMAL\n"
+"        sets the rate of thermo tools, with which heating/cooling occurs\n"
 "\n"
 "    " CMD_THERMOVISION_SHORT " " CMD_THERMOVISION "\n"
 "        enables thermal vision\n"
@@ -227,14 +227,13 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        0 °C == %.2f K\n"
 "        default: %.2f\n"
 "\n"
-"    " FLAG_THERMODELTA_SHORT " " FLAG_THERMODELTA " DECIMAL\n"
-"        sets the delta of thermo tools, with which heating/cooling occurs\n"
-"        the delta is applied once per tick\n"
-"        default: %.2f\n"
-"\n"
 "    " FLAG_THERMORADIUS_SHORT " " FLAG_THERMORADIUS " NUMBER\n"
 "        sets the radius of thermo tools\n"
 "        default: %i\n"
+"\n"
+"    " FLAG_THERMORATE_SHORT " " FLAG_THERMORATE " DECIMAL\n"
+"        sets the rate of thermo tools, with which heating/cooling occurs\n"
+"        default: %.2f\n"
 "\n"
 "    " FLAG_TICKRATE_SHORT " " FLAG_TICKRATE " DECIMAL\n"
 "        sets the rate for ticks (simulations) per second\n"
@@ -487,6 +486,7 @@ handle_input(bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
              size_t              *cmdline_shift,
+             const float          delta,
              char               **feedback,
              clock_t             *feedback_expiration,
              float               *framerate,
@@ -506,6 +506,7 @@ handle_input(bool                *active,
 
 void
 handle_mouse_input(const char         *in,
+                   const float         delta,
                    bool               *lmb_pressed,
                    int                *rmb_press_x,
                    int                *rmb_press_y,
@@ -515,6 +516,7 @@ handle_mouse_input(const char         *in,
 
 void
 handle_normal_csi_input(const char         *in,
+                        const float         delta,
                         bool               *lmb_pressed,
                         int                *rmb_press_x,
                         int                *rmb_press_y,
@@ -525,6 +527,7 @@ handle_normal_csi_input(const char         *in,
 void
 handle_normal_input(const char         *in,
                     bool               *active,
+                    const float         delta,
                     enum InputMode     *input_mode,
                     bool               *lmb_pressed,
                     bool               *paused,
@@ -625,7 +628,8 @@ set_feedback(char          **feedback,
              char           *str);
 
 void
-use_tool(struct ToolOptions  tool_opts,
+use_tool(const float         delta,
+         struct ToolOptions  tool_opts,
          struct World       *world);
 
 /* Function definitions
@@ -1011,8 +1015,20 @@ handle_advanced_command(const char          *cmd,
 		} else {
 			command_temperature(f, world);
 		}
-	} else if (strcmp(cmd, CMD_THERMODELTA) == 0 ||
-	           strcmp(cmd, CMD_THERMODELTA_SHORT) == 0) {
+	} else if (strcmp(cmd, CMD_THERMORADIUS) == 0 ||
+	           strcmp(cmd, CMD_THERMORADIUS_SHORT) == 0) {
+		errno = 0;
+		l = strtol(arg, NULL, 10);
+
+		if (errno != 0 ||
+		    l < 0) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Number is invalid.");
+		} else {
+			tool_opts->thermo_radius = l;
+		}
+	} else if (strcmp(cmd, CMD_THERMORATE) == 0 ||
+	           strcmp(cmd, CMD_THERMORATE_SHORT) == 0) {
 		errno = 0;
 		f = strtof(arg, NULL);
 
@@ -1027,19 +1043,7 @@ handle_advanced_command(const char          *cmd,
 			             "That's dumb, but okay.");
 		}
 
-		tool_opts->thermo_delta = f;
-	} else if (strcmp(cmd, CMD_THERMORADIUS) == 0 ||
-	           strcmp(cmd, CMD_THERMORADIUS_SHORT) == 0) {
-		errno = 0;
-		l = strtol(arg, NULL, 10);
-
-		if (errno != 0 ||
-		    l < 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			tool_opts->thermo_radius = l;
-		}
+		tool_opts->thermo_rate = f;
 	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
 	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
 		errno = 0;
@@ -1132,8 +1136,8 @@ handle_args(int                  argc,
 			       STD_FRAMERATE,
 			       CELSIUS_TO_KELVIN,
 			       STD_SPAWN_TEMPERATURE,
-			       STD_THERMO_DELTA,
 			       STD_THERMO_RADIUS,
+			       STD_THERMO_RATE,
 			       STD_TICKRATE);
 
 			if (KEY_PAUSE != ' ') {
@@ -1202,19 +1206,6 @@ handle_args(int                  argc,
 				return false;
 			}
 			i++;
-		} else if (strcmp(argv[i], FLAG_THERMODELTA) == 0 ||
-		           strcmp(argv[i], FLAG_THERMODELTA_SHORT) == 0) {
-			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
-				return false;
-			}
-			tool_opts->thermo_delta = flagargf;
-			if (tool_opts->thermo_delta < 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must not be negative\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
 		} else if (strcmp(argv[i], FLAG_THERMORADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_THERMORADIUS_SHORT) == 0) {
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
@@ -1222,6 +1213,19 @@ handle_args(int                  argc,
 			}
 			tool_opts->thermo_radius = flagargi;
 			if (tool_opts->thermo_radius < 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must not be negative\n",
+				        argv[i]);
+				return false;
+			}
+			i++;
+		} else if (strcmp(argv[i], FLAG_THERMORATE) == 0 ||
+		           strcmp(argv[i], FLAG_THERMORATE_SHORT) == 0) {
+			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
+				return false;
+			}
+			tool_opts->thermo_rate = flagargf;
+			if (tool_opts->thermo_rate < 0) {
 				fprintf(stderr,
 				        "The value for \"%s\" must not be negative\n",
 				        argv[i]);
@@ -1455,6 +1459,7 @@ handle_input(bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
              size_t              *cmdline_shift,
+             const float          delta,
              char               **feedback,
              clock_t             *feedback_expiration,
              float               *framerate,
@@ -1484,6 +1489,7 @@ handle_input(bool                *active,
 			input[input_len] = '\0';
 			handle_normal_input(input,
 			                    active,
+			                    delta,
 			                    input_mode,
 			                    lmb_pressed,
 			                    paused,
@@ -1523,6 +1529,7 @@ handle_input(bool                *active,
 
 void
 handle_mouse_input(const char         *in,
+                   const float         delta,
                    bool               *lmb_pressed,
                    int                *rmb_press_x,
                    int                *rmb_press_y,
@@ -1555,7 +1562,7 @@ handle_mouse_input(const char         *in,
 	case CSI_MB_LEFT_DRAG:
 		tool_opts->x = x + world_draw->x;
 		tool_opts->y = y + world_draw->y;
-		use_tool(*tool_opts, world);
+		use_tool(delta, *tool_opts, world);
 
 		if ('M' == pressed) {
 			*lmb_pressed = true;
@@ -1629,6 +1636,7 @@ handle_mouse_input(const char         *in,
 
 void
 handle_normal_csi_input(const char         *in,
+                        const float         delta,
                         bool               *lmb_pressed,
                         int                *rmb_press_x,
                         int                *rmb_press_y,
@@ -1689,6 +1697,7 @@ handle_normal_csi_input(const char         *in,
 	} else if (in[1] == '[' &&
 	           in[2] == '<') {
 		handle_mouse_input(in,
+		                   delta,
 		                   lmb_pressed,
 		                   rmb_press_x,
 		                   rmb_press_y,
@@ -1701,6 +1710,7 @@ handle_normal_csi_input(const char         *in,
 void
 handle_normal_input(const char         *in,
                     bool               *active,
+                    const float         delta,
                     enum InputMode     *input_mode,
                     bool               *lmb_pressed,
                     bool               *paused,
@@ -1718,7 +1728,7 @@ handle_normal_input(const char         *in,
 		break;
 
 	case KEY_USE:
-		use_tool(*tool_opts, world);
+		use_tool(delta, *tool_opts, world);
 		break;
 
 	case KEY_SWITCH_VISION:
@@ -1978,6 +1988,7 @@ handle_normal_input(const char         *in,
 
 	case CHAR_ESCAPE:
 		handle_normal_csi_input(in,
+		                        delta,
 		                        lmb_pressed,
 		                        rmb_press_x,
 		                        rmb_press_y,
@@ -2138,8 +2149,8 @@ handle_simple_command(const char          *cmdline,
 		tool_opts->brush_radius = STD_BRUSH_RADIUS;
 		tool_opts->eraser_radius = STD_ERASER_RADIUS;
 		tool_opts->sel_tool = STD_SELECTED_TOOL;
-		tool_opts->thermo_delta = STD_THERMO_DELTA;
 		tool_opts->thermo_radius = STD_THERMO_RADIUS;
+		tool_opts->thermo_rate = STD_THERMO_RATE;
 		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
 	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
 	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
@@ -2189,8 +2200,8 @@ new_tool_options(void)
 		.sel_tool = STD_SELECTED_TOOL,
 		.spawn_temperature = STD_SPAWN_TEMPERATURE,
 		.spawner_mat = FIRST_REAL_MAT,
-		.thermo_delta = STD_THERMO_DELTA,
 		.thermo_radius = STD_THERMO_RADIUS,
+		.thermo_rate = STD_THERMO_RATE,
 		.x = 0,
 		.y = 0,
 	};
@@ -2511,7 +2522,8 @@ set_feedback(char          **feedback,
 }
 
 void
-use_tool(struct ToolOptions  tool_opts,
+use_tool(const float         delta,
+         struct ToolOptions  tool_opts,
          struct World       *world)
 {
 	switch (tool_opts.sel_tool) {
@@ -2538,7 +2550,7 @@ use_tool(struct ToolOptions  tool_opts,
 
 	case TOOL_HEATER:
 		world_use_heater(world,
-		                 tool_opts.thermo_delta,
+		                 tool_opts.thermo_rate * delta,
 		                 tool_opts.x,
 		                 tool_opts.y,
 		                 tool_opts.thermo_radius);
@@ -2546,7 +2558,7 @@ use_tool(struct ToolOptions  tool_opts,
 
 	case TOOL_COOLER:
 		world_use_cooler(world,
-		                 tool_opts.thermo_delta,
+		                 tool_opts.thermo_rate * delta,
 		                 tool_opts.x,
 		                 tool_opts.y,
 		                 tool_opts.thermo_radius);
@@ -2565,6 +2577,7 @@ main(int    argc,
 	char                   cmdline[CMDLINE_SIZE];
 	size_t                 cmdline_len = 0;
 	size_t                 cmdline_shift = 0;
+	float                  delta = 0.0;
 	char                  *display = NULL;
 	size_t                 display_size = 0;
 	size_t                 dot_depth = 0;
@@ -2574,6 +2587,7 @@ main(int    argc,
 	enum InputMode         input_mode = IM_NORMAL;
 	char                  *ip_address = "localhost";
 	bool                   paused = false;
+	clock_t                last_input = 0;
 	clock_t                last_frame = 0;
 	clock_t                last_tick = 0;
 	bool                   lmb_pressed = false;
@@ -2649,10 +2663,15 @@ main(int    argc,
 	              world_name);
 
 	while (active) {
+		now = clock();
+		delta = (float) (now - last_input) / (float) CLOCKS_PER_SEC;
+
+		last_input = now;
 		handle_input(&active,
 			     cmdline,
 			     &cmdline_len,
 			     &cmdline_shift,
+			     delta,
 			     &feedback,
 			     &feedback_expiration,
 			     &framerate,
@@ -2671,10 +2690,9 @@ main(int    argc,
 			     &world_draw);
 
 		if (lmb_pressed) {
-			use_tool(tool_opts, &world);
+			use_tool(delta, tool_opts, &world);
 		}
 
-		now = clock();
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
 
