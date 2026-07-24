@@ -91,6 +91,8 @@ Remember to update the ip address display to reflect this.
 
 - git tag to update APP_VERSION
 
+-----
+
 # "Waiting for an update"-Anniversary Update
 
 - [x] add some missing phonies to Makefile
@@ -683,11 +685,11 @@ The bug could also be achieved by manually lowering the FPS limit.
 - [x] buff default thermorate
 Originally this felt more in line with v0.6, but it's just too slow.
 
-- [ ] change default frame- and tickrate for lower battery drain
+- [x] change default frame- and tickrate for lower battery drain
+Tickrate of 24 was the default forever, so it's restored.
+An uncapped framerate for a terminal app is of questionable necessity.
 
 - git tag to update APP_VERSION
-
------
 
 # Pyro Update
 
