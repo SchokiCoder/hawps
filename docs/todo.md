@@ -49,6 +49,16 @@ Some are panics, despite a graceful shutdown being implemented
 
 # Web Update
 
+- [ ] libcore: add test against gravity
+- [ ] libcore: add test against grain stack collapse
+- [ ] libcore: add test against liquid stack collapse
+- [ ] libcore: add test against gas stack collapse
+- [ ] libcore: add test against thermal conduction
+- [ ] libcore: add test against chemical reactions
+- [ ] libcore: add test against loss of mass upon heat up
+- [ ] libcore: add test against spawners
+- [ ] libcore: add test against mat table property array length miscount
+
 - [ ] using `ARRSIZE` instead of `SBE_COUNT` allows users to completely opt out of statusbar elements in the config
 
 - [ ] libcore: add saving world to file functionality
@@ -668,20 +678,12 @@ This replaces the dopey thermo-delta, a relic from sim-subsample days,
 with a thermo-rate.
 The bug could also be achieved by manually lowering the FPS limit.
 
-- [ ] create a demo video, upload on Odysee and embed in README
-(does Odysee do embed?)
+- [x] add demo video to README
 
-- [ ] libcore: add test against gravity
-- [ ] libcore: add test against grain stack collapse
-- [ ] libcore: add test against liquid stack collapse
-- [ ] libcore: add test against gas stack collapse
-- [ ] libcore: add test against thermal conduction
-- [ ] libcore: add test against chemical reactions
-- [ ] libcore: add test against loss of mass upon heat up
-- [ ] libcore: add test against spawners
-- [ ] libcore: add test against mat table property array length miscount
+- [ ] buff default thermorate
+Originally this felt more in line with v0.6, but it's just too slow.
 
-- [ ] update copyright?
+- [ ] change default frame- and tickrate for lower battery drain
 
 - git tag to update APP_VERSION
 

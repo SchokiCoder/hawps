@@ -6,6 +6,8 @@ It'll be great. Trust me.
 What does this acronym stand for now?  
 Half assed wannabe physics simulator, and the name is the game.
 
+[Quick demo video](https://odysee.com/@Schoki:1/hawps_v0-7:a)
+
 # Install
 
 ```
