@@ -680,7 +680,7 @@ The bug could also be achieved by manually lowering the FPS limit.
 
 - [x] add demo video to README
 
-- [ ] buff default thermorate
+- [x] buff default thermorate
 Originally this felt more in line with v0.6, but it's just too slow.
 
 - [ ] change default frame- and tickrate for lower battery drain
