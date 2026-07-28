@@ -49,17 +49,21 @@ Some are panics, despite a graceful shutdown being implemented
 
 # Web Update
 
-- [ ] libcore: add test against gravity
-- [ ] libcore: add test against grain stack collapse
-- [ ] libcore: add test against liquid stack collapse
-- [ ] libcore: add test against gas stack collapse
-- [ ] libcore: add test against thermal conduction
-- [ ] libcore: add test against chemical reactions
-- [ ] libcore: add test against loss of mass upon heat up
-- [ ] libcore: add test against spawners
-- [ ] libcore: add test against mat table property array length miscount
+- [ ] terminal client: add networking
+How? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
+the commit before networking got removed.
+This should be able to piggyback off the saving/loading serialization.
+Remember to update the ip address display to reflect this.
 
-- [ ] using `ARRSIZE` instead of `SBE_COUNT` allows users to completely opt out of statusbar elements in the config
+- [ ] terminal client: add flag to enable hosting a server
+- [ ] terminal client: add flag to enable hosting a dedicated server
+- [ ] terminal client: add flag for connecting to an ip address
+- [ ] terminal client: add cmd for connecting to an ip address
+
+- [ ] terminal client: update help text
+- [ ] update README
+
+# File Update
 
 - [ ] libcore: add saving world to file functionality
 Serialization stuff. Mind endianness.
@@ -75,16 +79,24 @@ Saves to "default" and by default loads it at startup?
 
 - [ ] terminal client: add cmd for loading world from file
 
-- [ ] terminal client: add networking
-How? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
-the commit before networking got removed.
-This should be able to piggyback off the saving/loading serialization.
-Remember to update the ip address display to reflect this.
+- [ ] terminal client: update help text
+- [ ] update README
 
-- [ ] terminal client: add flag to enable hosting a server
-- [ ] terminal client: add flag to enable hosting a dedicated server
-- [ ] terminal client: add flag for connecting to an ip address
-- [ ] terminal client: add cmd for connecting to an ip address
+# Simple and Direct Update
+
+- [ ] using `ARRSIZE` instead of `SBE_COUNT` allows users to completely opt out of statusbar elements in the config
+
+- [ ] terminal client: add SDL backend
+
+- [ ] libcore: add test against gravity
+- [ ] libcore: add test against grain stack collapse
+- [ ] libcore: add test against liquid stack collapse
+- [ ] libcore: add test against gas stack collapse
+- [ ] libcore: add test against thermal conduction
+- [ ] libcore: add test against chemical reactions
+- [ ] libcore: add test against loss of mass upon heat up
+- [ ] libcore: add test against spawners
+- [ ] libcore: add test against mat table property array length miscount
 
 - [ ] terminal client: update help text
 - [ ] update README

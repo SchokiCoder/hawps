@@ -101,14 +101,29 @@ Add chemical reactions:
 - Oxygen and Aluminum collision, creating Aluminumoxide
 - Ironoxide and Aluminumoxide collision, creating Thermite
 
-## v0.8.0 beautiful specks of dirt
+## v0.8.0 SDL backend for terminal client
+
+Add SDL backend to terminal client, or add SDL client.
+SDL's hardware enabled rendering *should* be better for batteries,
+while allowing me to preferably keep the same UI.
+
+## 0.9.0 File Update
+
+Add world saving to and loading from file functionality.
+
+## 0.10.0 Web Update
+
+Add networking, allowing worlds to be hosted.
+Add a dedicated server mode to terminal client or add a dedicated binary.
+
+## v0.11.0 beautiful specks of dirt
 
 So far we only use flat colors for all the materials.  
 A pile of the same material looks pretty boring.  
   
 Use a shader?  
 
-## v0.9.0 Android
+## v0.12.0 Android
 
 - make compatible with Android
 - make touch work

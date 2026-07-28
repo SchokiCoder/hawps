@@ -14,7 +14,7 @@ follow these steps to make it convenient for everyone:
 - commit your changes
 - create a [pull][pulls] request on GitHub
 
-Thanks, and have fun.
+Thanks, and remember to have fun primarily.
 
 
 

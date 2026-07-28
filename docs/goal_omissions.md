@@ -1,3 +1,8 @@
+# after 0.7
+
+The goals after 0.7 will be pushed back for some new goals.
+This changes <goals.md>.
+
 # 0.4
 
 ## Holding ALT key to see key binds
