@@ -13,53 +13,25 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "csi.h"
 #include "config.h"
+#include "generic.h"
 #include "int_to_string.h"
 #include "str.h"
 #include "types.h"
 
+#ifdef SDL_BACKEND
+#include <SDL3/SDL.h>
+#include "backend_sdl.h"
+#else
+#include "csi.h"
+#include "backend_terminal.h"
+#endif
+
 /* Macros
  */
 
-#define DOT_EMPTY_LINES_RENDER_LOOP \
-	for (y = 0; y < world_draw_space_h; y++) { \
-		memset(&out[written], ' ', world_draw.w + world_draw_space_w); \
-		written += world_draw.w + world_draw_space_w;\
-	}
-
-#define DOT_RENDER_LOOP(COLOR) \
-	for (y = world_draw.y; y < world_draw.h + world_draw.y; y++) { \
-		for (x = world_draw.x; x < world_draw.w + world_draw.x; x++) { \
-			written += render_dot(&out[written], \
-			                      out_size - written, \
-			                      COLOR, \
-			                      world, \
-			                      x, \
-			                      y); \
-		} \
-		memset(&out[written], ' ', world_draw_space_w); \
-		written += world_draw_space_w;\
-	} \
-	DOT_EMPTY_LINES_RENDER_LOOP
-
-#define DOT_RENDER_LOOP_NO_COLOR \
-	for (y = world_draw.y; y < world_draw.h + world_draw.y; y++) { \
-		for (x = world_draw.x; x < world_draw.w + world_draw.x; x++) { \
-			written += render_dot_no_color(&out[written], \
-			                               world, \
-			                               x, \
-			                               y); \
-		} \
-		memset(&out[written], ' ', world_draw_space_w); \
-		written += world_draw_space_w;\
-	} \
-	DOT_EMPTY_LINES_RENDER_LOOP
-
 /* Constant defines
  */
-
-#define CELSIUS_TO_KELVIN 273.15
 
 #define FIRST_REAL_MAT MAT_SAND
 
@@ -73,10 +45,6 @@
 #define FLAG_FRAMERATE_SHORT        "-fr"
 #define FLAG_HELP                   "-help"
 #define FLAG_HELP_SHORT             "-h"
-#define FLAG_NOCOLOR                "-nocolor"
-#define FLAG_NOCOLOR_SHORT          "-noc"
-#define FLAG_NOGLOWCOLOR            "-noglowcolor"
-#define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
 #define FLAG_SPAWNTEMPERATURE_SHORT "-st"
 #define FLAG_THERMORADIUS           "-thermoradius"
@@ -87,6 +55,13 @@
 #define FLAG_TICKRATE_SHORT         "-tr"
 #define FLAG_VERSION                "-version"
 #define FLAG_VERSION_SHORT          "-v"
+
+#ifndef SDL_BACKEND
+#define FLAG_NOCOLOR                "-nocolor"
+#define FLAG_NOCOLOR_SHORT          "-noc"
+#define FLAG_NOGLOWCOLOR            "-noglowcolor"
+#define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
+#endif
 
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
@@ -216,12 +191,14 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
 "\n"
+#ifndef SDL_BACKEND
 "    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
 "        disables all world dot coloring\n"
 "\n"
 "    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
 "        disables dot glow coloring\n"
 "\n"
+#endif
 "    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE " DECIMAL\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
@@ -356,59 +333,12 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "        pause world\n"
 "\n";
 
-static const char DOT_APPEARANCE[] = {
-	'X',
-	'X',
-	'+',
-	'-',
-};
-
 /* Function declarations
  */
 
 void
 command_temperature(const float   new_temperature,
                     struct World *world);
-
-void
-draw(const char                  *cmdline,
-     const size_t                 cmdline_len,
-     const size_t                 cmdline_shift,
-     char                        *display,
-     const size_t                 display_size,
-     const size_t                 dot_depth,
-     const char                  *feedback,
-     const enum InputMode         input_mode,
-     const char                  *ip_address,
-     const bool                   no_color,
-     const bool                   no_glowcolor,
-     const bool                   paused,
-     const size_t                 statusbar_elems,
-     const enum StatusbarElement *statusbar_elem,
-     const float                  tickrate,
-     const bool                   th_vision,
-     const struct ToolOptions     tool_opts,
-     const int                    win_w,
-     const struct World           world,
-     const struct Rect            world_draw,
-     const int                    world_draw_space_w,
-     const int                    world_draw_space_h,
-     const char                  *world_name);
-
-struct Rgba
-get_normal_dot_color(const struct World world,
-                     const int          x,
-                     const int          y);
-
-struct Rgba
-get_normal_dot_color_simple(const struct World world,
-                            const int          x,
-                            const int          y);
-
-struct Rgba
-get_thermal_dot_color(const struct World world,
-                      const int          x,
-                      const int          y);
 
 void
 handle_advanced_command(const char          *cmd,
@@ -425,15 +355,12 @@ bool
 handle_args(int                  argc,
             char               **argv,
             float               *framerate,
+#ifndef SDL_BACKEND
             bool                *no_color,
             bool                *no_glowcolor,
+#endif
             float               *tickrate,
             struct ToolOptions  *tool_opts);
-
-void
-handle_cmdline_shift(const size_t          cmdline_len,
-                     size_t               *cmdline_shift,
-                     const int             win_w);
 
 void
 handle_command(char                *cmdline,
@@ -505,26 +432,6 @@ handle_input(bool                *active,
              struct Rect         *world_draw);
 
 void
-handle_mouse_input(const char         *in,
-                   const float         delta,
-                   bool               *lmb_pressed,
-                   int                *rmb_press_x,
-                   int                *rmb_press_y,
-                   struct ToolOptions *tool_opts,
-                   struct World       *world,
-                   struct Rect        *world_draw);
-
-void
-handle_normal_csi_input(const char         *in,
-                        const float         delta,
-                        bool               *lmb_pressed,
-                        int                *rmb_press_x,
-                        int                *rmb_press_y,
-                        struct ToolOptions *tool_opts,
-                        struct World       *world,
-                        struct Rect        *world_draw);
-
-void
 handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
@@ -538,24 +445,6 @@ handle_normal_input(const char         *in,
                     struct ToolOptions *tool_opts,
                     struct World       *world,
                     struct Rect        *world_draw);
-
-void
-handle_resize(const size_t            cmdline_len,
-              size_t                 *cmdline_shift,
-              char                  **display,
-              size_t                 *display_size,
-              const size_t            dot_depth,
-              const enum InputMode    input_mode,
-              const char             *ip_address,
-              size_t                 *statusbar_elems,
-              enum StatusbarElement  *statusbar_elem,
-              int                    *win_w,
-              int                    *win_h,
-              const struct World      world,
-              struct Rect            *world_draw,
-              int                    *world_draw_space_w,
-              int                    *world_draw_space_h,
-              const char             *world_name);
 
 void
 handle_simple_command(const char          *cmdline,
@@ -575,62 +464,10 @@ struct ToolOptions
 new_tool_options(void);
 
 void
-tool_radius_add(const int           radius_change,
-                struct ToolOptions *tool_opts);
-
-size_t
-render_dot(char               *out,
-           const size_t        out_size,
-           const struct Rgba   color,
-           const struct World  world,
-           const int           x,
-           const int           y);
-
-size_t
-render_dot_no_color(char               *out,
-                    const struct World  world,
-                    const int           x,
-                    const int           y);
-
-size_t
-render_statusbar_display(char                        *out,
-                         const size_t                 out_size,
-                         const char                  *ip_address,
-                         const bool                   paused,
-                         const enum StatusbarElement  sbe,
-                         const float                  tickrate,
-                         const bool                   th_vision,
-                         struct ToolOptions           tool_opts,
-                         const char                  *world_name);
-
-size_t
-render_tool_hint(char                     *out,
-                 const size_t              out_size,
-                 const struct ToolOptions  tool_opts);
-
-size_t
-render_world(char               *out,
-             const size_t        out_size,
-             const size_t        dot_depth,
-             const bool          no_color,
-             const bool          no_glowcolor,
-             const bool          th_vision,
-             struct ToolOptions  tool_opts,
-             const struct World  world,
-             const struct Rect   world_draw,
-             const int           world_draw_space_w,
-             const int           world_draw_space_h);
-
-void
 set_feedback(char          **feedback,
              clock_t        *feedback_expiration,
              const clock_t   now,
              char           *str);
-
-void
-use_tool(const float         delta,
-         struct ToolOptions  tool_opts,
-         struct World       *world);
 
 /* Function definitions
  */
@@ -652,219 +489,6 @@ command_temperature(const float   new_temperature,
 			}
 		}
 	}
-}
-
-void
-draw(const char                  *cmdline,
-     const size_t                 cmdline_len,
-     const size_t                 cmdline_shift,
-     char                        *display,
-     const size_t                 display_size,
-     const size_t                 dot_depth,
-     const char                  *feedback,
-     const enum InputMode         input_mode,
-     const char                  *ip_address,
-     const bool                   no_color,
-     const bool                   no_glowcolor,
-     const bool                   paused,
-     const size_t                 statusbar_elems,
-     const enum StatusbarElement *statusbar_elem,
-     const float                  tickrate,
-     const bool                   th_vision,
-     const struct ToolOptions     tool_opts,
-     const int                    win_w,
-     const struct World           world,
-     const struct Rect            world_draw,
-     const int                    world_draw_space_w,
-     const int                    world_draw_space_h,
-     const char                  *world_name)
-{
-	char   buf[BUF_SIZE];
-	size_t buf_len = 0;
-	size_t display_len = 0;
-	size_t feedback_len;
-	size_t i;
-	size_t space_len = 0;
-	size_t st_bar_len = 0;
-
-	display[0] = '\0';
-
-	if (th_vision) {
-		display_len += CSI_color_to_string(THERMAL_VISION_R,
-		                                   THERMAL_VISION_G,
-		                                   THERMAL_VISION_B,
-		                                   false,
-		                                   &display[display_len],
-		                                   display_size - display_len);
-	}
-
-	display_len += render_world(&display[display_len],
-	                            display_size - display_len,
-	                            dot_depth,
-	                            no_color,
-	                            no_glowcolor,
-	                            th_vision,
-	                            tool_opts,
-	                            world,
-	                            world_draw,
-	                            world_draw_space_w,
-	                            world_draw_space_h);
-
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          CSI_FG_DEFAULT);
-	display_len += string_cat(display,
-	                          display_size,
-	                          display_len,
-	                          CSI_BG_DEFAULT);
-
-	st_bar_len = display_len;
-
-	i = 0;
-	while (1) {
-		display_len += render_statusbar_display(&display[display_len],
-		                                        display_size - display_len,
-		                                        ip_address,
-		                                        paused,
-		                                        statusbar_elem[i],
-		                                        tickrate,
-		                                        th_vision,
-		                                        tool_opts,
-		                                        world_name);
-
-		i++;
-		if (i >= statusbar_elems) {
-			break;
-		}
-
-		display_len += string_cat(display,
-		                          display_size,
-		                          display_len,
-		                          STATUSBAR_SEPARATOR);
-	}
-
-	st_bar_len = display_len - st_bar_len;
-
-	space_len = win_w - st_bar_len;
-	memset(&display[display_len], ' ', space_len);
-	display_len += space_len;
-
-	switch (input_mode) {
-	case IM_NORMAL:
-		if (feedback != NULL) {
-			feedback_len = strlen(feedback);
-			if (feedback_len > (size_t) win_w) {
-				feedback_len -= feedback_len - win_w;
-			}
-			display_len += string_cat(display,
-			                          /* hack: */
-			                          display_len + feedback_len + 1,
-			                          display_len,
-			                          feedback);
-			space_len = win_w - feedback_len;
-			break;
-		}
-
-		buf[0] = '\0';
-		buf_len = 0;
-		buf_len = render_tool_hint(buf, BUF_SIZE, tool_opts);
-
-		if (buf_len > (size_t) win_w) {
-			buf_len -= buf_len - win_w;
-			buf[buf_len] = '\0';
-		}
-
-		display_len += string_cat(display, display_size, display_len, buf);
-
-		space_len = win_w - buf_len;
-		break;
-
-	case IM_COMMAND:
-		display[display_len] = CMDLINE_INDICATOR;
-		display_len += 1;
-
-		display_len += string_cat(display,
-		                          display_size,
-		                          display_len,
-		                          &cmdline[cmdline_shift]);
-
-		display[display_len] = CMDLINE_CURSOR;
-		display_len += 1;
-
-		space_len = win_w - 1 - cmdline_len + cmdline_shift - 1;
-		break;
-	}
-
-	memset(&display[display_len], ' ', space_len);
-	display_len += space_len;
-
-	display[display_len] = '\0';
-
-	CSI_set_cursorpos(0, 0);
-	buf_len = 0;
-	while (buf_len < display_len) {
-		buf_len += fwrite(&display[buf_len],
-		                  1,
-		                  display_len - buf_len,
-		                  stdout);
-	}
-}
-
-struct Rgba
-get_normal_dot_color(const struct World world,
-                     const int          x,
-                     const int          y)
-{
-	struct Rgba a, b;
-
-	a = thermo_to_color(world.thermo[x][y]);
-
-	b.r = MAT_R[world.dot[x][y]];
-	b.g = MAT_G[world.dot[x][y]];
-	b.b = MAT_B[world.dot[x][y]];
-	b.a = 255;
-
-	return rgba_blend(a, b);
-}
-
-struct Rgba
-get_normal_dot_color_simple(const struct World world,
-                            const int          x,
-                            const int          y)
-{
-	struct Rgba ret;
-
-	ret.r = MAT_R[world.dot[x][y]];
-	ret.g = MAT_G[world.dot[x][y]];
-	ret.b = MAT_B[world.dot[x][y]];
-	ret.a = 255;
-
-	return ret;
-}
-
-struct Rgba
-get_thermal_dot_color(const struct World world,
-                      const int          x,
-                      const int          y)
-{
-	struct Rgba ret;
-	unsigned char vis_t;
-
-	if (world.thermo[x][y] > (THERMAL_VISION_MIN_T + 255)) {
-		vis_t = 255;
-	} else if (world.thermo[x][y] < THERMAL_VISION_MIN_T) {
-		vis_t = 0;
-	} else {
-		vis_t = world.thermo[x][y] - THERMAL_VISION_MIN_T;
-	}
-
-	ret.r = vis_t;
-	ret.g = vis_t;
-	ret.b = vis_t;
-	ret.a = 255;
-
-	return ret;
 }
 
 void
@@ -1072,8 +696,10 @@ bool
 handle_args(int                  argc,
             char               **argv,
             float               *framerate,
+#ifndef SDL_BACKEND
             bool                *no_color,
             bool                *no_glowcolor,
+#endif
             float               *tickrate,
             struct ToolOptions  *tool_opts)
 {
@@ -1187,12 +813,14 @@ handle_args(int                  argc,
 			printf("\n");
 
 			return false;
+#ifndef SDL_BACKEND
 		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
 			*no_color = true;
 		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
 			*no_glowcolor = true;
+#endif
 		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
 		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
 			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
@@ -1258,18 +886,6 @@ handle_args(int                  argc,
 	}
 
 	return true;
-}
-
-void
-handle_cmdline_shift(const size_t          cmdline_len,
-                     size_t               *cmdline_shift,
-                     const int             win_w)
-{
-	if (1 + cmdline_len + 1 > (size_t) win_w) {
-		*cmdline_shift = 1 + cmdline_len + 1 - win_w;
-	} else {
-		*cmdline_shift = 0;
-	}
 }
 
 void
@@ -1524,186 +1140,6 @@ handle_input(bool                *active,
 			                     world);
 		}
 		break;
-	}
-}
-
-void
-handle_mouse_input(const char         *in,
-                   const float         delta,
-                   bool               *lmb_pressed,
-                   int                *rmb_press_x,
-                   int                *rmb_press_y,
-                   struct ToolOptions *tool_opts,
-                   struct World       *world,
-                   struct Rect        *world_draw)
-{
-	unsigned int  b;
-	size_t        i;
-	size_t        l_start = 3;
-	char          pressed;
-	unsigned int  report_vals[3];
-	unsigned int  x;
-	unsigned int  y;
-
-	for (i = 0; i < 3; i++) {
-		l_start += string_to_uint(&in[l_start], &report_vals[i]) + 1;
-	}
-	b = report_vals[0];
-	x = report_vals[1];
-	y = report_vals[2];
-	x -= 1;
-	y -= 1;
-
-	l_start -= 1;
-	pressed = in[l_start];
-
-	switch (b) {
-	case CSI_MB_LEFT:
-	case CSI_MB_LEFT_DRAG:
-		tool_opts->x = x + world_draw->x;
-		tool_opts->y = y + world_draw->y;
-		use_tool(delta, *tool_opts, world);
-
-		if ('M' == pressed) {
-			*lmb_pressed = true;
-		} else {
-			*lmb_pressed = false;
-		}
-		break;
-
-	case CSI_MB_HOVER:
-		tool_opts->x = x + world_draw->x;
-		tool_opts->y = y + world_draw->y;
-		*lmb_pressed = false;
-		break;
-
-	case CSI_MB_MIDDLE:
-	case CSI_MB_MIDDLE_DRAG:
-		if (x >= (unsigned int) world->w ||
-		    y >= (unsigned int) world->h) {
-			break;
-		}
-
-		switch (tool_opts->sel_tool) {
-		case TOOL_BRUSH:
-			tool_opts->brush_mat = world->dot[x][y];
-			break;
-
-		case TOOL_SPAWNER:
-			tool_opts->spawner_mat = world->dot[x][y];
-			break;
-
-		case TOOL_ERASER:
-		case TOOL_HEATER:
-		case TOOL_COOLER:
-		case TOOL_COUNT:
-			break;
-		}
-		break;
-
-	case CSI_MB_RIGHT:
-		*rmb_press_x = x + world_draw->x;
-		*rmb_press_y = y + world_draw->y;
-		break;
-
-	case CSI_MB_RIGHT_DRAG:
-		world_draw->x = *rmb_press_x - x;
-		world_draw->y = *rmb_press_y - y;
-
-		if (world_draw->x < 0) {
-			world_draw->x = 0;
-		}
-		if (world_draw->y < 0) {
-			world_draw->y = 0;
-		}
-		if (world_draw->x > world->w - world_draw->w) {
-			world_draw->x = world->w - world_draw->w;
-		}
-		if (world_draw->y > world->h - world_draw->h) {
-			world_draw->y = world->h - world_draw->h;
-		}
-		break;
-
-	case CSI_MB_WHEELUP:
-		tool_radius_add(1, tool_opts);
-		break;
-
-	case CSI_MB_WHEELDOWN:
-		tool_radius_add(-1, tool_opts);
-		break;
-	}
-}
-
-void
-handle_normal_csi_input(const char         *in,
-                        const float         delta,
-                        bool               *lmb_pressed,
-                        int                *rmb_press_x,
-                        int                *rmb_press_y,
-                        struct ToolOptions *tool_opts,
-                        struct World       *world,
-                        struct Rect        *world_draw)
-{
-	if (strcmp(in, CSI_KEY_LEFT) == 0) {
-		if (tool_opts->x > 0) {
-			tool_opts->x -= 1;
-			if (tool_opts->x < world_draw->x) {
-				world_draw->x -= 1;
-			}
-		}
-	} else if (strcmp(in, CSI_KEY_DOWN) == 0) {
-		if (tool_opts->y < world->h - 1) {
-			tool_opts->y += 1;
-			if (tool_opts->y >= world_draw->y + world_draw->h) {
-				world_draw->y += 1;
-			}
-		}
-	} else if (strcmp(in, CSI_KEY_UP) == 0) {
-		if (tool_opts->y > 0) {
-			tool_opts->y -= 1;
-			if (tool_opts->y < world_draw->y) {
-				world_draw->y -= 1;
-			}
-		}
-	} else if (strcmp(in, CSI_KEY_RIGHT) == 0) {
-		if (tool_opts->x < world->w - 1) {
-			tool_opts->x += 1;
-			if (tool_opts->x >= world_draw->x + world_draw->w) {
-				world_draw->x += 1;
-			}
-		}
-	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
-		tool_opts->x = 0;
-		world_draw->x = 0;
-	} else if (strcmp(in, CSI_KEY_END) == 0) {
-		tool_opts->x = world->w - 1;
-		world_draw->x = world->w - world_draw->w;
-	} else if (strcmp(in, CSI_KEY_PGUP) == 0) {
-		tool_opts->y = 0;
-		world_draw->y = 0;
-	} else if (strcmp(in, CSI_KEY_PGDOWN) == 0) {
-		tool_opts->y = world->h - 1;
-		world_draw->y = world->h - world_draw->h;
-	} else if (strcmp(in, CSI_KEY_CTRLHOME) == 0) {
-		tool_opts->x = 0;
-		tool_opts->y = 0;
-		world_draw->x = 0;
-		world_draw->y = 0;
-	} else if (strcmp(in, CSI_KEY_CTRLEND) == 0) {
-		tool_opts->x = world->w - 1;
-		tool_opts->y = world->h - 1;
-		world_draw->x = world->w - world_draw->w;
-		world_draw->y = world->h - world_draw->h;
-	} else if (in[1] == '[' &&
-	           in[2] == '<') {
-		handle_mouse_input(in,
-		                   delta,
-		                   lmb_pressed,
-		                   rmb_press_x,
-		                   rmb_press_y,
-		                   tool_opts,
-		                   world,
-		                   world_draw);
 	}
 }
 
@@ -2000,110 +1436,6 @@ handle_normal_input(const char         *in,
 }
 
 void
-handle_resize(const size_t            cmdline_len,
-              size_t                 *cmdline_shift,
-              char                  **display,
-              size_t                 *display_size,
-              const size_t            dot_depth,
-              const enum InputMode    input_mode,
-              const char             *ip_address,
-              size_t                 *statusbar_elems,
-              enum StatusbarElement  *statusbar_elem,
-              int                    *win_w,
-              int                    *win_h,
-              const struct World      world,
-              struct Rect            *world_draw,
-              int                    *world_draw_space_w,
-              int                    *world_draw_space_h,
-              const char             *world_name)
-{
-	size_t             a, b;
-	char               buf[BUF_SIZE];
-	size_t             buf_len;
-	struct ToolOptions maxcoords_to = {
-		.x = 999,
-		.y = 999,
-	};
-	size_t             new_display_size;
-	size_t             statusbar_len = 0;
-	size_t             statusbar_max_elems = 0;
-	struct winsize     ws;
-
-	ws = CSI_get_size();
-	if (*win_w != ws.ws_col ||
-	    *win_h != ws.ws_row) {
-		*win_w = ws.ws_col;
-		*win_h = ws.ws_row;
-
-		world_draw->x = 0;
-		world_draw->y = 0;
-
-		if (world.w > *win_w) {
-			world_draw->w = *win_w;
-		} else {
-			world_draw->w = world.w;
-			*world_draw_space_w = *win_w - world.w;
-		}
-
-		if (world.h > *win_h - 2) {
-			world_draw->h = *win_h - 2;
-		} else {
-			world_draw->h = world.h;
-			*world_draw_space_h = *win_h - 2 - world.h;
-		}
-
-		new_display_size = (size_t) ((float) *win_w *
-		                             (float) *win_h *
-		                             (float) DISPLAY_SIZE_MODIFIER) *
-		                   dot_depth;
-		if (new_display_size > *display_size) {
-			*display_size = new_display_size;
-			*display = realloc(*display, *display_size);
-		}
-
-		for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
-			buf[0] = '\0';
-			/* Here it is important to render the biggest possible
-			 * thing, unless it's not expected to change.
-			 * Only in that case use real data.
-			 */
-			statusbar_len += render_statusbar_display(buf,
-		                                                  BUF_SIZE,
-		                                                  ip_address,
-		                                                  false,
-		                                                  STATUSBAR_DISPLAY_PRIORITY[a],
-		                                                  120.0,
-		                                                  true,
-		                                                  maxcoords_to,
-		                                                  world_name);
-
-			if (statusbar_len > (size_t) *win_w) {
-				break;
-			}
-
-			statusbar_len += strlen(STATUSBAR_SEPARATOR);
-		}
-		statusbar_max_elems = a;
-		*statusbar_elems = 0;
-
-		for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
-			for (b = 0; b < statusbar_max_elems; b++) {
-				if (STATUSBAR_DISPLAY_ORDER[a] == STATUSBAR_DISPLAY_PRIORITY[b]) {
-					statusbar_elem[*statusbar_elems] = STATUSBAR_DISPLAY_ORDER[a];
-					*statusbar_elems += 1;
-				}
-			}
-		}
-
-		if (input_mode == IM_COMMAND) {
-			handle_cmdline_shift(cmdline_len,
-			                     cmdline_shift,
-			                     *win_w);
-		}
-	}
-}
-
-void
 handle_simple_command(const char          *cmdline,
                       bool                *active,
                       char               **feedback,
@@ -2209,309 +1541,6 @@ new_tool_options(void)
 }
 
 void
-tool_radius_add(const int           radius_change,
-                struct ToolOptions *tool_opts)
-{
-	int  *target = NULL;
-
-	switch (tool_opts->sel_tool) {
-	case TOOL_BRUSH:
-		target = &tool_opts->brush_radius;
-		break;
-
-	case TOOL_SPAWNER:
-		return;
-		break;
-
-	case TOOL_ERASER:
-		target = &tool_opts->eraser_radius;
-		break;
-
-	case TOOL_HEATER:
-	case TOOL_COOLER:
-		target = &tool_opts->thermo_radius;
-		break;
-
-	case TOOL_COUNT:
-		break;
-	}
-
-	*target += radius_change;
-	if (*target < 0) {
-		*target = 0;
-	} else if (*target > MAX_RADIUS) {
-		*target = MAX_RADIUS;
-	}
-}
-
-size_t
-render_dot(char               *out,
-           const size_t        out_size,
-           const struct Rgba   color,
-           const struct World  world,
-           const int           x,
-           const int           y)
-{
-	size_t written = 0;
-
-	if (world.spawner[x][y] == true) {
-		written += CSI_color_to_string(SPAWNER_R,
-		                               SPAWNER_G,
-		                               SPAWNER_B,
-		                               true,
-		                               &out[written],
-		                               out_size - written);
-		out[written] = 'O';
-		written += 1;
-	} else if (world.dot[x][y] == MAT_NONE) {
-		written += CSI_color_to_string(255, 255, 255,
-		                               true,
-		                               &out[written],
-		                               out_size - written);
-		out[written] = ' ';
-		written += 1;
-	} else {
-		written += CSI_color_to_string(color.r,
-		                               color.g,
-		                               color.b,
-		                               true,
-		                               &out[written],
-		                               out_size - written);
-		out[written] = DOT_APPEARANCE[world.state[x][y]];
-		written += 1;
-	}
-
-	out[written] = '\0';
-	return written;
-}
-
-size_t
-render_dot_no_color(char               *out,
-                    const struct World  world,
-                    const int           x,
-                    const int           y)
-{
-	size_t written = 0;
-
-	if (world.spawner[x][y] == true) {
-		out[written] = 'O';
-		written += 1;
-	} else if (world.dot[x][y] == MAT_NONE) {
-		out[written] = ' ';
-		written += 1;
-	} else {
-		out[written] = DOT_APPEARANCE[world.state[x][y]];
-		written += 1;
-	}
-
-	out[written] = '\0';
-	return written;
-}
-
-size_t
-render_statusbar_display(char                        *out,
-                         const size_t                 out_size,
-                         const char                  *ip_address,
-                         const bool                   paused,
-                         const enum StatusbarElement  sbe,
-                         const float                  tickrate,
-                         const bool                   th_vision,
-                         struct ToolOptions           tool_opts,
-                         const char                  *world_name)
-{
-	char  *vision = NULL;
-	size_t written = 0;
-
-	switch (sbe) {
-	case SBE_WORLD_NAME:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      world_name);
-		break;
-
-	case SBE_COORDS:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      NUMBERSTRING[tool_opts.x]);
-		out[written] = ',';
-		written += 1;
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      NUMBERSTRING[tool_opts.y]);
-		break;
-
-	case SBE_VIEW:
-		if (th_vision) {
-			vision = "Thermal";
-		} else {
-			vision = "Normal";
-		}
-
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      "View:");
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      vision);
-		break;
-
-	case SBE_SPEED:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      "Speed:");
-		if (paused) {
-			written += string_cat(out,
-			                      out_size,
-			                      written,
-			                      "None");
-		} else {
-			written += string_cat(out,
-			                      out_size,
-			                      written,
-			                      NUMBERSTRING[(int) tickrate]);
-			written += string_cat(out,
-			                      out_size,
-			                      written,
-			                      "/s");
-		}
-		break;
-
-	case SBE_IP_ADDRESS:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      ip_address);
-		break;
-
-	case SBE_COUNT:
-		break;
-	}
-
-	return written;
-}
-
-size_t
-render_tool_hint(char                     *out,
-                 const size_t              out_size,
-                 const struct ToolOptions  tool_opts)
-{
-	size_t written = 0;
-
-	written += string_cat(out,
-	                      out_size,
-	                      written,
-	                      TOOL_NAME[tool_opts.sel_tool]);
-
-	if (tool_opts.sel_tool == TOOL_BRUSH) {
-		written += string_cat(out, out_size, written, " ");
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      MAT_NAME[tool_opts.brush_mat]);
-	} else if (tool_opts.sel_tool == TOOL_SPAWNER) {
-		written += string_cat(out, out_size, written, " ");
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      MAT_NAME[tool_opts.spawner_mat]);
-	}
-
-	return written;
-}
-
-size_t
-render_world(char               *out,
-             const size_t        out_size,
-             const size_t        dot_depth,
-             const bool          no_color,
-             const bool          no_glowcolor,
-             const bool          th_vision,
-             struct ToolOptions  tool_opts,
-             const struct World  world,
-             const struct Rect   world_draw,
-             const int           world_draw_space_w,
-             const int           world_draw_space_h)
-{
-	int    tool_radius = 0;
-	int    tool_x1 = 0;
-	int    tool_y1 = 0;
-	int    tool_x2 = 0;
-	int    tool_y2 = 0;
-	size_t written = 0;
-	int    x, y;
-
-	if (th_vision) {
-		if (no_color) {
-			DOT_RENDER_LOOP_NO_COLOR
-		} else {
-			DOT_RENDER_LOOP(get_thermal_dot_color(world, x, y))
-		}
-	} else if (no_glowcolor) {
-		if (no_color) {
-			DOT_RENDER_LOOP_NO_COLOR
-		} else {
-			DOT_RENDER_LOOP(get_normal_dot_color_simple(world, x, y))
-		}
-	} else {
-		if (no_color) {
-			DOT_RENDER_LOOP_NO_COLOR
-		} else {
-			DOT_RENDER_LOOP(get_normal_dot_color(world, x, y))
-		}
-	}
-
-	switch (tool_opts.sel_tool) {
-	case TOOL_BRUSH:
-		tool_radius = tool_opts.brush_radius;
-		break;
-	case TOOL_SPAWNER:
-		tool_radius = 0;
-		break;
-	case TOOL_ERASER:
-		tool_radius = tool_opts.eraser_radius;
-		break;
-	case TOOL_HEATER:
-	case TOOL_COOLER:
-		tool_radius = tool_opts.thermo_radius;
-		break;
-	case TOOL_COUNT:
-		break;
-	}
-
-	tool_x1 = tool_opts.x - tool_radius - world_draw.x;
-	if (tool_x1 < 0)
-		tool_x1 = 0;
-
-	tool_y1 = tool_opts.y - tool_radius - world_draw.y;
-	if (tool_y1 < 0)
-		tool_y1 = 0;
-
-	tool_x2 = tool_opts.x + tool_radius + 1 - world_draw.x;
-	if (tool_x2 >= world_draw.w)
-		tool_x2 = world_draw.w;
-
-	tool_y2 = tool_opts.y + tool_radius + 1 - world_draw.y;
-	if (tool_y2 >= world_draw.h)
-		tool_y2 = world_draw.h;
-
-	for (x = tool_x1; x < tool_x2; x++) {
-		for (y = tool_y1; y < tool_y2; y++) {
-			out[((y * world_draw.w) + x + 1) * dot_depth +
-			    (y * world_draw_space_w) -
-			    1] = '^';
-		}
-	}
-
-	return written;
-}
-
-void
 set_feedback(char          **feedback,
              clock_t        *feedback_expiration,
              const clock_t   now,
@@ -2519,54 +1548,6 @@ set_feedback(char          **feedback,
 {
 	*feedback = str;
 	*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
-}
-
-void
-use_tool(const float         delta,
-         struct ToolOptions  tool_opts,
-         struct World       *world)
-{
-	switch (tool_opts.sel_tool) {
-	case TOOL_BRUSH:
-		world_use_brush(world,
-		                tool_opts.brush_mat,
-		                tool_opts.spawn_temperature,
-		                tool_opts.x,
-		                tool_opts.y,
-		                tool_opts.brush_radius);
-		break;
-
-	case TOOL_SPAWNER:
-		world->spawner[tool_opts.x][tool_opts.y] = true;
-		world->spawner_mat[tool_opts.x][tool_opts.y] = tool_opts.spawner_mat;
-		break;
-
-	case TOOL_ERASER:
-		world_use_eraser(world,
-		                 tool_opts.x,
-		                 tool_opts.y,
-		                 tool_opts.eraser_radius);
-		break;
-
-	case TOOL_HEATER:
-		world_use_heater(world,
-		                 tool_opts.thermo_rate * delta,
-		                 tool_opts.x,
-		                 tool_opts.y,
-		                 tool_opts.thermo_radius);
-		break;
-
-	case TOOL_COOLER:
-		world_use_cooler(world,
-		                 tool_opts.thermo_rate * delta,
-		                 tool_opts.x,
-		                 tool_opts.y,
-		                 tool_opts.thermo_radius);
-		break;
-
-	case TOOL_COUNT:
-		break;
-	}
 }
 
 int
@@ -2578,9 +1559,6 @@ main(int    argc,
 	size_t                 cmdline_len = 0;
 	size_t                 cmdline_shift = 0;
 	float                  delta = 0.0;
-	char                  *display = NULL;
-	size_t                 display_size = 0;
-	size_t                 dot_depth = 0;
 	char                  *feedback = NULL;
 	clock_t                feedback_expiration = 0;
 	float                  framerate = STD_FRAMERATE;
@@ -2590,9 +1568,6 @@ main(int    argc,
 	clock_t                last_input = 0;
 	clock_t                last_frame = 0;
 	clock_t                last_tick = 0;
-	bool                   lmb_pressed = false;
-	bool                   no_color = false;
-	bool                   no_glowcolor = false;
 	clock_t                now = 0;
 	int                    rmb_press_x;
 	int                    rmb_press_y;
@@ -2600,7 +1575,6 @@ main(int    argc,
 	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
-	int                    ts_since_sim = 9001; /* ticks since last simulation */
 	struct ToolOptions     tool_opts;
 	int                    win_w = 0;
 	int                    win_h = 0;
@@ -2614,12 +1588,25 @@ main(int    argc,
 	int                    world_draw_space_w = 0;
 	int                    world_draw_space_h = 0;
 	char                  *world_name = "worldname";
+
+#ifdef SDL_BACKEND
+
+#else
+	char                  *display = NULL;
+	size_t                 display_size = 0;
+	size_t                 dot_depth = 0;
+	bool                   lmb_pressed = false;
+	bool                   no_color = false;
+	bool                   no_glowcolor = false;
 	struct winsize         ws;
+#endif
 
 	if (!handle_args(argc, argv,
 	                 &framerate,
+#ifndef SDL_BACKEND
 	                 &no_color,
 	                 &no_glowcolor,
+#endif
 	                 &tickrate,
 	                 &tool_opts)) {
 		return 0;
@@ -2628,12 +1615,21 @@ main(int    argc,
 	hawps_core_init();
 	hawps_extra_init();
 
+	cmdline[0] = '\0';
 	tool_opts = new_tool_options();
 
+#ifdef SDL_BACKEND
+	if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) {
+		fprintf(stderr, "Could not initialize SDL\n");
+		goto cleanup;
+	}
+
+	// TODO add proper identifier
+	SDL_SetAppMetadata(APP_NAME, APP_VERSION, "lol.69." APP_NAME);
+#else
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
 
-	cmdline[0] = '\0';
 	if (no_color) {
 		dot_depth = 1;
 	} else {
@@ -2641,26 +1637,36 @@ main(int    argc,
 	}
 
 	ws = CSI_get_size();
-	world = world_new(ws.ws_col, ws.ws_row - 2, tool_opts.spawn_temperature);
+	world.w = ws.ws_col;
+	world.h = ws.ws_row - 2;
 
-	display = malloc(1); /* we love hacks (next function ONLY reallocs) */
+	/* we love hacks
+	 * handle_resize ONLY reallocs for performance */
+	display = malloc(1);
+	if (NULL == display) {
+		fprintf(stderr, "Could not allocate memory\n");
+		goto cleanup;
+	}
 
 	handle_resize(cmdline_len,
-	              &cmdline_shift,
-	              &display,
-	              &display_size,
-	              dot_depth,
-	              input_mode,
-	              ip_address,
-	              &statusbar_elems,
-	              statusbar_elem,
-	              &win_w,
-	              &win_h,
-	              world,
-	              &world_draw,
-	              &world_draw_space_w,
-	              &world_draw_space_h,
-	              world_name);
+		      &cmdline_shift,
+		      &display,
+		      &display_size,
+		      dot_depth,
+		      input_mode,
+		      ip_address,
+		      &statusbar_elems,
+		      statusbar_elem,
+		      &win_w,
+		      &win_h,
+		      world,
+		      &world_draw,
+		      &world_draw_space_w,
+		      &world_draw_space_h,
+		      world_name);
+#endif /* SDL_BACKEND */
+
+	world = world_new(world.w, world.h, tool_opts.spawn_temperature);
 
 	while (active) {
 		now = clock();
@@ -2753,14 +1759,21 @@ main(int    argc,
 		}
 	}
 
+cleanup:
+#ifdef SDL_BACKEND
+	SDL_Quit();
+#else
 	CSI_set_normal();
 	fputs(CSI_CLEAR, stdout);
 	fputs(CSI_FG_DEFAULT, stdout);
 	fputs(CSI_BG_DEFAULT, stdout);
-	world_free(&world);
+
 	if (display != NULL) {
 		free(display);
 	}
+#endif
+
+	world_free(&world);
 
 	return 0;
 }

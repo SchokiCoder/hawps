@@ -1,16 +1,29 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2024 - 2026  Andy Frank Schoknecht
 
+# dest dir, uncomment below to install for only current user instead
+BIN_DESTDIR:="/usr/local/bin"
+#BIN_DESTDIR:="$(HOME)/.local/bin"
+
+# comment out to use terminal backend
+#CLIENT_TERMINAL_BACKEND:=-D SDL_BACKEND
+
+
+
+# @user: no touchy beyond this point
+
+APP_VERSION !=git describe --abbrev=0 --tags
+
+GIT_HEAD !=git rev-parse --short HEAD
+
+PKG_CONFIG_CFLAGS_SDL !=pkg-config --cflags sdl3
+PKG_CONFIG_LIBS_SDL   !=pkg-config --libs sdl3
+
 APP_NAME         :=hawps
 APP_NAME_FORMAL  :=Half Assed Wannabe Physics Simulator
 APP_LICENSE      :=MPL-2.0
 APP_LICENSE_URL  :=https://mozilla.org/MPL/2.0
 APP_REPOSITORY   :=https://github.com/SchokiCoder/hawps
-APP_VERSION      !=git describe --abbrev=0 --tags
-
-# dest dir, uncomment below to install for only current user instead
-BIN_DESTDIR:="/usr/local/bin"
-#BIN_DESTDIR:="$(HOME)/.local/bin"
 
 CC              :=cc
 C_FLAGS_DEBUG   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
@@ -18,13 +31,11 @@ C_FLAGS_PROFILE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -g
 C_FLAGS_RELEASE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -O3
 C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
 
-CLIENT_TERMINAL_INCLUDE_DIRS :=-I lib_core -I lib_extra
+CLIENT_TERMINAL_CFLAGS       :=$(CLIENT_TERMINAL_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)
 CLIENT_TERMINAL_FILE_DEPS    :=client_terminal/* client_terminal/int_to_string.h lib_core/* lib_extra/*
 CLIENT_TERMINAL_SRC_FILES    :=client_terminal/*.c lib_core/*.c lib_extra/*.c
 
 DEFAULT_CLIENT :=$(APP_NAME)_terminal
-
-GIT_HEAD !=git rev-parse --short HEAD
 
 GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(APP_LICENSE)' -X 'main.AppLicenseUrl=$(APP_LICENSE_URL)' -X 'main.AppRepository=$(APP_REPOSITORY)' -X 'main.AppVersion=$(APP_VERSION)'"
 
@@ -72,12 +83,12 @@ bin/$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra
 
 bin/$(APP_NAME)_terminal: $(CLIENT_TERMINAL_FILE_DEPS)
 	$(CC) $(C_FLAGS_DEBUG) $(C_DEFINES) -o $@ \
-		$(CLIENT_TERMINAL_INCLUDE_DIRS) \
+		$(CLIENT_TERMINAL_CFLAGS) \
 		$(CLIENT_TERMINAL_SRC_FILES)
 
 bin/$(APP_NAME)_terminal_release: $(CLIENT_TERMINAL_FILE_DEPS)
 	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
-		$(CLIENT_TERMINAL_INCLUDE_DIRS) \
+		$(CLIENT_TERMINAL_CFLAGS) \
 		$(CLIENT_TERMINAL_SRC_FILES)
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
@@ -95,5 +106,5 @@ client_terminal/int_to_string.h: bin/gen_int_to_string_table
 
 profiling/$(APP_NAME)_terminal_$(GIT_HEAD): $(CLIENT_TERMINAL_FILE_DEPS)
 	$(CC) $(C_FLAGS_PROFILE) $(C_DEFINES) -o $@ \
-		$(CLIENT_TERMINAL_INCLUDE_DIRS) \
+		$(CLIENT_TERMINAL_CFLAGS) \
 		$(CLIENT_TERMINAL_SRC_FILES)

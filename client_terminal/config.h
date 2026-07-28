@@ -23,6 +23,13 @@
 #define CMDLINE_INDICATOR   ':'
 #define STATUSBAR_SEPARATOR " | "
 
+static const char DOT_APPEARANCE[] = {
+	'X',
+	'X',
+	'+',
+	'-',
+};
+
 /* command settings
  */
 #define CMD_BRUSH                   "brush"
@@ -134,7 +141,6 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 
 /* settings
  */
-
 #define FEEDBACK_LIFETIME    3    /* in seconds */
 #define MAX_RADIUS           16
 #define MAX_TICKRATE         (STD_TICKRATE * 2.0 * 2.0)
@@ -160,8 +166,14 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define DISPLAY_SIZE_MODIFIER 1.25
 #define INPUT_SIZE            16
 
-/* @User, DO NOT TOUCH!
- * This constant is not meant to stick around,
+
+
+
+/* @User, DO NOT TOUCH, beyond this point!
+ */
+#define CELSIUS_TO_KELVIN 273.15
+
+/* This constant is not meant to stick around,
  * if the configuration method changes.
  * This just a reminder for devs to remove a chapter in the help text.
  */

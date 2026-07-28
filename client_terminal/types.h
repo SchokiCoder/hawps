@@ -5,6 +5,8 @@
 #ifndef _TYPES_H
 #define _TYPES_H
 
+#include <hawps_extra.h>
+
 /* Types
  */
 

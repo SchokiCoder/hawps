@@ -1,5 +1,3 @@
-- [ ] ebiten client: hook up to c libs
-
 - [ ] ebiten client: scroll TileSet when cursor goes below or above visible
 - [ ] ebiten client: change TileSet to use mouse on release
 This fixes accidentally changing mat or tool
@@ -13,18 +11,30 @@ Clay might be boring. Do something with it.
 - [ ] add per spawner temperature
 - [ ] add temperature setting for new spawners
 
-- [ ] test android build
-`sudo apt install google-android-ndk-r26d-installer or newer version`
-
-- [ ] add "hold ALT key" to display what UI element uses which key bind
-
-- [ ] find out how to make ebiten not use keyboard scancodes
-- [ ] add non-numpad plus/minus to tickrate keybinds
+- [ ] ebiten client: find out how to make ebiten not use keyboard scancodes
+- [ ] ebiten client: add non-numpad plus/minus to tickrate keybinds
 
 - [ ] consider oxygen/air to be always there (not None) ?
 But only for chemical reactions,
 because otherwise displacement and thermal conduction would have to permanently run.
 Add a roomtemperature?
+
+# Full Release
+
+- compat tests
+
+- [ ] prepare flatpak files?
+- [ ] desktop client: use proper identifier for SDL backend
+
+- resolve all todos
+
+# Android Stuff
+
+- [ ] ebiten client: hook up to c libs
+- [ ] test android build
+`sudo apt install google-android-ndk-r26d-installer or newer version`
+
+- [ ] ebiten client: add "hold ALT key" to display what UI element uses which key bind?
 
 # Beauty Update
 
@@ -49,18 +59,18 @@ Some are panics, despite a graceful shutdown being implemented
 
 # Web Update
 
-- [ ] terminal client: add networking
+- [ ] desktop client: add networking
 How? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
 the commit before networking got removed.
 This should be able to piggyback off the saving/loading serialization.
 Remember to update the ip address display to reflect this.
 
-- [ ] terminal client: add flag to enable hosting a server
-- [ ] terminal client: add flag to enable hosting a dedicated server
-- [ ] terminal client: add flag for connecting to an ip address
-- [ ] terminal client: add cmd for connecting to an ip address
+- [ ] desktop client: add flag to enable hosting a server
+- [ ] desktop client: add flag to enable hosting a dedicated server
+- [ ] desktop client: add flag for connecting to an ip address
+- [ ] desktop client: add cmd for connecting to an ip address
 
-- [ ] terminal client: update help text
+- [ ] desktop client: update help text
 - [ ] update README
 
 # File Update
@@ -70,16 +80,16 @@ Serialization stuff. Mind endianness.
 
 - [ ] libcore: add loading world from file functionality
 
-- [ ] terminal client: add cmd for saving world to file
-- [ ] terminal client: add flag for loading world from file
+- [ ] desktop client: add cmd for saving world to file
+- [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.
 
-- [ ] terminal client: add auto-saving world to file and flag to disable it
+- [ ] desktop client: add auto-saving world to file and flag to disable it
 Saves to "default" and by default loads it at startup?
 
-- [ ] terminal client: add cmd for loading world from file
+- [ ] desktop client: add cmd for loading world from file
 
-- [ ] terminal client: update help text
+- [ ] desktop client: update help text
 - [ ] update README
 
 # Simple and Direct Update
@@ -89,6 +99,7 @@ Using `ARRSIZE` instead of `SBE_COUNT` allows users to completely remove
 statusbar elements in the config arrays.
 
 - [ ] terminal client: add SDL backend
+- [ ] terminal client: rename to desktop client
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse
@@ -100,7 +111,7 @@ statusbar elements in the config arrays.
 - [ ] libcore: add test against spawners
 - [ ] libcore: add test against mat table property array length miscount
 
-- [ ] terminal client: update help text
+- [ ] desktop client: update help text
 - [ ] update README
 
 - git tag to update APP_VERSION
