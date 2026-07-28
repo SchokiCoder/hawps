@@ -113,9 +113,10 @@
 #define KEY_CMD           ':'
 #define KEY_PAUSE         ' '
 
-/* settings
+/* statusbar settings
+ * keep the length of both arrays equal or else...
  */
-static enum StatusbarElement STATUSBAR_DISPLAY_ORDER[SBE_COUNT] = {
+static enum StatusbarElement STATUSBAR_DISPLAY_ORDER[] = {
 	SBE_WORLD_NAME, /* first */
 	SBE_COORDS,
 	SBE_VIEW,
@@ -123,13 +124,16 @@ static enum StatusbarElement STATUSBAR_DISPLAY_ORDER[SBE_COUNT] = {
 	SBE_IP_ADDRESS,
 };
 
-static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[SBE_COUNT] = {
+static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 	SBE_SPEED,      /* most important */
 	SBE_VIEW,
 	SBE_COORDS,
 	SBE_IP_ADDRESS,
 	SBE_WORLD_NAME,
 };
+
+/* settings
+ */
 
 #define FEEDBACK_LIFETIME    3    /* in seconds */
 #define MAX_RADIUS           16

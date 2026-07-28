@@ -8,6 +8,10 @@
 #include "hawps_color.h"
 #include "hawps_tool.h"
 
+#ifndef ARRLEN
+#define ARRLEN(arr) (sizeof(arr) / sizeof(arr[0]))
+#endif
+
 void
 hawps_extra_init(void);
 

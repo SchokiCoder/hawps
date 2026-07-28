@@ -2061,7 +2061,7 @@ handle_resize(const size_t            cmdline_len,
 			*display = realloc(*display, *display_size);
 		}
 
-		for (a = 0; a < SBE_COUNT; a++) {
+		for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
 			buf[0] = '\0';
 			/* Here it is important to render the biggest possible
 			 * thing, unless it's not expected to change.
@@ -2086,7 +2086,7 @@ handle_resize(const size_t            cmdline_len,
 		statusbar_max_elems = a;
 		*statusbar_elems = 0;
 
-		for (a = 0; a < SBE_COUNT; a++) {
+		for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
 			for (b = 0; b < statusbar_max_elems; b++) {
 				if (STATUSBAR_DISPLAY_ORDER[a] == STATUSBAR_DISPLAY_PRIORITY[b]) {
 					statusbar_elem[*statusbar_elems] = STATUSBAR_DISPLAY_ORDER[a];
@@ -2597,7 +2597,7 @@ main(int    argc,
 	int                    rmb_press_x;
 	int                    rmb_press_y;
 	size_t                 statusbar_elems = 0;
-	enum StatusbarElement  statusbar_elem[SBE_COUNT];
+	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	int                    ts_since_sim = 9001; /* ticks since last simulation */

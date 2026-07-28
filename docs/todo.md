@@ -84,7 +84,9 @@ Saves to "default" and by default loads it at startup?
 
 # Simple and Direct Update
 
-- [ ] using `ARRSIZE` instead of `SBE_COUNT` allows users to completely opt out of statusbar elements in the config
+- [x] add ability to opt out of statusbar elements at compile time
+Using `ARRSIZE` instead of `SBE_COUNT` allows users to completely remove
+statusbar elements in the config arrays.
 
 - [ ] terminal client: add SDL backend
 
