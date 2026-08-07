@@ -17,8 +17,6 @@
  */
 #define CHAR_ESCAPE    '\x1b'
 #define CSI_ESCAPE     "\x1b"
-#define CHAR_BACKSPACE '\x7f'
-#define CSI_BACKSPACE  "\x7f"
 
 /* Sequences.
  */

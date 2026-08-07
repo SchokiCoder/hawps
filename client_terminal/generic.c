@@ -65,6 +65,18 @@ get_thermal_dot_color(const struct World world,
 }
 
 void
+handle_cmdline_shift(const size_t          cmdline_len,
+                     size_t               *cmdline_shift,
+                     const int             win_w)
+{
+	if (1 + cmdline_len + 1 > (size_t) win_w) {
+		*cmdline_shift = 1 + cmdline_len + 1 - win_w;
+	} else {
+		*cmdline_shift = 0;
+	}
+}
+
+void
 tool_radius_add(const int           radius_change,
                 struct ToolOptions *tool_opts)
 {

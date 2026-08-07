@@ -39,16 +39,11 @@ draw(const char                  *cmdline,
      const char                  *world_name);
 
 void
-handle_cmdline_shift(const size_t          cmdline_len,
-                     size_t               *cmdline_shift,
-                     const int             win_w);
-
-void
 handle_mouse_input(const char         *in,
                    const float         delta,
+                   int                *drag_start_x,
+                   int                *drag_start_y,
                    bool               *lmb_pressed,
-                   int                *rmb_press_x,
-                   int                *rmb_press_y,
                    struct ToolOptions *tool_opts,
                    struct World       *world,
                    struct Rect        *world_draw);
@@ -56,9 +51,9 @@ handle_mouse_input(const char         *in,
 void
 handle_normal_csi_input(const char         *in,
                         const float         delta,
+                        int                *drag_start_x,
+                        int                *drag_start_y,
                         bool               *lmb_pressed,
-                        int                *rmb_press_x,
-                        int                *rmb_press_y,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
                         struct Rect        *world_draw);

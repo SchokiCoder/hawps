@@ -6,7 +6,7 @@ BIN_DESTDIR:="/usr/local/bin"
 #BIN_DESTDIR:="$(HOME)/.local/bin"
 
 # comment out to use terminal backend
-#CLIENT_TERMINAL_BACKEND:=-D SDL_BACKEND
+CLIENT_TERMINAL_BACKEND:=-D SDL_BACKEND
 
 
 
@@ -26,9 +26,10 @@ APP_LICENSE_URL  :=https://mozilla.org/MPL/2.0
 APP_REPOSITORY   :=https://github.com/SchokiCoder/hawps
 
 CC              :=cc
-C_FLAGS_DEBUG   :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -fsanitize=address,undefined -g
-C_FLAGS_PROFILE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -g -O3 -pg
-C_FLAGS_RELEASE :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -O3
+C_FLAGS         :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -Wimplicit-fallthrough
+C_FLAGS_DEBUG   :=$(C_FLAGS) -fsanitize=address,undefined -g
+C_FLAGS_PROFILE :=$(C_FLAGS) -g -O3 -pg
+C_FLAGS_RELEASE :=$(C_FLAGS) -O3
 C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
 
 CLIENT_TERMINAL_CFLAGS       :=$(CLIENT_TERMINAL_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)

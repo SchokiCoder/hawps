@@ -6,6 +6,7 @@
 #define _GENERIC_H
 
 #include <hawps_core.h>
+#include <stddef.h>
 
 #include "types.h"
 
@@ -23,6 +24,11 @@ struct Rgba
 get_thermal_dot_color(const struct World world,
                       const int          x,
                       const int          y);
+
+void
+handle_cmdline_shift(const size_t          cmdline_len,
+                     size_t               *cmdline_shift,
+                     const int             win_w);
 
 void
 tool_radius_add(const int           radius_change,

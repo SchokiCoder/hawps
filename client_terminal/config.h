@@ -145,6 +145,8 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define MAX_RADIUS           16
 #define MAX_TICKRATE         (STD_TICKRATE * 2.0 * 2.0)
 #define MIN_TICKRATE         (STD_TICKRATE / 2.0 / 2.0 / 2.0 / 2.0 / 2.0)
+#define SDL_WIN_WIDTH        640
+#define SDL_WIN_HEIGHT       480
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
 
 /* defaults for runtime settings

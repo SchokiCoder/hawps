@@ -98,7 +98,8 @@ Saves to "default" and by default loads it at startup?
 Using `ARRSIZE` instead of `SBE_COUNT` allows users to completely remove
 statusbar elements in the config arrays.
 
-- [ ] terminal client: add SDL backend
+- [ ] terminal client: add draw of SDL backend
+- [ ] terminal client: add input handling of SDL backend
 - [ ] terminal client: rename to desktop client
 
 - [ ] libcore: add test against gravity

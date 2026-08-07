@@ -2,6 +2,8 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
+#ifndef SDL_BACKEND
+
 #include "backend_terminal.h"
 
 #include <stdio.h>
@@ -256,23 +258,11 @@ draw(const char                  *cmdline,
 }
 
 void
-handle_cmdline_shift(const size_t          cmdline_len,
-                     size_t               *cmdline_shift,
-                     const int             win_w)
-{
-	if (1 + cmdline_len + 1 > (size_t) win_w) {
-		*cmdline_shift = 1 + cmdline_len + 1 - win_w;
-	} else {
-		*cmdline_shift = 0;
-	}
-}
-
-void
 handle_mouse_input(const char         *in,
                    const float         delta,
+                   int                *drag_start_x,
+                   int                *drag_start_y,
                    bool               *lmb_pressed,
-                   int                *rmb_press_x,
-                   int                *rmb_press_y,
                    struct ToolOptions *tool_opts,
                    struct World       *world,
                    struct Rect        *world_draw)
@@ -342,13 +332,13 @@ handle_mouse_input(const char         *in,
 		break;
 
 	case CSI_MB_RIGHT:
-		*rmb_press_x = x + world_draw->x;
-		*rmb_press_y = y + world_draw->y;
+		*drag_start_x = x + world_draw->x;
+		*drag_start_y = y + world_draw->y;
 		break;
 
 	case CSI_MB_RIGHT_DRAG:
-		world_draw->x = *rmb_press_x - x;
-		world_draw->y = *rmb_press_y - y;
+		world_draw->x = *drag_start_x - x;
+		world_draw->y = *drag_start_y - y;
 
 		if (world_draw->x < 0) {
 			world_draw->x = 0;
@@ -377,9 +367,9 @@ handle_mouse_input(const char         *in,
 void
 handle_normal_csi_input(const char         *in,
                         const float         delta,
+                        int                *drag_start_x,
+                        int                *drag_start_y,
                         bool               *lmb_pressed,
-                        int                *rmb_press_x,
-                        int                *rmb_press_y,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
                         struct Rect        *world_draw)
@@ -438,9 +428,9 @@ handle_normal_csi_input(const char         *in,
 	           in[2] == '<') {
 		handle_mouse_input(in,
 		                   delta,
+		                   drag_start_x,
+		                   drag_start_y,
 		                   lmb_pressed,
-		                   rmb_press_x,
-		                   rmb_press_y,
 		                   tool_opts,
 		                   world,
 		                   world_draw);
@@ -817,3 +807,9 @@ render_world(char               *out,
 
 	return written;
 }
+
+#else
+
+static int _dummy;
+
+#endif /* SDL_BACKEND */
