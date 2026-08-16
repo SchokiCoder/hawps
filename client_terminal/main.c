@@ -429,7 +429,7 @@ handle_input(bool                *active,
              struct ToolOptions  *tool_opts,
              const int            win_w,
              struct World        *world,
-             struct Rect         *world_draw);
+             SDL_FRect           *world_draw);
 #else
 void
 handle_input(bool                *active,
@@ -480,7 +480,11 @@ handle_normal_input(const char         *in,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
                     struct World       *world,
+#ifdef SDL_BACKEND
+                    SDL_FRect          *world_draw);
+#else
                     struct Rect        *world_draw);
+#endif
 
 void
 handle_simple_command(const char          *cmdline,
@@ -1127,7 +1131,7 @@ handle_input(bool                *active,
              struct ToolOptions  *tool_opts,
              const int            win_w,
              struct World        *world,
-             struct Rect         *world_draw)
+             SDL_FRect           *world_draw)
 {
 	SDL_Event e;
 	int x, y;
@@ -1291,7 +1295,11 @@ handle_normal_input(const char         *in,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
                     struct World       *world,
+#ifdef SDL_BACKEND
+                    SDL_FRect          *world_draw)
+#else
                     struct Rect        *world_draw)
+#endif
 {
 	switch (in[0]) {
 	case KEY_QUIT:
@@ -1700,6 +1708,7 @@ main(int    argc,
 	clock_t                last_input = 0;
 	clock_t                last_frame = 0;
 	clock_t                last_tick = 0;
+	bool                   no_glowcolor = false;
 	clock_t                now = 0;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
@@ -1709,28 +1718,34 @@ main(int    argc,
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
-	struct Rect            world_draw = {
-		.x = 0,
-		.y = 0,
-		.w = 0,
-		.h = 0,
-	};
-	int                    world_draw_space_w = 0;
-	int                    world_draw_space_h = 0;
 	char                  *world_name = "worldname";
 
 #ifdef SDL_BACKEND
 	bool          drag = false;
 	SDL_Renderer *renderer = NULL;
 	SDL_Window   *win = NULL;
+	SDL_FRect     world_draw = {
+		.x = 0,
+		.y = 0,
+		.w = 0,
+		.h = 0,
+	};
+	SDL_Texture  *world_tx = NULL;
 #else
 	char           *display = NULL;
 	size_t          display_size = 0;
 	size_t          dot_depth = 0;
 	bool            lmb_pressed = false;
 	bool            no_color = false;
-	bool            no_glowcolor = false;
 	struct winsize  ws;
+	struct Rect     world_draw = {
+		.x = 0,
+		.y = 0,
+		.w = 0,
+		.h = 0,
+	};
+	int             world_draw_space_w = 0;
+	int             world_draw_space_h = 0;
 #endif
 
 	if (!handle_args(argc, argv,
@@ -1766,8 +1781,19 @@ main(int    argc,
 		fprintf(stderr, "%s\n", SDL_GetError());
 		goto cleanup;
 	}
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	SDL_StartTextInput(win);
+
+	SDL_GetWindowSize(win, &world.w, &world.h);
+	world.w /= SDL_WORLD_SCALE;
+	world.h /= SDL_WORLD_SCALE;
+
+	world_tx = SDL_CreateTexture(renderer,
+	                             SDL_PIXELFORMAT_RGBA8888,
+	                             SDL_TEXTUREACCESS_TARGET,
+	                             world.w, world.h);
+	SDL_SetTextureScaleMode(world_tx, SDL_SCALEMODE_PIXELART);
 #else
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
@@ -1883,7 +1909,13 @@ main(int    argc,
 			}
 
 #ifdef SDL_BACKEND
-			draw(renderer);
+			draw(no_glowcolor,
+			     th_vision,
+			     tool_opts,
+			     renderer,
+			     world,
+			     world_draw,
+			     world_tx);
 #else
 			handle_resize(cmdline_len,
 				      &cmdline_shift,
@@ -1931,6 +1963,7 @@ main(int    argc,
 
 cleanup:
 #ifdef SDL_BACKEND
+	SDL_DestroyTexture(world_tx);
 	SDL_StopTextInput(win);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);

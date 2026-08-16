@@ -11,7 +11,13 @@
 #include "types.h"
 
 void
-draw(SDL_Renderer *r);
+draw(const bool                no_glowcolor,
+     const bool                th_vision,
+     const struct ToolOptions  tool_opts,
+     SDL_Renderer             *r,
+     const struct World        world,
+     const SDL_FRect           world_draw,
+     SDL_Texture              *world_tx);
 
 void
 handle_button_down(SDL_MouseButtonEvent     e,
@@ -21,6 +27,6 @@ handle_button_down(SDL_MouseButtonEvent     e,
                    int                     *drag_start_y,
                    struct ToolOptions      *tool_opts,
                    struct World            *world,
-                   struct Rect             *world_draw);
+                   SDL_FRect               *world_draw);
 
 #endif /* _BACKEND_SDL_H */

@@ -12,10 +12,16 @@
 #define SPAWNER_R 128
 #define SPAWNER_G 0
 #define SPAWNER_B 128
+#define SPAWNER_A 125
 
 #define THERMAL_VISION_R 100
 #define THERMAL_VISION_G 0
 #define THERMAL_VISION_B 0
+
+#define TOOL_HOVER_R 80
+#define TOOL_HOVER_G 120
+#define TOOL_HOVER_B 120
+#define TOOL_HOVER_A SPAWNER_A
 
 /* looks settings
  */
@@ -147,6 +153,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define MIN_TICKRATE         (STD_TICKRATE / 2.0 / 2.0 / 2.0 / 2.0 / 2.0)
 #define SDL_WIN_WIDTH        640
 #define SDL_WIN_HEIGHT       480
+#define SDL_WORLD_SCALE      10
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
 
 /* defaults for runtime settings

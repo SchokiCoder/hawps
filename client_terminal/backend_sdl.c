@@ -6,20 +6,63 @@
 
 #include "backend_sdl.h"
 
+#include "config.h"
 #include "generic.h"
 
+/* Macros
+ */
+
+#define DOT_RENDER_LOOP(COLOR_FN_CALL) \
+	for (x = 0; x < world.w; x++) { \
+		for (y = 0; y < world.h; y++) { \
+			dc = COLOR_FN_CALL; \
+			SDL_SetRenderDrawColor(r, dc.r, dc.g, dc.b, dc.a); \
+			SDL_RenderPoint(r, x, y); \
+		} \
+	}
+
+/* Function declarations
+ */
+
 void
-draw(SDL_Renderer *r)
+render_world(const bool          no_glowcolor,
+             SDL_Renderer       *r,
+             const bool          th_vision,
+             struct ToolOptions  tool_opts,
+             const struct World  world);
+
+/* Function definitions
+ */
+
+void
+draw(const bool                no_glowcolor,
+     const bool                th_vision,
+     const struct ToolOptions  tool_opts,
+     SDL_Renderer             *r,
+     const struct World        world,
+     const SDL_FRect           world_draw,
+     SDL_Texture              *world_tx)
 {
 	SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(r);
 
-	SDL_SetRenderDrawColor(r, 255, 0, 255, SDL_ALPHA_OPAQUE);
-	SDL_FRect test = {10, 10, 200, 200};
-	SDL_RenderRect(r, &test);
-	SDL_RenderPresent(r);
+	SDL_SetRenderTarget(r, world_tx);
+	if (th_vision) {
+		SDL_SetRenderDrawColor(r,
+		                       THERMAL_VISION_R,
+		                       THERMAL_VISION_G,
+		                       THERMAL_VISION_B,
+		                       SDL_ALPHA_OPAQUE);
+	} else {
+		SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	}
+	SDL_RenderClear(r);
+	render_world(no_glowcolor, r, th_vision, tool_opts, world);
+	SDL_SetRenderTarget(r, NULL);
 
-	// insert fine dick joke
+	SDL_RenderTexture(r, world_tx, NULL, NULL);
+
+	SDL_RenderPresent(r);
 }
 
 void
@@ -30,7 +73,7 @@ handle_button_down(SDL_MouseButtonEvent     e,
                    int                     *drag_start_y,
                    struct ToolOptions      *tool_opts,
                    struct World            *world,
-                   struct Rect             *world_draw)
+                   SDL_FRect               *world_draw)
 {
 	int x = e.x;
 	int y = e.y;
@@ -71,6 +114,89 @@ handle_button_down(SDL_MouseButtonEvent     e,
 		*drag_start_y = y;
 		break;
 	}
+}
+
+void
+render_world(const bool          no_glowcolor,
+             SDL_Renderer       *r,
+             const bool          th_vision,
+             struct ToolOptions  tool_opts,
+             const struct World  world)
+{
+	int         alpha;
+	struct Rgba dc;
+	int         tool_radius = 0;
+	SDL_FRect   tool;
+	int         x, y;
+
+	if (th_vision) {
+		for (x = 0; x < world.w; x++) {
+			for (y = 0; y < world.h; y++) {
+				/* the following hack is sponsored
+				 * by optimization (we avoid an if) */
+				alpha = 255 * world.dot[x][y];
+
+				dc = get_thermal_dot_color(world, x, y);
+				dc.a = alpha;
+				SDL_SetRenderDrawColor(r, dc.r, dc.g, dc.b, dc.a);
+				SDL_RenderPoint(r, x, y);
+			}
+		}
+	} else if (no_glowcolor) {
+		DOT_RENDER_LOOP(get_normal_dot_color_simple(world, x, y))
+	} else {
+		DOT_RENDER_LOOP(get_normal_dot_color(world, x, y))
+	}
+
+	SDL_SetRenderDrawColor(r, SPAWNER_R, SPAWNER_G, SPAWNER_B, SPAWNER_A);
+	for (x = 0; x < world.w; x++) {
+		for (y = 0; y < world.h; y++) {
+			if (world.spawner[x][y]) {
+				SDL_RenderPoint(r, x, y);
+			}
+		}
+	}
+
+	switch (tool_opts.sel_tool) {
+	case TOOL_BRUSH:
+		tool_radius = tool_opts.brush_radius;
+		break;
+	case TOOL_SPAWNER:
+		tool_radius = 0;
+		break;
+	case TOOL_ERASER:
+		tool_radius = tool_opts.eraser_radius;
+		break;
+	case TOOL_HEATER:
+	case TOOL_COOLER:
+		tool_radius = tool_opts.thermo_radius;
+		break;
+	case TOOL_COUNT:
+		break;
+	}
+
+	tool.x = tool_opts.x - tool_radius;
+	if (tool.x < 0)
+		tool.x = 0;
+
+	tool.y = tool_opts.y - tool_radius;
+	if (tool.y < 0)
+		tool.y = 0;
+
+	tool.w = tool_radius * 2 + 1;
+	if (tool.w >= world.w)
+		tool.w = world.w;
+
+	tool.h = tool_radius * 2 + 1;
+	if (tool.h >= world.h)
+		tool.h = world.h;
+
+	SDL_SetRenderDrawColor(r,
+	                       TOOL_HOVER_R,
+	                       TOOL_HOVER_G,
+	                       TOOL_HOVER_B,
+	                       TOOL_HOVER_A);
+	SDL_RenderFillRect(r, &tool);
 }
 
 #else

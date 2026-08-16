@@ -23,12 +23,12 @@
 		written += world_draw.w + world_draw_space_w;\
 	}
 
-#define DOT_RENDER_LOOP(COLOR) \
+#define DOT_RENDER_LOOP(COLOR_FN_CALL) \
 	for (y = world_draw.y; y < world_draw.h + world_draw.y; y++) { \
 		for (x = world_draw.x; x < world_draw.w + world_draw.x; x++) { \
 			written += render_dot(&out[written], \
 			                      out_size - written, \
-			                      COLOR, \
+			                      COLOR_FN_CALL, \
 			                      world, \
 			                      x, \
 			                      y); \
