@@ -57,13 +57,12 @@ draw(const char               *cmdline,
      SDL_Texture              *world_tx);
 
 void
-handle_button_down(SDL_MouseButtonEvent     e,
-                   const float              delta,
-                   bool                    *drag,
-                   int                     *drag_start_x,
-                   int                     *drag_start_y,
-                   struct ToolOptions      *tool_opts,
-                   struct World            *world,
-                   SDL_FRect               *world_draw);
+handle_mouse_state(const float           delta,
+                   bool                 *drag,
+                   int                  *drag_start_x,
+                   int                  *drag_start_y,
+                   struct ToolOptions   *tool_opts,
+                   struct World         *world,
+                   SDL_FRect            *world_draw);
 
 #endif /* _BACKEND_SDL_H */

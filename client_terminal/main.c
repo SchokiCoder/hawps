@@ -1139,44 +1139,9 @@ handle_input(bool                *active,
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
-		case SDL_EVENT_MOUSE_BUTTON_DOWN:
-			handle_button_down(e.button,
-			                   delta,
-			                   drag,
-			                   drag_start_x,
-			                   drag_start_y,
-			                   tool_opts,
-			                   world,
-			                   world_draw);
-			break;
-
-		case SDL_EVENT_MOUSE_BUTTON_UP:
-			*drag = false;
-			break;
-
 		case SDL_EVENT_MOUSE_MOTION:
-			tool_opts->x = e.motion.x + world_draw->x;
-			tool_opts->y = e.motion.y + world_draw->y;
-
-			if (!*drag) {
-				break;
-			}
-
-			world_draw->x = *drag_start_x - e.motion.x;
-			world_draw->y = *drag_start_y - e.motion.y;
-
-			if (world_draw->x < 0) {
-				world_draw->x = 0;
-			}
-			if (world_draw->y < 0) {
-				world_draw->y = 0;
-			}
-			if (world_draw->x > world->w - world_draw->w) {
-				world_draw->x = world->w - world_draw->w;
-			}
-			if (world_draw->y > world->h - world_draw->h) {
-				world_draw->y = world->h - world_draw->h;
-			}
+			tool_opts->x = e.motion.x / SDL_WORLD_SCALE;
+			tool_opts->y = e.motion.y / SDL_WORLD_SCALE;
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
@@ -1204,6 +1169,14 @@ handle_input(bool                *active,
 			break;
 		}
 	}
+
+	handle_mouse_state(delta,
+	                   drag,
+	                   drag_start_x,
+	                   drag_start_y,
+	                   tool_opts,
+	                   world,
+	                   world_draw);
 }
 #else /* SDL_BACKEND */
 void

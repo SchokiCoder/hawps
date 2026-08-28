@@ -26,6 +26,15 @@
  */
 
 void
+handle_button(const float           delta,
+              bool                 *drag,
+              int                  *drag_start_x,
+              int                  *drag_start_y,
+              SDL_MouseButtonFlags  mbf,
+              struct ToolOptions   *tool_opts,
+              struct World         *world);
+
+void
 render_world(const bool          no_glowcolor,
              SDL_Renderer       *r,
              const bool          th_vision,
@@ -179,22 +188,19 @@ draw(const char               *cmdline,
 }
 
 void
-handle_button_down(SDL_MouseButtonEvent     e,
-                   const float              delta,
-                   bool                    *drag,
-                   int                     *drag_start_x,
-                   int                     *drag_start_y,
-                   struct ToolOptions      *tool_opts,
-                   struct World            *world,
-                   SDL_FRect               *world_draw)
+handle_button(const float           delta,
+              bool                 *drag,
+              int                  *drag_start_x,
+              int                  *drag_start_y,
+              SDL_MouseButtonFlags  mbf,
+              struct ToolOptions   *tool_opts,
+              struct World         *world)
 {
-	int x = e.x;
-	int y = e.y;
+	int x = tool_opts->x;
+	int y = tool_opts->y;
 
-	switch (e.button) {
+	switch (mbf) {
 	case SDL_BUTTON_LEFT:
-		tool_opts->x = x + world_draw->x;
-		tool_opts->y = y + world_draw->y;
 		use_tool(delta, *tool_opts, world);
 		break;
 
@@ -225,6 +231,14 @@ handle_button_down(SDL_MouseButtonEvent     e,
 		*drag = true;
 		*drag_start_x = x;
 		*drag_start_y = y;
+		break;
+
+	case SDL_BUTTON_X1:
+	case SDL_BUTTON_X2:
+		break;
+
+	default:
+		*drag = false;
 		break;
 	}
 }
@@ -299,6 +313,49 @@ render_world(const bool          no_glowcolor,
 	                       TOOL_HOVER_B,
 	                       TOOL_HOVER_A);
 	SDL_RenderFillRect(r, &tool);
+}
+
+void
+handle_mouse_state(const float           delta,
+                   bool                 *drag,
+                   int                  *drag_start_x,
+                   int                  *drag_start_y,
+                   struct ToolOptions   *tool_opts,
+                   struct World         *world,
+                   SDL_FRect            *world_draw)
+{
+	SDL_MouseButtonFlags mbf;
+	int x, y;
+
+	mbf = SDL_GetMouseState(NULL, NULL);
+	x = tool_opts->x;
+	y = tool_opts->y;
+
+	if (*drag) {
+		world_draw->x = *drag_start_x - x;
+		world_draw->y = *drag_start_y - y;
+
+		if (world_draw->x < 0) {
+			world_draw->x = 0;
+		}
+		if (world_draw->y < 0) {
+			world_draw->y = 0;
+		}
+		if (world_draw->x > world->w - world_draw->w) {
+			world_draw->x = world->w - world_draw->w;
+		}
+		if (world_draw->y > world->h - world_draw->h) {
+			world_draw->y = world->h - world_draw->h;
+		}
+	}
+
+	handle_button(delta,
+	              drag,
+	              drag_start_x,
+	              drag_start_y,
+	              mbf,
+	              tool_opts,
+	              world);
 }
 
 #else
