@@ -16,8 +16,8 @@ APP_VERSION !=git describe --abbrev=0 --tags
 
 GIT_HEAD !=git rev-parse --short HEAD
 
-PKG_CONFIG_CFLAGS_SDL !=pkg-config --cflags sdl3
-PKG_CONFIG_LIBS_SDL   !=pkg-config --libs sdl3
+PKG_CONFIG_CFLAGS_SDL !=pkg-config --cflags sdl3 sdl3-ttf
+PKG_CONFIG_LIBS_SDL   !=pkg-config --libs sdl3 sdl3-ttf
 
 APP_NAME         :=hawps
 APP_NAME_FORMAL  :=Half Assed Wannabe Physics Simulator

@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "generic.h"
+#include "str.h"
 
 /* Macros
  */
@@ -35,34 +36,96 @@ render_world(const bool          no_glowcolor,
  */
 
 void
-draw(const bool                no_glowcolor,
+draw(TTF_Font                 *font,
+     const char               *ip_address,
+     const bool                no_glowcolor,
+     const bool                paused,
      const bool                th_vision,
+     const float               tickrate,
      const struct ToolOptions  tool_opts,
      SDL_Renderer             *r,
      const struct World        world,
      const SDL_FRect           world_draw,
+     const char               *world_name,
      SDL_Texture              *world_tx)
 {
+	SDL_Color    bg;
+	SDL_Color    fg;
+	size_t       i;
+	char         sb[CMDLINE_SIZE];
+	size_t       sb_len = 0;
+	SDL_FRect    sbr = {
+		.x = 0,
+		.y = world_draw.h,
+		.w = world_draw.w,
+		.h = SDL_FONT_SIZE,
+	};
+	SDL_Surface *sbs;
+	SDL_Texture *sbt;
+
+	sb[0] = '\0';
+
 	SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(r);
 
-	SDL_SetRenderTarget(r, world_tx);
 	if (th_vision) {
-		SDL_SetRenderDrawColor(r,
-		                       THERMAL_VISION_R,
-		                       THERMAL_VISION_G,
-		                       THERMAL_VISION_B,
-		                       SDL_ALPHA_OPAQUE);
+		bg.r = THERMAL_VISION_R;
+		bg.g = THERMAL_VISION_G;
+		bg.b = THERMAL_VISION_B;
+		bg.a = SDL_ALPHA_OPAQUE;
 	} else {
-		SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
+		bg.r = 0;
+		bg.g = 0;
+		bg.b = 0;
+		bg.a = SDL_ALPHA_OPAQUE;
 	}
+	fg.r = 255 - bg.r;
+	fg.g = 255 - bg.g;
+	fg.b = 255 - bg.b;
+	fg.a = SDL_ALPHA_OPAQUE;
+
+	SDL_SetRenderDrawColor(r, bg.r, bg.g, bg.b, bg.a);
+	SDL_RenderClear(r);
+
+	SDL_SetRenderTarget(r, world_tx);
 	SDL_RenderClear(r);
 	render_world(no_glowcolor, r, th_vision, tool_opts, world);
 	SDL_SetRenderTarget(r, NULL);
 
-	SDL_RenderTexture(r, world_tx, NULL, NULL);
+	SDL_RenderTexture(r, world_tx, NULL, &world_draw);
+
+	// TODO impl sbe priority system
+	i = 0;
+	while (1) {
+		sb_len += generate_statusbar_elem(&sb[sb_len],
+		                                  CMDLINE_SIZE - sb_len,
+		                                  ip_address,
+		                                  paused,
+		                                  STATUSBAR_DISPLAY_ORDER[i],
+		                                  th_vision,
+		                                  tickrate,
+		                                  tool_opts,
+		                                  world_name);
+
+		i++;
+		if (i >= ARRSIZE(STATUSBAR_DISPLAY_ORDER)) {
+			break;
+		}
+
+		sb_len += string_cat(sb,
+		                     CMDLINE_SIZE,
+		                     sb_len,
+		                     STATUSBAR_SEPARATOR);
+	}
+	sbs = TTF_RenderText_LCD(font, sb, sb_len, fg, bg);
+	sbt = SDL_CreateTextureFromSurface(r, sbs);
+	sbr.w = sbt->w;
+	SDL_RenderTexture(r, sbt, NULL, &sbr);
 
 	SDL_RenderPresent(r);
+
+	SDL_DestroySurface(sbs);
+	SDL_DestroyTexture(sbt);
 }
 
 void

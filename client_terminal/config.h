@@ -131,18 +131,18 @@ static const char DOT_APPEARANCE[] = {
  */
 static enum StatusbarElement STATUSBAR_DISPLAY_ORDER[] = {
 	SBE_WORLD_NAME, /* first */
-	SBE_COORDS,
 	SBE_VIEW,
 	SBE_SPEED,
 	SBE_IP_ADDRESS,
+	SBE_COORDS,
 };
 
 static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 	SBE_SPEED,      /* most important */
 	SBE_VIEW,
-	SBE_COORDS,
 	SBE_IP_ADDRESS,
 	SBE_WORLD_NAME,
+	SBE_COORDS,
 };
 
 /* settings
@@ -151,6 +151,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define MAX_RADIUS           16
 #define MAX_TICKRATE         (STD_TICKRATE * 2.0 * 2.0)
 #define MIN_TICKRATE         (STD_TICKRATE / 2.0 / 2.0 / 2.0 / 2.0 / 2.0)
+#define SDL_FONT_SIZE        24
 #define SDL_WIN_WIDTH        640
 #define SDL_WIN_HEIGHT       480
 #define SDL_WORLD_SCALE      10
@@ -171,7 +172,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
  * Consider only touching them when you have special hardware or problems.
  */
 #define BUF_SIZE              64
-#define CMDLINE_SIZE          64
+#define CMDLINE_SIZE          81
 #define DISPLAY_SIZE_MODIFIER 1.25
 #define INPUT_SIZE            16
 

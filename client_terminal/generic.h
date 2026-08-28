@@ -10,6 +10,17 @@
 
 #include "types.h"
 
+size_t
+generate_statusbar_elem(char                        *out,
+                        const size_t                 out_size,
+                        const char                  *ip_address,
+                        const bool                   paused,
+                        const enum StatusbarElement  sbe,
+                        const bool                   th_vision,
+                        const float                  tickrate,
+                        struct ToolOptions           tool_opts,
+                        const char                  *world_name);
+
 struct Rgba
 get_normal_dot_color(const struct World world,
                      const int          x,

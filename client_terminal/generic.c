@@ -7,6 +7,96 @@
 #include <stddef.h>
 
 #include "config.h"
+#include "int_to_string.h"
+#include "str.h"
+
+size_t
+generate_statusbar_elem(char                        *out,
+                        const size_t                 out_size,
+                        const char                  *ip_address,
+                        const bool                   paused,
+                        const enum StatusbarElement  sbe,
+                        const bool                   th_vision,
+                        const float                  tickrate,
+                        struct ToolOptions           tool_opts,
+                        const char                  *world_name)
+{
+	char  *vision = NULL;
+	size_t written = 0;
+
+	switch (sbe) {
+	case SBE_WORLD_NAME:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      world_name);
+		break;
+
+	case SBE_COORDS:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      NUMBERSTRING[tool_opts.x]);
+		out[written] = ',';
+		written += 1;
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      NUMBERSTRING[tool_opts.y]);
+		break;
+
+	case SBE_VIEW:
+		if (th_vision) {
+			vision = "Thermal";
+		} else {
+			vision = "Normal";
+		}
+
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      "View:");
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      vision);
+		break;
+
+	case SBE_SPEED:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      "Speed:");
+		if (paused) {
+			written += string_cat(out,
+			                      out_size,
+			                      written,
+			                      "None");
+		} else {
+			written += string_cat(out,
+			                      out_size,
+			                      written,
+			                      NUMBERSTRING[(int) tickrate]);
+			written += string_cat(out,
+			                      out_size,
+			                      written,
+			                      "/s");
+		}
+		break;
+
+	case SBE_IP_ADDRESS:
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      ip_address);
+		break;
+
+	case SBE_COUNT:
+		break;
+	}
+
+	return written;
+}
 
 struct Rgba
 get_normal_dot_color(const struct World world,

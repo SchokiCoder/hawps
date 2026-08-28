@@ -99,7 +99,8 @@ Using `ARRSIZE` instead of `SBE_COUNT` allows users to completely remove
 statusbar elements in the config arrays.
 
 - [x] terminal client: add world draw of SDL backend
-- [ ] terminal client: add statusbar draw of SDL backend
+- [x] terminal client: add statusbar draw of SDL backend
+- [ ] terminal client: add cmdline draw of SDL backend
 - [ ] terminal client: add input handling of SDL backend
 - [ ] terminal client: rename to desktop client
 

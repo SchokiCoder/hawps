@@ -69,17 +69,6 @@ render_dot_no_color(char               *out,
                     const int           y);
 
 size_t
-render_statusbar_display(char                        *out,
-                         const size_t                 out_size,
-                         const char                  *ip_address,
-                         const bool                   paused,
-                         const enum StatusbarElement  sbe,
-                         const float                  tickrate,
-                         const bool                   th_vision,
-                         struct ToolOptions           tool_opts,
-                         const char                  *world_name);
-
-size_t
 render_tool_hint(char                     *out,
                  const size_t              out_size,
                  const struct ToolOptions  tool_opts);
@@ -169,15 +158,15 @@ draw(const char                  *cmdline,
 
 	i = 0;
 	while (1) {
-		display_len += render_statusbar_display(&display[display_len],
-		                                        display_size - display_len,
-		                                        ip_address,
-		                                        paused,
-		                                        statusbar_elem[i],
-		                                        tickrate,
-		                                        th_vision,
-		                                        tool_opts,
-		                                        world_name);
+		display_len += generate_statusbar_elem(&display[display_len],
+		                                       display_size - display_len,
+		                                       ip_address,
+		                                       paused,
+		                                       statusbar_elem[i],
+		                                       th_vision,
+		                                       tickrate,
+		                                       tool_opts,
+		                                       world_name);
 
 		i++;
 		if (i >= statusbar_elems) {
@@ -505,15 +494,15 @@ handle_resize(const size_t            cmdline_len,
 			 * thing, unless it's not expected to change.
 			 * Only in that case use real data.
 			 */
-			statusbar_len += render_statusbar_display(buf,
-		                                                  BUF_SIZE,
-		                                                  ip_address,
-		                                                  false,
-		                                                  STATUSBAR_DISPLAY_PRIORITY[a],
-		                                                  120.0,
-		                                                  true,
-		                                                  maxcoords_to,
-		                                                  world_name);
+			statusbar_len += generate_statusbar_elem(buf,
+		                                                 BUF_SIZE,
+		                                                 ip_address,
+		                                                 false,
+		                                                 STATUSBAR_DISPLAY_PRIORITY[a],
+		                                                 true,
+		                                                 120.0,
+		                                                 maxcoords_to,
+		                                                 world_name);
 
 			if (statusbar_len > (size_t) *win_w) {
 				break;
@@ -602,94 +591,6 @@ render_dot_no_color(char               *out,
 	}
 
 	out[written] = '\0';
-	return written;
-}
-
-size_t
-render_statusbar_display(char                        *out,
-                         const size_t                 out_size,
-                         const char                  *ip_address,
-                         const bool                   paused,
-                         const enum StatusbarElement  sbe,
-                         const float                  tickrate,
-                         const bool                   th_vision,
-                         struct ToolOptions           tool_opts,
-                         const char                  *world_name)
-{
-	char  *vision = NULL;
-	size_t written = 0;
-
-	switch (sbe) {
-	case SBE_WORLD_NAME:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      world_name);
-		break;
-
-	case SBE_COORDS:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      NUMBERSTRING[tool_opts.x]);
-		out[written] = ',';
-		written += 1;
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      NUMBERSTRING[tool_opts.y]);
-		break;
-
-	case SBE_VIEW:
-		if (th_vision) {
-			vision = "Thermal";
-		} else {
-			vision = "Normal";
-		}
-
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      "View:");
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      vision);
-		break;
-
-	case SBE_SPEED:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      "Speed:");
-		if (paused) {
-			written += string_cat(out,
-			                      out_size,
-			                      written,
-			                      "None");
-		} else {
-			written += string_cat(out,
-			                      out_size,
-			                      written,
-			                      NUMBERSTRING[(int) tickrate]);
-			written += string_cat(out,
-			                      out_size,
-			                      written,
-			                      "/s");
-		}
-		break;
-
-	case SBE_IP_ADDRESS:
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      ip_address);
-		break;
-
-	case SBE_COUNT:
-		break;
-	}
-
 	return written;
 }
 

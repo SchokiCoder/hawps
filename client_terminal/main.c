@@ -21,6 +21,7 @@
 
 #ifdef SDL_BACKEND
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "backend_sdl.h"
 #else
 #include "csi.h"
@@ -1710,8 +1711,6 @@ main(int    argc,
 	clock_t                last_tick = 0;
 	bool                   no_glowcolor = false;
 	clock_t                now = 0;
-	size_t                 statusbar_elems = 0;
-	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;
@@ -1723,6 +1722,8 @@ main(int    argc,
 #ifdef SDL_BACKEND
 	bool          drag = false;
 	SDL_Renderer *renderer = NULL;
+	TTF_Font     *font = NULL;
+	size_t        i;
 	SDL_Window   *win = NULL;
 	SDL_FRect     world_draw = {
 		.x = 0,
@@ -1732,20 +1733,22 @@ main(int    argc,
 	};
 	SDL_Texture  *world_tx = NULL;
 #else
-	char           *display = NULL;
-	size_t          display_size = 0;
-	size_t          dot_depth = 0;
-	bool            lmb_pressed = false;
-	bool            no_color = false;
-	struct winsize  ws;
-	struct Rect     world_draw = {
+	char                  *display = NULL;
+	size_t                 display_size = 0;
+	size_t                 dot_depth = 0;
+	bool                   lmb_pressed = false;
+	bool                   no_color = false;
+	size_t                 statusbar_elems = 0;
+	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
+	struct winsize         ws;
+	struct Rect            world_draw = {
 		.x = 0,
 		.y = 0,
 		.w = 0,
 		.h = 0,
 	};
-	int             world_draw_space_w = 0;
-	int             world_draw_space_h = 0;
+	int                    world_draw_space_w = 0;
+	int                    world_draw_space_h = 0;
 #endif
 
 	if (!handle_args(argc, argv,
@@ -1774,6 +1777,24 @@ main(int    argc,
 		goto cleanup;
 	}
 
+	if (!TTF_Init()) {
+		fprintf(stderr, "%s\n", SDL_GetError());
+		goto cleanup;
+	}
+
+	for (i = 0; i < ARRLEN(FONTPATH); i++) {
+		font = TTF_OpenFont(FONTPATH[i], SDL_FONT_SIZE);
+		if (NULL != font) {
+			break;
+		}
+	}
+	if (NULL == font) {
+		fprintf(stderr, "%s\n", SDL_GetError());
+		goto cleanup;
+	}
+	TTF_SetFontDirection(font, TTF_DIRECTION_LTR);
+	TTF_SetFontLanguage(font, "en");
+
 	if (!SDL_CreateWindowAndRenderer(APP_NAME_FORMAL,
 	                                 SDL_WIN_WIDTH, SDL_WIN_HEIGHT,
 	                                 SDL_WINDOW_RESIZABLE,
@@ -1786,9 +1807,15 @@ main(int    argc,
 	SDL_StartTextInput(win);
 
 	SDL_GetWindowSize(win, &world.w, &world.h);
+	world.h -= SDL_FONT_SIZE * 2;
+
+	world_draw.x = 0;
+	world_draw.y = 0;
+	world_draw.w = world.w;
+	world_draw.h = world.h;
+
 	world.w /= SDL_WORLD_SCALE;
 	world.h /= SDL_WORLD_SCALE;
-
 	world_tx = SDL_CreateTexture(renderer,
 	                             SDL_PIXELFORMAT_RGBA8888,
 	                             SDL_TEXTUREACCESS_TARGET,
@@ -1909,12 +1936,17 @@ main(int    argc,
 			}
 
 #ifdef SDL_BACKEND
-			draw(no_glowcolor,
+			draw(font,
+			     ip_address,
+			     no_glowcolor,
+			     paused,
 			     th_vision,
+			     tickrate,
 			     tool_opts,
 			     renderer,
 			     world,
 			     world_draw,
+			     world_name,
 			     world_tx);
 #else
 			handle_resize(cmdline_len,
@@ -1967,6 +1999,8 @@ cleanup:
 	SDL_StopTextInput(win);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
+	TTF_CloseFont(font);
+	TTF_Quit();
 	SDL_Quit();
 #else
 	CSI_set_normal();
