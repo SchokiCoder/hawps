@@ -289,20 +289,9 @@ render_world(const bool          no_glowcolor,
 	}
 
 	tool.x = tool_opts.x - tool_radius;
-	if (tool.x < 0)
-		tool.x = 0;
-
 	tool.y = tool_opts.y - tool_radius;
-	if (tool.y < 0)
-		tool.y = 0;
-
 	tool.w = tool_radius * 2 + 1;
-	if (tool.w >= world.w)
-		tool.w = world.w;
-
 	tool.h = tool_radius * 2 + 1;
-	if (tool.h >= world.h)
-		tool.h = world.h;
 
 	SDL_SetRenderDrawColor(r,
 	                       TOOL_HOVER_R,

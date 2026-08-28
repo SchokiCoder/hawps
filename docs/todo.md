@@ -101,8 +101,9 @@ statusbar elements in the config arrays.
 - [x] terminal client: add world draw of SDL backend
 - [x] terminal client: add statusbar draw of SDL backend
 - [x] terminal client: add cmdline draw of SDL backend
-- [ ] terminal client: fix tool hover draw of SDL backend
+- [x] terminal client: fix incorrect tool hover draw clamping of SDL backend
 - [ ] terminal client: add input handling of SDL backend
+- [ ] terminal client: add resize/scroll handling
 - [ ] terminal client: rename to desktop client
 
 - [ ] desktop client: add world scaling flag (sdl only)
