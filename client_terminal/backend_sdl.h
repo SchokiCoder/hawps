@@ -39,7 +39,11 @@ static const char *FONTPATH[] = {
 #endif
 
 void
-draw(TTF_Font                 *font,
+draw(const char               *cmdline,
+     const size_t              cmdline_shift,
+     const char               *feedback,
+     TTF_Font                 *font,
+     const enum InputMode      input_mode,
      const char               *ip_address,
      const bool                no_glowcolor,
      const bool                paused,

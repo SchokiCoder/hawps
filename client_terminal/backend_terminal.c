@@ -69,11 +69,6 @@ render_dot_no_color(char               *out,
                     const int           y);
 
 size_t
-render_tool_hint(char                     *out,
-                 const size_t              out_size,
-                 const struct ToolOptions  tool_opts);
-
-size_t
 render_world(char               *out,
              const size_t        out_size,
              const size_t        dot_depth,
@@ -158,15 +153,15 @@ draw(const char                  *cmdline,
 
 	i = 0;
 	while (1) {
-		display_len += generate_statusbar_elem(&display[display_len],
-		                                       display_size - display_len,
-		                                       ip_address,
-		                                       paused,
-		                                       statusbar_elem[i],
-		                                       th_vision,
-		                                       tickrate,
-		                                       tool_opts,
-		                                       world_name);
+		display_len += write_statusbar_elem(&display[display_len],
+		                                    display_size - display_len,
+		                                    ip_address,
+		                                    paused,
+		                                    statusbar_elem[i],
+		                                    th_vision,
+		                                    tickrate,
+		                                    tool_opts,
+		                                    world_name);
 
 		i++;
 		if (i >= statusbar_elems) {
@@ -203,7 +198,7 @@ draw(const char                  *cmdline,
 
 		buf[0] = '\0';
 		buf_len = 0;
-		buf_len = render_tool_hint(buf, BUF_SIZE, tool_opts);
+		buf_len = write_tool_hint(buf, BUF_SIZE, tool_opts);
 
 		if (buf_len > (size_t) win_w) {
 			buf_len -= buf_len - win_w;
@@ -494,15 +489,15 @@ handle_resize(const size_t            cmdline_len,
 			 * thing, unless it's not expected to change.
 			 * Only in that case use real data.
 			 */
-			statusbar_len += generate_statusbar_elem(buf,
-		                                                 BUF_SIZE,
-		                                                 ip_address,
-		                                                 false,
-		                                                 STATUSBAR_DISPLAY_PRIORITY[a],
-		                                                 true,
-		                                                 120.0,
-		                                                 maxcoords_to,
-		                                                 world_name);
+			statusbar_len += write_statusbar_elem(buf,
+		                                              BUF_SIZE,
+		                                              ip_address,
+		                                              false,
+		                                              STATUSBAR_DISPLAY_PRIORITY[a],
+		                                              true,
+		                                              120.0,
+		                                              maxcoords_to,
+		                                              world_name);
 
 			if (statusbar_len > (size_t) *win_w) {
 				break;
@@ -591,35 +586,6 @@ render_dot_no_color(char               *out,
 	}
 
 	out[written] = '\0';
-	return written;
-}
-
-size_t
-render_tool_hint(char                     *out,
-                 const size_t              out_size,
-                 const struct ToolOptions  tool_opts)
-{
-	size_t written = 0;
-
-	written += string_cat(out,
-	                      out_size,
-	                      written,
-	                      TOOL_NAME[tool_opts.sel_tool]);
-
-	if (tool_opts.sel_tool == TOOL_BRUSH) {
-		written += string_cat(out, out_size, written, " ");
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      MAT_NAME[tool_opts.brush_mat]);
-	} else if (tool_opts.sel_tool == TOOL_SPAWNER) {
-		written += string_cat(out, out_size, written, " ");
-		written += string_cat(out,
-		                      out_size,
-		                      written,
-		                      MAT_NAME[tool_opts.spawner_mat]);
-	}
-
 	return written;
 }
 

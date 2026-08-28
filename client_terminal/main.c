@@ -1936,7 +1936,11 @@ main(int    argc,
 			}
 
 #ifdef SDL_BACKEND
-			draw(font,
+			draw(cmdline,
+			     cmdline_shift,
+			     feedback,
+			     font,
+			     input_mode,
 			     ip_address,
 			     no_glowcolor,
 			     paused,

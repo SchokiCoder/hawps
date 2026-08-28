@@ -36,7 +36,11 @@ render_world(const bool          no_glowcolor,
  */
 
 void
-draw(TTF_Font                 *font,
+draw(const char               *cmdline,
+     const size_t              cmdline_shift,
+     const char               *feedback,
+     TTF_Font                 *font,
+     const enum InputMode      input_mode,
      const char               *ip_address,
      const bool                no_glowcolor,
      const bool                paused,
@@ -50,6 +54,16 @@ draw(TTF_Font                 *font,
      SDL_Texture              *world_tx)
 {
 	SDL_Color    bg;
+	char         cmdl[CMDLINE_SIZE];
+	size_t       cmdl_len = 0;
+	SDL_FRect    cmdlr = {
+		.x = 0,
+		.y = world_draw.h + SDL_FONT_SIZE,
+		.w = world_draw.w,
+		.h = SDL_FONT_SIZE,
+	};
+	SDL_Surface *cmdls;
+	SDL_Texture *cmdlt;
 	SDL_Color    fg;
 	size_t       i;
 	char         sb[CMDLINE_SIZE];
@@ -63,6 +77,7 @@ draw(TTF_Font                 *font,
 	SDL_Surface *sbs;
 	SDL_Texture *sbt;
 
+	cmdl[0] = '\0';
 	sb[0] = '\0';
 
 	SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -97,15 +112,15 @@ draw(TTF_Font                 *font,
 	// TODO impl sbe priority system
 	i = 0;
 	while (1) {
-		sb_len += generate_statusbar_elem(&sb[sb_len],
-		                                  CMDLINE_SIZE - sb_len,
-		                                  ip_address,
-		                                  paused,
-		                                  STATUSBAR_DISPLAY_ORDER[i],
-		                                  th_vision,
-		                                  tickrate,
-		                                  tool_opts,
-		                                  world_name);
+		sb_len += write_statusbar_elem(&sb[sb_len],
+		                               CMDLINE_SIZE - sb_len,
+		                               ip_address,
+		                               paused,
+		                               STATUSBAR_DISPLAY_ORDER[i],
+		                               th_vision,
+		                               tickrate,
+		                               tool_opts,
+		                               world_name);
 
 		i++;
 		if (i >= ARRSIZE(STATUSBAR_DISPLAY_ORDER)) {
@@ -122,8 +137,43 @@ draw(TTF_Font                 *font,
 	sbr.w = sbt->w;
 	SDL_RenderTexture(r, sbt, NULL, &sbr);
 
+	switch (input_mode) {
+	case IM_NORMAL:
+		if (feedback != NULL) {
+			cmdl_len += string_cat(cmdl,
+			                       CMDLINE_SIZE,
+			                       cmdl_len,
+			                       feedback);
+			break;
+		}
+
+		cmdl_len += write_tool_hint(&cmdl[cmdl_len],
+		                            CMDLINE_SIZE - cmdl_len,
+		                            tool_opts);
+		break;
+
+	case IM_COMMAND:
+		cmdl[0] = CMDLINE_INDICATOR;
+		cmdl_len += 1;
+
+		cmdl_len += string_cat(cmdl,
+		                       CMDLINE_SIZE,
+		                       cmdl_len,
+		                       &cmdline[cmdline_shift]);
+
+		cmdl[cmdl_len] = CMDLINE_CURSOR;
+		cmdl_len += 1;
+		break;
+	}
+	cmdls = TTF_RenderText_LCD(font, cmdl, cmdl_len, fg, bg);
+	cmdlt = SDL_CreateTextureFromSurface(r, cmdls);
+	cmdlr.w = cmdlt->w;
+	SDL_RenderTexture(r, cmdlt, NULL, &cmdlr);
+
 	SDL_RenderPresent(r);
 
+	SDL_DestroySurface(cmdls);
+	SDL_DestroyTexture(cmdlt);
 	SDL_DestroySurface(sbs);
 	SDL_DestroyTexture(sbt);
 }

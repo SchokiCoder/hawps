@@ -11,15 +11,15 @@
 #include "str.h"
 
 size_t
-generate_statusbar_elem(char                        *out,
-                        const size_t                 out_size,
-                        const char                  *ip_address,
-                        const bool                   paused,
-                        const enum StatusbarElement  sbe,
-                        const bool                   th_vision,
-                        const float                  tickrate,
-                        struct ToolOptions           tool_opts,
-                        const char                  *world_name)
+write_statusbar_elem(char                        *out,
+                     const size_t                 out_size,
+                     const char                  *ip_address,
+                     const bool                   paused,
+                     const enum StatusbarElement  sbe,
+                     const bool                   th_vision,
+                     const float                  tickrate,
+                     struct ToolOptions           tool_opts,
+                     const char                  *world_name)
 {
 	char  *vision = NULL;
 	size_t written = 0;
@@ -93,6 +93,35 @@ generate_statusbar_elem(char                        *out,
 
 	case SBE_COUNT:
 		break;
+	}
+
+	return written;
+}
+
+size_t
+write_tool_hint(char                     *out,
+                const size_t              out_size,
+                const struct ToolOptions  tool_opts)
+{
+	size_t written = 0;
+
+	written += string_cat(out,
+	                      out_size,
+	                      written,
+	                      TOOL_NAME[tool_opts.sel_tool]);
+
+	if (tool_opts.sel_tool == TOOL_BRUSH) {
+		written += string_cat(out, out_size, written, " ");
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      MAT_NAME[tool_opts.brush_mat]);
+	} else if (tool_opts.sel_tool == TOOL_SPAWNER) {
+		written += string_cat(out, out_size, written, " ");
+		written += string_cat(out,
+		                      out_size,
+		                      written,
+		                      MAT_NAME[tool_opts.spawner_mat]);
 	}
 
 	return written;
