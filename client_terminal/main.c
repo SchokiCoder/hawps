@@ -64,9 +64,6 @@
 #define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #endif
 
-#define SIG_INT  '\003'
-#define SIG_TSTP '\032'
-
 /* Constants
  */
 
@@ -337,21 +334,6 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 /* Function declarations
  */
 
-void
-command_temperature(const float   new_temperature,
-                    struct World *world);
-
-void
-handle_advanced_command(const char          *cmd,
-                        const char          *arg,
-                        char               **feedback,
-                        clock_t             *feedback_expiration,
-                        float               *framerate,
-                        const clock_t        now,
-                        float               *tickrate,
-                        struct ToolOptions  *tool_opts,
-                        struct World        *world);
-
 bool
 handle_args(int                  argc,
             char               **argv,
@@ -362,40 +344,6 @@ handle_args(int                  argc,
 #endif
             float               *tickrate,
             struct ToolOptions  *tool_opts);
-
-void
-handle_command(char                *cmdline,
-               const size_t         cmdline_len,
-               bool                *active,
-               char               **feedback,
-               clock_t             *feedback_expiration,
-               float               *framerate,
-               bool                *no_glowcolor,
-               const clock_t        now,
-               bool                *paused,
-               bool                *th_vision,
-               float               *tickrate,
-               struct ToolOptions  *tool_opts,
-               struct World        *world);
-
-void
-handle_command_input(const char          *in,
-                     bool                *active,
-                     char                *cmdline,
-                     size_t              *cmdline_len,
-                     size_t              *cmdline_shift,
-                     char               **feedback,
-                     clock_t             *feedback_expiration,
-                     float               *framerate,
-                     enum InputMode      *input_mode,
-                     bool                *no_glowcolor,
-                     clock_t              now,
-                     bool                *paused,
-                     bool                *th_vision,
-                     float               *tickrate,
-                     struct ToolOptions  *tool_opts,
-                     const int            win_w,
-                     struct World        *world);
 
 bool
 handle_flag_float_arg(int    argc,
@@ -409,31 +357,16 @@ handle_flag_int_arg(int    argc,
                     int   *idx,
                     int   *out);
 
+void
+handle_input(
 #ifdef SDL_BACKEND
-void
-handle_input(bool                *active,
-             char                *cmdline,
-             size_t              *cmdline_len,
-             size_t              *cmdline_shift,
-             const float          delta,
              bool                *drag,
-             int                 *drag_start_x,
-             int                 *drag_start_y,
-             char               **feedback,
-             clock_t             *feedback_expiration,
-             float               *framerate,
-             enum InputMode      *input_mode,
-             clock_t              now,
-             bool                *paused,
-             float               *tickrate,
-             bool                *th_vision,
-             struct ToolOptions  *tool_opts,
-             const int            win_w,
-             struct World        *world,
-             SDL_FRect           *world_draw);
+             SDL_FRect           *world_draw,
 #else
-void
-handle_input(bool                *active,
+             bool                *lmb_pressed,
+             struct Rect         *world_draw,
+#endif /* SDL_BACKEND */
+             bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
              size_t              *cmdline_shift,
@@ -444,7 +377,6 @@ handle_input(bool                *active,
              clock_t             *feedback_expiration,
              float               *framerate,
              enum InputMode      *input_mode,
-             bool                *lmb_pressed,
              bool                *no_glowcolor,
              clock_t              now,
              bool                *paused,
@@ -452,9 +384,7 @@ handle_input(bool                *active,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
              const int            win_w,
-             struct World        *world,
-             struct Rect         *world_draw);
-#endif /* SDL_BACKEND */
+             struct World        *world);
 
 /* @in: Input.
  * @active: Runtime data.
@@ -487,251 +417,11 @@ handle_normal_input(const char         *in,
                     struct Rect        *world_draw);
 #endif
 
-void
-handle_simple_command(const char          *cmdline,
-                      bool                *active,
-                      char               **feedback,
-                      clock_t             *feedback_expiration,
-                      float               *framerate,
-                      bool                *no_glowcolor,
-                      clock_t              now,
-                      bool                *paused,
-                      bool                *th_vision,
-                      float               *tickrate,
-                      struct ToolOptions  *tool_opts,
-                      struct World        *world);
-
 struct ToolOptions
 new_tool_options(void);
 
-void
-set_feedback(char          **feedback,
-             clock_t        *feedback_expiration,
-             const clock_t   now,
-             char           *str);
-
 /* Function definitions
  */
-
-void
-command_temperature(const float   new_temperature,
-                    struct World *world)
-{
-	int x, y;
-
-	for (x = 0; x < world->w; x++) {
-		for (y = 0; y < world->h; y++) {
-			world->thermo[x][y] = new_temperature;
-
-			if (world->thermo[x][y] >= MAT_BOIL_P[world->dot[x][y]]) {
-				if (MAT_MELT_DECOMP[world->dot[x][y]]) {
-					world->dot[x][y] = mat_melt_prdct(world->dot[x][y]);
-				}
-			}
-		}
-	}
-}
-
-void
-handle_advanced_command(const char          *cmd,
-                        const char          *arg,
-                        char               **feedback,
-                        clock_t             *feedback_expiration,
-                        float               *framerate,
-                        const clock_t        now,
-                        float               *tickrate,
-                        struct ToolOptions  *tool_opts,
-                        struct World        *world)
-{
-	float f = 0.0;
-	long l;
-	int x, y;
-
-	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
-	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_BRUSH;
-		if (mat_from_string(arg, &tool_opts->brush_mat)) {
-			return;
-		}
-
-		set_feedback(feedback, feedback_expiration, now,
-		             "Material not recognized.");
-	} else if (strcmp(cmd, CMD_BRUSHRADIUS) == 0 ||
-	           strcmp(cmd, CMD_BRUSHRADIUS_SHORT) == 0) {
-		errno = 0;
-		l = strtol(arg, NULL, 10);
-
-		if (errno != 0 ||
-		    l < 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			tool_opts->brush_radius = l;
-		}
-	} else if (strcmp(cmd, CMD_ERASERRADIUS) == 0 ||
-	           strcmp(cmd, CMD_ERASERRADIUS_SHORT) == 0) {
-		errno = 0;
-		l = strtol(arg, NULL, 10);
-
-		if (errno != 0 ||
-		    l < 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			tool_opts->eraser_radius = l;
-		}
-	} else if (strcmp(cmd, CMD_FRAMERATE) == 0 ||
-	           strcmp(cmd, CMD_FRAMERATE_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-			return;
-		}
-
-		if (f <= 0.0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "No.");
-			return;
-		}
-
-		*framerate = f;
-	} else if (strcmp(cmd, CMD_MAT) == 0 ||
-	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
-		switch (tool_opts->sel_tool) {
-		case TOOL_BRUSH:
-			if (mat_from_string(arg, &tool_opts->brush_mat)) {
-				return;
-			}
-
-			set_feedback(feedback, feedback_expiration, now,
-			             "Material not recognized.");
-			break;
-
-		case TOOL_SPAWNER:
-			if (mat_from_string(arg, &tool_opts->spawner_mat)) {
-				return;
-			}
-
-			set_feedback(feedback, feedback_expiration, now,
-			             "Material not recognized.");
-			break;
-
-		case TOOL_ERASER:
-		case TOOL_HEATER:
-		case TOOL_COOLER:
-		case TOOL_COUNT:
-			set_feedback(feedback, feedback_expiration, now,
-			             "Unsupported tool selected.");
-			break;
-		}
-	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
-	           strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_SPAWNER;
-		if (mat_from_string(arg, &tool_opts->spawner_mat)) {
-			return;
-		}
-
-		set_feedback(feedback, feedback_expiration, now,
-		             "Material not recognized.");
-	} else if (strcmp(cmd, CMD_SPAWNTEMPERATURE) == 0 ||
-	           strcmp(cmd, CMD_SPAWNTEMPERATURE_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			tool_opts->spawn_temperature = f + CELSIUS_TO_KELVIN;
-		}
-	} else if (strcmp(cmd, CMD_SPAWNTEMPERATUREK) == 0 ||
-	           strcmp(cmd, CMD_SPAWNTEMPERATUREK_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			tool_opts->spawn_temperature = f;
-		}
-	} else if (strcmp(cmd, CMD_TEMPERATURE) == 0 ||
-	           strcmp(cmd, CMD_TEMPERATURE_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			command_temperature(f + CELSIUS_TO_KELVIN, world);
-		}
-	} else if (strcmp(cmd, CMD_TEMPERATUREK) == 0 ||
-	           strcmp(cmd, CMD_TEMPERATUREK_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			command_temperature(f, world);
-		}
-	} else if (strcmp(cmd, CMD_THERMORADIUS) == 0 ||
-	           strcmp(cmd, CMD_THERMORADIUS_SHORT) == 0) {
-		errno = 0;
-		l = strtol(arg, NULL, 10);
-
-		if (errno != 0 ||
-		    l < 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-		} else {
-			tool_opts->thermo_radius = l;
-		}
-	} else if (strcmp(cmd, CMD_THERMORATE) == 0 ||
-	           strcmp(cmd, CMD_THERMORATE_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-			return;
-		}
-
-		if (f == 0.0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "That's dumb, but okay.");
-		}
-
-		tool_opts->thermo_rate = f;
-	} else if (strcmp(cmd, CMD_TICKRATE) == 0 ||
-	           strcmp(cmd, CMD_TICKRATE_SHORT) == 0) {
-		errno = 0;
-		f = strtof(arg, NULL);
-
-		if (errno != 0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Number is invalid.");
-			return;
-		}
-
-		if (f <= 0.0) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "No.");
-			return;
-		}
-
-		*tickrate = f;
-	} else {
-		set_feedback(feedback, feedback_expiration, now,
-		             "Command not recognized.");
-	}
-}
 
 bool
 handle_args(int                  argc,
@@ -929,136 +619,6 @@ handle_args(int                  argc,
 	return true;
 }
 
-void
-handle_command(char                *cmdline,
-               const size_t         cmdline_len,
-               bool                *active,
-               char               **feedback,
-               clock_t             *feedback_expiration,
-               float               *framerate,
-               bool                *no_glowcolor,
-               const clock_t        now,
-               bool                *paused,
-               bool                *th_vision,
-               float               *tickrate,
-               struct ToolOptions  *tool_opts,
-               struct World        *world)
-{
-	char buf1[BUF_SIZE];
-	char buf2[BUF_SIZE];
-	size_t i;
-
-	buf1[0] = '\0';
-	buf2[0] = '\0';
-
-	for (i = 0; i < cmdline_len; i++) {
-		switch (cmdline[i]) {
-		case ' ':
-			cmdline[i] = '\0';
-			string_cat(buf1, BUF_SIZE, 0, cmdline);
-			cmdline[i] = ' ';
-			string_cat(buf2, BUF_SIZE, 0, &cmdline[i + 1]);
-
-			handle_advanced_command(buf1, buf2,
-			                        feedback,
-			                        feedback_expiration,
-			                        framerate,
-			                        now,
-			                        tickrate,
-			                        tool_opts,
-			                        world);
-			return;
-			break;
-
-		case '\n':
-		case '\r':
-		case '\0':
-			i = cmdline_len;
-			break;
-		}
-	}
-
-	handle_simple_command(cmdline,
-	                      active,
-	                      feedback,
-	                      feedback_expiration,
-	                      framerate,
-	                      no_glowcolor,
-	                      now,
-	                      paused,
-	                      th_vision,
-	                      tickrate,
-	                      tool_opts,
-	                      world);
-}
-
-void
-handle_command_input(const char          *in,
-                     bool                *active,
-                     char                *cmdline,
-                     size_t              *cmdline_len,
-                     size_t              *cmdline_shift,
-                     char               **feedback,
-                     clock_t             *feedback_expiration,
-                     float               *framerate,
-                     enum InputMode      *input_mode,
-                     bool                *no_glowcolor,
-                     clock_t              now,
-                     bool                *paused,
-                     bool                *th_vision,
-                     float               *tickrate,
-                     struct ToolOptions  *tool_opts,
-                     const int            win_w,
-                     struct World        *world)
-{
-	switch (in[0]) {
-	case '\b':
-		if (*cmdline_len > 0) {
-			cmdline[*cmdline_len - 1] = '\0';
-			*cmdline_len -= 1;
-			handle_cmdline_shift(*cmdline_len,
-			                     cmdline_shift,
-			                     win_w);
-		}
-		break;
-
-	case '\n':
-		handle_command(cmdline,
-		               *cmdline_len,
-		               active,
-		               feedback,
-		               feedback_expiration,
-		               framerate,
-		               no_glowcolor,
-		               now,
-		               paused,
-		               th_vision,
-		               tickrate,
-		               tool_opts,
-		               world);
-		/* fallthrough */
-	case SIG_INT:
-	case SIG_TSTP:
-		cmdline[0] = '\0';
-		*cmdline_len = 0;
-		*input_mode = IM_NORMAL;
-		handle_cmdline_shift(*cmdline_len,
-		                     cmdline_shift,
-		                     win_w);
-		break;
-
-	default:
-		if (*cmdline_len < CMDLINE_SIZE - 1) {
-			cmdline[*cmdline_len] = in[0];
-			cmdline[*cmdline_len + 1] = '\0';
-			*cmdline_len += 1;
-			handle_cmdline_shift(*cmdline_len,
-			                     cmdline_shift,
-			                     win_w);
-		}
-	}
-}
-
 bool
 handle_flag_float_arg(int    argc,
                       char **argv,
@@ -1111,29 +671,36 @@ handle_flag_int_arg(int    argc,
 	return true;
 }
 
-#ifdef SDL_BACKEND
 void
-handle_input(bool                *active,
+handle_input(
+#ifdef SDL_BACKEND
+             bool                *drag,
+             SDL_FRect           *world_draw,
+#else
+             bool                *lmb_pressed,
+             struct Rect         *world_draw,
+#endif /* SDL_BACKEND */
+             bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
              size_t              *cmdline_shift,
              const float          delta,
-             bool                *drag,
              int                 *drag_start_x,
              int                 *drag_start_y,
              char               **feedback,
              clock_t             *feedback_expiration,
              float               *framerate,
              enum InputMode      *input_mode,
+             bool                *no_glowcolor,
              clock_t              now,
              bool                *paused,
              float               *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
              const int            win_w,
-             struct World        *world,
-             SDL_FRect           *world_draw)
+             struct World        *world)
 {
+#ifdef SDL_BACKEND
 	SDL_Event e;
 	int x, y;
 
@@ -1149,19 +716,67 @@ handle_input(bool                *active,
 			break;
 
 		case SDL_EVENT_KEY_DOWN:
+			switch (e.key.key) {
+			case SDLK_BACKSPACE:
+				if (*cmdline_len > 0) {
+					cmdline[*cmdline_len - 1] = '\0';
+					*cmdline_len -= 1;
+					handle_cmdline_shift(*cmdline_len,
+							     cmdline_shift,
+							     win_w);
+				}
+				break;
+
+			case SDLK_RETURN:
+				handle_command(cmdline,
+				               *cmdline_len,
+				               active,
+				               feedback,
+				               feedback_expiration,
+				               framerate,
+				               no_glowcolor,
+				               now,
+				               paused,
+				               th_vision,
+				               tickrate,
+				               tool_opts,
+				               world);
+				cmdline[0] = '\0';
+				*cmdline_len = 0;
+				*input_mode = IM_NORMAL;
+				handle_cmdline_shift(*cmdline_len,
+				                     cmdline_shift,
+				                     win_w);
+				break;
+			}
 			break;
 
 		case SDL_EVENT_TEXT_INPUT:
-			handle_normal_input(e.text.text,
-			                    active,
-			                    delta,
-			                    input_mode,
-			                    paused,
-			                    tickrate,
-			                    th_vision,
-			                    tool_opts,
-			                    world,
-			                    world_draw);
+			switch (*input_mode) {
+			case IM_COMMAND:
+				if (*cmdline_len < CMDLINE_SIZE - 1) {
+					cmdline[*cmdline_len] = e.text.text[0];
+					cmdline[*cmdline_len + 1] = '\0';
+					*cmdline_len += 1;
+					handle_cmdline_shift(*cmdline_len,
+							     cmdline_shift,
+							     win_w);
+				}
+				break;
+
+			case IM_NORMAL:
+				handle_normal_input(e.text.text,
+				                    active,
+				                    delta,
+				                    input_mode,
+				                    paused,
+				                    tickrate,
+				                    th_vision,
+				                    tool_opts,
+				                    world,
+				                    world_draw);
+				break;
+			}
 			break;
 
 		case SDL_EVENT_QUIT:
@@ -1177,31 +792,9 @@ handle_input(bool                *active,
 	                   tool_opts,
 	                   world,
 	                   world_draw);
-}
+
 #else /* SDL_BACKEND */
-void
-handle_input(bool                *active,
-             char                *cmdline,
-             size_t              *cmdline_len,
-             size_t              *cmdline_shift,
-             const float          delta,
-             int                 *drag_start_x,
-             int                 *drag_start_y,
-             char               **feedback,
-             clock_t             *feedback_expiration,
-             float               *framerate,
-             enum InputMode      *input_mode,
-             bool                *lmb_pressed,
-             bool                *no_glowcolor,
-             clock_t              now,
-             bool                *paused,
-             float               *tickrate,
-             bool                *th_vision,
-             struct ToolOptions  *tool_opts,
-             const int            win_w,
-             struct World        *world,
-             struct Rect         *world_draw)
-{
+
 	ssize_t input_len = 0;
 	char    input[INPUT_SIZE];
 
@@ -1256,8 +849,8 @@ handle_input(bool                *active,
 		}
 		break;
 	}
-}
 #endif /* SDL_BACKEND */
+}
 
 bool
 handle_normal_input(const char         *in,
@@ -1547,93 +1140,6 @@ handle_normal_input(const char         *in,
 	return true;
 }
 
-void
-handle_simple_command(const char          *cmdline,
-                      bool                *active,
-                      char               **feedback,
-                      clock_t             *feedback_expiration,
-                      float               *framerate,
-                      bool                *no_glowcolor,
-                      clock_t              now,
-                      bool                *paused,
-                      bool                *th_vision,
-                      float               *tickrate,
-                      struct ToolOptions  *tool_opts,
-                      struct World        *world)
-{
-	int x, y;
-
-	*feedback = NULL;
-
-	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
-	    strcmp(cmdline, CMD_BRUSH_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_BRUSH;
-	} else if (strcmp(cmdline, CMD_CLEAR) == 0 ||
-	           strcmp(cmdline, CMD_CLEAR_SHORT) == 0) {
-		for (x = 0; x < world->w; x++) {
-			for (y = 0; y < world->h; y++) {
-				world_clear_dot(world, x, y);
-			}
-		}
-	} else if (strcmp(cmdline, CMD_CLEARALL) == 0 ||
-	           strcmp(cmdline, CMD_CLEARALL_SHORT) == 0) {
-		for (x = 0; x < world->w; x++) {
-			for (y = 0; y < world->h; y++) {
-				world_clear_dot(world, x, y);
-				world->spawner[x][y] = false;
-			}
-		}
-	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
-	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_COOLER;
-	} else if (strcmp(cmdline, CMD_DEFAULTS) == 0 ||
-	           strcmp(cmdline, CMD_DEFAULTS_SHORT) == 0) {
-		*framerate = STD_FRAMERATE;
-		*tickrate = STD_TICKRATE;
-		tool_opts->brush_radius = STD_BRUSH_RADIUS;
-		tool_opts->eraser_radius = STD_ERASER_RADIUS;
-		tool_opts->sel_tool = STD_SELECTED_TOOL;
-		tool_opts->thermo_radius = STD_THERMO_RADIUS;
-		tool_opts->thermo_rate = STD_THERMO_RATE;
-		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
-	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
-	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_ERASER;
-	} else if (strcmp(cmdline, CMD_GLOWCOLOR) == 0 ||
-	           strcmp(cmdline, CMD_GLOWCOLOR_SHORT) == 0) {
-		*no_glowcolor = false;
-	} else if (strcmp(cmdline, CMD_HEATER) == 0 ||
-	           strcmp(cmdline, CMD_HEATER_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_HEATER;
-	} else if (strcmp(cmdline, CMD_NOGLOWCOLOR) == 0 ||
-	           strcmp(cmdline, CMD_NOGLOWCOLOR_SHORT) == 0) {
-		*no_glowcolor = true;
-	} else if (strcmp(cmdline, CMD_NORMALVISION) == 0 ||
-	           strcmp(cmdline, CMD_NORMALVISION_SHORT) == 0) {
-		*th_vision = false;
-	} else if (strcmp(cmdline, CMD_PAUSE) == 0 ||
-	           strcmp(cmdline, CMD_PAUSE_SHORT) == 0) {
-		if (*paused) {
-			*paused = false;
-		} else {
-			*paused = true;
-		}
-	} else if (strcmp(cmdline, CMD_QUIT) == 0 ||
-	           strcmp(cmdline, CMD_QUIT_SHORT) == 0 ||
-	           strcmp(cmdline, "exit") == 0) {
-		*active = false;
-	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
-	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
-		tool_opts->sel_tool = TOOL_SPAWNER;
-	} else if (strcmp(cmdline, CMD_THERMOVISION) == 0 ||
-	           strcmp(cmdline, CMD_THERMOVISION_SHORT) == 0) {
-		*th_vision = true;
-	} else {
-		set_feedback(feedback, feedback_expiration, now,
-		             "Command not recognized.");
-	}
-}
-
 struct ToolOptions
 new_tool_options(void)
 {
@@ -1650,16 +1156,6 @@ new_tool_options(void)
 		.y = 0,
 	};
 	return ret;
-}
-
-void
-set_feedback(char          **feedback,
-             clock_t        *feedback_expiration,
-             const clock_t   now,
-             char           *str)
-{
-	*feedback = str;
-	*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
 }
 
 int
@@ -1842,55 +1338,40 @@ main(int    argc,
 
 		last_input = now;
 
+		handle_input(
 #ifdef SDL_BACKEND
-		handle_input(&active,
+		             &drag,
+		             &world_draw,
+#else
+		             &lmb_pressed,
+		             &world_draw,
+#endif
+		             &active,
 		             cmdline,
 		             &cmdline_len,
 		             &cmdline_shift,
 		             delta,
-		             &drag,
 		             &drag_start_x,
 		             &drag_start_y,
 		             &feedback,
 		             &feedback_expiration,
 		             &framerate,
 		             &input_mode,
+		             &no_glowcolor,
 		             now,
 		             &paused,
 		             &tickrate,
 		             &th_vision,
 		             &tool_opts,
 		             win_w,
-		             &world,
-		             &world_draw);
-#else
-		handle_input(&active,
-			     cmdline,
-			     &cmdline_len,
-			     &cmdline_shift,
-			     delta,
-			     &drag_start_x,
-			     &drag_start_y,
-			     &feedback,
-			     &feedback_expiration,
-			     &framerate,
-			     &input_mode,
-			     &lmb_pressed,
-			     &no_glowcolor,
-			     now,
-			     &paused,
-			     &tickrate,
-			     &th_vision,
-			     &tool_opts,
-			     win_w,
-			     &world,
-			     &world_draw);
+		             &world);
 
+#ifdef SDL_BACKEND
+#else
 		if (lmb_pressed) {
 			use_tool(delta, tool_opts, &world);
 		}
-#endif /* SDL_BACKEND */
-
+#endif
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
 

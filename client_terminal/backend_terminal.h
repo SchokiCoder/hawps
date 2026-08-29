@@ -8,6 +8,7 @@
 #include <hawps_core.h>
 #include <hawps_extra.h>
 #include <stddef.h>
+#include <time.h>
 
 #include "config.h"
 #include "csi.h"
@@ -37,6 +38,25 @@ draw(const char                  *cmdline,
      const int                    world_draw_space_w,
      const int                    world_draw_space_h,
      const char                  *world_name);
+
+void
+handle_command_input(const char          *in,
+                     bool                *active,
+                     char                *cmdline,
+                     size_t              *cmdline_len,
+                     size_t              *cmdline_shift,
+                     char               **feedback,
+                     clock_t             *feedback_expiration,
+                     float               *framerate,
+                     enum InputMode      *input_mode,
+                     bool                *no_glowcolor,
+                     clock_t              now,
+                     bool                *paused,
+                     bool                *th_vision,
+                     float               *tickrate,
+                     struct ToolOptions  *tool_opts,
+                     const int            win_w,
+                     struct World        *world);
 
 void
 handle_mouse_input(const char         *in,

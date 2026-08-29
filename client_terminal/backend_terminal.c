@@ -242,6 +242,73 @@ draw(const char                  *cmdline,
 }
 
 void
+handle_command_input(const char          *in,
+                     bool                *active,
+                     char                *cmdline,
+                     size_t              *cmdline_len,
+                     size_t              *cmdline_shift,
+                     char               **feedback,
+                     clock_t             *feedback_expiration,
+                     float               *framerate,
+                     enum InputMode      *input_mode,
+                     bool                *no_glowcolor,
+                     clock_t              now,
+                     bool                *paused,
+                     bool                *th_vision,
+                     float               *tickrate,
+                     struct ToolOptions  *tool_opts,
+                     const int            win_w,
+                     struct World        *world)
+{
+	switch (in[0]) {
+	case '\b':
+		if (*cmdline_len > 0) {
+			cmdline[*cmdline_len - 1] = '\0';
+			*cmdline_len -= 1;
+			handle_cmdline_shift(*cmdline_len,
+			                     cmdline_shift,
+			                     win_w);
+		}
+		break;
+
+	case '\n':
+		handle_command(cmdline,
+		               *cmdline_len,
+		               active,
+		               feedback,
+		               feedback_expiration,
+		               framerate,
+		               no_glowcolor,
+		               now,
+		               paused,
+		               th_vision,
+		               tickrate,
+		               tool_opts,
+		               world);
+		/* fallthrough */
+	case SIG_INT:
+	case SIG_TSTP:
+		cmdline[0] = '\0';
+		*cmdline_len = 0;
+		*input_mode = IM_NORMAL;
+		handle_cmdline_shift(*cmdline_len,
+		                     cmdline_shift,
+		                     win_w);
+		break;
+
+	default:
+		if (*cmdline_len < CMDLINE_SIZE - 1) {
+			cmdline[*cmdline_len] = in[0];
+			cmdline[*cmdline_len + 1] = '\0';
+			*cmdline_len += 1;
+			handle_cmdline_shift(*cmdline_len,
+			                     cmdline_shift,
+			                     win_w);
+		}
+	}
+}
+
+void
 handle_mouse_input(const char         *in,
                    const float         delta,
                    int                *drag_start_x,
