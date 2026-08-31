@@ -161,7 +161,24 @@ get_normal_dot_color(const struct World world,
 	b.r = MAT_R[world.dot[x][y]];
 	b.g = MAT_G[world.dot[x][y]];
 	b.b = MAT_B[world.dot[x][y]];
-	b.a = 255;
+
+	switch (world.state[x][y]) {
+	case MS_STATIC:
+	case MS_GRAIN:
+		b.a = 255;
+		break;
+
+	case MS_LIQUID:
+		b.a = 255 - APLHA_LOSS_PER_STATE;
+		break;
+
+	case MS_GAS:
+		b.a = 255 - (APLHA_LOSS_PER_STATE * 2);
+		break;
+
+	case MS_COUNT:
+		break;
+	}
 
 	return rgba_blend(a, b);
 }

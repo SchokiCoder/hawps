@@ -108,7 +108,7 @@ statusbar elements in the config arrays.
 This caused the cmdline to not properly draw.
 There were also some minor null termination issues in the draw func.
 
-- [ ] terminal client: add mat aggregate state draw change for SDL backend
+- [x] terminal client: add mat aggregate state draw change for SDL backend
 - [ ] terminal client: add resize/scroll handling
 - [ ] terminal client: rename to desktop client
 

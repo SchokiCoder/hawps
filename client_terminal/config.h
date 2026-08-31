@@ -9,6 +9,8 @@
 
 /* color settings
  */
+#define APLHA_LOSS_PER_STATE 25
+
 #define SPAWNER_R 128
 #define SPAWNER_G 0
 #define SPAWNER_B 128
