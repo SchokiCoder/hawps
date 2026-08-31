@@ -104,13 +104,19 @@ statusbar elements in the config arrays.
 - [x] terminal client: fix incorrect tool hover draw clamping of SDL backend
 - [x] terminal client: add mouse input handling of SDL backend
 - [x] terminal client: add cmdline input handling of SDL backend
-- [ ] terminal client: fix cmdline draw of SDL backend
-- [ ] terminal client: fix heat glow draw of SDL backend working on void
+- [x] terminal client: fix `cmdline_shift` and `win_w` not set in SDL backend
+This caused the cmdline to not properly draw.
+There were also some minor null termination issues in the draw func.
+
 - [ ] terminal client: add mat aggregate state draw change for SDL backend
 - [ ] terminal client: add resize/scroll handling
 - [ ] terminal client: rename to desktop client
 
 - [ ] suppress libasan `SDL_EGL_LoadLibrary` false positive leak at exit
+
+- [ ] SDL client: fix active tool use, leaving the window, crashing
+- [ ] SDL client: fix heat glow draw of working on void
+- [ ] SDL client (maybe terminal too): fix cmdline bounds checking
 
 - [ ] desktop client: add world scaling flag (sdl only)
 

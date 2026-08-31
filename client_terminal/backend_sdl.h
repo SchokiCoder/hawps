@@ -40,7 +40,6 @@ static const char *FONTPATH[] = {
 
 void
 draw(const char               *cmdline,
-     const size_t              cmdline_shift,
      const char               *feedback,
      TTF_Font                 *font,
      const enum InputMode      input_mode,
@@ -51,6 +50,7 @@ draw(const char               *cmdline,
      const float               tickrate,
      const struct ToolOptions  tool_opts,
      SDL_Renderer             *r,
+     const int                 win_w,
      const struct World        world,
      const SDL_FRect           world_draw,
      const char               *world_name,

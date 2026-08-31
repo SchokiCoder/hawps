@@ -363,13 +363,14 @@ handle_input(
              bool                *drag,
              SDL_FRect           *world_draw,
 #else
+             size_t              *cmdline_shift,
              bool                *lmb_pressed,
+             const int            win_w,
              struct Rect         *world_draw,
 #endif /* SDL_BACKEND */
              bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
-             size_t              *cmdline_shift,
              const float          delta,
              int                 *drag_start_x,
              int                 *drag_start_y,
@@ -383,7 +384,6 @@ handle_input(
              float               *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
-             const int            win_w,
              struct World        *world);
 
 /* @in: Input.
@@ -677,13 +677,14 @@ handle_input(
              bool                *drag,
              SDL_FRect           *world_draw,
 #else
+             size_t              *cmdline_shift,
              bool                *lmb_pressed,
+             const int            win_w,
              struct Rect         *world_draw,
 #endif /* SDL_BACKEND */
              bool                *active,
              char                *cmdline,
              size_t              *cmdline_len,
-             size_t              *cmdline_shift,
              const float          delta,
              int                 *drag_start_x,
              int                 *drag_start_y,
@@ -697,7 +698,6 @@ handle_input(
              float               *tickrate,
              bool                *th_vision,
              struct ToolOptions  *tool_opts,
-             const int            win_w,
              struct World        *world)
 {
 #ifdef SDL_BACKEND
@@ -721,9 +721,12 @@ handle_input(
 				if (*cmdline_len > 0) {
 					cmdline[*cmdline_len - 1] = '\0';
 					*cmdline_len -= 1;
+#ifdef SDL_BACKEND
+#else
 					handle_cmdline_shift(*cmdline_len,
 							     cmdline_shift,
 							     win_w);
+#endif
 				}
 				break;
 
@@ -744,9 +747,12 @@ handle_input(
 				cmdline[0] = '\0';
 				*cmdline_len = 0;
 				*input_mode = IM_NORMAL;
+#ifdef SDL_BACKEND
+#else
 				handle_cmdline_shift(*cmdline_len,
 				                     cmdline_shift,
 				                     win_w);
+#endif
 				break;
 			}
 			break;
@@ -758,9 +764,12 @@ handle_input(
 					cmdline[*cmdline_len] = e.text.text[0];
 					cmdline[*cmdline_len + 1] = '\0';
 					*cmdline_len += 1;
+#ifdef SDL_BACKEND
+#else
 					handle_cmdline_shift(*cmdline_len,
 							     cmdline_shift,
 							     win_w);
+#endif
 				}
 				break;
 
@@ -1165,7 +1174,6 @@ main(int    argc,
 	bool                   active = true;
 	char                   cmdline[CMDLINE_SIZE];
 	size_t                 cmdline_len = 0;
-	size_t                 cmdline_shift = 0;
 	float                  delta = 0.0;
 	int                    drag_start_x = 0;
 	int                    drag_start_y = 0;
@@ -1202,6 +1210,7 @@ main(int    argc,
 	};
 	SDL_Texture  *world_tx = NULL;
 #else
+	size_t                 cmdline_shift = 0;
 	char                  *display = NULL;
 	size_t                 display_size = 0;
 	size_t                 dot_depth = 0;
@@ -1264,8 +1273,11 @@ main(int    argc,
 	TTF_SetFontDirection(font, TTF_DIRECTION_LTR);
 	TTF_SetFontLanguage(font, "en");
 
+	win_w = SDL_WIN_WIDTH;
+	win_h = SDL_WIN_HEIGHT;
+
 	if (!SDL_CreateWindowAndRenderer(APP_NAME_FORMAL,
-	                                 SDL_WIN_WIDTH, SDL_WIN_HEIGHT,
+	                                 win_w, win_h,
 	                                 SDL_WINDOW_RESIZABLE,
 	                                 &win, &renderer)) {
 		fprintf(stderr, "%s\n", SDL_GetError());
@@ -1343,13 +1355,14 @@ main(int    argc,
 		             &drag,
 		             &world_draw,
 #else
+		             &cmdline_shift,
 		             &lmb_pressed,
+		             win_w,
 		             &world_draw,
 #endif
 		             &active,
 		             cmdline,
 		             &cmdline_len,
-		             &cmdline_shift,
 		             delta,
 		             &drag_start_x,
 		             &drag_start_y,
@@ -1363,7 +1376,6 @@ main(int    argc,
 		             &tickrate,
 		             &th_vision,
 		             &tool_opts,
-		             win_w,
 		             &world);
 
 #ifdef SDL_BACKEND
@@ -1391,7 +1403,6 @@ main(int    argc,
 
 #ifdef SDL_BACKEND
 			draw(cmdline,
-			     cmdline_shift,
 			     feedback,
 			     font,
 			     input_mode,
@@ -1402,6 +1413,7 @@ main(int    argc,
 			     tickrate,
 			     tool_opts,
 			     renderer,
+			     win_w,
 			     world,
 			     world_draw,
 			     world_name,

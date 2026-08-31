@@ -46,7 +46,6 @@ render_world(const bool          no_glowcolor,
 
 void
 draw(const char               *cmdline,
-     const size_t              cmdline_shift,
      const char               *feedback,
      TTF_Font                 *font,
      const enum InputMode      input_mode,
@@ -57,6 +56,7 @@ draw(const char               *cmdline,
      const float               tickrate,
      const struct ToolOptions  tool_opts,
      SDL_Renderer             *r,
+     const int                 win_w,
      const struct World        world,
      const SDL_FRect           world_draw,
      const char               *world_name,
@@ -164,19 +164,24 @@ draw(const char               *cmdline,
 	case IM_COMMAND:
 		cmdl[0] = CMDLINE_INDICATOR;
 		cmdl_len += 1;
+		cmdl[1] = '\0';
 
 		cmdl_len += string_cat(cmdl,
 		                       CMDLINE_SIZE,
 		                       cmdl_len,
-		                       &cmdline[cmdline_shift]);
+		                       cmdline);
 
 		cmdl[cmdl_len] = CMDLINE_CURSOR;
 		cmdl_len += 1;
+		cmdl[cmdl_len] = '\0';
 		break;
 	}
 	cmdls = TTF_RenderText_LCD(font, cmdl, cmdl_len, fg, bg);
 	cmdlt = SDL_CreateTextureFromSurface(r, cmdls);
 	cmdlr.w = cmdlt->w;
+	if (cmdlr.w > win_w) {
+		cmdlr.x = win_w - cmdlr.w;
+	}
 	SDL_RenderTexture(r, cmdlt, NULL, &cmdlr);
 
 	SDL_RenderPresent(r);
