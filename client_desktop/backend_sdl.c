@@ -13,15 +13,6 @@
 /* Macros
  */
 
-#define DOT_RENDER_LOOP(COLOR_FN_CALL) \
-	for (x = 0; x < world.w; x++) { \
-		for (y = 0; y < world.h; y++) { \
-			dc = COLOR_FN_CALL; \
-			SDL_SetRenderDrawColor(r, dc.r, dc.g, dc.b, dc.a); \
-			SDL_RenderPoint(r, x, y); \
-		} \
-	}
-
 /* Function declarations
  */
 
@@ -206,7 +197,8 @@ render_world(const bool          no_glowcolor,
 		for (x = 0; x < world.w; x++) {
 			for (y = 0; y < world.h; y++) {
 				/* the following hack is sponsored
-				 * by optimization (we avoid an if) */
+				 * by optimization (we avoid an if)
+				 */
 				alpha = 255 * world.dot[x][y];
 
 				dc = get_thermal_dot_color(world, x, y);
@@ -216,9 +208,30 @@ render_world(const bool          no_glowcolor,
 			}
 		}
 	} else if (no_glowcolor) {
-		DOT_RENDER_LOOP(get_normal_dot_color_simple(world, x, y))
+		for (x = 0; x < world.w; x++) {
+			for (y = 0; y < world.h; y++) {
+				dc = get_normal_dot_color_simple(world, x, y);
+				SDL_SetRenderDrawColor(r, dc.r, dc.g, dc.b, dc.a);
+				SDL_RenderPoint(r, x, y);
+			}
+		}
 	} else {
-		DOT_RENDER_LOOP(get_normal_dot_color(world, x, y))
+		for (x = 0; x < world.w; x++) {
+			for (y = 0; y < world.h; y++) {
+				if (MAT_NONE == world.dot[x][y]) {
+					dc = (struct Rgba) {
+						.r = 0,
+						.g = 0,
+						.b = 0,
+						.a = SDL_ALPHA_OPAQUE,
+					};
+				} else {
+					dc = get_normal_dot_color(world, x, y);
+				}
+				SDL_SetRenderDrawColor(r, dc.r, dc.g, dc.b, dc.a);
+				SDL_RenderPoint(r, x, y);
+			}
+		}
 	}
 
 	SDL_SetRenderDrawColor(r, SPAWNER_R, SPAWNER_G, SPAWNER_B, SPAWNER_A);

@@ -6,7 +6,7 @@ BIN_DESTDIR:="/usr/local/bin"
 #BIN_DESTDIR:="$(HOME)/.local/bin"
 
 # comment out to use terminal backend
-CLIENT_TERMINAL_BACKEND:=-D SDL_BACKEND
+CLIENT_DESKTOP_BACKEND:=-D SDL_BACKEND
 
 
 
@@ -32,11 +32,11 @@ C_FLAGS_PROFILE :=$(C_FLAGS) -g -O3 -pg
 C_FLAGS_RELEASE :=$(C_FLAGS) -O3
 C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
 
-CLIENT_TERMINAL_CFLAGS       :=$(CLIENT_TERMINAL_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)
-CLIENT_TERMINAL_FILE_DEPS    :=client_terminal/* client_terminal/int_to_string.h lib_core/* lib_extra/*
-CLIENT_TERMINAL_SRC_FILES    :=client_terminal/*.c lib_core/*.c lib_extra/*.c
+CLIENT_DESKTOP_CFLAGS       :=$(CLIENT_DESKTOP_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)
+CLIENT_DESKTOP_FILE_DEPS    :=client_desktop/* client_desktop/int_to_string.h lib_core/* lib_extra/*
+CLIENT_DESKTOP_SRC_FILES    :=client_desktop/*.c lib_core/*.c lib_extra/*.c
 
-DEFAULT_CLIENT :=$(APP_NAME)_terminal
+DEFAULT_CLIENT :=$(APP_NAME)_desktop
 
 GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(APP_LICENSE)' -X 'main.AppLicenseUrl=$(APP_LICENSE_URL)' -X 'main.AppRepository=$(APP_REPOSITORY)' -X 'main.AppVersion=$(APP_VERSION)'"
 
@@ -48,7 +48,7 @@ clean:
 	rm -f bin/*
 	rm -f *.out
 
-generate: client_terminal/int_to_string.h
+generate: client_desktop/int_to_string.h
 
 install: bin/$(DEFAULT_CLIENT)_release
 	mkdir -p $(BIN_DESTDIR)
@@ -82,15 +82,15 @@ vet:
 bin/$(APP_NAME)_ebiten: client_ebiten/*.go client_ebiten/ui/*.go core/*.go extra/*.go core/mat/mat_string.go extra/tool_string.go
 	go build $(GO_DEFINES) -o $@ ./client_ebiten
 
-bin/$(APP_NAME)_terminal: $(CLIENT_TERMINAL_FILE_DEPS)
+bin/$(APP_NAME)_desktop: $(CLIENT_DESKTOP_FILE_DEPS)
 	$(CC) $(C_FLAGS_DEBUG) $(C_DEFINES) -o $@ \
-		$(CLIENT_TERMINAL_CFLAGS) \
-		$(CLIENT_TERMINAL_SRC_FILES)
+		$(CLIENT_DESKTOP_CFLAGS) \
+		$(CLIENT_DESKTOP_SRC_FILES)
 
-bin/$(APP_NAME)_terminal_release: $(CLIENT_TERMINAL_FILE_DEPS)
+bin/$(APP_NAME)_desktop_release: $(CLIENT_DESKTOP_FILE_DEPS)
 	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
-		$(CLIENT_TERMINAL_CFLAGS) \
-		$(CLIENT_TERMINAL_SRC_FILES)
+		$(CLIENT_DESKTOP_CFLAGS) \
+		$(CLIENT_DESKTOP_SRC_FILES)
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
 	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
@@ -100,12 +100,12 @@ bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
 
 bin/gen_int_to_string_table:
 	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
-		client_terminal/gen/gen_int_to_string_table.c
+		client_desktop/gen/gen_int_to_string_table.c
 
-client_terminal/int_to_string.h: bin/gen_int_to_string_table
+client_desktop/int_to_string.h: bin/gen_int_to_string_table
 	./$< $@
 
-profiling/$(APP_NAME)_terminal_$(GIT_HEAD): $(CLIENT_TERMINAL_FILE_DEPS)
+profiling/$(APP_NAME)_desktop_$(GIT_HEAD): $(CLIENT_DESKTOP_FILE_DEPS)
 	$(CC) $(C_FLAGS_PROFILE) $(C_DEFINES) -o $@ \
-		$(CLIENT_TERMINAL_CFLAGS) \
-		$(CLIENT_TERMINAL_SRC_FILES)
+		$(CLIENT_DESKTOP_CFLAGS) \
+		$(CLIENT_DESKTOP_SRC_FILES)
