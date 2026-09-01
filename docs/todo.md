@@ -110,7 +110,7 @@ There were also some minor null termination issues in the draw func.
 
 - [x] terminal client: add mat aggregate state draw change for SDL backend
 - [x] terminal client: fix statusbar and cmdline draw pos for SDL backend
-- [ ] terminal client: add resize/scroll handling
+- [x] terminal client: add world drag handling for SDL backend
 - [ ] terminal client: rename to desktop client
 
 - [ ] suppress libasan `SDL_EGL_LoadLibrary` false positive leak at exit

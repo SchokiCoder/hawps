@@ -26,15 +26,6 @@
  */
 
 void
-handle_button(const float           delta,
-              bool                 *drag,
-              int                  *drag_start_x,
-              int                  *drag_start_y,
-              SDL_MouseButtonFlags  mbf,
-              struct ToolOptions   *tool_opts,
-              struct World         *world);
-
-void
 render_world(const bool          no_glowcolor,
              SDL_Renderer       *r,
              const bool          th_vision,
@@ -104,9 +95,9 @@ draw(const char               *cmdline,
 		bg.b = THERMAL_VISION_B;
 		bg.a = SDL_ALPHA_OPAQUE;
 	} else {
-		bg.r = 0;
-		bg.g = 0;
-		bg.b = 0;
+		bg.r = 30;
+		bg.g = 30;
+		bg.b = 30;
 		bg.a = SDL_ALPHA_OPAQUE;
 	}
 	fg.r = 255 - bg.r;
@@ -199,62 +190,6 @@ draw(const char               *cmdline,
 }
 
 void
-handle_button(const float           delta,
-              bool                 *drag,
-              int                  *drag_start_x,
-              int                  *drag_start_y,
-              SDL_MouseButtonFlags  mbf,
-              struct ToolOptions   *tool_opts,
-              struct World         *world)
-{
-	int x = tool_opts->x;
-	int y = tool_opts->y;
-
-	switch (mbf) {
-	case SDL_BUTTON_LEFT:
-		use_tool(delta, *tool_opts, world);
-		break;
-
-	case SDL_BUTTON_MIDDLE:
-		if (x >= world->w ||
-		    y >= world->h) {
-			break;
-		}
-
-		switch (tool_opts->sel_tool) {
-		case TOOL_BRUSH:
-			tool_opts->brush_mat = world->dot[x][y];
-			break;
-
-		case TOOL_SPAWNER:
-			tool_opts->spawner_mat = world->dot[x][y];
-			break;
-
-		case TOOL_ERASER:
-		case TOOL_HEATER:
-		case TOOL_COOLER:
-		case TOOL_COUNT:
-			break;
-		}
-		break;
-
-	case SDL_BUTTON_RIGHT:
-		*drag = true;
-		*drag_start_x = x;
-		*drag_start_y = y;
-		break;
-
-	case SDL_BUTTON_X1:
-	case SDL_BUTTON_X2:
-		break;
-
-	default:
-		*drag = false;
-		break;
-	}
-}
-
-void
 render_world(const bool          no_glowcolor,
              SDL_Renderer       *r,
              const bool          th_vision,
@@ -328,45 +263,74 @@ render_world(const bool          no_glowcolor,
 
 void
 handle_mouse_state(const float           delta,
-                   bool                 *drag,
                    int                  *drag_start_x,
                    int                  *drag_start_y,
                    struct ToolOptions   *tool_opts,
+                   SDL_Window           *win,
                    struct World         *world,
                    SDL_FRect            *world_draw)
 {
 	SDL_MouseButtonFlags mbf;
-	int x, y;
+	int win_w, win_h;
+	int x = tool_opts->x;
+	int y = tool_opts->y;
 
 	mbf = SDL_GetMouseState(NULL, NULL);
-	x = tool_opts->x;
-	y = tool_opts->y;
+	SDL_GetWindowSize(win, &win_w, &win_h);
 
-	if (*drag) {
-		world_draw->x = *drag_start_x - x;
-		world_draw->y = *drag_start_y - y;
+	switch (mbf) {
+	case SDL_BUTTON_LMASK:
+		use_tool(delta, *tool_opts, world);
+		break;
 
-		if (world_draw->x < 0) {
+	case SDL_BUTTON_MMASK:
+		if (x >= world->w ||
+		    y >= world->h) {
+			break;
+		}
+
+		switch (tool_opts->sel_tool) {
+		case TOOL_BRUSH:
+			tool_opts->brush_mat = world->dot[x][y];
+			break;
+
+		case TOOL_SPAWNER:
+			tool_opts->spawner_mat = world->dot[x][y];
+			break;
+
+		case TOOL_ERASER:
+		case TOOL_HEATER:
+		case TOOL_COOLER:
+		case TOOL_COUNT:
+			break;
+		}
+		break;
+
+	case SDL_BUTTON_RMASK:
+		world_draw->x = *drag_start_x - (x * SDL_WORLD_SCALE);
+		world_draw->y = *drag_start_y - (y * SDL_WORLD_SCALE);
+
+		if (world_draw->x > 0) {
 			world_draw->x = 0;
 		}
-		if (world_draw->y < 0) {
+		if (world_draw->y > 0) {
 			world_draw->y = 0;
 		}
-		if (world_draw->x > world->w - world_draw->w) {
-			world_draw->x = world->w - world_draw->w;
+		if (world_draw->x < win_w - world_draw->w) {
+			world_draw->x = win_w - world_draw->w;
 		}
-		if (world_draw->y > world->h - world_draw->h) {
-			world_draw->y = world->h - world_draw->h;
+		if (world_draw->y < win_h - world_draw->h - (SDL_FONT_SIZE * 2)) {
+			world_draw->y = win_h - world_draw->h - (SDL_FONT_SIZE * 2);
 		}
-	}
+		break;
 
-	handle_button(delta,
-	              drag,
-	              drag_start_x,
-	              drag_start_y,
-	              mbf,
-	              tool_opts,
-	              world);
+	case SDL_BUTTON_X1MASK:
+	case SDL_BUTTON_X2MASK:
+		break;
+
+	default:
+		break;
+	}
 }
 
 #else

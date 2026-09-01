@@ -360,7 +360,7 @@ handle_flag_int_arg(int    argc,
 void
 handle_input(
 #ifdef SDL_BACKEND
-             bool                *drag,
+             SDL_Window          *win,
              SDL_FRect           *world_draw,
 #else
              size_t              *cmdline_shift,
@@ -672,7 +672,7 @@ handle_flag_int_arg(int    argc,
 void
 handle_input(
 #ifdef SDL_BACKEND
-             bool                *drag,
+             SDL_Window          *win,
              SDL_FRect           *world_draw,
 #else
              size_t              *cmdline_shift,
@@ -700,13 +700,21 @@ handle_input(
 {
 #ifdef SDL_BACKEND
 	SDL_Event e;
-	int x, y;
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			if (SDL_BUTTON_RIGHT == e.button.button) {
+				*drag_start_x = e.button.x + world_draw->x;
+				*drag_start_y = e.button.y + world_draw->y;
+			}
+			break;
+
 		case SDL_EVENT_MOUSE_MOTION:
-			tool_opts->x = e.motion.x / SDL_WORLD_SCALE;
-			tool_opts->y = e.motion.y / SDL_WORLD_SCALE;
+			tool_opts->x = (e.motion.x - world_draw->x) /
+			               SDL_WORLD_SCALE;
+			tool_opts->y = (e.motion.y - world_draw->y) /
+			               SDL_WORLD_SCALE;
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
@@ -719,12 +727,6 @@ handle_input(
 				if (*cmdline_len > 0) {
 					cmdline[*cmdline_len - 1] = '\0';
 					*cmdline_len -= 1;
-#ifdef SDL_BACKEND
-#else
-					handle_cmdline_shift(*cmdline_len,
-							     cmdline_shift,
-							     win_w);
-#endif
 				}
 				break;
 
@@ -745,12 +747,6 @@ handle_input(
 				cmdline[0] = '\0';
 				*cmdline_len = 0;
 				*input_mode = IM_NORMAL;
-#ifdef SDL_BACKEND
-#else
-				handle_cmdline_shift(*cmdline_len,
-				                     cmdline_shift,
-				                     win_w);
-#endif
 				break;
 			}
 			break;
@@ -762,12 +758,6 @@ handle_input(
 					cmdline[*cmdline_len] = e.text.text[0];
 					cmdline[*cmdline_len + 1] = '\0';
 					*cmdline_len += 1;
-#ifdef SDL_BACKEND
-#else
-					handle_cmdline_shift(*cmdline_len,
-							     cmdline_shift,
-							     win_w);
-#endif
 				}
 				break;
 
@@ -793,10 +783,10 @@ handle_input(
 	}
 
 	handle_mouse_state(delta,
-	                   drag,
 	                   drag_start_x,
 	                   drag_start_y,
 	                   tool_opts,
+	                   win,
 	                   world,
 	                   world_draw);
 
@@ -1193,7 +1183,6 @@ main(int    argc,
 	char                  *world_name = "worldname";
 
 #ifdef SDL_BACKEND
-	bool          drag = false;
 	SDL_Renderer *renderer = NULL;
 	TTF_Font     *font = NULL;
 	size_t        i;
@@ -1347,7 +1336,7 @@ main(int    argc,
 
 		handle_input(
 #ifdef SDL_BACKEND
-		             &drag,
+		             win,
 		             &world_draw,
 #else
 		             &cmdline_shift,

@@ -57,10 +57,10 @@ draw(const char               *cmdline,
 
 void
 handle_mouse_state(const float           delta,
-                   bool                 *drag,
                    int                  *drag_start_x,
                    int                  *drag_start_y,
                    struct ToolOptions   *tool_opts,
+                   SDL_Window           *win,
                    struct World         *world,
                    SDL_FRect            *world_draw);
 
