@@ -389,8 +389,6 @@ handle_input(
 /* @in: Input.
  * @active: Runtime data.
  * @delta: Runtime data.
- * @drag_start_x: Runtime data.
- * @drag_start_y: Runtime data.
  * @input_mode: Runtime data.
  * @paused: Runtime data.
  * @tickrate: Runtime data.
@@ -1191,8 +1189,6 @@ main(int    argc,
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;
-	int                    win_w = 0;
-	int                    win_h = 0;
 	struct World           world;
 	char                  *world_name = "worldname";
 
@@ -1218,6 +1214,8 @@ main(int    argc,
 	bool                   no_color = false;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
+	int                    win_w = 0;
+	int                    win_h = 0;
 	struct winsize         ws;
 	struct Rect            world_draw = {
 		.x = 0,
@@ -1273,11 +1271,8 @@ main(int    argc,
 	TTF_SetFontDirection(font, TTF_DIRECTION_LTR);
 	TTF_SetFontLanguage(font, "en");
 
-	win_w = SDL_WIN_WIDTH;
-	win_h = SDL_WIN_HEIGHT;
-
 	if (!SDL_CreateWindowAndRenderer(APP_NAME_FORMAL,
-	                                 win_w, win_h,
+	                                 SDL_WIN_WIDTH, SDL_WIN_HEIGHT,
 	                                 SDL_WINDOW_RESIZABLE,
 	                                 &win, &renderer)) {
 		fprintf(stderr, "%s\n", SDL_GetError());
@@ -1413,7 +1408,6 @@ main(int    argc,
 			     tickrate,
 			     tool_opts,
 			     renderer,
-			     win_w,
 			     world,
 			     world_draw,
 			     world_name,

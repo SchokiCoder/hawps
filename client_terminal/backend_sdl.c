@@ -56,7 +56,6 @@ draw(const char               *cmdline,
      const float               tickrate,
      const struct ToolOptions  tool_opts,
      SDL_Renderer             *r,
-     const int                 win_w,
      const struct World        world,
      const SDL_FRect           world_draw,
      const char               *world_name,
@@ -65,29 +64,36 @@ draw(const char               *cmdline,
 	SDL_Color    bg;
 	char         cmdl[CMDLINE_SIZE];
 	size_t       cmdl_len = 0;
-	SDL_FRect    cmdlr = {
-		.x = 0,
-		.y = world_draw.h + SDL_FONT_SIZE,
-		.w = world_draw.w,
-		.h = SDL_FONT_SIZE,
-	};
+	SDL_FRect    cmdlr;
 	SDL_Surface *cmdls;
 	SDL_Texture *cmdlt;
 	SDL_Color    fg;
 	size_t       i;
 	char         sb[CMDLINE_SIZE];
 	size_t       sb_len = 0;
-	SDL_FRect    sbr = {
-		.x = 0,
-		.y = world_draw.h,
-		.w = world_draw.w,
-		.h = SDL_FONT_SIZE,
-	};
+	SDL_FRect    sbr;
 	SDL_Surface *sbs;
 	SDL_Texture *sbt;
+	SDL_Window  *win;
+	int          win_w;
+	int          win_h;
 
 	cmdl[0] = '\0';
 	sb[0] = '\0';
+	win = SDL_GetRenderWindow(r);
+	SDL_GetWindowSize(win, &win_w, &win_h);
+	sbr = (SDL_FRect) {
+		.x = 0,
+		.y = win_h - (SDL_FONT_SIZE * 2),
+		.w = 0,
+		.h = SDL_FONT_SIZE,
+	};
+	cmdlr = (SDL_FRect) {
+		.x = 0,
+		.y = sbr.y + sbr.h,
+		.w = 0,
+		.h = SDL_FONT_SIZE,
+	};
 
 	SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(r);
