@@ -118,7 +118,10 @@ but that's the best fit.
 
 - [x] SDL client: fix heat glow draw applying to void
 - [x] SDL client: suppress libasan `SDL_EGL_LoadLibrary` false positive
-- [ ] SDL client: fix active tool use, leaving the window, crashing
+- [x] SDL client: fix tool coords potentially being negative
+This causes a crash, since we can't convert negative ints in `int_to_string.h`,
+but attempt that with the same negative int that indexes an array.
+
 - [ ] SDL client (maybe terminal too): fix cmdline bounds checking
 
 - [ ] desktop client: add world scaling flag (sdl only)

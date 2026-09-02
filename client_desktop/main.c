@@ -700,6 +700,8 @@ handle_input(
 {
 #ifdef SDL_BACKEND
 	SDL_Event e;
+	int mx, my;
+	int win_w, win_h;
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
@@ -711,10 +713,25 @@ handle_input(
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-			tool_opts->x = (e.motion.x - world_draw->x) /
-			               SDL_WORLD_SCALE;
-			tool_opts->y = (e.motion.y - world_draw->y) /
-			               SDL_WORLD_SCALE;
+			mx = e.motion.x;
+			my = e.motion.y;
+			SDL_GetWindowSize(win, &win_w, &win_h);
+
+			if (mx < 0.0) {
+				mx  = 0.0;
+			}
+			else if (mx > win_w) {
+				mx  = win_w;
+			}
+			if (my < 0.0) {
+				my  = 0.0;
+			}
+			else if (my > win_h) {
+				my  = win_h;
+			}
+
+			tool_opts->x = (mx - world_draw->x) / SDL_WORLD_SCALE;
+			tool_opts->y = (my - world_draw->y) / SDL_WORLD_SCALE;
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
