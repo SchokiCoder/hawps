@@ -74,7 +74,7 @@ remove:
 	rm -f $(BIN_DESTDIR)/$(APP_NAME)
 
 run: prerun bin/$(DEFAULT_CLIENT)
-	./bin/$(DEFAULT_CLIENT)
+	LSAN_OPTIONS=suppressions=lsan.supp ./bin/$(DEFAULT_CLIENT)
 
 vet:
 	go vet ./client_ebiten

@@ -117,10 +117,9 @@ since the terminal backend can be used on things like Termux,
 but that's the best fit.
 
 - [x] SDL client: fix heat glow draw applying to void
+- [x] SDL client: suppress libasan `SDL_EGL_LoadLibrary` false positive
 - [ ] SDL client: fix active tool use, leaving the window, crashing
 - [ ] SDL client (maybe terminal too): fix cmdline bounds checking
-
-- [ ] suppress libasan `SDL_EGL_LoadLibrary` false positive leak at exit
 
 - [ ] desktop client: add world scaling flag (sdl only)
 
