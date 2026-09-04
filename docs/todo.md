@@ -122,7 +122,12 @@ but that's the best fit.
 This causes a crash, since we can't convert negative ints in `int_to_string.h`,
 but attempt that with the same negative int that indexes an array.
 
-- [ ] SDL client (maybe terminal too): fix cmdline bounds checking
+- [x] terminal client: fix backspace not working
+This regression was caused by me misunderstanding char names.
+Backspace isn't always backspace. Praise the cruft.
+
+- [ ] SDL client: fix cmdline bounds checking
+- [ ] terminal client: thermo tools work much faster via mouse (fix/buff keyboard)
 
 - [ ] desktop client: add world scaling flag (sdl only)
 

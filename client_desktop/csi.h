@@ -15,6 +15,8 @@
  * This exists because C can't add chars to a string at compile time. Too bad.
  * Hit anyone who adds multichar strings here.
  */
+#define CHAR_DELETE    '\x7f'
+#define CSI_DELETE     "\x7f"
 #define CHAR_ESCAPE    '\x1b'
 #define CSI_ESCAPE     "\x1b"
 

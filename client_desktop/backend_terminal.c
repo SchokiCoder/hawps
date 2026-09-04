@@ -262,6 +262,7 @@ handle_command_input(const char          *in,
 {
 	switch (in[0]) {
 	case '\b':
+	case CHAR_DELETE:
 		if (*cmdline_len > 0) {
 			cmdline[*cmdline_len - 1] = '\0';
 			*cmdline_len -= 1;
