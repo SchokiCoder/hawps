@@ -127,8 +127,8 @@ This regression was caused by me misunderstanding char names.
 Backspace isn't always backspace. Praise the cruft.
 
 - [x] SDL client: add world scaling flag
+- [x] terminal client: update help text having a backend specific section
 - [ ] SDL client: add font size flag
-- [ ] terminal client: update help text having backend specific section
 - [ ] desktop client: make no glow color flag generic
 
 - [ ] SDL client: fix cmdline bounds checking

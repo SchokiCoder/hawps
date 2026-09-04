@@ -192,14 +192,6 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
 "\n"
-#ifndef SDL_BACKEND
-"    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
-"        disables all world dot coloring\n"
-"\n"
-"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
-"        disables dot glow coloring\n"
-"\n"
-#endif
 "    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE " DECIMAL\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
@@ -227,6 +219,15 @@ static const char APP_HELP_FLAGS_SDL[] = "SDL backend options:\n"
 "    " FLAG_WORLD_SCALE_SHORT " " FLAG_WORLD_SCALE " NUMBER\n"
 "        sets the size of a single dot in the world\n"
 "        default: %i\n"
+"\n";
+#else
+static const char APP_HELP_FLAGS_TERMINAL[] = "Terminal backend options:\n"
+"\n"
+"    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
+"        disables all world dot coloring\n"
+"\n"
+"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
+"        disables dot glow coloring\n"
 "\n";
 #endif
 
@@ -515,6 +516,8 @@ handle_args(int                  argc,
 #ifdef SDL_BACKEND
 			printf(APP_HELP_FLAGS_SDL,
 			       STD_WORLD_SCALE);
+#else
+			printf(APP_HELP_FLAGS_TERMINAL);
 #endif
 
 			if (KEY_PAUSE != ' ') {
