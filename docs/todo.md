@@ -128,8 +128,8 @@ Backspace isn't always backspace. Praise the cruft.
 
 - [x] SDL client: add world scaling flag
 - [x] terminal client: update help text having a backend specific section
+- [x] desktop client: make no-glow-color flag backend agnostic
 - [ ] SDL client: add font size flag
-- [ ] desktop client: make no glow color flag generic
 
 - [ ] SDL client: fix cmdline bounds checking
 

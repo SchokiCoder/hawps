@@ -46,6 +46,8 @@
 #define FLAG_FRAMERATE_SHORT        "-fr"
 #define FLAG_HELP                   "-help"
 #define FLAG_HELP_SHORT             "-h"
+#define FLAG_NOGLOWCOLOR            "-noglowcolor"
+#define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
 #define FLAG_SPAWNTEMPERATURE_SHORT "-st"
 #define FLAG_THERMORADIUS           "-thermoradius"
@@ -63,8 +65,6 @@
 #else
 #define FLAG_NOCOLOR                "-nocolor"
 #define FLAG_NOCOLOR_SHORT          "-noc"
-#define FLAG_NOGLOWCOLOR            "-noglowcolor"
-#define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #endif
 
 /* Constants
@@ -192,6 +192,9 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
 "\n"
+"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
+"        disables dot glow coloring\n"
+"\n"
 "    " FLAG_SPAWNTEMPERATURE_SHORT " " FLAG_SPAWNTEMPERATURE " DECIMAL\n"
 "        sets the temperature of every new dot in Kelvin\n"
 "        0 °C == %.2f K\n"
@@ -225,9 +228,6 @@ static const char APP_HELP_FLAGS_TERMINAL[] = "Terminal backend options:\n"
 "\n"
 "    " FLAG_NOCOLOR_SHORT " " FLAG_NOCOLOR "\n"
 "        disables all world dot coloring\n"
-"\n"
-"    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
-"        disables dot glow coloring\n"
 "\n";
 #endif
 
@@ -354,9 +354,9 @@ handle_args(int                  argc,
             size_t              *world_scale,
 #else
             bool                *no_color,
-            bool                *no_glowcolor,
 #endif
             float               *framerate,
+            bool                *no_glowcolor,
             float               *tickrate,
             struct ToolOptions  *tool_opts);
 
@@ -444,9 +444,9 @@ handle_args(int                  argc,
             size_t              *world_scale,
 #else
             bool                *no_color,
-            bool                *no_glowcolor,
 #endif
             float               *framerate,
+            bool                *no_glowcolor,
             float               *tickrate,
             struct ToolOptions  *tool_opts)
 {
@@ -567,6 +567,9 @@ handle_args(int                  argc,
 			printf("\n");
 
 			return false;
+		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
+		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
+			*no_glowcolor = true;
 		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
 		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
 			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
@@ -641,9 +644,6 @@ handle_args(int                  argc,
 		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
 			*no_color = true;
-		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
-		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
-			*no_glowcolor = true;
 #endif
 		} else {
 			fprintf(stderr,
@@ -1280,9 +1280,9 @@ main(int    argc,
 			&world_scale,
 #else
 	                 &no_color,
-	                 &no_glowcolor,
 #endif
 	                 &framerate,
+	                 &no_glowcolor,
 	                 &tickrate,
 	                 &tool_opts)) {
 		return 0;
