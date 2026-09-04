@@ -57,7 +57,10 @@
 #define FLAG_VERSION                "-version"
 #define FLAG_VERSION_SHORT          "-v"
 
-#ifndef SDL_BACKEND
+#ifdef SDL_BACKEND
+#define FLAG_WORLD_SCALE            "-worldscale"
+#define FLAG_WORLD_SCALE_SHORT      "-wldsc"
+#else
 #define FLAG_NOCOLOR                "-nocolor"
 #define FLAG_NOCOLOR_SHORT          "-noc"
 #define FLAG_NOGLOWCOLOR            "-noglowcolor"
@@ -218,6 +221,15 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        prints version information then exits\n"
 "\n";
 
+#ifdef SDL_BACKEND
+static const char APP_HELP_FLAGS_SDL[] = "SDL backend options:\n"
+"\n"
+"    " FLAG_WORLD_SCALE_SHORT " " FLAG_WORLD_SCALE " NUMBER\n"
+"        sets the size of a single dot in the world\n"
+"        default: %i\n"
+"\n";
+#endif
+
 static const char APP_HELP_MATERIALS[] = "Material list:\n"
 "\n";
 
@@ -337,11 +349,13 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 bool
 handle_args(int                  argc,
             char               **argv,
-            float               *framerate,
-#ifndef SDL_BACKEND
+#ifdef SDL_BACKEND
+            size_t              *world_scale,
+#else
             bool                *no_color,
             bool                *no_glowcolor,
 #endif
+            float               *framerate,
             float               *tickrate,
             struct ToolOptions  *tool_opts);
 
@@ -362,6 +376,7 @@ handle_input(
 #ifdef SDL_BACKEND
              SDL_Window          *win,
              SDL_FRect           *world_draw,
+             const size_t         world_scale,
 #else
              size_t              *cmdline_shift,
              bool                *lmb_pressed,
@@ -424,11 +439,13 @@ new_tool_options(void);
 bool
 handle_args(int                  argc,
             char               **argv,
-            float               *framerate,
-#ifndef SDL_BACKEND
+#ifdef SDL_BACKEND
+            size_t              *world_scale,
+#else
             bool                *no_color,
             bool                *no_glowcolor,
 #endif
+            float               *framerate,
             float               *tickrate,
             struct ToolOptions  *tool_opts)
 {
@@ -495,6 +512,11 @@ handle_args(int                  argc,
 			       STD_THERMO_RATE,
 			       STD_TICKRATE);
 
+#ifdef SDL_BACKEND
+			printf(APP_HELP_FLAGS_SDL,
+			       STD_WORLD_SCALE);
+#endif
+
 			if (KEY_PAUSE != ' ') {
 				key_pause[0] = KEY_PAUSE;
 				key_pause[1] = '\0';
@@ -542,14 +564,6 @@ handle_args(int                  argc,
 			printf("\n");
 
 			return false;
-#ifndef SDL_BACKEND
-		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
-		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
-			*no_color = true;
-		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
-		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
-			*no_glowcolor = true;
-#endif
 		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
 		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
 			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
@@ -606,6 +620,28 @@ handle_args(int                  argc,
 		           strcmp(argv[i], FLAG_VERSION) == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
+#ifdef SDL_BACKEND
+		} else if (strcmp(argv[i], FLAG_WORLD_SCALE_SHORT) == 0 ||
+		           strcmp(argv[i], FLAG_WORLD_SCALE) == 0) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+				return false;
+			}
+			*world_scale = flagargi;
+			if (*world_scale <= 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must be positive\n",
+				        argv[i]);
+				return false;
+			}
+			i++;
+#else
+		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
+		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
+			*no_color = true;
+		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
+		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
+			*no_glowcolor = true;
+#endif
 		} else {
 			fprintf(stderr,
 			        "Argument \"%s\" is not recognized\n",
@@ -674,6 +710,7 @@ handle_input(
 #ifdef SDL_BACKEND
              SDL_Window          *win,
              SDL_FRect           *world_draw,
+             const size_t         world_scale,
 #else
              size_t              *cmdline_shift,
              bool                *lmb_pressed,
@@ -730,8 +767,8 @@ handle_input(
 				my  = win_h;
 			}
 
-			tool_opts->x = (mx - world_draw->x) / SDL_WORLD_SCALE;
-			tool_opts->y = (my - world_draw->y) / SDL_WORLD_SCALE;
+			tool_opts->x = (mx - world_draw->x) / world_scale;
+			tool_opts->y = (my - world_draw->y) / world_scale;
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
@@ -805,7 +842,8 @@ handle_input(
 	                   tool_opts,
 	                   win,
 	                   world,
-	                   world_draw);
+	                   world_draw,
+	                   world_scale);
 
 #else /* SDL_BACKEND */
 
@@ -1210,6 +1248,7 @@ main(int    argc,
 		.w = 0,
 		.h = 0,
 	};
+	size_t        world_scale = STD_WORLD_SCALE;
 	SDL_Texture  *world_tx = NULL;
 #else
 	size_t                 cmdline_shift = 0;
@@ -1234,11 +1273,13 @@ main(int    argc,
 #endif
 
 	if (!handle_args(argc, argv,
-	                 &framerate,
-#ifndef SDL_BACKEND
+#ifdef SDL_BACKEND
+			&world_scale,
+#else
 	                 &no_color,
 	                 &no_glowcolor,
 #endif
+	                 &framerate,
 	                 &tickrate,
 	                 &tool_opts)) {
 		return 0;
@@ -1296,8 +1337,8 @@ main(int    argc,
 	world_draw.w = world.w;
 	world_draw.h = world.h;
 
-	world.w /= SDL_WORLD_SCALE;
-	world.h /= SDL_WORLD_SCALE;
+	world.w /= world_scale;
+	world.h /= world_scale;
 	world_tx = SDL_CreateTexture(renderer,
 	                             SDL_PIXELFORMAT_RGBA8888,
 	                             SDL_TEXTUREACCESS_TARGET,
@@ -1355,6 +1396,7 @@ main(int    argc,
 #ifdef SDL_BACKEND
 		             win,
 		             &world_draw,
+		             world_scale,
 #else
 		             &cmdline_shift,
 		             &lmb_pressed,

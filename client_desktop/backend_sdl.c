@@ -281,7 +281,8 @@ handle_mouse_state(const float           delta,
                    struct ToolOptions   *tool_opts,
                    SDL_Window           *win,
                    struct World         *world,
-                   SDL_FRect            *world_draw)
+                   SDL_FRect            *world_draw,
+                   const size_t          world_scale)
 {
 	SDL_MouseButtonFlags mbf;
 	int win_w, win_h;
@@ -320,8 +321,8 @@ handle_mouse_state(const float           delta,
 		break;
 
 	case SDL_BUTTON_RMASK:
-		world_draw->x = *drag_start_x - (x * SDL_WORLD_SCALE);
-		world_draw->y = *drag_start_y - (y * SDL_WORLD_SCALE);
+		world_draw->x = *drag_start_x - (x * world_scale);
+		world_draw->y = *drag_start_y - (y * world_scale);
 
 		if (world_draw->x > 0) {
 			world_draw->x = 0;

@@ -126,10 +126,19 @@ but attempt that with the same negative int that indexes an array.
 This regression was caused by me misunderstanding char names.
 Backspace isn't always backspace. Praise the cruft.
 
-- [ ] SDL client: fix cmdline bounds checking
-- [ ] terminal client: thermo tools work much faster via mouse (fix/buff keyboard)
+- [x] SDL client: add world scaling flag
+- [ ] SDL client: add font size flag
+- [ ] terminal client: update help text having backend specific section
+- [ ] desktop client: make no glow color flag generic
 
-- [ ] desktop client: add world scaling flag (sdl only)
+- [ ] SDL client: fix cmdline bounds checking
+
+- [ ] terminal client: tweak tool use via keyboard being capped by key repeat limit
+Input is capped by the systems key repeat (when holding key down).
+This is very notable with thermo tools.
+They are like 30 times slower there.
+Maybe tweak thermo rate when used via keyboard?
+How much? Difficult. Every system could have a different key repeat speed.
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse

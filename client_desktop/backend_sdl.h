@@ -62,6 +62,7 @@ handle_mouse_state(const float           delta,
                    struct ToolOptions   *tool_opts,
                    SDL_Window           *win,
                    struct World         *world,
-                   SDL_FRect            *world_draw);
+                   SDL_FRect            *world_draw,
+                   const size_t          world_scale);
 
 #endif /* _BACKEND_SDL_H */
