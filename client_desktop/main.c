@@ -379,16 +379,11 @@ handle_args(int                  argc,
             struct ToolOptions  *tool_opts);
 
 bool
-handle_flag_float_arg(int    argc,
-                      char **argv,
-                      int   *idx,
-                      float *out);
-
-bool
-handle_flag_int_arg(int    argc,
-                    char **argv,
-                    int   *idx,
-                    int   *out);
+handle_flag_number_arg(int                            argc,
+                       char                         **argv,
+                       int                           *idx,
+                       float                         *out,
+                       const enum NumberRequirement   requirement);
 
 void
 handle_input(
@@ -486,8 +481,7 @@ handle_args(int                  argc,
             float               *tickrate,
             struct ToolOptions  *tool_opts)
 {
-	float flagargf;
-	int   flagargi;
+	float f;
 	int   i;
 	char  key_pause[8] = "Space";
 
@@ -498,43 +492,31 @@ handle_args(int                  argc,
 			return false;
 		} else if (strcmp(argv[i], FLAG_BRUSHRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_BRUSHRADIUS_SHORT) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &f,
+			                            NR_NOT_NEGATIVE)) {
 				return false;
 			}
-			tool_opts->brush_radius = flagargi;
-			if (tool_opts->brush_radius < 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must not be negative\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
+			tool_opts->brush_radius = f;
 		} else if (strcmp(argv[i], FLAG_ERASERRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_ERASERRADIUS_SHORT) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &f,
+			                            NR_NOT_NEGATIVE)) {
 				return false;
 			}
-			tool_opts->eraser_radius = flagargi;
-			if (tool_opts->eraser_radius < 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must not be negative\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
+			tool_opts->eraser_radius = f;
 		} else if (strcmp(argv[i], FLAG_FRAMERATE) == 0 ||
 		           strcmp(argv[i], FLAG_FRAMERATE_SHORT) == 0) {
-			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &f,
+			                            NR_POSITIVE)) {
 				return false;
 			}
-			*framerate = flagargf;
-			if (*framerate <= 0.0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must be positive\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
+			*framerate = f;
 		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
 		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
 			printf(APP_HELP);
@@ -609,56 +591,37 @@ handle_args(int                  argc,
 			*no_glowcolor = true;
 		} else if (strcmp(argv[i], FLAG_SPAWNTEMPERATURE) == 0 ||
 		           strcmp(argv[i], FLAG_SPAWNTEMPERATURE_SHORT) == 0) {
-			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &tool_opts->spawn_temperature,
+			                            NR_NOT_NEGATIVE)) {
 				return false;
 			}
-			tool_opts->spawn_temperature = flagargf;
-			if (tool_opts->spawn_temperature < 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must not be negative\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
 		} else if (strcmp(argv[i], FLAG_THERMORADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_THERMORADIUS_SHORT) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &f,
+			                            NR_NOT_NEGATIVE)) {
 				return false;
 			}
-			tool_opts->thermo_radius = flagargi;
-			if (tool_opts->thermo_radius < 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must not be negative\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
+			tool_opts->thermo_radius = f;
 		} else if (strcmp(argv[i], FLAG_THERMORATE) == 0 ||
 		           strcmp(argv[i], FLAG_THERMORATE_SHORT) == 0) {
-			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &tool_opts->thermo_rate,
+			                            NR_NOT_NEGATIVE)) {
 				return false;
 			}
-			tool_opts->thermo_rate = flagargf;
-			if (tool_opts->thermo_rate < 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must not be negative\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
 		} else if (strcmp(argv[i], FLAG_TICKRATE) == 0 ||
 		           strcmp(argv[i], FLAG_TICKRATE_SHORT) == 0) {
-			if (!handle_flag_float_arg(argc, argv, &i, &flagargf)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            tickrate,
+			                            NR_POSITIVE)) {
 				return false;
 			}
-			*tickrate = flagargf;
-			if (*tickrate <= 0.0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must be positive\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
 		} else if (strcmp(argv[i], FLAG_VERSION_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_VERSION) == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
@@ -671,33 +634,24 @@ handle_args(int                  argc,
 			}
 			i++;
 			*font_path = argv[i];
-			i++;
 		} else if (strcmp(argv[i], FLAG_FONT_SIZE_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_FONT_SIZE) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &f,
+			                            NR_POSITIVE)) {
 				return false;
 			}
-			*font_size = flagargi;
-			if (*font_size <= 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must be positive\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
+			*font_size = f;
 		} else if (strcmp(argv[i], FLAG_WORLD_SCALE_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_WORLD_SCALE) == 0) {
-			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+			if (!handle_flag_number_arg(argc, argv,
+			                            &i,
+			                            &f,
+			                            NR_POSITIVE)) {
 				return false;
 			}
-			*world_scale = flagargi;
-			if (*world_scale <= 0) {
-				fprintf(stderr,
-				        "The value for \"%s\" must be positive\n",
-				        argv[i]);
-				return false;
-			}
-			i++;
+			*world_scale = f;
 #else
 		} else if (strcmp(argv[i], FLAG_NOCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOCOLOR_SHORT) == 0) {
@@ -715,48 +669,52 @@ handle_args(int                  argc,
 }
 
 bool
-handle_flag_float_arg(int    argc,
-                      char **argv,
-                      int   *idx,
-                      float *out)
+handle_flag_number_arg(int                            argc,
+                       char                         **argv,
+                       int                           *idx,
+                       float                         *out,
+                       const enum NumberRequirement   requirement)
 {
+	float val;
+
 	if (!check_flag_arg(argc, argv, *idx)) {
 		return false;
 	}
 	*idx += 1;
 
 	errno = 0;
-	*out = strtof(argv[*idx], NULL);
+	val = strtof(argv[*idx], NULL);
 	if (errno != 0) {
 		fprintf(stderr,
-		        "\"%s\" could not be converted to a float\n",
+		        "The value for \"%s\" is malformed\n",
 		        argv[*idx - 1]);
 		return false;
 	}
 
-	return true;
-}
+	switch (requirement) {
+	case NR_NONE:
+		break;
 
-bool
-handle_flag_int_arg(int    argc,
-                    char **argv,
-                    int   *idx,
-                    int   *out)
-{
-	if (!check_flag_arg(argc, argv, *idx)) {
-		return false;
+	case NR_NOT_NEGATIVE:
+		if (val < 0.0) {
+			fprintf(stderr,
+			        "The value for \"%s\" must not be negative\n",
+			        argv[*idx - 1]);
+				return false;
+		}
+		break;
+
+	case NR_POSITIVE:
+		if (val <= 0.0) {
+			fprintf(stderr,
+			        "The value for \"%s\" must be positive\n",
+			        argv[*idx - 1]);
+				return false;
+		}
+		break;
 	}
-	*idx += 1;
 
-	errno = 0;
-	*out = strtol(argv[*idx], NULL, 10);
-	if (errno != 0) {
-		fprintf(stderr,
-		        "\"%s\" could not be converted to an int\n",
-		        argv[*idx - 1]);
-		return false;
-	}
-
+	*out = val;
 	return true;
 }
 

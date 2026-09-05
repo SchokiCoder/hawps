@@ -132,13 +132,20 @@ Backspace isn't always backspace. Praise the cruft.
 - [x] SDL client: add font size flag
 - [x] SDL client: add font path flag
 
-- [ ] SDL client: fix font size and world scaling incorrect value checks
+- [x] desktop client: rework flag value parsing
+This DRYs sanitization,
+fixes flag value errors not printing the flagname,
+fixes font-size and world-scaling flags having incorrect value checks.
 The two check for negative values despite being `size_t`.
-Check against the raw `int` input value instead.
-- [ ] there might be more of these ^
+To prevent such mistakes in the future,
+now it checks against the raw `float` input value,
+instead of the return parameter and its type.
 
 - [ ] SDL client: fix high font size flag value causing integer overflow
 - [ ] SDL client: fix cmdline bounds checking
+
+- [ ] desktop client: fix tool opts being initialized after flag parsing
+This caused these flags to not do a thing.
 
 - [ ] terminal client: tweak tool use via keyboard being capped by key repeat limit
 Input is capped by the systems key repeat (when holding key down).
@@ -146,8 +153,6 @@ This is very notable with thermo tools.
 They are like 30 times slower there.
 Maybe tweak thermo rate when used via keyboard?
 How much? Difficult. Every system could have a different key repeat speed.
-
-- [ ] desktop client: fix flag value errors not printing the flagname
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse

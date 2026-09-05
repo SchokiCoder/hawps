@@ -32,6 +32,12 @@ enum InputMode {
 	IM_COMMAND,
 };
 
+enum NumberRequirement {
+	NR_NONE,
+	NR_NOT_NEGATIVE,
+	NR_POSITIVE,
+};
+
 struct ToolOptions {
 	enum Mat  brush_mat;
 	int       brush_radius;
