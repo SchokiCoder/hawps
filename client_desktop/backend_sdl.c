@@ -30,6 +30,7 @@ void
 draw(const char               *cmdline,
      const char               *feedback,
      TTF_Font                 *font,
+     const size_t              font_size,
      const enum InputMode      input_mode,
      const char               *ip_address,
      const bool                no_glowcolor,
@@ -66,15 +67,15 @@ draw(const char               *cmdline,
 	SDL_GetWindowSize(win, &win_w, &win_h);
 	sbr = (SDL_FRect) {
 		.x = 0,
-		.y = win_h - (SDL_FONT_SIZE * 2),
+		.y = win_h - (font_size * 2),
 		.w = 0,
-		.h = SDL_FONT_SIZE,
+		.h = font_size,
 	};
 	cmdlr = (SDL_FRect) {
 		.x = 0,
 		.y = sbr.y + sbr.h,
 		.w = 0,
-		.h = SDL_FONT_SIZE,
+		.h = font_size,
 	};
 
 	SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -278,6 +279,7 @@ void
 handle_mouse_state(const float           delta,
                    int                  *drag_start_x,
                    int                  *drag_start_y,
+                   const size_t          font_size,
                    struct ToolOptions   *tool_opts,
                    SDL_Window           *win,
                    struct World         *world,
@@ -333,8 +335,8 @@ handle_mouse_state(const float           delta,
 		if (world_draw->x < win_w - world_draw->w) {
 			world_draw->x = win_w - world_draw->w;
 		}
-		if (world_draw->y < win_h - world_draw->h - (SDL_FONT_SIZE * 2)) {
-			world_draw->y = win_h - world_draw->h - (SDL_FONT_SIZE * 2);
+		if (world_draw->y < win_h - world_draw->h - (font_size * 2)) {
+			world_draw->y = win_h - world_draw->h - (font_size * 2);
 		}
 		break;
 

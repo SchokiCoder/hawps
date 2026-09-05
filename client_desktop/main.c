@@ -60,6 +60,8 @@
 #define FLAG_VERSION_SHORT          "-v"
 
 #ifdef SDL_BACKEND
+#define FLAG_FONT_SIZE              "-fontsize"
+#define FLAG_FONT_SIZE_SHORT        "-fs"
 #define FLAG_WORLD_SCALE            "-worldscale"
 #define FLAG_WORLD_SCALE_SHORT      "-wldsc"
 #else
@@ -219,6 +221,10 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 #ifdef SDL_BACKEND
 static const char APP_HELP_FLAGS_SDL[] = "SDL backend options:\n"
 "\n"
+"    " FLAG_FONT_SIZE_SHORT " " FLAG_FONT_SIZE " NUMBER\n"
+"        sets the size of the globally used font\n"
+"        default: %i\n"
+"\n"
 "    " FLAG_WORLD_SCALE_SHORT " " FLAG_WORLD_SCALE " NUMBER\n"
 "        sets the size of a single dot in the world\n"
 "        default: %i\n"
@@ -351,6 +357,7 @@ bool
 handle_args(int                  argc,
             char               **argv,
 #ifdef SDL_BACKEND
+            size_t              *font_size,
             size_t              *world_scale,
 #else
             bool                *no_color,
@@ -375,6 +382,7 @@ handle_flag_int_arg(int    argc,
 void
 handle_input(
 #ifdef SDL_BACKEND
+             const size_t         font_size,
              SDL_Window          *win,
              SDL_FRect           *world_draw,
              const size_t         world_scale,
@@ -441,6 +449,7 @@ bool
 handle_args(int                  argc,
             char               **argv,
 #ifdef SDL_BACKEND
+            size_t              *font_size,
             size_t              *world_scale,
 #else
             bool                *no_color,
@@ -515,6 +524,7 @@ handle_args(int                  argc,
 
 #ifdef SDL_BACKEND
 			printf(APP_HELP_FLAGS_SDL,
+			       STD_FONT_SIZE,
 			       STD_WORLD_SCALE);
 #else
 			printf(APP_HELP_FLAGS_TERMINAL);
@@ -627,6 +637,19 @@ handle_args(int                  argc,
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
 #ifdef SDL_BACKEND
+		} else if (strcmp(argv[i], FLAG_FONT_SIZE_SHORT) == 0 ||
+		           strcmp(argv[i], FLAG_FONT_SIZE) == 0) {
+			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
+				return false;
+			}
+			*font_size = flagargi;
+			if (*font_size <= 0) {
+				fprintf(stderr,
+				        "The value for \"%s\" must be positive\n",
+				        argv[i]);
+				return false;
+			}
+			i++;
 		} else if (strcmp(argv[i], FLAG_WORLD_SCALE_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_WORLD_SCALE) == 0) {
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
@@ -711,6 +734,7 @@ handle_flag_int_arg(int    argc,
 void
 handle_input(
 #ifdef SDL_BACKEND
+             const size_t         font_size,
              SDL_Window          *win,
              SDL_FRect           *world_draw,
              const size_t         world_scale,
@@ -842,6 +866,7 @@ handle_input(
 	handle_mouse_state(delta,
 	                   drag_start_x,
 	                   drag_start_y,
+	                   font_size,
 	                   tool_opts,
 	                   win,
 	                   world,
@@ -1243,6 +1268,7 @@ main(int    argc,
 #ifdef SDL_BACKEND
 	SDL_Renderer *renderer = NULL;
 	TTF_Font     *font = NULL;
+	size_t        font_size = STD_FONT_SIZE;
 	size_t        i;
 	SDL_Window   *win = NULL;
 	SDL_FRect     world_draw = {
@@ -1277,6 +1303,7 @@ main(int    argc,
 
 	if (!handle_args(argc, argv,
 #ifdef SDL_BACKEND
+			&font_size,
 			&world_scale,
 #else
 	                 &no_color,
@@ -1309,7 +1336,7 @@ main(int    argc,
 	}
 
 	for (i = 0; i < ARRLEN(FONTPATH); i++) {
-		font = TTF_OpenFont(FONTPATH[i], SDL_FONT_SIZE);
+		font = TTF_OpenFont(FONTPATH[i], font_size);
 		if (NULL != font) {
 			break;
 		}
@@ -1333,7 +1360,7 @@ main(int    argc,
 	SDL_StartTextInput(win);
 
 	SDL_GetWindowSize(win, &world.w, &world.h);
-	world.h -= SDL_FONT_SIZE * 2;
+	world.h -= font_size * 2;
 
 	world_draw.x = 0;
 	world_draw.y = 0;
@@ -1397,6 +1424,7 @@ main(int    argc,
 
 		handle_input(
 #ifdef SDL_BACKEND
+		             font_size,
 		             win,
 		             &world_draw,
 		             world_scale,
@@ -1451,6 +1479,7 @@ main(int    argc,
 			draw(cmdline,
 			     feedback,
 			     font,
+			     font_size,
 			     input_mode,
 			     ip_address,
 			     no_glowcolor,

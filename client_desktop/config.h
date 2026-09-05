@@ -153,7 +153,6 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define MAX_RADIUS           16
 #define MAX_TICKRATE         (STD_TICKRATE * 2.0 * 2.0)
 #define MIN_TICKRATE         (STD_TICKRATE / 2.0 / 2.0 / 2.0 / 2.0 / 2.0)
-#define SDL_FONT_SIZE        24
 #define SDL_WIN_WIDTH        640
 #define SDL_WIN_HEIGHT       480
 #define THERMAL_VISION_MIN_T (-75.0 + CELSIUS_TO_KELVIN)
@@ -168,7 +167,11 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define STD_THERMO_RATE       250.0
 #define STD_THERMO_RADIUS     STD_BRUSH_RADIUS
 #define STD_TICKRATE          24.0
-#define STD_WORLD_SCALE       (SDL_FONT_SIZE / 2)
+
+/* defaults for startup settings
+ */
+#define STD_FONT_SIZE         24
+#define STD_WORLD_SCALE       (STD_FONT_SIZE / 2)
 
 /* size values
  * Consider only touching them when you have special hardware or problems.

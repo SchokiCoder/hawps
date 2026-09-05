@@ -129,8 +129,15 @@ Backspace isn't always backspace. Praise the cruft.
 - [x] SDL client: add world scaling flag
 - [x] terminal client: update help text having a backend specific section
 - [x] desktop client: make no-glow-color flag backend agnostic
-- [ ] SDL client: add font size flag
+- [x] SDL client: add font size flag
+- [ ] SDL client: add font path flag
 
+- [ ] SDL client: fix font size and world scaling incorrect value checks
+The two check for negative values despite being `size_t`.
+Check against the raw `int` input value instead.
+- [ ] there might be more of these ^
+
+- [ ] SDL client: fix high font size flag value causing integer overflow
 - [ ] SDL client: fix cmdline bounds checking
 
 - [ ] terminal client: tweak tool use via keyboard being capped by key repeat limit
@@ -139,6 +146,8 @@ This is very notable with thermo tools.
 They are like 30 times slower there.
 Maybe tweak thermo rate when used via keyboard?
 How much? Difficult. Every system could have a different key repeat speed.
+
+- [ ] desktop client: fix flag value errors not printing the flagname
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse
