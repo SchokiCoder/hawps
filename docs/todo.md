@@ -130,7 +130,7 @@ Backspace isn't always backspace. Praise the cruft.
 - [x] terminal client: update help text having a backend specific section
 - [x] desktop client: make no-glow-color flag backend agnostic
 - [x] SDL client: add font size flag
-- [ ] SDL client: add font path flag
+- [x] SDL client: add font path flag
 
 - [ ] SDL client: fix font size and world scaling incorrect value checks
 The two check for negative values despite being `size_t`.

@@ -60,6 +60,8 @@
 #define FLAG_VERSION_SHORT          "-v"
 
 #ifdef SDL_BACKEND
+#define FLAG_FONT_PATH              "-fontpath"
+#define FLAG_FONT_PATH_SHORT        "-fp"
 #define FLAG_FONT_SIZE              "-fontsize"
 #define FLAG_FONT_SIZE_SHORT        "-fs"
 #define FLAG_WORLD_SCALE            "-worldscale"
@@ -221,6 +223,9 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 #ifdef SDL_BACKEND
 static const char APP_HELP_FLAGS_SDL[] = "SDL backend options:\n"
 "\n"
+"    " FLAG_FONT_PATH_SHORT " " FLAG_FONT_PATH " TEXT\n"
+"        sets the path for the globally used font\n"
+"\n"
 "    " FLAG_FONT_SIZE_SHORT " " FLAG_FONT_SIZE " NUMBER\n"
 "        sets the size of the globally used font\n"
 "        default: %i\n"
@@ -354,9 +359,15 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
  */
 
 bool
+check_flag_arg(int         argc,
+               char      **argv,
+               const int   idx);
+
+bool
 handle_args(int                  argc,
             char               **argv,
 #ifdef SDL_BACKEND
+            char               **font_path,
             size_t              *font_size,
             size_t              *world_scale,
 #else
@@ -446,9 +457,25 @@ new_tool_options(void);
  */
 
 bool
+check_flag_arg(int         argc,
+               char      **argv,
+               const int   idx)
+{
+	if (argc <= idx + 1) {
+		fprintf(stderr,
+		        "The argument \"%s\" needs to be followed by a value\n",
+		        argv[idx]);
+		return false;
+	}
+
+	return true;
+}
+
+bool
 handle_args(int                  argc,
             char               **argv,
 #ifdef SDL_BACKEND
+            char               **font_path,
             size_t              *font_size,
             size_t              *world_scale,
 #else
@@ -637,6 +664,14 @@ handle_args(int                  argc,
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
 #ifdef SDL_BACKEND
+		} else if (strcmp(argv[i], FLAG_FONT_PATH_SHORT) == 0 ||
+		           strcmp(argv[i], FLAG_FONT_PATH) == 0) {
+			if (!check_flag_arg(argc, argv, i)) {
+				return false;
+			}
+			i++;
+			*font_path = argv[i];
+			i++;
 		} else if (strcmp(argv[i], FLAG_FONT_SIZE_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_FONT_SIZE) == 0) {
 			if (!handle_flag_int_arg(argc, argv, &i, &flagargi)) {
@@ -685,10 +720,7 @@ handle_flag_float_arg(int    argc,
                       int   *idx,
                       float *out)
 {
-	if (argc <= *idx + 1) {
-		fprintf(stderr,
-		        "The argument \"%s\" needs to be followed by a value\n",
-		        argv[*idx]);
+	if (!check_flag_arg(argc, argv, *idx)) {
 		return false;
 	}
 	*idx += 1;
@@ -711,10 +743,7 @@ handle_flag_int_arg(int    argc,
                     int   *idx,
                     int   *out)
 {
-	if (argc <= *idx + 1) {
-		fprintf(stderr,
-		        "The argument \"%s\" needs to be followed by a value\n",
-		        argv[*idx]);
+	if (!check_flag_arg(argc, argv, *idx)) {
 		return false;
 	}
 	*idx += 1;
@@ -1268,6 +1297,7 @@ main(int    argc,
 #ifdef SDL_BACKEND
 	SDL_Renderer *renderer = NULL;
 	TTF_Font     *font = NULL;
+	char         *font_path = NULL;
 	size_t        font_size = STD_FONT_SIZE;
 	size_t        i;
 	SDL_Window   *win = NULL;
@@ -1303,6 +1333,7 @@ main(int    argc,
 
 	if (!handle_args(argc, argv,
 #ifdef SDL_BACKEND
+			&font_path,
 			&font_size,
 			&world_scale,
 #else
@@ -1335,14 +1366,19 @@ main(int    argc,
 		goto cleanup;
 	}
 
-	for (i = 0; i < ARRLEN(FONTPATH); i++) {
-		font = TTF_OpenFont(FONTPATH[i], font_size);
-		if (NULL != font) {
-			break;
+	if (NULL != font_path) {
+		font = TTF_OpenFont(font_path, font_size);
+	} else {
+		for (i = 0; i < ARRLEN(FONTPATH); i++) {
+			font = TTF_OpenFont(FONTPATH[i], font_size);
+			if (NULL != font) {
+				break;
+			}
 		}
 	}
+
 	if (NULL == font) {
-		fprintf(stderr, "%s\n", SDL_GetError());
+		fprintf(stderr, "Font couldn't be opened\n%s\n", SDL_GetError());
 		goto cleanup;
 	}
 	TTF_SetFontDirection(font, TTF_DIRECTION_LTR);
