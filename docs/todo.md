@@ -144,7 +144,8 @@ instead of the return parameter and its type.
 - [x] SDL client: add font size flag value cap
 This could have caused integer overflows, and SDL errors.
 
-- [ ] SDL client: fix cmdline bounds checking
+- [x] SDL client: fix cmdline bounds checking in draw
+It didn't account for the added indicator or the cursor.
 
 - [ ] desktop client: fix tool opts being initialized after flag parsing
 This caused these flags to not do a thing.

@@ -13,6 +13,11 @@
 /* Macros
  */
 
+/* Constant defines
+ */
+
+#define CMDL_SIZE (CMDLINE_SIZE + 2)
+
 /* Function declarations
  */
 
@@ -45,7 +50,7 @@ draw(const char               *cmdline,
      SDL_Texture              *world_tx)
 {
 	SDL_Color    bg;
-	char         cmdl[CMDLINE_SIZE];
+	char         cmdl[CMDL_SIZE];
 	size_t       cmdl_len = 0;
 	SDL_FRect    cmdlr;
 	SDL_Surface *cmdls;
@@ -139,14 +144,14 @@ draw(const char               *cmdline,
 	case IM_NORMAL:
 		if (feedback != NULL) {
 			cmdl_len += string_cat(cmdl,
-			                       CMDLINE_SIZE,
+			                       CMDL_SIZE,
 			                       cmdl_len,
 			                       feedback);
 			break;
 		}
 
 		cmdl_len += write_tool_hint(&cmdl[cmdl_len],
-		                            CMDLINE_SIZE - cmdl_len,
+		                            CMDL_SIZE - cmdl_len,
 		                            tool_opts);
 		break;
 
@@ -156,7 +161,7 @@ draw(const char               *cmdline,
 		cmdl[1] = '\0';
 
 		cmdl_len += string_cat(cmdl,
-		                       CMDLINE_SIZE,
+		                       CMDL_SIZE,
 		                       cmdl_len,
 		                       cmdline);
 
