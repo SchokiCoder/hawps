@@ -157,6 +157,10 @@ the delta will be adjusted to the last time the use-key was processed.
 This will bridge over the system's key repeat rate,
 which is usually slower than our tickrate.
 
+- [x] SDL client: implement dynamic statusbar content
+- [ ] terminal client: fix compile errs
+- [ ] SDL client: fix world view scrolling (terminal too?)
+
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse
 - [ ] libcore: add test against liquid stack collapse
@@ -166,8 +170,6 @@ which is usually slower than our tickrate.
 - [ ] libcore: add test against loss of mass upon heat up
 - [ ] libcore: add test against spawners
 - [ ] libcore: add test against mat table property array length miscount
-
-- [ ] remove all in code TODOs
 
 - [ ] desktop client: update help text
 - [ ] update README

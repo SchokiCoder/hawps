@@ -393,34 +393,41 @@ handle_flag_number_arg(int                            argc,
 void
 handle_input(
 #ifdef SDL_BACKEND
-             const size_t         font_size,
-             SDL_Window          *win,
-             SDL_FRect           *world_draw,
-             const size_t         world_scale,
+             TTF_Font              *font,
+             const size_t           font_size,
+             const char            *ip_address,
+             size_t                *statusbar_elems,
+             enum StatusbarElement *statusbar_elem,
+             SDL_Window            *win,
+             int                   *win_w,
+             int                   *win_h,
+             SDL_FRect             *world_draw,
+             const char            *world_name,
+             const size_t           world_scale,
 #else
-             size_t              *cmdline_shift,
-             bool                *lmb_pressed,
-             const int            win_w,
-             struct Rect         *world_draw,
+             size_t                *cmdline_shift,
+             bool                  *lmb_pressed,
+             const int              win_w,
+             struct Rect           *world_draw,
 #endif /* SDL_BACKEND */
-             bool                *active,
-             char                *cmdline,
-             size_t              *cmdline_len,
-             const float          delta,
-             int                 *drag_start_x,
-             int                 *drag_start_y,
-             char               **feedback,
-             clock_t             *feedback_expiration,
-             float               *framerate,
-             enum InputMode      *input_mode,
-             clock_t             *last_key_use,
-             bool                *no_glowcolor,
-             const clock_t        now,
-             bool                *paused,
-             float               *tickrate,
-             bool                *th_vision,
-             struct ToolOptions  *tool_opts,
-             struct World        *world);
+             bool                  *active,
+             char                  *cmdline,
+             size_t                *cmdline_len,
+             const float            delta,
+             int                   *drag_start_x,
+             int                   *drag_start_y,
+             char                 **feedback,
+             clock_t               *feedback_expiration,
+             float                 *framerate,
+             enum InputMode        *input_mode,
+             clock_t               *last_key_use,
+             bool                  *no_glowcolor,
+             const clock_t          now,
+             bool                  *paused,
+             float                 *tickrate,
+             bool                  *th_vision,
+             struct ToolOptions    *tool_opts,
+             struct World          *world);
 
 /* @in: Input.
  * @active: Runtime data.
@@ -734,39 +741,45 @@ handle_flag_number_arg(int                            argc,
 void
 handle_input(
 #ifdef SDL_BACKEND
-             const size_t         font_size,
-             SDL_Window          *win,
-             SDL_FRect           *world_draw,
-             const size_t         world_scale,
+             TTF_Font              *font,
+             const size_t           font_size,
+             const char            *ip_address,
+             size_t                *statusbar_elems,
+             enum StatusbarElement *statusbar_elem,
+             SDL_Window            *win,
+             int                   *win_w,
+             int                   *win_h,
+             SDL_FRect             *world_draw,
+             const char            *world_name,
+             const size_t           world_scale,
 #else
-             size_t              *cmdline_shift,
-             bool                *lmb_pressed,
-             const int            win_w,
-             struct Rect         *world_draw,
+             size_t                *cmdline_shift,
+             bool                  *lmb_pressed,
+             const int              win_w,
+             struct Rect           *world_draw,
 #endif /* SDL_BACKEND */
-             bool                *active,
-             char                *cmdline,
-             size_t              *cmdline_len,
-             const float          delta,
-             int                 *drag_start_x,
-             int                 *drag_start_y,
-             char               **feedback,
-             clock_t             *feedback_expiration,
-             float               *framerate,
-             enum InputMode      *input_mode,
-             clock_t             *last_key_use,
-             bool                *no_glowcolor,
-             const clock_t        now,
-             bool                *paused,
-             float               *tickrate,
-             bool                *th_vision,
-             struct ToolOptions  *tool_opts,
-             struct World        *world)
+             bool                  *active,
+             char                  *cmdline,
+             size_t                *cmdline_len,
+             const float            delta,
+             int                   *drag_start_x,
+             int                   *drag_start_y,
+             char                 **feedback,
+             clock_t               *feedback_expiration,
+             float                 *framerate,
+             enum InputMode        *input_mode,
+             clock_t               *last_key_use,
+             bool                  *no_glowcolor,
+             const clock_t          now,
+             bool                  *paused,
+             float                 *tickrate,
+             bool                  *th_vision,
+             struct ToolOptions    *tool_opts,
+             struct World          *world)
 {
 #ifdef SDL_BACKEND
 	SDL_Event e;
 	int mx, my;
-	int win_w, win_h;
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
@@ -780,19 +793,18 @@ handle_input(
 		case SDL_EVENT_MOUSE_MOTION:
 			mx = e.motion.x;
 			my = e.motion.y;
-			SDL_GetWindowSize(win, &win_w, &win_h);
 
 			if (mx < 0.0) {
 				mx  = 0.0;
 			}
-			else if (mx > win_w) {
-				mx  = win_w;
+			else if (mx > *win_w) {
+				mx  = *win_w;
 			}
 			if (my < 0.0) {
 				my  = 0.0;
 			}
-			else if (my > win_h) {
-				my  = win_h;
+			else if (my > *win_h) {
+				my  = *win_h;
 			}
 
 			tool_opts->x = (mx - world_draw->x) / world_scale;
@@ -862,6 +874,16 @@ handle_input(
 
 		case SDL_EVENT_QUIT:
 			*active = false;
+			break;
+
+		case SDL_EVENT_WINDOW_RESIZED:
+			SDL_GetWindowSize(win, win_w, win_h);
+			handle_statusbar_resize(font,
+			                        ip_address,
+			                        statusbar_elems,
+			                        statusbar_elem,
+			                        *win_w,
+			                        world_name);
 			break;
 		}
 	}
@@ -1273,9 +1295,13 @@ main(int    argc,
 	clock_t                last_tick = 0;
 	bool                   no_glowcolor = false;
 	clock_t                now = 0;
+	size_t                 statusbar_elems = 0;
+	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;
+	int                    win_w = 0;
+	int                    win_h = 0;
 	struct World           world;
 	char                  *world_name = "worldname";
 
@@ -1301,10 +1327,6 @@ main(int    argc,
 	size_t                 dot_depth = 0;
 	bool                   lmb_pressed = false;
 	bool                   no_color = false;
-	size_t                 statusbar_elems = 0;
-	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
-	int                    win_w = 0;
-	int                    win_h = 0;
 	struct winsize         ws;
 	struct Rect            world_draw = {
 		.x = 0,
@@ -1380,25 +1402,31 @@ main(int    argc,
 
 	SDL_StartTextInput(win);
 
-	SDL_GetWindowSize(win, &world.w, &world.h);
-	world.h -= font_size * 2;
-	if (world.h <= 0) {
-		world.h += font_size * 2;
-		world.h /= 2;
-	}
-
+	SDL_GetWindowSize(win, &win_w, &win_h);
 	world_draw.x = 0;
 	world_draw.y = 0;
-	world_draw.w = world.w;
-	world_draw.h = world.h;
+	world_draw.w = win_w;
+	world_draw.h = win_h - (font_size * 2);
 
-	world.w /= world_scale;
+	world.w = world_draw.w / world_scale;
+	world.h = world_draw.h;
+	if (world.h <= 0) {
+		world.h = win_h / 2;
+	}
 	world.h /= world_scale;
+
 	world_tx = SDL_CreateTexture(renderer,
 	                             SDL_PIXELFORMAT_RGBA8888,
 	                             SDL_TEXTUREACCESS_TARGET,
 	                             world.w, world.h);
 	SDL_SetTextureScaleMode(world_tx, SDL_SCALEMODE_PIXELART);
+
+	handle_statusbar_resize(font,
+	                        ip_address,
+	                        &statusbar_elems,
+	                        statusbar_elem,
+	                        win_w,
+	                        world_name);
 #else
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
@@ -1449,9 +1477,16 @@ main(int    argc,
 
 		handle_input(
 #ifdef SDL_BACKEND
+		             font,
 		             font_size,
+		             ip_address,
+		             &statusbar_elems,
+		             statusbar_elem,
 		             win,
+		             &win_w,
+		             &win_h,
 		             &world_draw,
+		             world_name,
 		             world_scale,
 #else
 		             &cmdline_shift,
@@ -1510,6 +1545,8 @@ main(int    argc,
 			     ip_address,
 			     no_glowcolor,
 			     paused,
+			     statusbar_elems,
+			     statusbar_elem,
 			     th_vision,
 			     tickrate,
 			     tool_opts,

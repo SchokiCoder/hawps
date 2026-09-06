@@ -170,13 +170,13 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 
 /* defaults for startup settings
  */
-#define STD_FONT_SIZE         24
-#define STD_WORLD_SCALE       (STD_FONT_SIZE / 2)
+#define STD_FONT_SIZE         22
+#define STD_WORLD_SCALE       16
 
 /* size values
  * Consider only touching them when you have special hardware or problems.
  */
-#define BUF_SIZE              64
+#define BUF_SIZE              128
 #define CMDLINE_SIZE          81
 #define DISPLAY_SIZE_MODIFIER 1.25
 #define INPUT_SIZE            16

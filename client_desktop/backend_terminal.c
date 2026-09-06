@@ -510,10 +510,6 @@ handle_resize(const size_t            cmdline_len,
 	size_t             a, b;
 	char               buf[BUF_SIZE];
 	size_t             buf_len;
-	struct ToolOptions maxcoords_to = {
-		.x = 999,
-		.y = 999,
-	};
 	size_t             new_display_size;
 	size_t             statusbar_len = 0;
 	size_t             statusbar_max_elems = 0;
@@ -551,39 +547,11 @@ handle_resize(const size_t            cmdline_len,
 			*display = realloc(*display, *display_size);
 		}
 
-		for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
-			buf[0] = '\0';
-			/* Here it is important to render the biggest possible
-			 * thing, unless it's not expected to change.
-			 * Only in that case use real data.
-			 */
-			statusbar_len += write_statusbar_elem(buf,
-		                                              BUF_SIZE,
-		                                              ip_address,
-		                                              false,
-		                                              STATUSBAR_DISPLAY_PRIORITY[a],
-		                                              true,
-		                                              120.0,
-		                                              maxcoords_to,
-		                                              world_name);
-
-			if (statusbar_len > (size_t) *win_w) {
-				break;
-			}
-
-			statusbar_len += strlen(STATUSBAR_SEPARATOR);
-		}
-		statusbar_max_elems = a;
-		*statusbar_elems = 0;
-
-		for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
-			for (b = 0; b < statusbar_max_elems; b++) {
-				if (STATUSBAR_DISPLAY_ORDER[a] == STATUSBAR_DISPLAY_PRIORITY[b]) {
-					statusbar_elem[*statusbar_elems] = STATUSBAR_DISPLAY_ORDER[a];
-					*statusbar_elems += 1;
-				}
-			}
-		}
+		handle_statusbar_resize(ip_address,
+		                        statusbar_elems,
+		                        statusbar_elem,
+		                        *win_w,
+		                        world_name);
 
 		if (input_mode == IM_COMMAND) {
 			handle_cmdline_shift(cmdline_len,

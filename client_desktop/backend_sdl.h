@@ -39,22 +39,24 @@ static const char *FONTPATH[] = {
 #endif
 
 void
-draw(const char               *cmdline,
-     const char               *feedback,
-     TTF_Font                 *font,
-     const size_t              font_size,
-     const enum InputMode      input_mode,
-     const char               *ip_address,
-     const bool                no_glowcolor,
-     const bool                paused,
-     const bool                th_vision,
-     const float               tickrate,
-     const struct ToolOptions  tool_opts,
-     SDL_Renderer             *r,
-     const struct World        world,
-     const SDL_FRect           world_draw,
-     const char               *world_name,
-     SDL_Texture              *world_tx);
+draw(const char                  *cmdline,
+     const char                  *feedback,
+     TTF_Font                    *font,
+     const size_t                 font_size,
+     const enum InputMode         input_mode,
+     const char                  *ip_address,
+     const bool                   no_glowcolor,
+     const bool                   paused,
+     const size_t                 statusbar_elems,
+     const enum StatusbarElement *statusbar_elem,
+     const bool                   th_vision,
+     const float                  tickrate,
+     const struct ToolOptions     tool_opts,
+     SDL_Renderer                *r,
+     const struct World           world,
+     const SDL_FRect              world_draw,
+     const char                  *world_name,
+     SDL_Texture                 *world_tx);
 
 void
 handle_mouse_state(const float           delta,

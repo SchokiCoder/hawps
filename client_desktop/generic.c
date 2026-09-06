@@ -32,6 +32,79 @@ command_temperature(const float   new_temperature,
 	}
 }
 
+void
+handle_statusbar_resize(
+#ifdef SDL_BACKEND
+                        TTF_Font              *font,
+#endif
+                        const char            *ip_address,
+                        size_t                *statusbar_elems,
+                        enum StatusbarElement *statusbar_elem,
+                        const size_t           win_w,
+                        const char            *world_name)
+{
+	size_t             a, b;
+	char               buf[BUF_SIZE];
+	size_t             buf_len = 0;
+	struct ToolOptions maxcoords_to = {
+		.x = 999,
+		.y = 999,
+	};
+	size_t             sb_max_elems = 0;
+	size_t             sb_w = 0;
+
+#ifdef SDL_BACKEND
+	SDL_Surface *text = NULL;
+#endif
+
+	buf[0] = '\0';
+
+	for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
+		/* Here it is important to render the biggest possible
+		 * thing, unless it's not expected to change.
+		 * Only in that case use real data.
+		 */
+		buf_len += write_statusbar_elem(&buf[buf_len],
+	                                        BUF_SIZE - buf_len,
+	                                        ip_address,
+	                                        false,
+	                                        STATUSBAR_DISPLAY_PRIORITY[a],
+	                                        true,
+	                                        120.0,
+	                                        maxcoords_to,
+	                                        world_name);
+
+#ifdef SDL_BACKEND
+		text = TTF_RenderText_LCD(font,
+		                          buf,
+		                          buf_len,
+		                          (SDL_Color) {0},
+		                          (SDL_Color) {0});
+		sb_w = text->w;
+		SDL_DestroySurface(text);
+#else
+		sb_w = buf_len;
+#endif
+
+		if (sb_w > win_w) {
+			break;
+		}
+
+		buf_len += string_cat(buf, BUF_SIZE, buf_len, STATUSBAR_SEPARATOR);
+	}
+	sb_max_elems = a;
+	*statusbar_elems = 0;
+
+	for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
+		for (b = 0; b < sb_max_elems; b++) {
+			if (STATUSBAR_DISPLAY_ORDER[a] == STATUSBAR_DISPLAY_PRIORITY[b]) {
+				statusbar_elem[*statusbar_elems] = STATUSBAR_DISPLAY_ORDER[a];
+				*statusbar_elems += 1;
+			}
+		}
+	}
+}
+
 size_t
 write_statusbar_elem(char                        *out,
                      const size_t                 out_size,

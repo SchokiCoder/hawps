@@ -32,22 +32,24 @@ render_world(const bool          no_glowcolor,
  */
 
 void
-draw(const char               *cmdline,
-     const char               *feedback,
-     TTF_Font                 *font,
-     const size_t              font_size,
-     const enum InputMode      input_mode,
-     const char               *ip_address,
-     const bool                no_glowcolor,
-     const bool                paused,
-     const bool                th_vision,
-     const float               tickrate,
-     const struct ToolOptions  tool_opts,
-     SDL_Renderer             *r,
-     const struct World        world,
-     const SDL_FRect           world_draw,
-     const char               *world_name,
-     SDL_Texture              *world_tx)
+draw(const char                  *cmdline,
+     const char                  *feedback,
+     TTF_Font                    *font,
+     const size_t                 font_size,
+     const enum InputMode         input_mode,
+     const char                  *ip_address,
+     const bool                   no_glowcolor,
+     const bool                   paused,
+     const size_t                 statusbar_elems,
+     const enum StatusbarElement *statusbar_elem,
+     const bool                   th_vision,
+     const float                  tickrate,
+     const struct ToolOptions     tool_opts,
+     SDL_Renderer                *r,
+     const struct World           world,
+     const SDL_FRect              world_draw,
+     const char                  *world_name,
+     SDL_Texture                 *world_tx)
 {
 	SDL_Color    bg;
 	char         cmdl[CMDL_SIZE];
@@ -112,21 +114,20 @@ draw(const char               *cmdline,
 
 	SDL_RenderTexture(r, world_tx, NULL, &world_draw);
 
-	// TODO impl sbe priority system
 	i = 0;
 	while (1) {
 		sb_len += write_statusbar_elem(&sb[sb_len],
 		                               CMDLINE_SIZE - sb_len,
 		                               ip_address,
 		                               paused,
-		                               STATUSBAR_DISPLAY_ORDER[i],
+		                               statusbar_elem[i],
 		                               th_vision,
 		                               tickrate,
 		                               tool_opts,
 		                               world_name);
 
 		i++;
-		if (i >= ARRSIZE(STATUSBAR_DISPLAY_ORDER)) {
+		if (i >= statusbar_elems) {
 			break;
 		}
 

@@ -11,12 +11,29 @@
 
 #include "types.h"
 
+#ifdef SDL_BACKEND
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#else
+#endif
+
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
 
 void
 command_temperature(const float   new_temperature,
                     struct World *world);
+
+void
+handle_statusbar_resize(
+#ifdef SDL_BACKEND
+                        TTF_Font              *font,
+#endif
+                        const char            *ip_address,
+                        size_t                *statusbar_elems,
+                        enum StatusbarElement *statusbar_elem,
+                        const size_t           win_w,
+                        const char            *world_name);
 
 size_t
 write_statusbar_elem(char                        *out,
