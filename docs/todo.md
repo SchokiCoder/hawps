@@ -147,7 +147,7 @@ This could have caused integer overflows, and SDL errors.
 - [x] SDL client: fix cmdline bounds checking in draw
 It didn't account for the added indicator or the cursor.
 
-- [ ] desktop client: fix tool opts being initialized after flag parsing
+- [x] desktop client: fix tool opts being initialized after flag parsing
 This caused these flags to not do a thing.
 
 - [ ] terminal client: tweak tool use via keyboard being capped by key repeat limit

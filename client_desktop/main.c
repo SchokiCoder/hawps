@@ -1297,6 +1297,9 @@ main(int    argc,
 	int                    world_draw_space_h = 0;
 #endif
 
+	cmdline[0] = '\0';
+	tool_opts = new_tool_options();
+
 	if (!handle_args(argc, argv,
 #ifdef SDL_BACKEND
 			&font_path,
@@ -1314,9 +1317,6 @@ main(int    argc,
 
 	hawps_core_init();
 	hawps_extra_init();
-
-	cmdline[0] = '\0';
-	tool_opts = new_tool_options();
 
 #ifdef SDL_BACKEND
 	// TODO add proper identifier
