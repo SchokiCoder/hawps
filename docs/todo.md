@@ -150,12 +150,12 @@ It didn't account for the added indicator or the cursor.
 - [x] desktop client: fix tool opts being initialized after flag parsing
 This caused these flags to not do a thing.
 
-- [ ] terminal client: tweak tool use via keyboard being capped by key repeat limit
-Input is capped by the systems key repeat (when holding key down).
-This is very notable with thermo tools.
-They are like 30 times slower there.
-Maybe tweak thermo rate when used via keyboard?
-How much? Difficult. Every system could have a different key repeat speed.
+- [x] terminal client: add thermo tool continuation buff for keyboard use
+This equalizes real thermo rate for mouse and keyboard.
+As long as use-key is registered within a certain time limit,
+the delta will be adjusted to the last time the use-key was processed.
+This will bridge over the system's key repeat rate,
+which is usually slower than our tickrate.
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse

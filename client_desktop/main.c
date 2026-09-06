@@ -71,6 +71,8 @@
 #define FLAG_NOCOLOR_SHORT          "-noc"
 #endif
 
+#define KEY_USE_THERMO_CONTINUE_LIMIT 0.5
+
 #define MAX_FONT_SIZE 128
 
 /* Constants
@@ -411,8 +413,9 @@ handle_input(
              clock_t             *feedback_expiration,
              float               *framerate,
              enum InputMode      *input_mode,
+             clock_t             *last_key_use,
              bool                *no_glowcolor,
-             clock_t              now,
+             const clock_t        now,
              bool                *paused,
              float               *tickrate,
              bool                *th_vision,
@@ -437,6 +440,8 @@ handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
+                    clock_t            *last_key_use,
+                    const clock_t       now,
                     bool               *paused,
                     float              *tickrate,
                     bool               *th_vision,
@@ -749,8 +754,9 @@ handle_input(
              clock_t             *feedback_expiration,
              float               *framerate,
              enum InputMode      *input_mode,
+             clock_t             *last_key_use,
              bool                *no_glowcolor,
-             clock_t              now,
+             const clock_t        now,
              bool                *paused,
              float               *tickrate,
              bool                *th_vision,
@@ -842,6 +848,8 @@ handle_input(
 				                    active,
 				                    delta,
 				                    input_mode,
+				                    last_key_use,
+				                    now,
 				                    paused,
 				                    tickrate,
 				                    th_vision,
@@ -932,6 +940,8 @@ handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
+                    clock_t            *last_key_use,
+                    const clock_t       now,
                     bool               *paused,
                     float              *tickrate,
                     bool               *th_vision,
@@ -943,13 +953,21 @@ handle_normal_input(const char         *in,
                     struct Rect        *world_draw)
 #endif
 {
+	float use_tool_delta;
+
 	switch (in[0]) {
 	case KEY_QUIT:
 		*active = false;
 		break;
 
 	case KEY_USE:
-		use_tool(delta, *tool_opts, world);
+		use_tool_delta = (float) (now - *last_key_use) /
+		                 (float) CLOCKS_PER_SEC;
+		if (use_tool_delta > KEY_USE_THERMO_CONTINUE_LIMIT) {
+			use_tool_delta = delta;
+		}
+		use_tool(use_tool_delta, *tool_opts, world);
+		*last_key_use = now;
 		break;
 
 	case KEY_SWITCH_VISION:
@@ -1251,6 +1269,7 @@ main(int    argc,
 	bool                   paused = false;
 	clock_t                last_input = 0;
 	clock_t                last_frame = 0;
+	clock_t                last_key_use = 0;
 	clock_t                last_tick = 0;
 	bool                   no_glowcolor = false;
 	clock_t                now = 0;
@@ -1450,6 +1469,7 @@ main(int    argc,
 		             &feedback_expiration,
 		             &framerate,
 		             &input_mode,
+		             &last_key_use,
 		             &no_glowcolor,
 		             now,
 		             &paused,
