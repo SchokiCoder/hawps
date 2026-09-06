@@ -71,6 +71,8 @@
 #define FLAG_NOCOLOR_SHORT          "-noc"
 #endif
 
+#define MAX_FONT_SIZE 128
+
 /* Constants
  */
 
@@ -229,6 +231,7 @@ static const char APP_HELP_FLAGS_SDL[] = "SDL backend options:\n"
 "    " FLAG_FONT_SIZE_SHORT " " FLAG_FONT_SIZE " NUMBER\n"
 "        sets the size of the globally used font\n"
 "        default: %i\n"
+"        max:     %i\n"
 "\n"
 "    " FLAG_WORLD_SCALE_SHORT " " FLAG_WORLD_SCALE " NUMBER\n"
 "        sets the size of a single dot in the world\n"
@@ -534,6 +537,7 @@ handle_args(int                  argc,
 #ifdef SDL_BACKEND
 			printf(APP_HELP_FLAGS_SDL,
 			       STD_FONT_SIZE,
+			       MAX_FONT_SIZE,
 			       STD_WORLD_SCALE);
 #else
 			printf(APP_HELP_FLAGS_TERMINAL);
@@ -641,6 +645,10 @@ handle_args(int                  argc,
 			                            &f,
 			                            NR_POSITIVE)) {
 				return false;
+			}
+			if (f > MAX_FONT_SIZE) {
+				printf("The given font size is too high and was capped\n");
+				f = MAX_FONT_SIZE;
 			}
 			*font_size = f;
 		} else if (strcmp(argv[i], FLAG_WORLD_SCALE_SHORT) == 0 ||
@@ -1355,6 +1363,10 @@ main(int    argc,
 
 	SDL_GetWindowSize(win, &world.w, &world.h);
 	world.h -= font_size * 2;
+	if (world.h <= 0) {
+		world.h += font_size * 2;
+		world.h /= 2;
+	}
 
 	world_draw.x = 0;
 	world_draw.y = 0;

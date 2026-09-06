@@ -141,7 +141,9 @@ To prevent such mistakes in the future,
 now it checks against the raw `float` input value,
 instead of the return parameter and its type.
 
-- [ ] SDL client: fix high font size flag value causing integer overflow
+- [x] SDL client: add font size flag value cap
+This could have caused integer overflows, and SDL errors.
+
 - [ ] SDL client: fix cmdline bounds checking
 
 - [ ] desktop client: fix tool opts being initialized after flag parsing
