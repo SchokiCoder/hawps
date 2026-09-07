@@ -914,6 +914,8 @@ handle_input(
 			                         active,
 			                         delta,
 			                         input_mode,
+			                         last_key_use,
+			                         now,
 			                         paused,
 			                         tickrate,
 			                         th_vision,

@@ -158,7 +158,7 @@ This will bridge over the system's key repeat rate,
 which is usually slower than our tickrate.
 
 - [x] SDL client: implement dynamic statusbar content
-- [ ] terminal client: fix compile errs
+- [x] terminal client: fix compile error
 - [ ] SDL client: fix world view scrolling (terminal too?)
 
 - [ ] libcore: add test against gravity
