@@ -163,10 +163,12 @@ which is usually slower than our tickrate.
 - [x] SDL client: fix world scrolling
 This also allows for smoother per pixel scrolling, rather than per dot.
 
-- [ ] SDL client: fix world scrolling clamping to lower right, instead of upper left
+- [x] SDL client: fix world scrolling being possible when all is visible
 This also causes crashes when the mouse enters the void left or above,
 because it tries to convert negative mouse coords into strings for statusbar,
 again.
+
+- [ ] SDL client: fix world scrolling not being inverted
 
 - [ ] `handle_normal_input` has its backend specific params at end
 - [ ] update function declaration comments

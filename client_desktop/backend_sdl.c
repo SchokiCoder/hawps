@@ -333,16 +333,16 @@ handle_mouse_state(const float           delta,
 		world_draw->x = *drag_start_x - x;
 		world_draw->y = *drag_start_y - y;
 
-		if (world_draw->x > 0) {
+		if (world_draw->x > 0 ||
+		    win_w > world_draw->w) {
 			world_draw->x = 0;
-		}
-		if (world_draw->y > 0) {
-			world_draw->y = 0;
-		}
-		if (world_draw->x < win_w - world_draw->w) {
+		} else if (world_draw->x < win_w - world_draw->w) {
 			world_draw->x = win_w - world_draw->w;
 		}
-		if (world_draw->y < win_h - world_draw->h - (font_size * 2)) {
+		if (world_draw->y > 0 ||
+		    win_h > world_draw->h) {
+			world_draw->y = 0;
+		} else if (world_draw->y < win_h - world_draw->h - (font_size * 2)) {
 			world_draw->y = win_h - world_draw->h - (font_size * 2);
 		}
 		break;
