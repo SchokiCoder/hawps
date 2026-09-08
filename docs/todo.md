@@ -178,7 +178,7 @@ Also ban logical ANDs from asserts, giving them their own ones,
 to improve reporting.
 Also add test subject success encouragement.
 
-- [ ] libcore: add gas stack collapse test
+- [x] libcore: add gas stack collapse test
 - [ ] libcore: add thermal conduction test
 - [ ] libcore: add chemical reactions test
 - [ ] libcore: add loss of mass upon heat up test

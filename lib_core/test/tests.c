@@ -65,9 +65,8 @@ test_stack_collapse_grain()
 }
 
 void
-test_stack_collapse_liquid()
+test_stack_collapse_liquid_or_gas(const enum Mat mat)
 {
-	const enum Mat mat = MAT_WATER;
 	int i;
 
 	clear_world();
@@ -100,7 +99,8 @@ main()
 
 	test_gravity();
 	test_stack_collapse_grain();
-	test_stack_collapse_liquid();
+	test_stack_collapse_liquid_or_gas(MAT_WATER);
+	test_stack_collapse_liquid_or_gas(MAT_OXYGEN);
 
 	world_free(&world);
 	printf("All tests passed :)\n");
