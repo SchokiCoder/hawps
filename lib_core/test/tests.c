@@ -9,7 +9,7 @@
 
 #define WORLD_W           10
 #define WORLD_H           10
-#define WORLD_TEMPERATURE 20
+#define WORLD_TEMPERATURE 273.15 + 20
 
 static struct World world;
 
@@ -50,9 +50,37 @@ test_stack_collapse_grain()
 	world_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE,
 	                WORLD_W / 2, WORLD_H - 2, 0);
 	tick_world();
-	assert(world.dot[WORLD_W / 2][WORLD_H - 2] != MAT_SAND);
+	assert(world.dot[WORLD_W / 2 - 0][WORLD_H - 2] != MAT_SAND);
 	assert(world.dot[WORLD_W / 2 - 1][WORLD_H - 1] != MAT_SAND ||
 	       world.dot[WORLD_W / 2 + 1][WORLD_H - 1] != MAT_SAND);
+}
+
+void
+test_stack_collapse_liquid()
+{
+	const enum Mat mat = MAT_WATER;
+	int i;
+
+	clear_world();
+	for (i = 1; i < 5; i++) {
+		world_use_brush(&world, mat, WORLD_TEMPERATURE,
+			        WORLD_W / 2, WORLD_H - i, 0);
+	}
+	for (i = 0; i < 4; i++) {
+		tick_world();
+	}
+
+	assert(world.dot[WORLD_W / 2][WORLD_H - 2] != mat &&
+	       world.dot[WORLD_W / 2][WORLD_H - 3] != mat &&
+	       world.dot[WORLD_W / 2][WORLD_H - 4] != mat);
+
+	assert(world.dot[WORLD_W / 2 - 0][WORLD_H - 1] == mat);
+	assert(world.dot[WORLD_W / 2 - 1][WORLD_H - 1] == mat ||
+	       world.dot[WORLD_W / 2 + 1][WORLD_H - 1] == mat);
+	assert(world.dot[WORLD_W / 2 - 2][WORLD_H - 1] == mat ||
+	       world.dot[WORLD_W / 2 + 2][WORLD_H - 1] == mat);
+	assert(world.dot[WORLD_W / 2 - 3][WORLD_H - 1] == mat ||
+	       world.dot[WORLD_W / 2 + 3][WORLD_H - 1] == mat);
 }
 
 int
@@ -63,6 +91,7 @@ main()
 
 	test_gravity();
 	test_stack_collapse_grain();
+	test_stack_collapse_liquid();
 
 	world_free(&world);
 	printf("All tests passed\n");

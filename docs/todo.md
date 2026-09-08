@@ -172,14 +172,15 @@ again.
 
 - [x] libcore: add test against gravity
 - [x] libcore: add test against grain stack collapse
-- [ ] libcore: add test against liquid stack collapse
-- [ ] libcore: add test against gas stack collapse
-- [ ] libcore: add test against thermal conduction
-- [ ] libcore: add test against chemical reactions
-- [ ] libcore: add test against loss of mass upon heat up
-- [ ] libcore: add test against spawners
-- [ ] libcore: add test against mat table property array length miscount
-- [ ] libextra: add test against heat glow
+- [x] libcore: add liquid stack collapse test
+- [ ] libcore: add pyramid test to grain stack collapse test
+- [ ] libcore: add gas stack collapse test
+- [ ] libcore: add thermal conduction test
+- [ ] libcore: add chemical reactions test
+- [ ] libcore: add loss of mass upon heat up test
+- [ ] libcore: add spawners test
+- [ ] libcore: add mat table property array length miscount test
+- [ ] libextra: add heat glow test
 
 - [ ] `handle_normal_input` has its backend specific params at end
 - [ ] update function declaration comments
