@@ -183,8 +183,6 @@ Also add test subject success encouragement.
 - [x] libcore: add thermal nonconduction test
 - [x] libcore: add melt decomposition test
 - [x] libcore: add randomness test to melt decomposition test
-- [ ] libcore: add oxidation test
-- [ ] libcore: add random oxidation test
 - [ ] libcore: add touch reaction test
 - [ ] libcore: add random touch reaction test
 - [ ] libcore: add loss of mass upon heat up test
@@ -192,6 +190,12 @@ Also add test subject success encouragement.
 - [ ] libcore: add mat table property array length miscount test
 - [ ] libextra: add heat glow test
 
+- [ ] libcore: oxidation doesn't happen in lower left corner
+(maybe more corners, maybe for features too)
+- [ ] libcore: enable oxidation test
+- [ ] libcore: add random oxidation test
+
+- [ ] SDL client: temperature commands t tk don't work
 - [ ] `handle_normal_input` has its backend specific params at end
 - [ ] update function declaration comments
 

@@ -147,6 +147,29 @@ test_melt_decomposition(void)
 	       world.dot[0][1] == MAT_MELT_PRDCT2[MAT_CALCIUM_CARBONATE]);
 }
 
+void
+test_oxidation(void)
+{
+	const enum Mat mat = MAT_IRON;
+	int i;
+
+	clear_world();
+	world_use_brush(&world, mat, WORLD_TEMPERATURE,
+	                0, WORLD_H - 1, 0);
+	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE,
+	                0, WORLD_H - 2, 0);
+
+	assert(world.dot[0][WORLD_H - 1] == mat);
+	assert(world.dot[0][WORLD_H - 2] == MAT_OXYGEN);
+
+	for (i = 0; i < (1.0 / MAT_OXID_SPEED[mat]); i++) {
+		tick_world();
+	}
+
+	assert(world.dot[0][WORLD_H - 1] == MAT_OXID_PRDCT1[mat]);
+	assert(world.dot[0][WORLD_H - 2] == MAT_OXID_PRDCT2[mat]);
+}
+
 int
 main()
 {
@@ -160,6 +183,7 @@ main()
 	test_thermal_conduction();
 	test_thermal_nonconduction();
 	test_melt_decomposition();
+	// TODO fix and enable: test_oxidation();
 
 	world_free(&world);
 	printf("All tests passed :)\n");
