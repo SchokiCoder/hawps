@@ -76,6 +76,9 @@ remove:
 run: prerun bin/$(DEFAULT_CLIENT)
 	LSAN_OPTIONS=suppressions=lsan.supp ./bin/$(DEFAULT_CLIENT)
 
+test: bin/lib_core_tests
+	./$<
+
 vet:
 	go vet ./client_ebiten
 
@@ -98,9 +101,13 @@ bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
 		client_tk/*.c lib_core/*.c lib_extra/*.c \
 		$$(pkg-config --libs tcl tk)
 
-bin/gen_int_to_string_table:
+bin/gen_int_to_string_table: client_desktop/gen/gen_int_to_string_table.c
 	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
-		client_desktop/gen/gen_int_to_string_table.c
+		$<
+
+bin/lib_core_tests: lib_core/test/tests.c
+	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core \
+		lib_core/*.c $<
 
 client_desktop/int_to_string.h: bin/gen_int_to_string_table
 	./$< $@

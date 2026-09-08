@@ -170,10 +170,7 @@ again.
 
 - [x] SDL client: fix world scrolling not being inverted
 
-- [ ] `handle_normal_input` has its backend specific params at end
-- [ ] update function declaration comments
-
-- [ ] libcore: add test against gravity
+- [x] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse
 - [ ] libcore: add test against liquid stack collapse
 - [ ] libcore: add test against gas stack collapse
@@ -182,6 +179,10 @@ again.
 - [ ] libcore: add test against loss of mass upon heat up
 - [ ] libcore: add test against spawners
 - [ ] libcore: add test against mat table property array length miscount
+- [ ] libextra: add test against heat glow
+
+- [ ] `handle_normal_input` has its backend specific params at end
+- [ ] update function declaration comments
 
 - [ ] desktop client: update help text
 - [ ] update README
