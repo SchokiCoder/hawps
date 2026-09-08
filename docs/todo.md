@@ -181,7 +181,7 @@ Also add test subject success encouragement.
 - [x] libcore: add gas stack collapse test
 - [x] libcore: add thermal conduction test
 - [x] libcore: add thermal nonconduction test
-- [ ] libcore: add melt decomposition test
+- [x] libcore: add melt decomposition test
 - [ ] libcore: add random melt decomposition test
 - [ ] libcore: add oxidation test
 - [ ] libcore: add random oxidation test

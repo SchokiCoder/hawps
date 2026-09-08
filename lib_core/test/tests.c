@@ -14,7 +14,7 @@
 static struct World world;
 
 void
-clear_world()
+clear_world(void)
 {
 	int x, y;
 
@@ -26,14 +26,14 @@ clear_world()
 }
 
 void
-tick_world()
+tick_world(void)
 {
 	world_update(&world, WORLD_TEMPERATURE);
 	world_sim(&world);
 }
 
 void
-test_gravity()
+test_gravity(void)
 {
 	clear_world();
 	world_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE, 0, 0, 0);
@@ -42,7 +42,7 @@ test_gravity()
 }
 
 void
-test_stack_collapse_grain()
+test_stack_collapse_grain(void)
 {
 	const enum Mat mat = MAT_SAND;
 	int i;
@@ -92,7 +92,7 @@ test_stack_collapse_liquid_or_gas(const enum Mat mat)
 }
 
 void
-test_thermal_conduction()
+test_thermal_conduction(void)
 {
 	const float cold = 0.0;
 	const float hot = 9001.69;
@@ -114,7 +114,7 @@ test_thermal_conduction()
 }
 
 void
-test_thermal_nonconduction()
+test_thermal_nonconduction(void)
 {
 	const float temp = 420.0;
 
@@ -134,6 +134,18 @@ test_thermal_nonconduction()
 	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) temp);
 }
 
+void
+test_melt_decomposition(void)
+{
+	const enum Mat mat = MAT_SAND;
+
+	clear_world();
+	world_use_brush(&world, mat, 9999.9, 0, 0, 0);
+	/* no tick needed */
+
+	assert(world.dot[0][0] == MAT_MELT_PRDCT1[mat]);
+}
+
 int
 main()
 {
@@ -146,6 +158,7 @@ main()
 	test_stack_collapse_liquid_or_gas(MAT_OXYGEN);
 	test_thermal_conduction();
 	test_thermal_nonconduction();
+	test_melt_decomposition();
 
 	world_free(&world);
 	printf("All tests passed :)\n");
