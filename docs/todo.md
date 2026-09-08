@@ -173,7 +173,11 @@ again.
 - [x] libcore: add test against gravity
 - [x] libcore: add test against grain stack collapse
 - [x] libcore: add liquid stack collapse test
-- [ ] libcore: add pyramid test to grain stack collapse test
+- [x] libcore: add pyramid test to grain stack collapse test
+Also ban logical ANDs from asserts, giving them their own ones,
+to improve reporting.
+Also add test subject success encouragement.
+
 - [ ] libcore: add gas stack collapse test
 - [ ] libcore: add thermal conduction test
 - [ ] libcore: add chemical reactions test
