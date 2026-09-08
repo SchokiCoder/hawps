@@ -171,7 +171,7 @@ again.
 - [x] SDL client: fix world scrolling not being inverted
 
 - [x] libcore: add test against gravity
-- [ ] libcore: add test against grain stack collapse
+- [x] libcore: add test against grain stack collapse
 - [ ] libcore: add test against liquid stack collapse
 - [ ] libcore: add test against gas stack collapse
 - [ ] libcore: add test against thermal conduction

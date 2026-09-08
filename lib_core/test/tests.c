@@ -26,13 +26,33 @@ clear_world()
 }
 
 void
+tick_world()
+{
+	world_update(&world, WORLD_TEMPERATURE);
+	world_sim(&world);
+}
+
+void
 test_gravity()
 {
 	clear_world();
-	world_use_brush(&world, MAT_SAND, 0, 0, 0, 0);
-	world_update(&world, WORLD_TEMPERATURE);
-	world_sim(&world);
+	world_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE, 0, 0, 0);
+	tick_world();
 	assert(world.dot[0][0] != MAT_SAND);
+}
+
+void
+test_stack_collapse_grain()
+{
+	clear_world();
+	world_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE,
+	                WORLD_W / 2, WORLD_H - 1, 0);
+	world_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE,
+	                WORLD_W / 2, WORLD_H - 2, 0);
+	tick_world();
+	assert(world.dot[WORLD_W / 2][WORLD_H - 2] != MAT_SAND);
+	assert(world.dot[WORLD_W / 2 - 1][WORLD_H - 1] != MAT_SAND ||
+	       world.dot[WORLD_W / 2 + 1][WORLD_H - 1] != MAT_SAND);
 }
 
 int
@@ -42,6 +62,7 @@ main()
 	world = world_new(WORLD_W, WORLD_H, WORLD_TEMPERATURE);
 
 	test_gravity();
+	test_stack_collapse_grain();
 
 	world_free(&world);
 	printf("All tests passed\n");
