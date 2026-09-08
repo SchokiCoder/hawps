@@ -182,7 +182,7 @@ Also add test subject success encouragement.
 - [x] libcore: add thermal conduction test
 - [x] libcore: add thermal nonconduction test
 - [x] libcore: add melt decomposition test
-- [ ] libcore: add random melt decomposition test
+- [x] libcore: add randomness test to melt decomposition test
 - [ ] libcore: add oxidation test
 - [ ] libcore: add random oxidation test
 - [ ] libcore: add touch reaction test

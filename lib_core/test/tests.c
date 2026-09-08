@@ -137,13 +137,14 @@ test_thermal_nonconduction(void)
 void
 test_melt_decomposition(void)
 {
-	const enum Mat mat = MAT_SAND;
-
 	clear_world();
-	world_use_brush(&world, mat, 9999.9, 0, 0, 0);
+	world_use_brush(&world, MAT_SAND, 9999.9, 0, 0, 0);
+	world_use_brush(&world, MAT_CALCIUM_CARBONATE, 9999.9, 0, 1, 0);
 	/* no tick needed */
 
-	assert(world.dot[0][0] == MAT_MELT_PRDCT1[mat]);
+	assert(world.dot[0][0] == MAT_MELT_PRDCT1[MAT_SAND]);
+	assert(world.dot[0][1] == MAT_MELT_PRDCT1[MAT_CALCIUM_CARBONATE] ||
+	       world.dot[0][1] == MAT_MELT_PRDCT2[MAT_CALCIUM_CARBONATE]);
 }
 
 int
