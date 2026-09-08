@@ -180,7 +180,13 @@ Also add test subject success encouragement.
 
 - [x] libcore: add gas stack collapse test
 - [x] libcore: add thermal conduction test
-- [ ] libcore: add chemical reactions test
+- [x] libcore: add thermal nonconduction test
+- [ ] libcore: add melt decomposition test
+- [ ] libcore: add random melt decomposition test
+- [ ] libcore: add oxidation test
+- [ ] libcore: add random oxidation test
+- [ ] libcore: add touch reaction test
+- [ ] libcore: add random touch reaction test
 - [ ] libcore: add loss of mass upon heat up test
 - [ ] libcore: add spawners test
 - [ ] libcore: add mat table property array length miscount test

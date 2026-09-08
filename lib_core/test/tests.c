@@ -113,6 +113,27 @@ test_thermal_conduction()
 	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] < (int) hot);
 }
 
+void
+test_thermal_nonconduction()
+{
+	const float temp = 420.0;
+
+	clear_world();
+
+	world_use_brush(&world, MAT_IRON, temp,
+		        WORLD_W / 2, WORLD_H - 1, 0);
+	world_use_brush(&world, MAT_IRON, temp,
+		        WORLD_W / 2, WORLD_H - 2, 0);
+
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] == (int) temp);
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) temp);
+
+	tick_world();
+
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] == (int) temp);
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) temp);
+}
+
 int
 main()
 {
@@ -124,6 +145,7 @@ main()
 	test_stack_collapse_liquid_or_gas(MAT_WATER);
 	test_stack_collapse_liquid_or_gas(MAT_OXYGEN);
 	test_thermal_conduction();
+	test_thermal_nonconduction();
 
 	world_free(&world);
 	printf("All tests passed :)\n");
