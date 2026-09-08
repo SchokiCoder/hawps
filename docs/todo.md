@@ -179,7 +179,7 @@ to improve reporting.
 Also add test subject success encouragement.
 
 - [x] libcore: add gas stack collapse test
-- [ ] libcore: add thermal conduction test
+- [x] libcore: add thermal conduction test
 - [ ] libcore: add chemical reactions test
 - [ ] libcore: add loss of mass upon heat up test
 - [ ] libcore: add spawners test

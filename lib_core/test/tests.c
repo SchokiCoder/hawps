@@ -91,6 +91,28 @@ test_stack_collapse_liquid_or_gas(const enum Mat mat)
 	       world.dot[WORLD_W / 2 + 3][WORLD_H - 1] == mat);
 }
 
+void
+test_thermal_conduction()
+{
+	const float cold = 0.0;
+	const float hot = 9001.69;
+
+	clear_world();
+
+	world_use_brush(&world, MAT_IRON, cold,
+		        WORLD_W / 2, WORLD_H - 1, 0);
+	world_use_brush(&world, MAT_IRON, hot,
+		        WORLD_W / 2, WORLD_H - 2, 0);
+
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] == (int) cold);
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) hot);
+
+	tick_world();
+
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] > (int) cold);
+	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] < (int) hot);
+}
+
 int
 main()
 {
@@ -101,6 +123,7 @@ main()
 	test_stack_collapse_grain();
 	test_stack_collapse_liquid_or_gas(MAT_WATER);
 	test_stack_collapse_liquid_or_gas(MAT_OXYGEN);
+	test_thermal_conduction();
 
 	world_free(&world);
 	printf("All tests passed :)\n");
