@@ -168,7 +168,7 @@ This also causes crashes when the mouse enters the void left or above,
 because it tries to convert negative mouse coords into strings for statusbar,
 again.
 
-- [ ] SDL client: fix world scrolling not being inverted
+- [x] SDL client: fix world scrolling not being inverted
 
 - [ ] `handle_normal_input` has its backend specific params at end
 - [ ] update function declaration comments

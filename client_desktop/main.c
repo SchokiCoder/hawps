@@ -785,8 +785,8 @@ handle_input(
 		switch (e.type) {
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			if (SDL_BUTTON_RIGHT == e.button.button) {
-				*drag_start_x = e.button.x + world_draw->x;
-				*drag_start_y = e.button.y + world_draw->y;
+				*drag_start_x = e.button.x - world_draw->x;
+				*drag_start_y = e.button.y - world_draw->y;
 			}
 			break;
 

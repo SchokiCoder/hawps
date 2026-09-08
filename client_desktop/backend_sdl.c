@@ -330,8 +330,8 @@ handle_mouse_state(const float           delta,
 		break;
 
 	case SDL_BUTTON_RMASK:
-		world_draw->x = *drag_start_x - x;
-		world_draw->y = *drag_start_y - y;
+		world_draw->x = x - *drag_start_x;
+		world_draw->y = y - *drag_start_y;
 
 		if (world_draw->x > 0 ||
 		    win_w > world_draw->w) {
