@@ -159,7 +159,17 @@ which is usually slower than our tickrate.
 
 - [x] SDL client: implement dynamic statusbar content
 - [x] terminal client: fix compile error
-- [ ] SDL client: fix world view scrolling (terminal too?)
+
+- [x] SDL client: fix world scrolling
+This also allows for smoother per pixel scrolling, rather than per dot.
+
+- [ ] SDL client: fix world scrolling clamping to lower right, instead of upper left
+This also causes crashes when the mouse enters the void left or above,
+because it tries to convert negative mouse coords into strings for statusbar,
+again.
+
+- [ ] `handle_normal_input` has its backend specific params at end
+- [ ] update function declaration comments
 
 - [ ] libcore: add test against gravity
 - [ ] libcore: add test against grain stack collapse

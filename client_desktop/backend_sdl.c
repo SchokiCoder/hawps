@@ -289,15 +289,16 @@ handle_mouse_state(const float           delta,
                    struct ToolOptions   *tool_opts,
                    SDL_Window           *win,
                    struct World         *world,
-                   SDL_FRect            *world_draw,
-                   const size_t          world_scale)
+                   SDL_FRect            *world_draw)
 {
 	SDL_MouseButtonFlags mbf;
 	int win_w, win_h;
-	int x = tool_opts->x;
-	int y = tool_opts->y;
+	int dx = tool_opts->x;
+	int dy = tool_opts->y;
+	float x;
+	float y;
 
-	mbf = SDL_GetMouseState(NULL, NULL);
+	mbf = SDL_GetMouseState(&x, &y);
 	SDL_GetWindowSize(win, &win_w, &win_h);
 
 	switch (mbf) {
@@ -306,18 +307,18 @@ handle_mouse_state(const float           delta,
 		break;
 
 	case SDL_BUTTON_MMASK:
-		if (x >= world->w ||
-		    y >= world->h) {
+		if (dx >= world->w ||
+		    dy >= world->h) {
 			break;
 		}
 
 		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			tool_opts->brush_mat = world->dot[x][y];
+			tool_opts->brush_mat = world->dot[dx][dy];
 			break;
 
 		case TOOL_SPAWNER:
-			tool_opts->spawner_mat = world->dot[x][y];
+			tool_opts->spawner_mat = world->dot[dx][dy];
 			break;
 
 		case TOOL_ERASER:
@@ -329,8 +330,8 @@ handle_mouse_state(const float           delta,
 		break;
 
 	case SDL_BUTTON_RMASK:
-		world_draw->x = *drag_start_x - (x * world_scale);
-		world_draw->y = *drag_start_y - (y * world_scale);
+		world_draw->x = *drag_start_x - x;
+		world_draw->y = *drag_start_y - y;
 
 		if (world_draw->x > 0) {
 			world_draw->x = 0;
@@ -353,6 +354,17 @@ handle_mouse_state(const float           delta,
 	default:
 		break;
 	}
+}
+
+void
+handle_resize(SDL_Window   *win,
+              int          *win_w,
+              int          *win_h,
+              SDL_FRect    *world_draw)
+{
+	SDL_GetWindowSize(win, win_w, win_h);
+	world_draw->x = 0;
+	world_draw->y = 0;
 }
 
 #else

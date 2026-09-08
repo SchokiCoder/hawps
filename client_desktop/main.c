@@ -877,7 +877,7 @@ handle_input(
 			break;
 
 		case SDL_EVENT_WINDOW_RESIZED:
-			SDL_GetWindowSize(win, win_w, win_h);
+			handle_resize(win, win_w, win_h, world_draw);
 			handle_statusbar_resize(font,
 			                        ip_address,
 			                        statusbar_elems,
@@ -895,8 +895,7 @@ handle_input(
 	                   tool_opts,
 	                   win,
 	                   world,
-	                   world_draw,
-	                   world_scale);
+	                   world_draw);
 
 #else /* SDL_BACKEND */
 
@@ -1404,9 +1403,7 @@ main(int    argc,
 
 	SDL_StartTextInput(win);
 
-	SDL_GetWindowSize(win, &win_w, &win_h);
-	world_draw.x = 0;
-	world_draw.y = 0;
+	handle_resize(win, &win_w, &win_h, &world_draw);
 	world_draw.w = win_w;
 	world_draw.h = win_h - (font_size * 2);
 
