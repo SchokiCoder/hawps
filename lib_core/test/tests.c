@@ -170,6 +170,26 @@ test_oxidation(void)
 	assert(world.dot[0][WORLD_H - 2] == MAT_OXID_PRDCT2[mat]);
 }
 
+void
+test_touch(void)
+{
+	const enum Mat mat = MAT_CALCIUM_OXIDE;
+
+	clear_world();
+	world_use_brush(&world, mat, WORLD_TEMPERATURE,
+	                0, WORLD_H - 1, 0);
+	world_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
+	                1, WORLD_H - 1, 0);
+
+	assert(world.dot[0][WORLD_H - 1] == mat);
+	assert(world.dot[1][WORLD_H - 1] == MAT_TOUCH_REAGENT[mat]);
+
+	tick_world();
+
+	assert(world.dot[0][WORLD_H - 1] == MAT_TOUCH_PRDCT1[mat]);
+	assert(world.dot[1][WORLD_H - 1] == MAT_TOUCH_PRDCT2[mat]);
+}
+
 int
 main()
 {
@@ -184,6 +204,7 @@ main()
 	test_thermal_nonconduction();
 	test_melt_decomposition();
 	// TODO fix and enable: test_oxidation();
+	// TODO same            test_touch();
 
 	world_free(&world);
 	printf("All tests passed :)\n");
