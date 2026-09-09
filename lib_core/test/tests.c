@@ -3,10 +3,9 @@
  */
 
 #include <assert.h>
+#include <hawps_core.h>
 #include <math.h>
 #include <stdio.h>
-
-#include "hawps_core.h"
 
 #define WORLD_W           10
 #define WORLD_H           10

@@ -76,8 +76,9 @@ remove:
 run: prerun bin/$(DEFAULT_CLIENT)
 	LSAN_OPTIONS=suppressions=lsan.supp ./bin/$(DEFAULT_CLIENT)
 
-test: bin/lib_core_tests
-	./$<
+test: bin/lib_core_tests bin/lib_extra_tests
+	./bin/lib_core_tests
+	./bin/lib_extra_tests
 
 vet:
 	go vet ./client_ebiten
@@ -108,6 +109,10 @@ bin/gen_int_to_string_table: client_desktop/gen/gen_int_to_string_table.c
 bin/lib_core_tests: lib_core/test/tests.c
 	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -lm \
 		lib_core/*.c $<
+
+bin/lib_extra_tests: lib_extra/test/tests.c
+	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
+		lib_core/*.c lib_extra/*.c $<
 
 client_desktop/int_to_string.h: bin/gen_int_to_string_table
 	./$< $@
