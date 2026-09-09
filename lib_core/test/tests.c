@@ -113,13 +113,17 @@ test_thermal_conduction(void)
 	world_use_brush(&world, MAT_IRON, hot,
 		        WORLD_W / 2, WORLD_H - 2, 0);
 
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] == (int) cold);
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) hot);
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 1]) ==
+	       trunc_float(cold));
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 2]) ==
+	       trunc_float(hot));
 
 	tick_world();
 
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] > (int) cold);
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] < (int) hot);
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 1]) >
+	       trunc_float(cold));
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 2]) <
+	       trunc_float(hot));
 }
 
 void
@@ -134,13 +138,17 @@ test_thermal_nonconduction(void)
 	world_use_brush(&world, MAT_IRON, temp,
 		        WORLD_W / 2, WORLD_H - 2, 0);
 
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] == (int) temp);
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) temp);
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 1]) ==
+	       trunc_float(temp));
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 2]) ==
+	       trunc_float(temp));
 
 	tick_world();
 
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 1] == (int) temp);
-	assert((int) world.thermo[WORLD_W / 2][WORLD_H - 2] == (int) temp);
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 1]) ==
+	       trunc_float(temp));
+	assert(trunc_float(world.thermo[WORLD_W / 2][WORLD_H - 2]) ==
+	       trunc_float(temp));
 }
 
 void
