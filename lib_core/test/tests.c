@@ -302,6 +302,38 @@ test_acidity(void)
 	assert(acid     == world.dot[x][y + 1]);
 }
 
+void
+test_mat_property_table_len(void)
+{
+	assert(MAT_COUNT == ARRSIZE(MAT_NAME));
+	assert(MAT_COUNT == ARRSIZE(MAT_ACIDITY));
+	assert(MAT_COUNT == ARRSIZE(MAT_ACID_VULN));
+	assert(MAT_COUNT == ARRSIZE(MAT_FULL_WEIGHT));
+	assert(MAT_COUNT == ARRSIZE(MAT_BOIL_P));
+	assert(MAT_COUNT == ARRSIZE(MAT_IGN_P));
+	assert(MAT_COUNT == ARRSIZE(MAT_MELT_P));
+	assert(MAT_COUNT == ARRSIZE(MAT_MELT_DECOMP));
+	assert(MAT_COUNT == ARRSIZE(MAT_MELT_PRDCT1_CHANCE));
+	assert(MAT_COUNT == ARRSIZE(MAT_MELT_PRDCT1));
+	assert(MAT_COUNT == ARRSIZE(MAT_MELT_PRDCT2));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_RANDOM));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_PRDCT1_CHANCE));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_PRDCT1));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_PRDCT2));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_HEAT));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_SPEED));
+	assert(MAT_COUNT == ARRSIZE(MAT_SOLID_S));
+	assert(MAT_COUNT == ARRSIZE(MAT_TH_COND));
+	assert(MAT_COUNT == ARRSIZE(MAT_TOUCH_REAGENT));
+	assert(MAT_COUNT == ARRSIZE(MAT_TOUCH_ALTPRDCT2_CHANCE));
+	assert(MAT_COUNT == ARRSIZE(MAT_TOUCH_PRDCT1));
+	assert(MAT_COUNT == ARRSIZE(MAT_TOUCH_PRDCT2));
+	assert(MAT_COUNT == ARRSIZE(MAT_TOUCH_ALTPRDCT2));
+	assert(MAT_COUNT == ARRSIZE(MAT_R));
+	assert(MAT_COUNT == ARRSIZE(MAT_G));
+	assert(MAT_COUNT == ARRSIZE(MAT_B));
+}
+
 int
 main()
 {
@@ -322,6 +354,7 @@ main()
 	test_mass_loss_upon_heat_up();
 	test_spawner();
 	// TODO ...             test_acidity();
+	test_mat_property_table_len();
 
 	world_free(&world); /* goodbye, cruel world */
 	printf("All tests passed :)\n");

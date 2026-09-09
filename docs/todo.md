@@ -188,7 +188,7 @@ Also add test subject success encouragement.
 - [x] libcore: add `trunc_float` test
 - [x] libcore: add spawners test
 - [x] libcore: ensure yoda notation in tests
-- [ ] libcore: add mat table property array length miscount test
+- [x] libcore: add mat table property array length test
 - [ ] libextra: add heat glow test
 
 - [ ] libcore: acidity, oxidation, touch don't happen in lower left corner
