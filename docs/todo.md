@@ -187,7 +187,7 @@ Also add test subject success encouragement.
 - [x] libcore: update tests to truncate floats instead of converting to int
 - [x] libcore: add `trunc_float` test
 - [x] libcore: add spawners test
-- [ ] libcore: ensure yoda notation in tests
+- [x] libcore: ensure yoda notation in tests
 - [ ] libcore: add mat table property array length miscount test
 - [ ] libextra: add heat glow test
 
