@@ -187,12 +187,13 @@ Also add test subject success encouragement.
 - [x] libcore: update tests to truncate floats instead of converting to int
 - [x] libcore: add `trunc_float` test
 - [x] libcore: add spawners test
-- [ ] libcore: add acidity test
+- [ ] libcore: ensure yoda notation in tests
 - [ ] libcore: add mat table property array length miscount test
 - [ ] libextra: add heat glow test
 
-- [ ] libcore: oxidation, touch don't happen in lower left corner
+- [ ] libcore: acidity, oxidation, touch don't happen in lower left corner
 (maybe more corners, maybe more features too)
+- [ ] libcore: enable acidity test
 - [ ] libcore: enable oxidation test
 - [ ] libcore: add random oxidation test
 - [ ] libcore: enable touch reaction test

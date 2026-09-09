@@ -255,6 +255,53 @@ test_spawner(void)
 	       world.dot[x][y + 1] == mat);
 }
 
+void
+test_acidity(void)
+{
+	const int x = 0;
+	const int y = WORLD_H - 1;
+
+	enum Mat acid = 0;
+	bool     acid_found = false;
+	int      i;
+	enum Mat vuln = 0;
+	bool     vuln_found = false;
+
+	while (vuln < MAT_COUNT) {
+		if (MAT_ACID_VULN[vuln] <= 0.0f) {
+			vuln++;
+		} else {
+			vuln_found = true;
+			break;
+		}
+
+	}
+	assert(vuln_found);
+
+	while (acid < MAT_COUNT) {
+		if (MAT_ACIDITY[acid] <= 0.0f) {
+			acid++;
+		} else {
+			acid_found = true;
+			break;
+		}
+	}
+
+	assert(acid_found);
+
+	clear_world();
+
+	world_use_brush(&world, vuln, WORLD_TEMPERATURE, x, y, 0);
+	world_use_brush(&world, acid, WORLD_TEMPERATURE, x + 1, y, 0);
+
+	for (i = 0; i < (1.0 / (MAT_ACIDITY[acid] * MAT_ACID_VULN[vuln])); i++) {
+		tick_world();
+	}
+
+	assert(MAT_NONE == world.dot[x][y]);
+	assert(acid     == world.dot[x][y + 1]);
+}
+
 int
 main()
 {
@@ -274,6 +321,7 @@ main()
 	// TODO same            test_touch();
 	test_mass_loss_upon_heat_up();
 	test_spawner();
+	// TODO ...             test_acidity();
 
 	world_free(&world); /* goodbye, cruel world */
 	printf("All tests passed :)\n");
