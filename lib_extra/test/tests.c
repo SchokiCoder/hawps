@@ -44,6 +44,27 @@ test_rgba_blend(void)
 	assert(expected.a == res.a);
 }
 
+void
+test_heat_glow(void)
+{
+	struct Rgba cold;
+	struct Rgba draper;
+	struct Rgba hot;
+	struct Rgba super_hot;
+
+	cold = thermo_to_color(0.0);
+	draper = thermo_to_color(800.0);
+	hot = thermo_to_color(3000.0);
+	super_hot = thermo_to_color(9001.0);
+
+	assert(0 == cold.a);
+	assert(draper.a > 0);
+	assert(draper.a < 64);
+	assert(hot.a > 128);
+	assert(hot.a < 256);
+	assert(0 == super_hot.a);
+}
+
 int
 main()
 {
@@ -51,6 +72,7 @@ main()
 	hawps_extra_init();
 
 	test_rgba_blend();
+	test_heat_glow();
 
 	printf("All tests passed :)\n");
 	return 0;

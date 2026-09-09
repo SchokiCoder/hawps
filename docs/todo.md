@@ -190,7 +190,7 @@ Also add test subject success encouragement.
 - [x] libcore: ensure yoda notation in tests
 - [x] libcore: add mat table property array length test
 - [x] libextra: add color blend test
-- [ ] libextra: add heat glow test
+- [x] libextra: add heat glow test
 
 - [ ] libcore: acidity, oxidation, touch don't happen in lower left corner
 (maybe more corners, maybe more features too)
