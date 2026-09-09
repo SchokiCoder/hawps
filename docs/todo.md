@@ -186,7 +186,7 @@ Also add test subject success encouragement.
 - [x] libcore: add loss of mass upon heat up test
 - [x] libcore: update tests to truncate floats instead of converting to int
 - [x] libcore: add `trunc_float` test
-- [ ] libcore: add spawners test
+- [x] libcore: add spawners test
 - [ ] libcore: add acidity test
 - [ ] libcore: add mat table property array length miscount test
 - [ ] libextra: add heat glow test
@@ -197,6 +197,9 @@ Also add test subject success encouragement.
 - [ ] libcore: add random oxidation test
 - [ ] libcore: enable touch reaction test
 - [ ] libcore: add random touch reaction test
+
+- [ ] add test run to Makefile's "run" target
+If it fails, the "run" should stop.
 
 - [ ] SDL client: temperature commands t tk don't work
 - [ ] `handle_normal_input` has its backend specific params at end

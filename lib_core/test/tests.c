@@ -235,6 +235,26 @@ test_mass_loss_upon_heat_up(void)
 	       trunc_float(MAT_FULL_WEIGHT[mat]));
 }
 
+void
+test_spawner(void)
+{
+	const enum Mat mat = MAT_OXYGEN;
+	const int x = 0;
+	const int y = 0;
+
+	clear_world();
+
+	assert(world.dot[x][y] == MAT_NONE);
+	assert(world.dot[x][y + 1] == MAT_NONE);
+
+	world.spawner[x][y] = true;
+	world.spawner_mat[x][y] = mat;
+	tick_world();
+
+	assert(world.dot[x][y] == mat ||
+	       world.dot[x][y + 1] == mat);
+}
+
 int
 main()
 {
@@ -253,8 +273,9 @@ main()
 	// TODO fix and enable: test_oxidation();
 	// TODO same            test_touch();
 	test_mass_loss_upon_heat_up();
+	test_spawner();
 
-	world_free(&world);
+	world_free(&world); /* goodbye, cruel world */
 	printf("All tests passed :)\n");
 	return 0;
 }
