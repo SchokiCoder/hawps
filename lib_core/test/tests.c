@@ -3,6 +3,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
 #include "hawps_core.h"
@@ -31,6 +32,14 @@ tick_world(void)
 	world_update(&world, WORLD_TEMPERATURE);
 	world_sim(&world);
 }
+
+float
+trunc_float(const float f)
+{
+	return floorf(f * 100000.0f) / 100000.0f;
+}
+
+
 
 void
 test_gravity(void)
@@ -190,6 +199,28 @@ test_touch(void)
 	assert(world.dot[1][WORLD_H - 1] == MAT_TOUCH_PRDCT2[mat]);
 }
 
+void
+test_mass_loss_upon_heat_up(void)
+{
+	const enum Mat mat = MAT_OXYGEN;
+	const int x = 0;
+	const int y = WORLD_H - 1;
+
+	clear_world();
+	world_use_brush(&world, mat, 0.0, x, y, 0);
+
+	tick_world();
+
+	assert(trunc_float(world.weight[x][y]) ==
+	       trunc_float(MAT_FULL_WEIGHT[mat]));
+
+	world_use_heater(&world, MAT_BOIL_P[mat], x, y, 0);
+	tick_world();
+
+	assert(trunc_float(world.weight[x][y]) <
+	       trunc_float(MAT_FULL_WEIGHT[mat]));
+}
+
 int
 main()
 {
@@ -205,6 +236,7 @@ main()
 	test_melt_decomposition();
 	// TODO fix and enable: test_oxidation();
 	// TODO same            test_touch();
+	test_mass_loss_upon_heat_up();
 
 	world_free(&world);
 	printf("All tests passed :)\n");

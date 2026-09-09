@@ -106,7 +106,7 @@ bin/gen_int_to_string_table: client_desktop/gen/gen_int_to_string_table.c
 		$<
 
 bin/lib_core_tests: lib_core/test/tests.c
-	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core \
+	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -lm \
 		lib_core/*.c $<
 
 client_desktop/int_to_string.h: bin/gen_int_to_string_table
