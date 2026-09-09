@@ -42,6 +42,12 @@ trunc_float(const float f)
 
 
 void
+test_trunc_float(void)
+{
+	assert(trunc_float(0.123456789f) == 0.123450000f);
+}
+
+void
 test_gravity(void)
 {
 	clear_world();
@@ -234,6 +240,8 @@ main()
 {
 	hawps_core_init();
 	world = world_new(WORLD_W, WORLD_H, WORLD_TEMPERATURE);
+
+	test_trunc_float();
 
 	test_gravity();
 	test_stack_collapse_grain();

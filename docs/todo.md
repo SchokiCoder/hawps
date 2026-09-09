@@ -185,7 +185,7 @@ Also add test subject success encouragement.
 - [x] libcore: add randomness test to melt decomposition test
 - [x] libcore: add loss of mass upon heat up test
 - [x] libcore: update tests to truncate floats instead of converting to int
-- [ ] libcore: add `trunc_float` test
+- [x] libcore: add `trunc_float` test
 - [ ] libcore: add spawners test
 - [ ] libcore: add acidity test
 - [ ] libcore: add mat table property array length miscount test
