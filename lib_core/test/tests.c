@@ -219,6 +219,31 @@ test_touch(void)
 }
 
 void
+test_random_touch(void)
+{
+	const int ax = 1;
+	const int ay = WORLD_H - 1;
+	const int bx = ax - 1;
+	const int by = ay;
+	const enum Mat mat = MAT_CALCIUM_HYDROXIDE;
+
+	clear_world();
+	world_use_brush(&world, mat, WORLD_TEMPERATURE,
+	                ax, ay, 0);
+	world_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
+	                bx, by, 0);
+
+	assert(mat                    == world.dot[ax][ay]);
+	assert(MAT_TOUCH_REAGENT[mat] == world.dot[bx][by]);
+
+	tick_world();
+
+	assert(MAT_TOUCH_PRDCT1[mat] == world.dot[ax][ay]);
+	assert(MAT_TOUCH_PRDCT2[mat] == world.dot[bx][by] ||
+	       MAT_TOUCH_ALTPRDCT2[mat] == world.dot[bx][by]);
+}
+
+void
 test_mass_loss_upon_heat_up(void)
 {
 	const enum Mat mat = MAT_OXYGEN;
@@ -386,6 +411,7 @@ main()
 	test_oxidation();
 	test_random_oxidation();
 	test_touch();
+	test_random_touch();
 	test_mass_loss_upon_heat_up();
 	test_spawner();
 	test_acidity();
