@@ -197,21 +197,25 @@ test_oxidation(void)
 void
 test_touch(void)
 {
+	const int ax = 1;
+	const int ay = WORLD_H - 1;
+	const int bx = ax - 1;
+	const int by = ay;
 	const enum Mat mat = MAT_CALCIUM_OXIDE;
 
 	clear_world();
 	world_use_brush(&world, mat, WORLD_TEMPERATURE,
-	                0, WORLD_H - 1, 0);
+	                ax, ay, 0);
 	world_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
-	                1, WORLD_H - 1, 0);
+	                bx, by, 0);
 
-	assert(mat                    == world.dot[0][WORLD_H - 1]);
-	assert(MAT_TOUCH_REAGENT[mat] == world.dot[1][WORLD_H - 1]);
+	assert(mat                    == world.dot[ax][ay]);
+	assert(MAT_TOUCH_REAGENT[mat] == world.dot[bx][by]);
 
 	tick_world();
 
-	assert(MAT_TOUCH_PRDCT1[mat] == world.dot[0][WORLD_H - 1]);
-	assert(MAT_TOUCH_PRDCT2[mat] == world.dot[1][WORLD_H - 1]);
+	assert(MAT_TOUCH_PRDCT1[mat] == world.dot[ax][ay]);
+	assert(MAT_TOUCH_PRDCT2[mat] == world.dot[bx][by]);
 }
 
 void

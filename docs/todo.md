@@ -197,6 +197,7 @@ Also finish and enable oxidation test.
 
 - [x] libcore: finish and enable acidity test
 - [x] libcore: add random oxidation test
+- [x] libcore: finish touch test
 - [ ] libcore: add random touch reaction test
 
 - [ ] libcore: oxidation depends on `MAT_IGN_P` and `MAT_OXID_SPEED`
