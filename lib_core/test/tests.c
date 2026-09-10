@@ -306,6 +306,33 @@ test_acidity(void)
 }
 
 void
+test_random_oxidation(void)
+{
+	const enum Mat mat = MAT_IRON_THERMITE;
+	const int x = WORLD_W - 1;
+	const int y = WORLD_H - 1;
+	const int ox = x - 1;
+	const int oy = y;
+	int i;
+
+	clear_world();
+	world_use_brush(&world, mat, MAT_IGN_P[mat] + 1, x, y, 0);
+	world_use_brush(&world, MAT_OXYGEN, MAT_IGN_P[mat] + 1, ox, oy, 0);
+
+	assert(mat        == world.dot[x][y]);
+	assert(MAT_OXYGEN == world.dot[ox][oy]);
+
+	for (i = 0; i < (1.0 / MAT_OXID_SPEED[mat]); i++) {
+		tick_world();
+	}
+
+	assert(MAT_OXID_PRDCT1[mat] == world.dot[x][y] ||
+	       MAT_OXID_PRDCT2[mat] == world.dot[x][y]);
+	assert(MAT_OXID_PRDCT1[mat] == world.dot[ox][oy] ||
+	       MAT_OXID_PRDCT2[mat] == world.dot[ox][oy]);
+}
+
+void
 test_mat_property_table_len(void)
 {
 	assert(MAT_COUNT == ARRSIZE(MAT_NAME));
@@ -353,6 +380,7 @@ main()
 	test_thermal_nonconduction();
 	test_melt_decomposition();
 	test_oxidation();
+	test_random_oxidation();
 	test_touch();
 	test_mass_loss_upon_heat_up();
 	test_spawner();

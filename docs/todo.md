@@ -196,11 +196,12 @@ Also add test subject success encouragement.
 Also finish and enable oxidation test.
 
 - [x] libcore: finish and enable acidity test
-- [ ] libcore: acidity, oxidation, touch don't happen in lower left corner
-(maybe more corners, maybe more features too)
-- [ ] libcore: add random oxidation test
-- [ ] libcore: enable touch reaction test
+- [x] libcore: add random oxidation test
 - [ ] libcore: add random touch reaction test
+
+- [ ] libcore: oxidation depends on `MAT_IGN_P` and `MAT_OXID_SPEED`
+remove one of these, and use logical ANDs rather than nested ifs
+maybe rename ign-p to oxid-p and then use that?
 
 - [ ] add test run to Makefile's "run" target
 If it fails, the "run" should stop.
