@@ -345,8 +345,8 @@ test_random_oxidation(void)
 	int i;
 
 	clear_world();
-	world_use_brush(&world, mat, MAT_IGN_P[mat] + 1, x, y, 0);
-	world_use_brush(&world, MAT_OXYGEN, MAT_IGN_P[mat] + 1, ox, oy, 0);
+	world_use_brush(&world, mat, MAT_OXID_P[mat] + 1, x, y, 0);
+	world_use_brush(&world, MAT_OXYGEN, MAT_OXID_P[mat] + 1, ox, oy, 0);
 
 	assert(mat        == world.dot[x][y]);
 	assert(MAT_OXYGEN == world.dot[ox][oy]);
@@ -369,12 +369,12 @@ test_mat_property_table_len(void)
 	assert(MAT_COUNT == ARRSIZE(MAT_ACID_VULN));
 	assert(MAT_COUNT == ARRSIZE(MAT_FULL_WEIGHT));
 	assert(MAT_COUNT == ARRSIZE(MAT_BOIL_P));
-	assert(MAT_COUNT == ARRSIZE(MAT_IGN_P));
 	assert(MAT_COUNT == ARRSIZE(MAT_MELT_P));
 	assert(MAT_COUNT == ARRSIZE(MAT_MELT_DECOMP));
 	assert(MAT_COUNT == ARRSIZE(MAT_MELT_PRDCT1_CHANCE));
 	assert(MAT_COUNT == ARRSIZE(MAT_MELT_PRDCT1));
 	assert(MAT_COUNT == ARRSIZE(MAT_MELT_PRDCT2));
+	assert(MAT_COUNT == ARRSIZE(MAT_OXID_P));
 	assert(MAT_COUNT == ARRSIZE(MAT_OXID_RANDOM));
 	assert(MAT_COUNT == ARRSIZE(MAT_OXID_PRDCT1_CHANCE));
 	assert(MAT_COUNT == ARRSIZE(MAT_OXID_PRDCT1));

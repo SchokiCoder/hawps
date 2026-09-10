@@ -441,24 +441,22 @@ world_sim_chemical_reaction(struct World *w,
 		world_clear_dot(w, x, y);
 	}
 
-	if (MAT_OXID_SPEED[w->dot[x][y]] > 0.0) {
-		if (MAT_OXYGEN == w->dot[dx][dy]) {
-			if (w->thermo[x][y] > MAT_IGN_P[w->dot[x][y]]) {
-				th = MAT_OXID_HEAT[w->dot[x][y]] *
-				     MAT_OXID_SPEED[w->dot[x][y]] /
-				     2.0;
+	if (MAT_OXYGEN == w->dot[dx][dy] &&
+	    MAT_OXID_SPEED[w->dot[x][y]] > 0.0 &&
+	    w->thermo[x][y] >= MAT_OXID_P[w->dot[x][y]]) {
+		th = MAT_OXID_HEAT[w->dot[x][y]] *
+		     MAT_OXID_SPEED[w->dot[x][y]] /
+		     2.0;
 
-				w->oxid[x][y] += MAT_OXID_SPEED[w->dot[x][y]];
-				w->thermo[x][y] += th;
-				w->thermo[dx][dy] += th;
+		w->oxid[x][y] += MAT_OXID_SPEED[w->dot[x][y]];
+		w->thermo[x][y] += th;
+		w->thermo[dx][dy] += th;
 
-				if (w->oxid[x][y] >= 1.0) {
-					mat_oxid_prdcts(w->dot[x][y],
-					                &w->dot[x][y],
-					                &w->dot[dx][dy]);
-					w->oxid[x][y] = 0.0;
-				}
-			}
+		if (w->oxid[x][y] >= 1.0) {
+			mat_oxid_prdcts(w->dot[x][y],
+			                &w->dot[x][y],
+			                &w->dot[dx][dy]);
+			w->oxid[x][y] = 0.0;
 		}
 	}
 

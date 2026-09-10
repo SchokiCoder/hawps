@@ -200,10 +200,10 @@ Also finish and enable oxidation test.
 - [x] libcore: finish touch test
 - [x] libcore: add random touch reaction test
 
-- [ ] libcore: oxidation depends on `MAT_IGN_P` and `MAT_OXID_SPEED`
-remove one of these, and use logical ANDs rather than nested ifs
-maybe rename ign-p to oxid-p and then use that?
+- [x] libcore: clean up oxidation check code
+Also rename `IGN_P` property to `OXID_P`, since it's only for oxidations.
 
+- [ ] libcore: add non oxidation test
 - [ ] add test run to Makefile's "run" target
 If it fails, the "run" should stop.
 

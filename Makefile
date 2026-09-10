@@ -106,11 +106,11 @@ bin/gen_int_to_string_table: client_desktop/gen/gen_int_to_string_table.c
 	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
 		$<
 
-bin/lib_core_tests: lib_core/test/tests.c
+bin/lib_core_tests: lib_core/test/tests.c lib_core/*
 	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -lm \
 		lib_core/*.c $<
 
-bin/lib_extra_tests: lib_extra/test/tests.c
+bin/lib_extra_tests: lib_extra/test/tests.c lib_core/* lib_extra/*
 	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
 		lib_core/*.c lib_extra/*.c $<
 
