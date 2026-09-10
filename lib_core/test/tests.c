@@ -173,23 +173,25 @@ void
 test_oxidation(void)
 {
 	const enum Mat mat = MAT_IRON;
+	const int x = 0;
+	const int y = WORLD_H - 1;
+	const int ox = x + 1;
+	const int oy = y;
 	int i;
 
 	clear_world();
-	world_use_brush(&world, mat, WORLD_TEMPERATURE,
-	                0, WORLD_H - 1, 0);
-	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE,
-	                0, WORLD_H - 2, 0);
+	world_use_brush(&world, mat, WORLD_TEMPERATURE, x, y, 0);
+	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE, ox, oy, 0);
 
-	assert(mat        == world.dot[0][WORLD_H - 1]);
-	assert(MAT_OXYGEN == world.dot[0][WORLD_H - 2]);
+	assert(mat        == world.dot[x][y]);
+	assert(MAT_OXYGEN == world.dot[ox][oy]);
 
 	for (i = 0; i < (1.0 / MAT_OXID_SPEED[mat]); i++) {
 		tick_world();
 	}
 
-	assert(MAT_OXID_PRDCT1[mat] == world.dot[0][WORLD_H - 1]);
-	assert(MAT_OXID_PRDCT2[mat] == world.dot[0][WORLD_H - 2]);
+	assert(MAT_OXID_PRDCT1[mat] == world.dot[x][y]);
+	assert(MAT_OXID_PRDCT2[mat] == world.dot[ox][oy]);
 }
 
 void
@@ -348,7 +350,7 @@ main()
 	test_thermal_conduction();
 	test_thermal_nonconduction();
 	test_melt_decomposition();
-	// TODO fix and enable: test_oxidation();
+	test_oxidation();
 	// TODO same            test_touch();
 	test_mass_loss_upon_heat_up();
 	test_spawner();

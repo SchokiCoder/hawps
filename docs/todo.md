@@ -192,10 +192,12 @@ Also add test subject success encouragement.
 - [x] libextra: add color blend test
 - [x] libextra: add heat glow test
 
+- [x] libcore: fix some missing chemcial reaction checks to corners
+Also finish and enable oxidation test.
+
 - [ ] libcore: acidity, oxidation, touch don't happen in lower left corner
 (maybe more corners, maybe more features too)
 - [ ] libcore: enable acidity test
-- [ ] libcore: enable oxidation test
 - [ ] libcore: add random oxidation test
 - [ ] libcore: enable touch reaction test
 - [ ] libcore: add random touch reaction test

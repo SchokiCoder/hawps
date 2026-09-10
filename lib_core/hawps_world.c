@@ -322,6 +322,9 @@ world_sim(struct World *w)
 		world_sim_chemical_reaction(w, x, y, x, y - 1);
 	}
 
+	world_sim_chemical_reaction(w, 0, w->h - 1, 1, w->h - 1);
+	world_sim_chemical_reaction(w, w->w - 1, w->h - 1, w->w - 2, w->h - 1);
+
 	y = w->h - 2;
 	while (1) {
 		if (y <= 0) {
@@ -351,6 +354,9 @@ world_sim(struct World *w)
 		world_sim_chemical_reaction(w, x, y, x + 1, y);
 		world_sim_gravity(w, x, y);
 	}
+
+	world_sim_chemical_reaction(w, 0, 0, 1, 0);
+	world_sim_chemical_reaction(w, w->w - 1, 0, w->w - 2, 0);
 
 	x = 0;
 	for (y = w->h - 2; y >= 0; y--) {
