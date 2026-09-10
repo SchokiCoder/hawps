@@ -203,7 +203,7 @@ Also finish and enable oxidation test.
 - [x] libcore: clean up oxidation check code
 Also rename `IGN_P` property to `OXID_P`, since it's only for oxidations.
 
-- [ ] libcore: add non oxidation test
+- [x] libcore: add non oxidation test
 - [ ] add test run to Makefile's "run" target
 If it fails, the "run" should stop.
 
