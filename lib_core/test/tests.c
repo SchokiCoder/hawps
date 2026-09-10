@@ -259,8 +259,10 @@ test_spawner(void)
 void
 test_acidity(void)
 {
-	const int x = 0;
-	const int y = WORLD_H - 1;
+	const int ax = 0;
+	const int ay = WORLD_H - 1;
+	const int vx = ax + 1;
+	const int vy = ay;
 
 	enum Mat acid = 0;
 	bool     acid_found = false;
@@ -292,15 +294,15 @@ test_acidity(void)
 
 	clear_world();
 
-	world_use_brush(&world, vuln, WORLD_TEMPERATURE, x, y, 0);
-	world_use_brush(&world, acid, WORLD_TEMPERATURE, x + 1, y, 0);
+	world_use_brush(&world, vuln, WORLD_TEMPERATURE, vx, vy, 0);
+	world_use_brush(&world, acid, WORLD_TEMPERATURE, ax, ay, 0);
 
 	for (i = 0; i < (1.0 / (MAT_ACIDITY[acid] * MAT_ACID_VULN[vuln])); i++) {
 		tick_world();
 	}
 
-	assert(MAT_NONE == world.dot[x][y]);
-	assert(acid     == world.dot[x][y + 1]);
+	assert(MAT_NONE == world.dot[vx][vy]);
+	assert(acid     == world.dot[ax][ay]);
 }
 
 void
@@ -351,10 +353,10 @@ main()
 	test_thermal_nonconduction();
 	test_melt_decomposition();
 	test_oxidation();
-	// TODO same            test_touch();
+	test_touch();
 	test_mass_loss_upon_heat_up();
 	test_spawner();
-	// TODO ...             test_acidity();
+	test_acidity();
 	test_mat_property_table_len();
 
 	world_free(&world); /* goodbye, cruel world */

@@ -195,9 +195,9 @@ Also add test subject success encouragement.
 - [x] libcore: fix some missing chemcial reaction checks to corners
 Also finish and enable oxidation test.
 
+- [x] libcore: finish and enable acidity test
 - [ ] libcore: acidity, oxidation, touch don't happen in lower left corner
 (maybe more corners, maybe more features too)
-- [ ] libcore: enable acidity test
 - [ ] libcore: add random oxidation test
 - [ ] libcore: enable touch reaction test
 - [ ] libcore: add random touch reaction test
