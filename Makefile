@@ -73,7 +73,7 @@ profile: preprofile profiling/$(DEFAULT_CLIENT)_$(GIT_HEAD)
 remove:
 	rm -f $(BIN_DESTDIR)/$(APP_NAME)
 
-run: prerun bin/$(DEFAULT_CLIENT)
+run: test prerun bin/$(DEFAULT_CLIENT)
 	LSAN_OPTIONS=suppressions=lsan.supp ./bin/$(DEFAULT_CLIENT)
 
 test: bin/lib_core_tests bin/lib_extra_tests

@@ -204,8 +204,7 @@ Also finish and enable oxidation test.
 Also rename `IGN_P` property to `OXID_P`, since it's only for oxidations.
 
 - [x] libcore: add non oxidation test
-- [ ] add test run to Makefile's "run" target
-If it fails, the "run" should stop.
+- [x] add test execution to Makefile's "run" target
 
 - [ ] SDL client: temperature commands t tk don't work
 - [ ] `handle_normal_input` has its backend specific params at end
