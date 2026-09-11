@@ -444,6 +444,11 @@ handle_input(
  */
 bool
 handle_normal_input(const char         *in,
+#ifdef SDL_BACKEND
+                    SDL_FRect          *world_draw,
+#else
+                    struct Rect        *world_draw,
+#endif
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
@@ -453,12 +458,7 @@ handle_normal_input(const char         *in,
                     float              *tickrate,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
-                    struct World       *world,
-#ifdef SDL_BACKEND
-                    SDL_FRect          *world_draw);
-#else
-                    struct Rect        *world_draw);
-#endif
+                    struct World       *world);
 
 struct ToolOptions
 new_tool_options(void);
@@ -857,6 +857,7 @@ handle_input(
 
 			case IM_NORMAL:
 				handle_normal_input(e.text.text,
+				                    world_draw,
 				                    active,
 				                    delta,
 				                    input_mode,
@@ -866,8 +867,7 @@ handle_input(
 				                    tickrate,
 				                    th_vision,
 				                    tool_opts,
-				                    world,
-				                    world_draw);
+				                    world);
 				break;
 			}
 			break;
@@ -910,6 +910,7 @@ handle_input(
 		    input_len < INPUT_SIZE) {
 			input[input_len] = '\0';
 			if (!handle_normal_input(input,
+			                         world_draw,
 			                         active,
 			                         delta,
 			                         input_mode,
@@ -919,8 +920,7 @@ handle_input(
 			                         tickrate,
 			                         th_vision,
 			                         tool_opts,
-			                         world,
-			                         world_draw)) {
+			                         world)) {
 				handle_normal_csi_input(input,
 				                        delta,
 				                        drag_start_x,
@@ -960,6 +960,11 @@ handle_input(
 
 bool
 handle_normal_input(const char         *in,
+#ifdef SDL_BACKEND
+                    SDL_FRect          *world_draw,
+#else
+                    struct Rect        *world_draw,
+#endif
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
@@ -969,12 +974,7 @@ handle_normal_input(const char         *in,
                     float              *tickrate,
                     bool               *th_vision,
                     struct ToolOptions *tool_opts,
-                    struct World       *world,
-#ifdef SDL_BACKEND
-                    SDL_FRect          *world_draw)
-#else
-                    struct Rect        *world_draw)
-#endif
+                    struct World       *world)
 {
 	float use_tool_delta;
 
