@@ -210,7 +210,7 @@ Also rename `IGN_P` property to `OXID_P`, since it's only for oxidations.
 - [x] fix `handle_normal_input` having its backend specific params at end
 - [x] desktop client: update function declaration comments
 
-- [ ] desktop client: update help text
+- [x] desktop client: add missing mouse wheel actions to help text
 - [ ] update README
 
 - git tag to update APP_VERSION
