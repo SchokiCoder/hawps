@@ -430,15 +430,17 @@ handle_input(
              struct World          *world);
 
 /* @in: Input.
+ * @world_draw: Runtime data.
  * @active: Runtime data.
  * @delta: Runtime data.
  * @input_mode: Runtime data.
+ * @last_key_use: Runtime data.
+ * @now: Runtime data.
  * @paused: Runtime data.
  * @tickrate: Runtime data.
  * @th_vision: Runtime data.
  * @tool_opts: Runtime data.
  * @world: Runtime data.
- * @world_draw: Runtime data.
  *
  * Returns true if the input had been fully handled.
  */

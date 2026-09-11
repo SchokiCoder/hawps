@@ -207,8 +207,8 @@ Also rename `IGN_P` property to `OXID_P`, since it's only for oxidations.
 - [x] add test execution to Makefile's "run" target
 
 - [x] ~SDL client: temperature commands t tk don't work~
-- [x] `handle_normal_input` has its backend specific params at end
-- [ ] update function declaration comments
+- [x] fix `handle_normal_input` having its backend specific params at end
+- [x] desktop client: update function declaration comments
 
 - [ ] desktop client: update help text
 - [ ] update README
