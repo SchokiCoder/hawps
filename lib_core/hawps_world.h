@@ -49,6 +49,14 @@ world_clear_dot(struct World *w,
                 const int     x,
                 const int     y);
 
+void
+world_free(struct World *w);
+
+/* You SHOULD call world_update before this.
+ */
+void
+world_sim(struct World *w);
+
 /* You may want to call world_sim after this.
  */
 void
@@ -63,12 +71,6 @@ world_use_brush(struct World   *w,
                 const int       y_c,
                 const int       radius);
 
-void
-world_use_eraser(struct World *w,
-                 const int     x_c,
-                 const int     y_c,
-                 const int     radius);
-
 /* Using this to increase temperature, by giving a negative delta,
  * is inefficient. Cooling requires an additional check.
  * To heat, see world_use_heater
@@ -76,6 +78,12 @@ world_use_eraser(struct World *w,
 void
 world_use_cooler(struct World *w,
                  const float   delta,
+                 const int     x_c,
+                 const int     y_c,
+                 const int     radius);
+
+void
+world_use_eraser(struct World *w,
                  const int     x_c,
                  const int     y_c,
                  const int     radius);
@@ -90,13 +98,5 @@ world_use_heater(struct World *w,
                  const int     x_c,
                  const int     y_c,
                  const int     radius);
-
-/* You SHOULD call world_update before this.
- */
-void
-world_sim(struct World *w);
-
-void
-world_free(struct World *w);
 
 #endif /* _HAWPS_WORLD_H */

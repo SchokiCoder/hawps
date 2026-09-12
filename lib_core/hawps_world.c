@@ -7,9 +7,15 @@
 
 #include "hawps_world.h"
 
+/* Constant defines
+ */
+
 #define WEIGHT_FACTOR_LIQUID 0.95
 #define WEIGHT_FACTOR_GAS    0.90
 #define WEIGHTLOSS_LIMIT_GAS 5000.0
+
+/* Function declarations
+ */
 
 static bool
 world_collapse_gas_stack(struct World *w,
@@ -41,16 +47,6 @@ world_drop_liquid(struct World *w,
                   const int     y);
 
 static void
-world_sim_to_right(struct World *w,
-                   int          *x,
-                   const int     y);
-
-static void
-world_sim_to_left(struct World *w,
-                  int          *x,
-                  const int     y);
-
-static void
 world_sim_chemical_reaction(struct World *w,
                             const int     x,
                             const int     y,
@@ -69,6 +65,16 @@ world_sim_th_conduction(struct World *w,
                         const int     x2,
                         const int     y2);
 
+static void
+world_sim_to_right(struct World *w,
+                   int          *x,
+                   const int     y);
+
+static void
+world_sim_to_left(struct World *w,
+                  int          *x,
+                  const int     y);
+
 /* Swaps all properties of two coordinates.
  */
 static void
@@ -82,6 +88,9 @@ static void
 world_update_dot_from_thermo(struct World *w,
                              const int     x,
                              const int     y);
+
+/* Function definitions
+ */
 
 struct World
 world_new(const int   w,
@@ -305,6 +314,90 @@ world_drop_liquid(struct World *w,
 }
 
 void
+world_free(struct World *w)
+{
+	if (w->dissol != NULL) {
+		free(w->dissol);
+		w->dissol = NULL;
+	}
+
+	if (w->_dissol != NULL) {
+		free(w->_dissol);
+		w->_dissol = NULL;
+	}
+
+	if (w->dot != NULL) {
+		free(w->dot);
+		w->dot = NULL;
+	}
+
+	if (w->_dot != NULL) {
+		free(w->_dot);
+		w->_dot = NULL;
+	}
+
+	if (w->oxid != NULL) {
+		free(w->oxid);
+		w->oxid = NULL;
+	}
+
+	if (w->_oxid != NULL) {
+		free(w->_oxid);
+		w->_oxid = NULL;
+	}
+
+	if (w->spawner != NULL) {
+		free(w->spawner);
+		w->spawner = NULL;
+	}
+
+	if (w->_spawner != NULL) {
+		free(w->_spawner);
+		w->_spawner = NULL;
+	}
+
+	if (w->spawner_mat != NULL) {
+		free(w->spawner_mat);
+		w->spawner_mat = NULL;
+	}
+
+	if (w->_spawner_mat != NULL) {
+		free(w->_spawner_mat);
+		w->_spawner_mat = NULL;
+	}
+
+	if (w->state != NULL) {
+		free(w->state);
+		w->state = NULL;
+	}
+
+	if (w->_state != NULL) {
+		free(w->_state);
+		w->_state = NULL;
+	}
+
+	if (w->thermo != NULL) {
+		free(w->thermo);
+		w->thermo = NULL;
+	}
+
+	if (w->_thermo != NULL) {
+		free(w->_thermo);
+		w->_thermo = NULL;
+	}
+
+	if (w->weight != NULL) {
+		free(w->weight);
+		w->weight = NULL;
+	}
+
+	if (w->_weight != NULL) {
+		free(w->_weight);
+		w->_weight = NULL;
+	}
+}
+
+void
 world_sim(struct World *w)
 {
 	int x, y;
@@ -380,48 +473,6 @@ world_sim(struct World *w)
 		world_sim_chemical_reaction(w, x, y, x, y + 1);
 		world_sim_chemical_reaction(w, x, y, x - 1, y);
 		world_sim_gravity(w, x, y);
-	}
-}
-
-static void
-world_sim_to_right(struct World *w,
-                   int          *x,
-                   const int     y)
-{
-	for (*x = 1; *x <= w->w - 2; *x += 1) {
-		if (MAT_NONE == w->dot[*x][y]) {
-			continue;
-		}
-
-		world_sim_th_conduction(w, *x, y, *x, y + 1);
-		world_sim_th_conduction(w, *x, y, *x - 1, y);
-		world_sim_th_conduction(w, *x, y, *x + 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x, y + 1);
-		world_sim_chemical_reaction(w, *x, y, *x, y - 1);
-		world_sim_chemical_reaction(w, *x, y, *x - 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
-		world_sim_gravity(w, *x, y);
-	}
-}
-
-static void
-world_sim_to_left(struct World *w,
-                  int          *x,
-                  const int     y)
-{
-	for (*x = w->w - 2; *x >= 1; *x -= 1) {
-		if (MAT_NONE == w->dot[*x][y]) {
-			continue;
-		}
-
-		world_sim_th_conduction(w, *x, y, *x, y + 1);
-		world_sim_th_conduction(w, *x, y, *x - 1, y);
-		world_sim_th_conduction(w, *x, y, *x + 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x, y + 1);
-		world_sim_chemical_reaction(w, *x, y, *x, y - 1);
-		world_sim_chemical_reaction(w, *x, y, *x - 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
-		world_sim_gravity(w, *x, y);
 	}
 }
 
@@ -508,6 +559,48 @@ world_sim_th_conduction(struct World *w,
 
 	w->thermo[x][y] += c1;
 	w->thermo[x2][y2] += c2;
+}
+
+static void
+world_sim_to_right(struct World *w,
+                   int          *x,
+                   const int     y)
+{
+	for (*x = 1; *x <= w->w - 2; *x += 1) {
+		if (MAT_NONE == w->dot[*x][y]) {
+			continue;
+		}
+
+		world_sim_th_conduction(w, *x, y, *x, y + 1);
+		world_sim_th_conduction(w, *x, y, *x - 1, y);
+		world_sim_th_conduction(w, *x, y, *x + 1, y);
+		world_sim_chemical_reaction(w, *x, y, *x, y + 1);
+		world_sim_chemical_reaction(w, *x, y, *x, y - 1);
+		world_sim_chemical_reaction(w, *x, y, *x - 1, y);
+		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
+		world_sim_gravity(w, *x, y);
+	}
+}
+
+static void
+world_sim_to_left(struct World *w,
+                  int          *x,
+                  const int     y)
+{
+	for (*x = w->w - 2; *x >= 1; *x -= 1) {
+		if (MAT_NONE == w->dot[*x][y]) {
+			continue;
+		}
+
+		world_sim_th_conduction(w, *x, y, *x, y + 1);
+		world_sim_th_conduction(w, *x, y, *x - 1, y);
+		world_sim_th_conduction(w, *x, y, *x + 1, y);
+		world_sim_chemical_reaction(w, *x, y, *x, y + 1);
+		world_sim_chemical_reaction(w, *x, y, *x, y - 1);
+		world_sim_chemical_reaction(w, *x, y, *x - 1, y);
+		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
+		world_sim_gravity(w, *x, y);
+	}
 }
 
 static void
@@ -626,39 +719,6 @@ world_use_brush(struct World   *w,
 }
 
 void
-world_use_eraser(struct World *w,
-                 const int     x_c,
-                 const int     y_c,
-                 const int     radius)
-{
-	int x, y;
-	int x1 = x_c - radius;
-	int x2 = x_c + radius;
-	int y1 = y_c - radius;
-	int y2 = y_c + radius;
-
-	if (x1 < 0) {
-		x1 = 0;
-	}
-	if (x2 >= w->w) {
-		x2 = w->w - 1;
-	}
-	if (y1 < 0) {
-		y1 = 0;
-	}
-	if (y2 >= w->h) {
-		y2 = w->h - 1;
-	}
-
-	for (x = x1; x <= x2; x++) {
-		for (y = y1; y <= y2; y++) {
-			world_clear_dot(w, x, y);
-			w->spawner[x][y] = 0;
-		}
-	}
-}
-
-void
 world_use_cooler(struct World *w,
                  const float   delta,
                  const int     x_c,
@@ -696,6 +756,39 @@ world_use_cooler(struct World *w,
 }
 
 void
+world_use_eraser(struct World *w,
+                 const int     x_c,
+                 const int     y_c,
+                 const int     radius)
+{
+	int x, y;
+	int x1 = x_c - radius;
+	int x2 = x_c + radius;
+	int y1 = y_c - radius;
+	int y2 = y_c + radius;
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+	if (x2 >= w->w) {
+		x2 = w->w - 1;
+	}
+	if (y1 < 0) {
+		y1 = 0;
+	}
+	if (y2 >= w->h) {
+		y2 = w->h - 1;
+	}
+
+	for (x = x1; x <= x2; x++) {
+		for (y = y1; y <= y2; y++) {
+			world_clear_dot(w, x, y);
+			w->spawner[x][y] = 0;
+		}
+	}
+}
+
+void
 world_use_heater(struct World *w,
                  const float   delta,
                  const int     x_c,
@@ -725,89 +818,5 @@ world_use_heater(struct World *w,
 		for (y = y1; y <= y2; y++) {
 			w->thermo[x][y] += delta;
 		}
-	}
-}
-
-void
-world_free(struct World *w)
-{
-	if (w->dissol != NULL) {
-		free(w->dissol);
-		w->dissol = NULL;
-	}
-
-	if (w->_dissol != NULL) {
-		free(w->_dissol);
-		w->_dissol = NULL;
-	}
-
-	if (w->dot != NULL) {
-		free(w->dot);
-		w->dot = NULL;
-	}
-
-	if (w->_dot != NULL) {
-		free(w->_dot);
-		w->_dot = NULL;
-	}
-
-	if (w->oxid != NULL) {
-		free(w->oxid);
-		w->oxid = NULL;
-	}
-
-	if (w->_oxid != NULL) {
-		free(w->_oxid);
-		w->_oxid = NULL;
-	}
-
-	if (w->spawner != NULL) {
-		free(w->spawner);
-		w->spawner = NULL;
-	}
-
-	if (w->_spawner != NULL) {
-		free(w->_spawner);
-		w->_spawner = NULL;
-	}
-
-	if (w->spawner_mat != NULL) {
-		free(w->spawner_mat);
-		w->spawner_mat = NULL;
-	}
-
-	if (w->_spawner_mat != NULL) {
-		free(w->_spawner_mat);
-		w->_spawner_mat = NULL;
-	}
-
-	if (w->state != NULL) {
-		free(w->state);
-		w->state = NULL;
-	}
-
-	if (w->_state != NULL) {
-		free(w->_state);
-		w->_state = NULL;
-	}
-
-	if (w->thermo != NULL) {
-		free(w->thermo);
-		w->thermo = NULL;
-	}
-
-	if (w->_thermo != NULL) {
-		free(w->_thermo);
-		w->_thermo = NULL;
-	}
-
-	if (w->weight != NULL) {
-		free(w->weight);
-		w->weight = NULL;
-	}
-
-	if (w->_weight != NULL) {
-		free(w->_weight);
-		w->_weight = NULL;
 	}
 }
