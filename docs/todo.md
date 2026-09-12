@@ -75,6 +75,9 @@ Remember to update the ip address display to reflect this.
 
 # File Update
 
+- [x] fix tool-size-change-binds redundancy in help text
+The actions were already there, just lacked their hardcoded binds.
+
 - [ ] libcore: add saving world to file functionality
 Serialization stuff. Mind endianness.
 
@@ -91,6 +94,8 @@ Saves to "default" and by default loads it at startup?
 
 - [ ] desktop client: update help text
 - [ ] update README
+
+-----
 
 # Simple and Direct Update
 
@@ -211,11 +216,8 @@ Also rename `IGN_P` property to `OXID_P`, since it's only for oxidations.
 - [x] desktop client: update function declaration comments
 
 - [x] desktop client: add missing mouse wheel actions to help text
-- [ ] update README
 
 - git tag to update APP_VERSION
-
------
 
 # "Waiting for an update"-Anniversary Update
 
