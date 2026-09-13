@@ -77,7 +77,8 @@ run: test prerun bin/$(DEFAULT_CLIENT)
 	LSAN_OPTIONS=suppressions=lsan.supp ./bin/$(DEFAULT_CLIENT)
 
 test: bin/lib_core_tests bin/lib_extra_tests
-	./bin/lib_core_tests
+	./bin/lib_core_tests "temp.wld"
+	rm -f "temp.wld"
 	./bin/lib_extra_tests
 
 vet:

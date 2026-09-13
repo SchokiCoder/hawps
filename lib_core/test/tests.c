@@ -20,6 +20,7 @@ clear_world(void)
 
 	for (x = 0; x < WORLD_W; x++) {
 		for (y = 0; y < WORLD_H; y++) {
+			world.spawner[x][y] = false;
 			world_clear_dot(&world, x, y);
 		}
 	}
@@ -428,12 +429,48 @@ test_mat_property_table_len(void)
 	assert(MAT_COUNT == ARRSIZE(MAT_B));
 }
 
+void
+test_world_pack_v1(void)
+{
+	struct PackedWorldV1 pw;
+
+	clear_world();
+
+	pw = PackedWorldV1_new(world);
+
+	assert(1 == pw.version);
+	assert(WORLD_W == pw.width);
+	assert(WORLD_H == pw.height);
+	assert(0 == pw.spawners);
+	assert(0 == pw.unused1);
+	assert(0 == pw.unused2);
+	assert(0 == pw.unused3);
+	assert(0 == pw.unused4);
+
+	PackedWorldV1_free(&pw);
+}
+
+void
+test_world_save(const char *path)
+{
+	FILE *f = fopen(path, "w");
+
+	assert(f);
+
+	clear_world();
+
+	/* it has its own asserts */
+	assert(world_save(world, f));
+}
+
 int
-main()
+main(int    argc,
+     char **argv)
 {
 	hawps_core_init();
 	world = world_new(WORLD_W, WORLD_H, WORLD_TEMPERATURE);
 
+	assert(2 <= argc);
 	test_trunc_float();
 
 	test_gravity();
@@ -452,6 +489,8 @@ main()
 	test_spawner();
 	test_acidity();
 	test_mat_property_table_len();
+	test_world_pack_v1();
+	test_world_save(argv[1]);
 
 	world_free(&world); /* goodbye, cruel world */
 	printf("All tests passed :)\n");

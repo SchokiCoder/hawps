@@ -6,8 +6,38 @@
 #define _HAWPS_WORLD_H
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "hawps_mat.h"
+
+struct World;
+
+struct PackedWorldV1 {
+	uint32_t  version;
+	uint32_t  width;
+	uint32_t  height;
+	uint32_t  spawners;
+	uint32_t  unused1;
+	uint32_t  unused2;
+	uint32_t  unused3;
+	uint32_t  unused4;
+	float    *dissol;
+	uint16_t *dot;
+	float    *oxid;
+	uint8_t  *state;
+	float    *thermo;
+	/* weight is calculated, omitted */
+	uint32_t *spawner_x;
+	uint32_t *spawner_y;
+	uint16_t *spawner_mat;
+};
+
+struct PackedWorldV1
+PackedWorldV1_new(const struct World w);
+
+void
+PackedWorldV1_free(struct PackedWorldV1 *pw);
 
 struct World {
 	int w;
@@ -51,6 +81,10 @@ world_clear_dot(struct World *w,
 
 void
 world_free(struct World *w);
+
+bool
+world_save(const struct World   w,
+           FILE                *f);
 
 /* You SHOULD call world_update before this.
  */

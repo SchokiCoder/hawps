@@ -78,8 +78,9 @@ Remember to update the ip address display to reflect this.
 - [x] fix tool-size-change-binds redundancy in help text
 The actions were already there, just lacked their hardcoded binds.
 
-- [ ] libcore: add saving world to file functionality
-Serialization stuff. Mind endianness.
+- [x] libcore: add saving world to file function
+~Serialization stuff. Mind endianness.~
+That's for nerds. The things I care about are little endian.
 
 - [ ] libcore: add loading world from file functionality
 
