@@ -2,7 +2,6 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -93,103 +92,9 @@ world_update_dot_from_thermo(struct World *w,
 /* Function definitions
  */
 
-struct PackedWorldV1
-PackedWorldV1_new(const struct World w)
-{
-	struct PackedWorldV1 ret;
-	size_t spawners_alloc = 8;
-	uint32_t x, y;
-
-	ret.version = 1;
-	ret.width = w.w;
-	ret.height = w.h;
-	ret.spawners = 0;
-	ret.unused1 = 0;
-	ret.unused2 = 0;
-	ret.unused3 = 0;
-	ret.unused4 = 0;
-	ret.dissol = malloc(sizeof(float) * ret.width * ret.height);
-	ret.dot    = malloc(sizeof(uint16_t) * ret.width * ret.height);
-	ret.oxid   = malloc(sizeof(float) * ret.width * ret.height);
-	ret.state  = malloc(sizeof(uint8_t) * ret.width * ret.height);
-	ret.thermo = malloc(sizeof(float) * ret.width * ret.height);
-	ret.spawner_x =   malloc(sizeof(uint32_t) * spawners_alloc);
-	ret.spawner_y =   malloc(sizeof(uint32_t) * spawners_alloc);
-	ret.spawner_mat = malloc(sizeof(uint16_t) * spawners_alloc);
-
-	for (x = 0; x < (uint32_t) w.w; x++) {
-		for (y = 0; y < (uint32_t) w.h; y++) {
-			if (!w.spawner[x][y]) {
-				continue;
-			}
-
-			ret.spawners++;
-			if (ret.spawners > spawners_alloc) {
-				spawners_alloc *= 2;
-				ret.spawner_x = realloc(ret.spawner_x,
-				                        sizeof(ret.spawner_x[0]) *
-				                        spawners_alloc);
-				ret.spawner_y = realloc(ret.spawner_y,
-				                        sizeof(ret.spawner_y[0]) *
-				                        spawners_alloc);
-				ret.spawner_mat = realloc(ret.spawner_mat,
-				                          sizeof(ret.spawner_mat[0]) *
-				                          spawners_alloc);
-			}
-			ret.spawner_x[ret.spawners - 1] = x;
-			ret.spawner_y[ret.spawners - 1] = y;
-			ret.spawner_mat[ret.spawners - 1] = w.spawner_mat[x][y];
-		}
-	}
-
-	return ret;
-}
-
-void
-PackedWorldV1_free(struct PackedWorldV1 *pw)
-{
-	if (pw->dissol) {
-		free(pw->dissol);
-		pw->dissol = NULL;
-	}
-	if (pw->dot) {
-		free(pw->dot);
-		pw->dot = NULL;
-	}
-	if (pw->oxid) {
-		free(pw->oxid);
-		pw->oxid = NULL;
-	}
-	if (pw->state) {
-		free(pw->state);
-		pw->state = NULL;
-	}
-	if (pw->thermo) {
-		free(pw->thermo);
-		pw->thermo = NULL;
-	}
-	if (pw->spawner_x) {
-		free(pw->spawner_x);
-		pw->spawner_x = NULL;
-	}
-	if (pw->spawner_y) {
-		free(pw->spawner_y);
-		pw->spawner_y = NULL;
-	}
-	if (pw->spawner_mat) {
-		free(pw->spawner_mat);
-		pw->spawner_mat = NULL;
-	}
-	pw->version = 0;
-	pw->width = 0;
-	pw->height = 0;
-	pw->spawners = 0;
-}
-
 struct World
-world_new(const int   w,
-          const int   h,
-          const float temperature)
+world_new(const int w,
+          const int h)
 {
 	int x;
 	int y;
@@ -224,10 +129,6 @@ world_new(const int   w,
 		ret.state[x] = &ret._state[x * h];
 		ret.thermo[x] = &ret._thermo[x * h];
 		ret.weight[x] = &ret._weight[x * h];
-
-		for (y = 0; y < h; y++) {
-			ret.thermo[x][y] = temperature;
-		}
 	}
 
 	return ret;
@@ -489,50 +390,6 @@ world_free(struct World *w)
 		free(w->_weight);
 		w->_weight = NULL;
 	}
-}
-
-bool
-world_save(const struct World   w,
-           FILE                *f)
-{
-	struct PackedWorldV1 pw;
-
-	if (!f) {
-		return false;
-	}
-	pw = PackedWorldV1_new(w);
-
-	assert(1 == fwrite(&pw.version, sizeof(pw.version), 1, f));
-	assert(1 == fwrite(&pw.width, sizeof(pw.width), 1, f));
-	assert(1 == fwrite(&pw.height, sizeof(pw.height), 1, f));
-	assert(1 == fwrite(&pw.spawners, sizeof(pw.spawners), 1, f));
-	assert(1 == fwrite(&pw.unused1, sizeof(pw.unused1), 1, f));
-	assert(1 == fwrite(&pw.unused2, sizeof(pw.unused2), 1, f));
-	assert(1 == fwrite(&pw.unused3, sizeof(pw.unused3), 1, f));
-	assert(1 == fwrite(&pw.unused4, sizeof(pw.unused4), 1, f));
-
-	assert(pw.width * pw.height ==
-	       fwrite(pw.dissol, sizeof(pw.dissol[0]), pw.width * pw.height, f));
-	assert(pw.width * pw.height ==
-	       fwrite(pw.dot, sizeof(pw.dot[0]), pw.width * pw.height, f));
-	assert(pw.width * pw.height ==
-	       fwrite(pw.oxid, sizeof(pw.oxid[0]), pw.width * pw.height, f));
-	assert(pw.width * pw.height ==
-	       fwrite(pw.state, sizeof(pw.state[0]), pw.width * pw.height, f));
-	assert(pw.width * pw.height ==
-	       fwrite(pw.thermo, sizeof(pw.thermo[0]), pw.width * pw.height, f));
-
-	assert(pw.spawners ==
-	       fwrite(pw.spawner_x, sizeof(pw.spawner_x[0]), pw.spawners, f));
-	assert(pw.spawners ==
-	       fwrite(pw.spawner_y, sizeof(pw.spawner_y[0]), pw.spawners, f));
-	assert(pw.spawners ==
-	       fwrite(pw.spawner_mat, sizeof(pw.spawner_mat[0]), pw.spawners, f));
-
-	PackedWorldV1_free(&pw);
-	fclose(f);
-
-	return true;
 }
 
 void

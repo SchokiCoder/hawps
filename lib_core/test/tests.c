@@ -430,37 +430,86 @@ test_mat_property_table_len(void)
 }
 
 void
-test_world_pack_v1(void)
+test_world_file_v1(void)
 {
-	struct PackedWorldV1 pw;
+	struct WorldFileV1 wf;
 
 	clear_world();
 
-	pw = PackedWorldV1_new(world);
+	wf = WorldFileV1_from_world(world);
 
-	assert(1 == pw.version);
-	assert(WORLD_W == pw.width);
-	assert(WORLD_H == pw.height);
-	assert(0 == pw.spawners);
-	assert(0 == pw.unused1);
-	assert(0 == pw.unused2);
-	assert(0 == pw.unused3);
-	assert(0 == pw.unused4);
+	assert(1 == wf.version);
+	assert(WORLD_W == wf.width);
+	assert(WORLD_H == wf.height);
+	assert(0 == wf.spawners);
+	assert(0 == wf.unused1);
+	assert(0 == wf.unused2);
+	assert(0 == wf.unused3);
+	assert(0 == wf.unused4);
 
-	PackedWorldV1_free(&pw);
+	WorldFileV1_free(&wf);
+
+	assert(0 == wf.version);
+	assert(0 == wf.width);
+	assert(0 == wf.height);
+	assert(0 == wf.spawners);
 }
 
 void
-test_world_save(const char *path)
+test_world_file_v1_save(const char *path)
 {
-	FILE *f = fopen(path, "w");
-
-	assert(f);
+	FILE *f;
+	struct WorldFileV1 wf;
 
 	clear_world();
+	world_use_brush(&world, MAT_IRON, WORLD_TEMPERATURE, 0, 0, 0);
+	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE, WORLD_W - 1, WORLD_H - 1, 0);
+	world.spawner[WORLD_W - 1][0] = true;
+	world.spawner_mat[WORLD_W - 1][0] = MAT_WATER;
+
+	f = fopen(path, "w");
+	assert(f);
+
+	wf = WorldFileV1_from_world(world);
 
 	/* it has its own asserts */
-	assert(world_save(world, f));
+	assert(WorldFileV1_to_file(wf, f));
+
+	fclose(f);
+	WorldFileV1_free(&wf);
+}
+
+void
+test_world_file_v1_load(const char *path)
+{
+	FILE *f;
+	struct World tw;
+	struct WorldFileV1 wf;
+
+	f = fopen(path, "r");
+	assert(f);
+
+	/* it has its own asserts */
+	wf = WorldFileV1_from_file(f);
+
+	assert(1 == wf.version);
+	assert(WORLD_W == wf.width);
+	assert(WORLD_H == wf.height);
+	assert(1 == wf.spawners);
+	assert(0 == wf.unused1);
+	assert(0 == wf.unused2);
+	assert(0 == wf.unused3);
+	assert(0 == wf.unused4);
+
+	tw = WorldFileV1_to_world(wf);
+
+	assert(WORLD_W == tw.w);
+	assert(WORLD_H == tw.h);
+	assert(MAT_IRON == tw.dot[0][0]);
+	assert(MAT_OXYGEN == tw.dot[WORLD_W - 1][WORLD_H - 1]);
+
+	fclose(f);
+	WorldFileV1_free(&wf);
 }
 
 int
@@ -468,7 +517,7 @@ main(int    argc,
      char **argv)
 {
 	hawps_core_init();
-	world = world_new(WORLD_W, WORLD_H, WORLD_TEMPERATURE);
+	world = world_new(WORLD_W, WORLD_H);
 
 	assert(2 <= argc);
 	test_trunc_float();
@@ -489,8 +538,9 @@ main(int    argc,
 	test_spawner();
 	test_acidity();
 	test_mat_property_table_len();
-	test_world_pack_v1();
-	test_world_save(argv[1]);
+	test_world_file_v1();
+	test_world_file_v1_save(argv[1]);
+	test_world_file_v1_load(argv[1]);
 
 	world_free(&world); /* goodbye, cruel world */
 	printf("All tests passed :)\n");

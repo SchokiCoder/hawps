@@ -7,6 +7,7 @@
 
 #include "hawps_mat.h"
 #include "hawps_world.h"
+#include "hawps_world_file.h"
 
 #ifndef ARRSIZE
 #define ARRSIZE(a) (sizeof(a) / sizeof(*(a)))

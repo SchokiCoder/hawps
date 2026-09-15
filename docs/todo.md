@@ -84,7 +84,12 @@ That's for nerds. The things I care about are little endian.
 
 - [ ] libcore: add loading world from file functionality
 
+- [ ] libcore: add long overdue `world_clear`
+
 - [ ] desktop client: add cmd for saving world to file
+like "save worldname"
+"$(pwd)/$worldname.wld"
+
 - [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.
 

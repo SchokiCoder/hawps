@@ -1468,7 +1468,7 @@ main(int    argc,
 		      world_name);
 #endif /* SDL_BACKEND */
 
-	world = world_new(world.w, world.h, tool_opts.spawn_temperature);
+	world = world_new(world.w, world.h);
 
 	while (active) {
 		now = clock();
