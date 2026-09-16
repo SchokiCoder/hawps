@@ -82,7 +82,7 @@ The actions were already there, just lacked their hardcoded binds.
 ~Serialization stuff. Mind endianness.~
 That's for nerds. The things I care about are little endian.
 
-- [ ] libcore: add loading world from file functionality
+- [x] libcore: add loading world from file functionality
 
 - [ ] libcore: add long overdue `world_clear`
 

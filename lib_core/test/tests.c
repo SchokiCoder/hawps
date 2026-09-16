@@ -509,6 +509,7 @@ test_world_file_v1_load(const char *path)
 	assert(MAT_OXYGEN == tw.dot[WORLD_W - 1][WORLD_H - 1]);
 
 	fclose(f);
+	world_free(&tw);
 	WorldFileV1_free(&wf);
 }
 

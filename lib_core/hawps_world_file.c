@@ -120,6 +120,12 @@ WorldFileV1_from_world(const struct World w)
 
 	for (x = 0; x < (uint32_t) w.w; x++) {
 		for (y = 0; y < (uint32_t) w.h; y++) {
+			ret.dissol[x * w.h + y] = w.dissol[x][y];
+			ret.dot[x * w.h + y] = w.dot[x][y];
+			ret.oxid[x * w.h + y] = w.oxid[x][y];
+			ret.state[x * w.h + y] = w.state[x][y];
+			ret.thermo[x * w.h + y] = w.thermo[x][y];
+
 			if (!w.spawner[x][y]) {
 				continue;
 			}
