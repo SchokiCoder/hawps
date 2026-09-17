@@ -296,19 +296,33 @@ get_thermal_dot_color(const struct World world,
 }
 
 void
-handle_advanced_command(const char          *cmd,
-                        const char          *arg,
-                        char               **feedback,
-                        clock_t             *feedback_expiration,
-                        float               *framerate,
-                        const clock_t        now,
-                        float               *tickrate,
-                        struct ToolOptions  *tool_opts,
-                        struct World        *world)
+handle_advanced_command(const char            *cmd,
+                        const char            *arg,
+#ifdef SDL_BACKEND
+                        TTF_Font              *font,
+#endif
+                        char                 **feedback,
+                        clock_t               *feedback_expiration,
+                        float                 *framerate,
+                        const char            *ip_address,
+                        const clock_t          now,
+                        const char            *pwd,
+                        size_t                *statusbar_elems,
+                        enum StatusbarElement *statusbar_elem,
+                        float                 *tickrate,
+                        struct ToolOptions    *tool_opts,
+                        const size_t           win_w,
+                        struct World          *world,
+                        char                  *world_name)
 {
-	float f = 0.0;
-	long l;
-	int x, y;
+	float  f = 0.0;
+	FILE  *file;
+	long   l;
+	char   path[PATH_SIZE];
+	size_t path_len = 0;
+	int    x, y;
+
+	path[0] = '\0';
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
@@ -390,6 +404,29 @@ handle_advanced_command(const char          *cmd,
 			             "Unsupported tool selected.");
 			break;
 		}
+	} else if (strcmp(cmd, CMD_SAVE) == 0 ||
+	           strcmp(cmd, CMD_SAVE_SHORT) == 0) {
+		if (strlen(arg) > WORLDNAME_MAXLEN) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "World name too long.");
+			return;
+		}
+
+		path_len += string_copy(path, PATH_SIZE, pwd);
+		path_len += string_cat(path, PATH_SIZE, path_len, arg);
+		path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
+
+		file = fopen(path, "w");
+		world_save(*world, file);
+		fclose(file);
+
+		string_copy(world_name, WORLDNAME_SIZE, arg);
+		handle_statusbar_resize(font,
+		                        ip_address,
+		                        statusbar_elems,
+		                        statusbar_elem,
+		                        win_w,
+		                        world_name);
 	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
 	           strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;
@@ -509,19 +546,28 @@ handle_cmdline_shift(const size_t          cmdline_len,
 }
 
 void
-handle_command(char                *cmdline,
-               const size_t         cmdline_len,
-               bool                *active,
-               char               **feedback,
-               clock_t             *feedback_expiration,
-               float               *framerate,
-               bool                *no_glowcolor,
-               const clock_t        now,
-               bool                *paused,
-               bool                *th_vision,
-               float               *tickrate,
-               struct ToolOptions  *tool_opts,
-               struct World        *world)
+handle_command(char                  *cmdline,
+               const size_t           cmdline_len,
+#ifdef SDL_BACKEND
+               TTF_Font              *font,
+#endif
+               bool                  *active,
+               char                 **feedback,
+               clock_t               *feedback_expiration,
+               float                 *framerate,
+               const char            *ip_address,
+               bool                  *no_glowcolor,
+               const clock_t          now,
+               bool                  *paused,
+               const char            *pwd,
+               size_t                *statusbar_elems,
+               enum StatusbarElement *statusbar_elem,
+               bool                  *th_vision,
+               float                 *tickrate,
+               struct ToolOptions    *tool_opts,
+               const size_t           win_w,
+               struct World          *world,
+               char                  *world_name)
 {
 	char buf1[BUF_SIZE];
 	char buf2[BUF_SIZE];
@@ -539,13 +585,20 @@ handle_command(char                *cmdline,
 			string_cat(buf2, BUF_SIZE, 0, &cmdline[i + 1]);
 
 			handle_advanced_command(buf1, buf2,
+			                        font,
 			                        feedback,
 			                        feedback_expiration,
 			                        framerate,
+			                        ip_address,
 			                        now,
+			                        pwd,
+			                        statusbar_elems,
+			                        statusbar_elem,
 			                        tickrate,
 			                        tool_opts,
-			                        world);
+			                        win_w,
+			                        world,
+			                        world_name);
 			return;
 			break;
 

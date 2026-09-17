@@ -29,6 +29,14 @@ string_cat(char         *restrict dst,
 }
 
 size_t
+string_copy(char         *restrict dst,
+            const size_t           dst_size,
+            const char   *restrict src)
+{
+	return string_cat(dst, dst_size, 0, src);
+}
+
+size_t
 string_to_uint(const char   *str,
                unsigned int *out)
 {

@@ -20,6 +20,17 @@ string_cat(char         *restrict dst,
            const size_t           cat_pos,
            const char   *restrict src);
 
+/* @dst: Destination string.
+ * @dst_size: Destination string size, not length.
+ * @src: Source string
+ *
+ * Returns the amount of written bytes.
+ */
+size_t
+string_copy(char         *restrict dst,
+            const size_t           dst_size,
+            const char   *restrict src);
+
 /* @str: String to be converted.
  * @out: Resulting number.
  *

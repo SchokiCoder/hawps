@@ -34,6 +34,12 @@
 /* Constant defines
  */
 
+#ifdef _WIN32
+#define DIR_DELIM '\\'
+#else
+#define DIR_DELIM '/'
+#endif
+
 #define FIRST_REAL_MAT MAT_SAND
 
 #define FLAG_ABOUT                  "-about"
@@ -148,6 +154,10 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "\n"
 "    " CMD_QUIT_SHORT " " CMD_QUIT "\n"
 "        quits and closes the application\n"
+"\n"
+"    " CMD_SAVE_SHORT " " CMD_SAVE " (TEXT)\n"
+"        saves the world with given name or with current name\n"
+"        max name length: %i\n"
 "\n"
 "    " CMD_SPAWNER_SHORT " " CMD_SPAWNER "\n"
 "        selects the spawner as active tool\n"
@@ -402,7 +412,6 @@ handle_input(
              int                   *win_w,
              int                   *win_h,
              SDL_FRect             *world_draw,
-             const char            *world_name,
              const size_t           world_scale,
 #else
              size_t                *cmdline_shift,
@@ -424,10 +433,12 @@ handle_input(
              bool                  *no_glowcolor,
              const clock_t          now,
              bool                  *paused,
+             const char            *pwd,
              float                 *tickrate,
              bool                  *th_vision,
              struct ToolOptions    *tool_opts,
-             struct World          *world);
+             struct World          *world,
+             char                  *world_name);
 
 /* @in: Input.
  * @world_draw: Runtime data.
@@ -501,6 +512,13 @@ handle_args(int                  argc,
 	float f;
 	int   i;
 	char  key_pause[8] = "Space";
+
+	for (i = strlen(argv[0]); i > 0; i--) {
+		if (DIR_DELIM == argv[0][i]) {
+			argv[0][i + 1] = '\0';
+			break;
+		}
+	}
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
@@ -595,7 +613,7 @@ handle_args(int                  argc,
 			       KEY_CMD,
 			       key_pause);
 
-			printf(APP_HELP_COMMANDS);
+			printf(APP_HELP_COMMANDS, WORLDNAME_MAXLEN);
 
 			printf(APP_HELP_MATERIALS);
 			for (i = 0; i < MAT_COUNT; i++) {
@@ -752,7 +770,6 @@ handle_input(
              int                   *win_w,
              int                   *win_h,
              SDL_FRect             *world_draw,
-             const char            *world_name,
              const size_t           world_scale,
 #else
              size_t                *cmdline_shift,
@@ -774,10 +791,12 @@ handle_input(
              bool                  *no_glowcolor,
              const clock_t          now,
              bool                  *paused,
+             const char            *pwd,
              float                 *tickrate,
              bool                  *th_vision,
              struct ToolOptions    *tool_opts,
-             struct World          *world)
+             struct World          *world,
+             char                  *world_name)
 {
 #ifdef SDL_BACKEND
 	SDL_Event e;
@@ -829,17 +848,24 @@ handle_input(
 			case SDLK_RETURN:
 				handle_command(cmdline,
 				               *cmdline_len,
+				               font,
 				               active,
 				               feedback,
 				               feedback_expiration,
 				               framerate,
+				               ip_address,
 				               no_glowcolor,
 				               now,
 				               paused,
+				               pwd,
+				               statusbar_elems,
+				               statusbar_elem,
 				               th_vision,
 				               tickrate,
 				               tool_opts,
-				               world);
+				               *win_w,
+				               world,
+				               world_name);
 				cmdline[0] = '\0';
 				*cmdline_len = 0;
 				*input_mode = IM_NORMAL;
@@ -1306,7 +1332,7 @@ main(int    argc,
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
-	char                  *world_name = "worldname";
+	char                   world_name[WORLDNAME_SIZE];
 
 #ifdef SDL_BACKEND
 	SDL_Renderer *renderer = NULL;
@@ -1361,6 +1387,8 @@ main(int    argc,
 
 	hawps_core_init();
 	hawps_extra_init();
+
+	string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);
 
 #ifdef SDL_BACKEND
 	// TODO add proper identifier
@@ -1487,7 +1515,6 @@ main(int    argc,
 		             &win_w,
 		             &win_h,
 		             &world_draw,
-		             world_name,
 		             world_scale,
 #else
 		             &cmdline_shift,
@@ -1509,10 +1536,12 @@ main(int    argc,
 		             &no_glowcolor,
 		             now,
 		             &paused,
+		             argv[0],
 		             &tickrate,
 		             &th_vision,
 		             &tool_opts,
-		             &world);
+		             &world,
+		             world_name);
 
 #ifdef SDL_BACKEND
 #else

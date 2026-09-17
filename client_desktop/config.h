@@ -74,6 +74,8 @@ static const char DOT_APPEARANCE[] = {
 #define CMD_PAUSE_SHORT             "p"
 #define CMD_QUIT                    "quit"
 #define CMD_QUIT_SHORT              "q"
+#define CMD_SAVE                    "save"
+#define CMD_SAVE_SHORT              "sv"
 #define CMD_SPAWNER                 "spawner"
 #define CMD_SPAWNER_SHORT           "s"
 #define CMD_SPAWNERMAT              "spawnermat"

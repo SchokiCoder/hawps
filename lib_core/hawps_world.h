@@ -53,6 +53,10 @@ world_clear_dot(struct World *w,
 void
 world_free(struct World *w);
 
+void
+world_save(const struct World  w,
+           FILE               *f);
+
 /* You SHOULD call world_update before this.
  */
 void

@@ -84,19 +84,26 @@ That's for nerds. The things I care about are little endian.
 
 - [x] libcore: add loading world from file functionality
 
-- [ ] libcore: add long overdue `world_clear`
+- [x] desktop client: add cmd for saving world to file
+It saves in "$PWD/$WORLDNAME.wld".
+PWD is derived from argv[0].
+Start up creates world "new", if not exists.
+Save cmd updates the displayed worldname.
 
-- [ ] desktop client: add cmd for saving world to file
-like "save worldname"
-"$(pwd)/$worldname.wld"
+- [ ] make save cmd without parameter uses current worldname
+
+- [ ] desktop client: add cmd for loading world from file
+start up loads world "new", if exists
+
+- [ ] desktop client: add auto-saving world to file and flag to disable it
+autosave is always turned on for world "new"
+(why not for others by default? to not mess with their data (maybe backups))
+
+- [ ] libcore: add long overdue `world_clear`
+replacing manual impls in test and desktop client
 
 - [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.
-
-- [ ] desktop client: add auto-saving world to file and flag to disable it
-Saves to "default" and by default loads it at startup?
-
-- [ ] desktop client: add cmd for loading world from file
 
 - [ ] desktop client: update help text
 - [ ] update README

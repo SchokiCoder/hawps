@@ -17,8 +17,15 @@
 #else
 #endif
 
+#define PATH_SIZE 512
+
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
+
+#define WORLDNAME_NEW    "new"
+#define WORLDNAME_SIZE   32
+#define WORLDNAME_MAXLEN (WORLDNAME_SIZE - 2)
+#define WORLDNAME_TYPE   ".wld"
 
 void
 command_temperature(const float   new_temperature,
@@ -67,15 +74,24 @@ get_thermal_dot_color(const struct World world,
                       const int          y);
 
 void
-handle_advanced_command(const char          *cmd,
-                        const char          *arg,
-                        char               **feedback,
-                        clock_t             *feedback_expiration,
-                        float               *framerate,
-                        const clock_t        now,
-                        float               *tickrate,
-                        struct ToolOptions  *tool_opts,
-                        struct World        *world);
+handle_advanced_command(const char            *cmd,
+                        const char            *arg,
+#ifdef SDL_BACKEND
+                        TTF_Font              *font,
+#endif
+                        char                 **feedback,
+                        clock_t               *feedback_expiration,
+                        float                 *framerate,
+                        const char            *ip_address,
+                        const clock_t          now,
+                        const char            *pwd,
+                        size_t                *statusbar_elems,
+                        enum StatusbarElement *statusbar_elem,
+                        float                 *tickrate,
+                        struct ToolOptions    *tool_opts,
+                        const size_t           win_w,
+                        struct World          *world,
+                        char                  *world_name);
 
 void
 handle_cmdline_shift(const size_t          cmdline_len,
@@ -83,19 +99,28 @@ handle_cmdline_shift(const size_t          cmdline_len,
                      const int             win_w);
 
 void
-handle_command(char                *cmdline,
-               const size_t         cmdline_len,
-               bool                *active,
-               char               **feedback,
-               clock_t             *feedback_expiration,
-               float               *framerate,
-               bool                *no_glowcolor,
-               const clock_t        now,
-               bool                *paused,
-               bool                *th_vision,
-               float               *tickrate,
-               struct ToolOptions  *tool_opts,
-               struct World        *world);
+handle_command(char                  *cmdline,
+               const size_t           cmdline_len,
+#ifdef SDL_BACKEND
+               TTF_Font              *font,
+#endif
+               bool                  *active,
+               char                 **feedback,
+               clock_t               *feedback_expiration,
+               float                 *framerate,
+               const char            *ip_address,
+               bool                  *no_glowcolor,
+               const clock_t          now,
+               bool                  *paused,
+               const char            *pwd,
+               size_t                *statusbar_elems,
+               enum StatusbarElement *statusbar_elem,
+               bool                  *th_vision,
+               float                 *tickrate,
+               struct ToolOptions    *tool_opts,
+               const size_t           win_w,
+               struct World          *world,
+               char                  *world_name);
 
 void
 handle_simple_command(const char          *cmdline,

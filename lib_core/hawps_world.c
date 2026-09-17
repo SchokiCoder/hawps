@@ -7,6 +7,8 @@
 
 #include "hawps_world.h"
 
+#include "hawps_world_file.h"
+
 /* Constant defines
  */
 
@@ -390,6 +392,18 @@ world_free(struct World *w)
 		free(w->_weight);
 		w->_weight = NULL;
 	}
+}
+
+void
+world_save(const struct World  w,
+           FILE               *f)
+{
+	struct WorldFileV1 wf;
+
+	wf = WorldFileV1_from_world(w);
+	WorldFileV1_to_file(wf, f);
+
+	WorldFileV1_free(&wf);
 }
 
 void
