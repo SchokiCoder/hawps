@@ -90,7 +90,11 @@ PWD is derived from argv[0].
 Start up creates world "new", if not exists.
 Save cmd updates the displayed worldname.
 
-- [ ] make save cmd without parameter uses current worldname
+- [x] make save cmd without parameter uses current worldname
+That was easy.
+I was afraid I would need to rework command parsing like hell,
+but I can just put one command into both handling functions,
+and it will just work.
 
 - [ ] desktop client: add cmd for loading world from file
 start up loads world "new", if exists

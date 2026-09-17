@@ -618,10 +618,12 @@ handle_command(char                  *cmdline,
 	                      no_glowcolor,
 	                      now,
 	                      paused,
+	                      pwd,
 	                      th_vision,
 	                      tickrate,
 	                      tool_opts,
-	                      world);
+	                      world,
+	                      world_name);
 }
 
 void
@@ -633,13 +635,19 @@ handle_simple_command(const char          *cmdline,
                       bool                *no_glowcolor,
                       clock_t              now,
                       bool                *paused,
+                      const char          *pwd,
                       bool                *th_vision,
                       float               *tickrate,
                       struct ToolOptions  *tool_opts,
-                      struct World        *world)
+                      struct World        *world,
+                      const char          *world_name)
 {
-	int x, y;
+	FILE  *file;
+	char   path[PATH_SIZE];
+	size_t path_len = 0;
+	int    x, y;
 
+	path[0] = '\0';
 	*feedback = NULL;
 
 	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
@@ -699,6 +707,15 @@ handle_simple_command(const char          *cmdline,
 	           strcmp(cmdline, CMD_QUIT_SHORT) == 0 ||
 	           strcmp(cmdline, "exit") == 0) {
 		*active = false;
+	} else if (strcmp(cmdline, CMD_SAVE) == 0 ||
+	           strcmp(cmdline, CMD_SAVE_SHORT) == 0) {
+		path_len += string_copy(path, PATH_SIZE, pwd);
+		path_len += string_cat(path, PATH_SIZE, path_len, world_name);
+		path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
+
+		file = fopen(path, "w");
+		world_save(*world, file);
+		fclose(file);
 	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
 	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;

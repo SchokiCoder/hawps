@@ -131,10 +131,12 @@ handle_simple_command(const char          *cmdline,
                       bool                *no_glowcolor,
                       clock_t              now,
                       bool                *paused,
+                      const char          *pwd,
                       bool                *th_vision,
                       float               *tickrate,
                       struct ToolOptions  *tool_opts,
-                      struct World        *world);
+                      struct World        *world,
+                      const char          *world_name);
 
 void
 set_feedback(char          **feedback,
