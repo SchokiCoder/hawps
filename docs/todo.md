@@ -109,7 +109,7 @@ Maybe they loaded a backup.
 - [x] desktop client: add flag to enable autosave for all worlds
 "autosave-all" "asva"
 
-- [ ] desktop client: add flag to disable autosave even for world "new"
+- [x] desktop client: add flag to disable autosave even for world "new"
 "autosave-none" "asvn"
 
 - [ ] desktop client: make autosave happen on quit
