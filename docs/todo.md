@@ -112,7 +112,7 @@ Maybe they loaded a backup.
 - [x] desktop client: add flag to disable autosave even for world "new"
 "autosave-none" "asvn"
 
-- [ ] desktop client: make autosave happen on quit
+- [x] desktop client: add autosave on quit
 
 - [ ] libcore: test touch at 281 sometimes fails
 

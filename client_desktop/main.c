@@ -410,6 +410,15 @@ handle_args(int                  argc,
             float               *tickrate,
             struct ToolOptions  *tool_opts);
 
+void
+handle_autosave(const char         *pwd,
+                const bool          autosave_all,
+                const bool          autosave_none,
+                clock_t            *last_autosave,
+                const clock_t       now,
+                const struct World  world,
+                const char         *world_name);
+
 bool
 handle_flag_number_arg(int                            argc,
                        char                         **argv,
@@ -733,6 +742,25 @@ handle_args(int                  argc,
 	}
 
 	return true;
+}
+
+void
+handle_autosave(const char         *pwd,
+                const bool          autosave_all,
+                const bool          autosave_none,
+                clock_t            *last_autosave,
+                const clock_t       now,
+                const struct World  world,
+                const char         *world_name)
+{
+	if (!autosave_none &&
+	    (autosave_all ||
+	     strcmp(world_name, WORLDNAME_NEW) == 0)) {
+		*last_autosave = now;
+		command_save_core(world_name,
+		                  pwd,
+		                  world);
+	}
 }
 
 bool
@@ -1599,16 +1627,15 @@ main(int    argc,
 				world_sim(&world);
 			}
 
-			if (!autosave_none &&
-			    now - last_autosave >=
-			    (long) (CLOCKS_PER_SEC * AUTOSAVE_INTERVAL)) {
-				if (autosave_all ||
-				    strcmp(world_name, WORLDNAME_NEW) == 0) {
-					last_autosave = now;
-					command_save_core(world_name,
-					                  argv[0],
-					                  world);
-				}
+			if (now - last_autosave >=
+			    CLOCKS_PER_SEC * AUTOSAVE_INTERVAL) {
+				handle_autosave(argv[0],
+					        autosave_all,
+					        autosave_none,
+					        &last_autosave,
+					        now,
+					        world,
+					        world_name);
 			}
 		}
 
@@ -1682,6 +1709,14 @@ main(int    argc,
 #endif /* SDL_BACKEND */
 		}
 	}
+
+	handle_autosave(argv[0],
+	                autosave_all,
+	                autosave_none,
+	                &last_autosave,
+	                now,
+	                world,
+	                world_name);
 
 cleanup:
 #ifdef SDL_BACKEND
