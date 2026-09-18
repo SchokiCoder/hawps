@@ -64,6 +64,8 @@ static const char DOT_APPEARANCE[] = {
 #define CMD_GLOWCOLOR_SHORT         "gc"
 #define CMD_HEATER                  "heater"
 #define CMD_HEATER_SHORT            "h"
+#define CMD_LOAD                    "load"
+#define CMD_LOAD_SHORT              "ld"
 #define CMD_MAT                     "mat"
 #define CMD_MAT_SHORT               "m"
 #define CMD_NOGLOWCOLOR             "noglowcolor"

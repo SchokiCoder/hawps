@@ -96,8 +96,10 @@ I was afraid I would need to rework command parsing like hell,
 but I can just put one command into both handling functions,
 and it will just work.
 
-- [ ] desktop client: add cmd for loading world from file
-start up loads world "new", if exists
+- [x] desktop client: add cmd for loading world from file and autoload
+Start up loads world "new", if it exists.
+Load cmd updates the displayed worldname.
+Load without explicit world name, acts as quick load from current world.
 
 - [ ] desktop client: add auto-saving world to file and flag to disable it
 autosave is always turned on for world "new"
@@ -105,6 +107,10 @@ autosave is always turned on for world "new"
 
 - [ ] libcore: add long overdue `world_clear`
 replacing manual impls in test and desktop client
+
+- [ ] libcore: make type based function names uppercase
+`world_do` -> `World_do`
+Type name is uppercase too.
 
 - [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.

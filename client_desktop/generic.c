@@ -14,6 +14,30 @@
 #include "str.h"
 
 void
+command_load_core(const char   *world_name,
+                  const char   *pwd,
+                  struct World *world)
+{
+	FILE  *file;
+	char   path[PATH_SIZE];
+	size_t path_len = 0;
+
+	path_len += string_copy(path, PATH_SIZE, pwd);
+	path_len += string_cat(path, PATH_SIZE, path_len, world_name);
+	path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
+
+	file = fopen(path, "r");
+	if (NULL == file) {
+		world->w = 0;
+		world->h = 0;
+		return;
+	}
+
+	*world = world_load(file);
+	fclose(file);
+}
+
+void
 command_temperature(const float   new_temperature,
                     struct World *world)
 {
@@ -315,12 +339,13 @@ handle_advanced_command(const char            *cmd,
                         struct World          *world,
                         char                  *world_name)
 {
-	float  f = 0.0;
-	FILE  *file;
-	long   l;
-	char   path[PATH_SIZE];
-	size_t path_len = 0;
-	int    x, y;
+	float         f = 0.0;
+	FILE         *file;
+	long          l;
+	char          path[PATH_SIZE];
+	size_t        path_len = 0;
+	struct World  tempworld;
+	int           x, y;
 
 	path[0] = '\0';
 
@@ -375,6 +400,31 @@ handle_advanced_command(const char            *cmd,
 		}
 
 		*framerate = f;
+	} else if (strcmp(cmd, CMD_LOAD) == 0 ||
+	           strcmp(cmd, CMD_LOAD_SHORT) == 0) {
+		if (strlen(arg) > WORLDNAME_MAXLEN) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "World name too long.");
+			return;
+		}
+
+		command_load_core(arg, pwd, &tempworld);
+		if (0 == tempworld.w ||
+		    0 == tempworld.h) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "World could not be loaded.");
+			return;
+		}
+		world_free(world);
+		*world = tempworld;
+
+		string_copy(world_name, WORLDNAME_SIZE, arg);
+		handle_statusbar_resize(font,
+		                        ip_address,
+		                        statusbar_elems,
+		                        statusbar_elem,
+		                        win_w,
+		                        world_name);
 	} else if (strcmp(cmd, CMD_MAT) == 0 ||
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
 		switch (tool_opts->sel_tool) {
@@ -642,10 +692,11 @@ handle_simple_command(const char          *cmdline,
                       struct World        *world,
                       const char          *world_name)
 {
-	FILE  *file;
-	char   path[PATH_SIZE];
-	size_t path_len = 0;
-	int    x, y;
+	FILE         *file;
+	char          path[PATH_SIZE];
+	size_t        path_len = 0;
+	struct World  tempworld;
+	int           x, y;
 
 	path[0] = '\0';
 	*feedback = NULL;
@@ -690,6 +741,17 @@ handle_simple_command(const char          *cmdline,
 	} else if (strcmp(cmdline, CMD_HEATER) == 0 ||
 	           strcmp(cmdline, CMD_HEATER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_HEATER;
+	} else if (strcmp(cmdline, CMD_LOAD) == 0 ||
+	           strcmp(cmdline, CMD_LOAD_SHORT) == 0) {
+		command_load_core(WORLDNAME_NEW, pwd, &tempworld);
+		if (0 == tempworld.w ||
+		    0 == tempworld.h) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "World could not be loaded.");
+			return;
+		}
+		world_free(world);
+		*world = tempworld;
 	} else if (strcmp(cmdline, CMD_NOGLOWCOLOR) == 0 ||
 	           strcmp(cmdline, CMD_NOGLOWCOLOR_SHORT) == 0) {
 		*no_glowcolor = true;

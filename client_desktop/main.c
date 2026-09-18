@@ -140,6 +140,10 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_HEATER_SHORT " " CMD_HEATER "\n"
 "        selects the heater as active tool\n"
 "\n"
+"    " CMD_LOAD_SHORT " " CMD_LOAD " [TEXT]\n"
+"        loads the world with given name or with current name\n"
+"        max name length: %i\n"
+"\n"
 "    " CMD_MAT_SHORT " " CMD_MAT " TEXT\n"
 "        sets the material of the currently active tool\n"
 "\n"
@@ -155,7 +159,7 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_QUIT_SHORT " " CMD_QUIT "\n"
 "        quits and closes the application\n"
 "\n"
-"    " CMD_SAVE_SHORT " " CMD_SAVE " (TEXT)\n"
+"    " CMD_SAVE_SHORT " " CMD_SAVE " [TEXT]\n"
 "        saves the world with given name or with current name\n"
 "        max name length: %i\n"
 "\n"
@@ -613,7 +617,9 @@ handle_args(int                  argc,
 			       KEY_CMD,
 			       key_pause);
 
-			printf(APP_HELP_COMMANDS, WORLDNAME_MAXLEN);
+			printf(APP_HELP_COMMANDS,
+			       WORLDNAME_MAXLEN,
+			       WORLDNAME_MAXLEN);
 
 			printf(APP_HELP_MATERIALS);
 			for (i = 0; i < MAT_COUNT; i++) {
@@ -1322,6 +1328,8 @@ main(int    argc,
 	clock_t                last_frame = 0;
 	clock_t                last_key_use = 0;
 	clock_t                last_tick = 0;
+	int                    new_world_w = 0;
+	int                    new_world_h = 0;
 	bool                   no_glowcolor = false;
 	clock_t                now = 0;
 	size_t                 statusbar_elems = 0;
@@ -1437,18 +1445,12 @@ main(int    argc,
 	world_draw.w = win_w;
 	world_draw.h = win_h - (font_size * 2);
 
-	world.w = world_draw.w / world_scale;
-	world.h = world_draw.h;
-	if (world.h <= 0) {
-		world.h = win_h / 2;
+	new_world_w = world_draw.w / world_scale;
+	new_world_h = world_draw.h;
+	if (new_world_h <= 0) {
+		new_world_h = win_h / 2;
 	}
-	world.h /= world_scale;
-
-	world_tx = SDL_CreateTexture(renderer,
-	                             SDL_PIXELFORMAT_RGBA8888,
-	                             SDL_TEXTUREACCESS_TARGET,
-	                             world.w, world.h);
-	SDL_SetTextureScaleMode(world_tx, SDL_SCALEMODE_PIXELART);
+	new_world_h /= world_scale;
 
 	handle_statusbar_resize(font,
 	                        ip_address,
@@ -1467,8 +1469,8 @@ main(int    argc,
 	}
 
 	ws = CSI_get_size();
-	world.w = ws.ws_col;
-	world.h = ws.ws_row - 2;
+	new_world_w = ws.ws_col;
+	new_world_h = ws.ws_row - 2;
 
 	/* we love hacks
 	 * handle_resize ONLY reallocs for performance */
@@ -1477,7 +1479,22 @@ main(int    argc,
 		fprintf(stderr, "Could not allocate memory\n");
 		goto cleanup;
 	}
+#endif /* SDL_BACKEND */
 
+	command_load_core(WORLDNAME_NEW, argv[0], &world);
+
+	if (0 == world.w ||
+	    0 == world.h) {
+		world = world_new(new_world_w, new_world_h);
+	}
+
+#ifdef SDL_BACKEND
+	world_tx = SDL_CreateTexture(renderer,
+	                             SDL_PIXELFORMAT_RGBA8888,
+	                             SDL_TEXTUREACCESS_TARGET,
+	                             world.w, world.h);
+	SDL_SetTextureScaleMode(world_tx, SDL_SCALEMODE_PIXELART);
+#else
 	handle_resize(cmdline_len,
 		      &cmdline_shift,
 		      &display,
@@ -1495,8 +1512,6 @@ main(int    argc,
 		      &world_draw_space_h,
 		      world_name);
 #endif /* SDL_BACKEND */
-
-	world = world_new(world.w, world.h);
 
 	while (active) {
 		now = clock();

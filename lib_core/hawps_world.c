@@ -394,6 +394,26 @@ world_free(struct World *w)
 	}
 }
 
+struct World
+world_load(FILE *f)
+{
+	struct World       ret;
+	struct WorldFileV1 wf;
+
+	wf = WorldFileV1_from_file(f);
+	if (0 == wf.version) {
+		ret.w = 0;
+		ret.h = 0;
+		return ret;
+	}
+
+	ret = WorldFileV1_to_world(wf);
+
+	WorldFileV1_free(&wf);
+
+	return ret;
+}
+
 void
 world_save(const struct World  w,
            FILE               *f)

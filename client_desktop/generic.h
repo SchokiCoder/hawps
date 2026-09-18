@@ -28,6 +28,11 @@
 #define WORLDNAME_TYPE   ".wld"
 
 void
+command_load_core(const char   *world_name,
+                  const char   *pwd,
+                  struct World *world);
+
+void
 command_temperature(const float   new_temperature,
                     struct World *world);
 

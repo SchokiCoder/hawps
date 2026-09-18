@@ -53,6 +53,9 @@ world_clear_dot(struct World *w,
 void
 world_free(struct World *w);
 
+struct World
+world_load(FILE *f);
+
 void
 world_save(const struct World  w,
            FILE               *f);
