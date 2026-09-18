@@ -106,13 +106,15 @@ Why not for others by default?
 To not mess with their data.
 Maybe they loaded a backup.
 
-- [ ] desktop client: add flag to enable autosave for all
-"autosave-all"
+- [x] desktop client: add flag to enable autosave for all worlds
+"autosave-all" "asva"
 
-- [ ] desktop client: add flag to disable autosave even for new
-"autosave-none"
+- [ ] desktop client: add flag to disable autosave even for world "new"
+"autosave-none" "asvn"
 
 - [ ] desktop client: make autosave happen on quit
+
+- [ ] libcore: test touch at 281 sometimes fails
 
 - [ ] libcore: add long overdue `world_clear`
 replacing manual impls in test and desktop client

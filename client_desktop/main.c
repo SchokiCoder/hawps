@@ -44,6 +44,8 @@
 
 #define FLAG_ABOUT                  "-about"
 #define FLAG_ABOUT_SHORT            "-a"
+#define FLAG_AUTOSAVE_ALL           "-autosave-all"
+#define FLAG_AUTOSAVE_ALL_SHORT     "-asva"
 #define FLAG_BRUSHRADIUS            "-brushradius"
 #define FLAG_BRUSHRADIUS_SHORT      "-br"
 #define FLAG_ERASERRADIUS           "-eraserradius"
@@ -198,6 +200,10 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "\n"
 "    " FLAG_ABOUT_SHORT " " FLAG_ABOUT "\n"
 "        prints program name, version, license and repository information then exits\n"
+"\n"
+"    " FLAG_AUTOSAVE_ALL_SHORT " " FLAG_AUTOSAVE_ALL "\n"
+"        enables autosave for all worlds\n"
+"        which is by default only enabled for world \"" WORLDNAME_NEW "\"\n"
 "\n"
 "    " FLAG_BRUSHRADIUS_SHORT " " FLAG_BRUSHRADIUS " NUMBER\n"
 "        sets the radius of the brush\n"
@@ -392,6 +398,7 @@ handle_args(int                  argc,
 #else
             bool                *no_color,
 #endif
+            bool                *autosave_all,
             float               *framerate,
             bool                *no_glowcolor,
             float               *tickrate,
@@ -508,6 +515,7 @@ handle_args(int                  argc,
 #else
             bool                *no_color,
 #endif
+            bool                *autosave_all,
             float               *framerate,
             bool                *no_glowcolor,
             float               *tickrate,
@@ -529,6 +537,9 @@ handle_args(int                  argc,
 		    strcmp(argv[i], FLAG_ABOUT) == 0) {
 			printf(APP_ABOUT);
 			return false;
+		} else if (strcmp(argv[i], FLAG_AUTOSAVE_ALL) == 0 ||
+		           strcmp(argv[i], FLAG_AUTOSAVE_ALL_SHORT) == 0) {
+			*autosave_all = true;
 		} else if (strcmp(argv[i], FLAG_BRUSHRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_BRUSHRADIUS_SHORT) == 0) {
 			if (!handle_flag_number_arg(argc, argv,
@@ -1313,6 +1324,7 @@ main(int    argc,
      char **argv)
 {
 	bool                   active = true;
+	bool                   autosave_all = false;
 	char                   cmdline[CMDLINE_SIZE];
 	size_t                 cmdline_len = 0;
 	float                  delta = 0.0;
@@ -1387,6 +1399,7 @@ main(int    argc,
 #else
 	                 &no_color,
 #endif
+	                 &autosave_all,
 	                 &framerate,
 	                 &no_glowcolor,
 	                 &tickrate,
@@ -1575,10 +1588,14 @@ main(int    argc,
 			}
 
 			if (now - last_autosave >=
-			    (long) (CLOCKS_PER_SEC * AUTOSAVE_INTERVAL) &&
-			    strcmp(world_name, WORLDNAME_NEW) == 0) {
-				last_autosave = now;
-				command_save_core(world_name, argv[0], world);
+			    (long) (CLOCKS_PER_SEC * AUTOSAVE_INTERVAL)) {
+				if (autosave_all ||
+				    strcmp(world_name, WORLDNAME_NEW) == 0) {
+					last_autosave = now;
+					command_save_core(world_name,
+					                  argv[0],
+					                  world);
+				}
 			}
 		}
 
