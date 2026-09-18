@@ -101,9 +101,18 @@ Start up loads world "new", if it exists.
 Load cmd updates the displayed worldname.
 Load without explicit world name, acts as quick load from current world.
 
-- [ ] desktop client: add auto-saving world to file and flag to disable it
-autosave is always turned on for world "new"
-(why not for others by default? to not mess with their data (maybe backups))
+- [x] desktop client: add auto-saving for world "new"
+Why not for others by default?
+To not mess with their data.
+Maybe they loaded a backup.
+
+- [ ] desktop client: add flag to enable autosave for all
+"autosave-all"
+
+- [ ] desktop client: add flag to disable autosave even for new
+"autosave-none"
+
+- [ ] desktop client: make autosave happen on quit
 
 - [ ] libcore: add long overdue `world_clear`
 replacing manual impls in test and desktop client

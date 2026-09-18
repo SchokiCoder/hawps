@@ -153,6 +153,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 
 /* settings
  */
+#define AUTOSAVE_INTERVAL    20
 #define FEEDBACK_LIFETIME    3    /* in seconds */
 #define MAX_RADIUS           16
 #define MAX_TICKRATE         (STD_TICKRATE * 2.0 * 2.0)

@@ -1324,6 +1324,7 @@ main(int    argc,
 	enum InputMode         input_mode = IM_NORMAL;
 	char                  *ip_address = "localhost";
 	bool                   paused = false;
+	clock_t                last_autosave = 0;
 	clock_t                last_input = 0;
 	clock_t                last_frame = 0;
 	clock_t                last_key_use = 0;
@@ -1571,6 +1572,13 @@ main(int    argc,
 
 			if (!paused) {
 				world_sim(&world);
+			}
+
+			if (now - last_autosave >=
+			    (long) (CLOCKS_PER_SEC * AUTOSAVE_INTERVAL) &&
+			    strcmp(world_name, WORLDNAME_NEW) == 0) {
+				last_autosave = now;
+				command_save_core(world_name, argv[0], world);
 			}
 		}
 

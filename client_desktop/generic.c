@@ -38,6 +38,24 @@ command_load_core(const char   *world_name,
 }
 
 void
+command_save_core(const char         *world_name,
+                  const char         *pwd,
+                  const struct World  world)
+{
+	FILE   *file;
+	char    path[PATH_SIZE];
+	size_t  path_len = 0;
+
+	path_len += string_copy(path, PATH_SIZE, pwd);
+	path_len += string_cat(path, PATH_SIZE, path_len, world_name);
+	path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
+
+	file = fopen(path, "w");
+	world_save(world, file);
+	fclose(file);
+}
+
+void
 command_temperature(const float   new_temperature,
                     struct World *world)
 {
@@ -342,12 +360,8 @@ handle_advanced_command(const char            *cmd,
 	float         f = 0.0;
 	FILE         *file;
 	long          l;
-	char          path[PATH_SIZE];
-	size_t        path_len = 0;
 	struct World  tempworld;
 	int           x, y;
-
-	path[0] = '\0';
 
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
@@ -462,13 +476,7 @@ handle_advanced_command(const char            *cmd,
 			return;
 		}
 
-		path_len += string_copy(path, PATH_SIZE, pwd);
-		path_len += string_cat(path, PATH_SIZE, path_len, arg);
-		path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
-
-		file = fopen(path, "w");
-		world_save(*world, file);
-		fclose(file);
+		command_save_core(arg, pwd, *world);
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
 		handle_statusbar_resize(font,
@@ -692,13 +700,9 @@ handle_simple_command(const char          *cmdline,
                       struct World        *world,
                       const char          *world_name)
 {
-	FILE         *file;
-	char          path[PATH_SIZE];
-	size_t        path_len = 0;
 	struct World  tempworld;
 	int           x, y;
 
-	path[0] = '\0';
 	*feedback = NULL;
 
 	if (strcmp(cmdline, CMD_BRUSH) == 0 ||
@@ -771,13 +775,7 @@ handle_simple_command(const char          *cmdline,
 		*active = false;
 	} else if (strcmp(cmdline, CMD_SAVE) == 0 ||
 	           strcmp(cmdline, CMD_SAVE_SHORT) == 0) {
-		path_len += string_copy(path, PATH_SIZE, pwd);
-		path_len += string_cat(path, PATH_SIZE, path_len, world_name);
-		path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
-
-		file = fopen(path, "w");
-		world_save(*world, file);
-		fclose(file);
+		command_save_core(world_name, pwd, *world);
 	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
 	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;

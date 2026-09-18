@@ -33,6 +33,11 @@ command_load_core(const char   *world_name,
                   struct World *world);
 
 void
+command_save_core(const char         *world_name,
+                  const char         *pwd,
+                  const struct World  world);
+
+void
 command_temperature(const float   new_temperature,
                     struct World *world);
 
