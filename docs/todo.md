@@ -114,6 +114,13 @@ Maybe they loaded a backup.
 
 - [x] desktop client: add autosave on quit
 
+- [x] terminal client: fix compile errors that piled up during recent commits
+
+- [ ] terminal client: add screenshot bind on F5
+- [ ] sdl client: add screenshot bind on F5
+- [ ] desktop client: add quicksave bind on F6
+- [ ] desktop client: add quickload bind on F7
+
 - [ ] libcore: test touch at 281 sometimes fails
 
 - [ ] libcore: add long overdue `world_clear`

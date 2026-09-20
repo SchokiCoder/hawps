@@ -433,7 +433,10 @@ handle_advanced_command(const char            *cmd,
 		*world = tempworld;
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
-		handle_statusbar_resize(font,
+		handle_statusbar_resize(
+#ifdef SDL_BACKEND
+		                        font,
+#endif
 		                        ip_address,
 		                        statusbar_elems,
 		                        statusbar_elem,
@@ -479,7 +482,10 @@ handle_advanced_command(const char            *cmd,
 		command_save_core(arg, pwd, *world);
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
-		handle_statusbar_resize(font,
+		handle_statusbar_resize(
+#ifdef SDL_BACKEND
+		                        font,
+#endif
 		                        ip_address,
 		                        statusbar_elems,
 		                        statusbar_elem,
@@ -643,7 +649,9 @@ handle_command(char                  *cmdline,
 			string_cat(buf2, BUF_SIZE, 0, &cmdline[i + 1]);
 
 			handle_advanced_command(buf1, buf2,
+#ifdef SDL_BACKEND
 			                        font,
+#endif
 			                        feedback,
 			                        feedback_expiration,
 			                        framerate,

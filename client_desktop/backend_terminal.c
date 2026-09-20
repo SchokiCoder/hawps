@@ -242,23 +242,28 @@ draw(const char                  *cmdline,
 }
 
 void
-handle_command_input(const char          *in,
-                     bool                *active,
-                     char                *cmdline,
-                     size_t              *cmdline_len,
-                     size_t              *cmdline_shift,
-                     char               **feedback,
-                     clock_t             *feedback_expiration,
-                     float               *framerate,
-                     enum InputMode      *input_mode,
-                     bool                *no_glowcolor,
-                     clock_t              now,
-                     bool                *paused,
-                     bool                *th_vision,
-                     float               *tickrate,
-                     struct ToolOptions  *tool_opts,
-                     const int            win_w,
-                     struct World        *world)
+handle_command_input(const char            *in,
+                     bool                  *active,
+                     char                  *cmdline,
+                     size_t                *cmdline_len,
+                     size_t                *cmdline_shift,
+                     char                 **feedback,
+                     clock_t               *feedback_expiration,
+                     float                 *framerate,
+                     enum InputMode        *input_mode,
+                     const char            *ip_address,
+                     bool                  *no_glowcolor,
+                     clock_t                now,
+                     bool                  *paused,
+                     const char            *pwd,
+                     size_t                *statusbar_elems,
+                     enum StatusbarElement *statusbar_elem,
+                     bool                  *th_vision,
+                     float                 *tickrate,
+                     struct ToolOptions    *tool_opts,
+                     const int              win_w,
+                     struct World          *world,
+                     char                  *world_name)
 {
 	switch (in[0]) {
 	case '\b':
@@ -279,13 +284,19 @@ handle_command_input(const char          *in,
 		               feedback,
 		               feedback_expiration,
 		               framerate,
+		               ip_address,
 		               no_glowcolor,
 		               now,
 		               paused,
+		               pwd,
+		               statusbar_elems,
+		               statusbar_elem,
 		               th_vision,
 		               tickrate,
 		               tool_opts,
-		               world);
+		               win_w,
+		               world,
+		               world_name);
 		/* fallthrough */
 	case SIG_INT:
 	case SIG_TSTP:
