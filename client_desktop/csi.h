@@ -27,6 +27,7 @@
 #define CSI_CURSOR_HIDE   CSI_ESCAPE "[?25l"
 #define CSI_CURSOR_SHOW   CSI_ESCAPE "[?25h"
 
+#define CSI_KEY_F5         CSI_ESCAPE "[15~"
 #define CSI_KEY_UP         CSI_ESCAPE "[A"
 #define CSI_KEY_DOWN       CSI_ESCAPE "[B"
 #define CSI_KEY_RIGHT      CSI_ESCAPE "[C"

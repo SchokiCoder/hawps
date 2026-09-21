@@ -116,10 +116,23 @@ Maybe they loaded a backup.
 
 - [x] terminal client: fix compile errors that piled up during recent commits
 
-- [ ] terminal client: add screenshot bind on F5
+- [x] terminal client: add screenshot bind on F5
+This implementation is incredibly fragile.
+As soon as the drawing procedure changes, this will likely break.
+In fact, I changed that very drawing code,
+to make it easier to work around thermal bg color being there or not.
+This takes the display buffer, and prints the visible parts to the file,
+instead of redrawing the world in a clean separate buffer.
+This also has the side effect of drawing the actual tool hover to file as well,
+which might be just fine or even wanted.
+Overall this could be improved,
+as you might have already guessed from my previous two sentences.
+
 - [ ] sdl client: add screenshot bind on F5
 - [ ] desktop client: add quicksave bind on F6
 - [ ] desktop client: add quickload bind on F7
+
+- [ ] replace `argv[0]` with `getcwd`?
 
 - [ ] libcore: test touch at 281 sometimes fails
 

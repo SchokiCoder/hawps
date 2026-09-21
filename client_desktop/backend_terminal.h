@@ -76,12 +76,20 @@ handle_mouse_input(const char         *in,
 void
 handle_normal_csi_input(const char         *in,
                         const float         delta,
+                        const char         *display,
+                        const size_t        dot_depth,
                         int                *drag_start_x,
                         int                *drag_start_y,
+                        char              **feedback,
+                        clock_t            *feedback_expiration,
                         bool               *lmb_pressed,
+                        clock_t             now,
+                        const char         *pwd,
+                        const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
-                        struct Rect        *world_draw);
+                        struct Rect        *world_draw,
+                        const int           world_draw_space_w);
 
 void
 handle_resize(const size_t            cmdline_len,

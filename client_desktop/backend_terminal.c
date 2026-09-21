@@ -120,12 +120,15 @@ draw(const char                  *cmdline,
 	display[0] = '\0';
 
 	if (th_vision) {
-		display_len += CSI_color_to_string(THERMAL_VISION_R,
-		                                   THERMAL_VISION_G,
-		                                   THERMAL_VISION_B,
-		                                   false,
-		                                   &display[display_len],
-		                                   display_size - display_len);
+		buf[0] = '\0';
+		buf_len = 0;
+		buf_len += CSI_color_to_string(THERMAL_VISION_R,
+		                               THERMAL_VISION_G,
+		                               THERMAL_VISION_B,
+		                               false,
+		                               buf,
+		                               BUF_SIZE);
+		fwrite(buf, 1, buf_len, stdout);
 	}
 
 	display_len += render_world(&display[display_len],
@@ -430,13 +433,31 @@ handle_mouse_input(const char         *in,
 void
 handle_normal_csi_input(const char         *in,
                         const float         delta,
+                        const char         *display,
+                        const size_t        dot_depth,
                         int                *drag_start_x,
                         int                *drag_start_y,
+                        char              **feedback,
+                        clock_t            *feedback_expiration,
                         bool               *lmb_pressed,
+                        clock_t             now,
+                        const char         *pwd,
+                        const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
-                        struct Rect        *world_draw)
+                        struct Rect        *world_draw,
+                        const int           world_draw_space_w)
 {
+	char    datetime[BUF_SIZE];
+	time_t  epoch_now;
+	FILE   *f = NULL;
+	int     i;
+	char    path[BUF_SIZE];
+	size_t  path_len = 0;
+
+	datetime[0] = '\0';
+	path[0] = '\0';
+
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
 		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
@@ -465,6 +486,40 @@ handle_normal_csi_input(const char         *in,
 				world_draw->x += 1;
 			}
 		}
+	} else if (strcmp(in, CSI_KEY_F5) == 0) {
+		path_len = string_copy(path, BUF_SIZE, pwd);
+		path_len += string_cat(path, BUF_SIZE, path_len, APP_NAME);
+		path_len += string_cat(path,
+		                       BUF_SIZE,
+		                       path_len,
+		                       (th_vision ? "_thermal_" : "_normal_"));
+		epoch_now = time(NULL);
+		strftime(datetime, BUF_SIZE, "%F_%H-%M-%S", localtime(&epoch_now));
+		path_len += string_cat(path,
+		                       BUF_SIZE,
+		                       path_len,
+		                       datetime);
+		path_len += string_cat(path, BUF_SIZE, path_len, ".txt");
+
+		f = fopen(path, "w");
+		if (NULL == f) {
+			set_feedback(feedback, feedback_expiration, now,
+			             "Couldn't save the screenshot");
+			return;
+		}
+
+		for (i = 0; i < world_draw->h; i++) {
+			fwrite(&display[i * ((dot_depth * world_draw->w) + world_draw_space_w)],
+			       1,
+			       dot_depth * world_draw->w,
+			       f);
+			fwrite("\n", 1, 1, f);
+		}
+
+		fclose(f);
+
+		set_feedback(feedback, feedback_expiration, now,
+		             "Screenshot saved");
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
 		world_draw->x = 0;

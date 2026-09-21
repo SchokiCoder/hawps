@@ -284,6 +284,9 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "    %c Escape\n"
 "        quit the program\n"
 "\n"
+"    F5\n"
+"        take a screenshot\n"
+"\n"
 "    %c Left-Mouse\n"
 "        use currently active tool\n"
 "\n"
@@ -438,9 +441,12 @@ handle_input(
              const size_t           world_scale,
 #else
              size_t                *cmdline_shift,
+             const char            *display,
+             const size_t           dot_depth,
              bool                  *lmb_pressed,
              const int              win_w,
              struct Rect           *world_draw,
+             const int              world_draw_space_w,
 #endif /* SDL_BACKEND */
              bool                  *active,
              char                  *cmdline,
@@ -825,9 +831,12 @@ handle_input(
              const size_t           world_scale,
 #else
              size_t                *cmdline_shift,
+             const char            *display,
+             const size_t           dot_depth,
              bool                  *lmb_pressed,
              const int              win_w,
              struct Rect           *world_draw,
+             const int              world_draw_space_w,
 #endif /* SDL_BACKEND */
              bool                  *active,
              char                  *cmdline,
@@ -1006,12 +1015,20 @@ handle_input(
 			                         world)) {
 				handle_normal_csi_input(input,
 				                        delta,
+				                        display,
+				                        dot_depth,
 				                        drag_start_x,
 				                        drag_start_y,
+				                        feedback,
+				                        feedback_expiration,
 				                        lmb_pressed,
+				                        now,
+				                        pwd,
+				                        *th_vision,
 				                        tool_opts,
 				                        world,
-				                        world_draw);
+				                        world_draw,
+				                        world_draw_space_w);
 			}
 		}
 		break;
@@ -1589,9 +1606,12 @@ main(int    argc,
 		             world_scale,
 #else
 		             &cmdline_shift,
+		             display,
+		             dot_depth,
 		             &lmb_pressed,
 		             win_w,
 		             &world_draw,
+		             world_draw_space_w,
 #endif
 		             &active,
 		             cmdline,
