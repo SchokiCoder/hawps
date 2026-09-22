@@ -185,6 +185,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 #define CMDLINE_SIZE          81
 #define DISPLAY_SIZE_MODIFIER 1.25
 #define INPUT_SIZE            16
+#define PATH_SIZE             256
 
 
 

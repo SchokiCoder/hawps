@@ -34,12 +34,6 @@
 /* Constant defines
  */
 
-#ifdef _WIN32
-#define DIR_DELIM '\\'
-#else
-#define DIR_DELIM '/'
-#endif
-
 #define FIRST_REAL_MAT MAT_SAND
 
 #define FLAG_ABOUT                  "-about"
@@ -414,9 +408,9 @@ handle_args(int                  argc,
             struct ToolOptions  *tool_opts);
 
 void
-handle_autosave(const char         *pwd,
-                const bool          autosave_all,
+handle_autosave(const bool          autosave_all,
                 const bool          autosave_none,
+                const char         *cwd,
                 clock_t            *last_autosave,
                 const clock_t       now,
                 const struct World  world,
@@ -451,6 +445,7 @@ handle_input(
              bool                  *active,
              char                  *cmdline,
              size_t                *cmdline_len,
+             const char            *cwd,
              const float            delta,
              int                   *drag_start_x,
              int                   *drag_start_y,
@@ -463,7 +458,6 @@ handle_input(
              bool                  *no_glowcolor,
              const clock_t          now,
              bool                  *paused,
-             const char            *pwd,
              size_t                *statusbar_elems,
              enum StatusbarElement *statusbar_elem,
              float                 *tickrate,
@@ -546,13 +540,6 @@ handle_args(int                  argc,
 	float f;
 	int   i;
 	char  key_pause[8] = "Space";
-
-	for (i = strlen(argv[0]); i > 0; i--) {
-		if (DIR_DELIM == argv[0][i]) {
-			argv[0][i + 1] = '\0';
-			break;
-		}
-	}
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
@@ -751,9 +738,9 @@ handle_args(int                  argc,
 }
 
 void
-handle_autosave(const char         *pwd,
-                const bool          autosave_all,
+handle_autosave(const bool          autosave_all,
                 const bool          autosave_none,
+                const char         *cwd,
                 clock_t            *last_autosave,
                 const clock_t       now,
                 const struct World  world,
@@ -763,9 +750,7 @@ handle_autosave(const char         *pwd,
 	    (autosave_all ||
 	     strcmp(world_name, WORLDNAME_NEW) == 0)) {
 		*last_autosave = now;
-		command_save_core(world_name,
-		                  pwd,
-		                  world);
+		command_save_core(cwd, world, world_name);
 	}
 }
 
@@ -841,6 +826,7 @@ handle_input(
              bool                  *active,
              char                  *cmdline,
              size_t                *cmdline_len,
+             const char            *cwd,
              const float            delta,
              int                   *drag_start_x,
              int                   *drag_start_y,
@@ -853,7 +839,6 @@ handle_input(
              bool                  *no_glowcolor,
              const clock_t          now,
              bool                  *paused,
-             const char            *pwd,
              size_t                *statusbar_elems,
              enum StatusbarElement *statusbar_elem,
              float                 *tickrate,
@@ -914,6 +899,7 @@ handle_input(
 				               *cmdline_len,
 				               font,
 				               active,
+				               cwd,
 				               feedback,
 				               feedback_expiration,
 				               framerate,
@@ -921,7 +907,6 @@ handle_input(
 				               no_glowcolor,
 				               now,
 				               paused,
-				               pwd,
 				               statusbar_elems,
 				               statusbar_elem,
 				               th_vision,
@@ -1014,6 +999,7 @@ handle_input(
 			                         tool_opts,
 			                         world)) {
 				handle_normal_csi_input(input,
+				                        cwd,
 				                        delta,
 				                        display,
 				                        dot_depth,
@@ -1023,7 +1009,6 @@ handle_input(
 				                        feedback_expiration,
 				                        lmb_pressed,
 				                        now,
-				                        pwd,
 				                        *th_vision,
 				                        tool_opts,
 				                        world,
@@ -1040,6 +1025,7 @@ handle_input(
 			                     cmdline,
 			                     cmdline_len,
 			                     cmdline_shift,
+			                     cwd,
 			                     feedback,
 			                     feedback_expiration,
 			                     framerate,
@@ -1048,7 +1034,6 @@ handle_input(
 			                     no_glowcolor,
 			                     now,
 			                     paused,
-			                     pwd,
 			                     statusbar_elems,
 			                     statusbar_elem,
 			                     th_vision,
@@ -1388,6 +1373,7 @@ main(int    argc,
 	bool                   autosave_none = false;
 	char                   cmdline[CMDLINE_SIZE];
 	size_t                 cmdline_len = 0;
+	char                   cwd[PATH_SIZE];
 	float                  delta = 0.0;
 	int                    drag_start_x = 0;
 	int                    drag_start_y = 0;
@@ -1468,6 +1454,8 @@ main(int    argc,
 	                 &tool_opts)) {
 		return 0;
 	}
+
+	getcwd(cwd, PATH_SIZE);
 
 	hawps_core_init();
 	hawps_extra_init();
@@ -1557,7 +1545,7 @@ main(int    argc,
 	}
 #endif /* SDL_BACKEND */
 
-	command_load_core(WORLDNAME_NEW, argv[0], &world);
+	command_load_core(cwd, &world, WORLDNAME_NEW);
 
 	if (0 == world.w ||
 	    0 == world.h) {
@@ -1616,6 +1604,7 @@ main(int    argc,
 		             &active,
 		             cmdline,
 		             &cmdline_len,
+		             cwd,
 		             delta,
 		             &drag_start_x,
 		             &drag_start_y,
@@ -1628,7 +1617,6 @@ main(int    argc,
 		             &no_glowcolor,
 		             now,
 		             &paused,
-		             argv[0],
 		             &statusbar_elems,
 		             statusbar_elem,
 		             &tickrate,
@@ -1654,9 +1642,9 @@ main(int    argc,
 
 			if (now - last_autosave >=
 			    CLOCKS_PER_SEC * AUTOSAVE_INTERVAL) {
-				handle_autosave(argv[0],
-					        autosave_all,
+				handle_autosave(autosave_all,
 					        autosave_none,
+					        cwd,
 					        &last_autosave,
 					        now,
 					        world,
@@ -1735,9 +1723,9 @@ main(int    argc,
 		}
 	}
 
-	handle_autosave(argv[0],
-	                autosave_all,
+	handle_autosave(autosave_all,
 	                autosave_none,
+	                cwd,
 	                &last_autosave,
 	                now,
 	                world,

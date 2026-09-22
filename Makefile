@@ -33,7 +33,7 @@ C_FLAGS_RELEASE :=$(C_FLAGS) -O3
 C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
 
 CLIENT_DESKTOP_CFLAGS       :=$(CLIENT_DESKTOP_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)
-CLIENT_DESKTOP_FILE_DEPS    :=client_desktop/* client_desktop/int_to_string.h lib_core/* lib_extra/*
+CLIENT_DESKTOP_FILE_DEPS    :=Makefile client_desktop/* client_desktop/int_to_string.h lib_core/* lib_extra/*
 CLIENT_DESKTOP_SRC_FILES    :=client_desktop/*.c lib_core/*.c lib_extra/*.c
 
 DEFAULT_CLIENT :=$(APP_NAME)_desktop
@@ -57,9 +57,6 @@ install: bin/$(DEFAULT_CLIENT)_release
 preinstall:
 	rm -f bin/$(DEFAULT_CLIENT)_release
 
-prerun:
-	rm -f bin/$(DEFAULT_CLIENT)
-
 preprofile:
 	rm -f profiling/*$(GIT_HEAD)*
 
@@ -73,8 +70,8 @@ profile: preprofile profiling/$(DEFAULT_CLIENT)_$(GIT_HEAD)
 remove:
 	rm -f $(BIN_DESTDIR)/$(APP_NAME)
 
-run: test prerun bin/$(DEFAULT_CLIENT)
-	LSAN_OPTIONS=suppressions=lsan.supp ./bin/$(DEFAULT_CLIENT)
+run: test bin/$(DEFAULT_CLIENT)
+	cd bin && LSAN_OPTIONS=suppressions=../lsan.supp ./$(DEFAULT_CLIENT)
 
 test: bin/lib_core_tests bin/lib_extra_tests
 	./bin/lib_core_tests "temp.wld"

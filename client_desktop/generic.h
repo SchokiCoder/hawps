@@ -17,7 +17,11 @@
 #else
 #endif
 
-#define PATH_SIZE 512
+#ifdef _WIN32
+#define PATH_DELIM "\\"
+#else
+#define PATH_DELIM "/"
+#endif
 
 #define SIG_INT  '\003'
 #define SIG_TSTP '\032'
@@ -28,14 +32,14 @@
 #define WORLDNAME_TYPE   ".wld"
 
 void
-command_load_core(const char   *world_name,
-                  const char   *pwd,
-                  struct World *world);
+command_load_core(const char   *cwd,
+                  struct World *world,
+                  const char   *world_name);
 
 void
-command_save_core(const char         *world_name,
-                  const char         *pwd,
-                  const struct World  world);
+command_save_core(const char         *cwd,
+                  const struct World  world,
+                  const char         *world_name);
 
 void
 command_temperature(const float   new_temperature,
@@ -89,12 +93,12 @@ handle_advanced_command(const char            *cmd,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
 #endif
+                        const char            *cwd,
                         char                 **feedback,
                         clock_t               *feedback_expiration,
                         float                 *framerate,
                         const char            *ip_address,
                         const clock_t          now,
-                        const char            *pwd,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
                         float                 *tickrate,
@@ -115,6 +119,7 @@ handle_command(char                  *cmdline,
                TTF_Font              *font,
 #endif
                bool                  *active,
+               const char            *cwd,
                char                 **feedback,
                clock_t               *feedback_expiration,
                float                 *framerate,
@@ -122,7 +127,6 @@ handle_command(char                  *cmdline,
                bool                  *no_glowcolor,
                const clock_t          now,
                bool                  *paused,
-               const char            *pwd,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
                bool                  *th_vision,
@@ -135,13 +139,13 @@ handle_command(char                  *cmdline,
 void
 handle_simple_command(const char          *cmdline,
                       bool                *active,
+                      const char          *cwd,
                       char               **feedback,
                       clock_t             *feedback_expiration,
                       float               *framerate,
                       bool                *no_glowcolor,
                       clock_t              now,
                       bool                *paused,
-                      const char          *pwd,
                       bool                *th_vision,
                       float               *tickrate,
                       struct ToolOptions  *tool_opts,

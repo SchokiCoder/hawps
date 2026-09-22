@@ -128,11 +128,19 @@ which might be just fine or even wanted.
 Overall this could be improved,
 as you might have already guessed from my previous two sentences.
 
+- [x] desktop client: fix "pwd" being just binary dir
+This replaces the hacked `argv[0]` with unistd.h's `getcwd`.
+
+- [ ] terminal client: fix crash when loading world with different size from current one
+
+- [ ] terminal client: futureproof screenshot code
+By redrawing the world in a temporary separate buffer, and saving that,
+instead of using the actual display buffer.
+Once the drawing code changes, it would have broken.
+
 - [ ] sdl client: add screenshot bind on F5
 - [ ] desktop client: add quicksave bind on F6
 - [ ] desktop client: add quickload bind on F7
-
-- [ ] replace `argv[0]` with `getcwd`?
 
 - [ ] libcore: test touch at 281 sometimes fails
 

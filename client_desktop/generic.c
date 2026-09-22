@@ -14,15 +14,16 @@
 #include "str.h"
 
 void
-command_load_core(const char   *world_name,
-                  const char   *pwd,
-                  struct World *world)
+command_load_core(const char   *cwd,
+                  struct World *world,
+                  const char   *world_name)
 {
 	FILE  *file;
 	char   path[PATH_SIZE];
 	size_t path_len = 0;
 
-	path_len += string_copy(path, PATH_SIZE, pwd);
+	path_len += string_copy(path, PATH_SIZE, cwd);
+	path_len += string_cat(path, PATH_SIZE, path_len, PATH_DELIM);
 	path_len += string_cat(path, PATH_SIZE, path_len, world_name);
 	path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
 
@@ -38,15 +39,16 @@ command_load_core(const char   *world_name,
 }
 
 void
-command_save_core(const char         *world_name,
-                  const char         *pwd,
-                  const struct World  world)
+command_save_core(const char         *cwd,
+                  const struct World  world,
+                  const char         *world_name)
 {
 	FILE   *file;
 	char    path[PATH_SIZE];
 	size_t  path_len = 0;
 
-	path_len += string_copy(path, PATH_SIZE, pwd);
+	path_len += string_copy(path, PATH_SIZE, cwd);
+	path_len += string_cat(path, PATH_SIZE, path_len, PATH_DELIM);
 	path_len += string_cat(path, PATH_SIZE, path_len, world_name);
 	path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
 
@@ -343,12 +345,12 @@ handle_advanced_command(const char            *cmd,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
 #endif
+                        const char            *cwd,
                         char                 **feedback,
                         clock_t               *feedback_expiration,
                         float                 *framerate,
                         const char            *ip_address,
                         const clock_t          now,
-                        const char            *pwd,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
                         float                 *tickrate,
@@ -422,7 +424,7 @@ handle_advanced_command(const char            *cmd,
 			return;
 		}
 
-		command_load_core(arg, pwd, &tempworld);
+		command_load_core(cwd, &tempworld, arg);
 		if (0 == tempworld.w ||
 		    0 == tempworld.h) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -479,7 +481,7 @@ handle_advanced_command(const char            *cmd,
 			return;
 		}
 
-		command_save_core(arg, pwd, *world);
+		command_save_core(cwd, *world, arg);
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
 		handle_statusbar_resize(
@@ -616,6 +618,7 @@ handle_command(char                  *cmdline,
                TTF_Font              *font,
 #endif
                bool                  *active,
+               const char            *cwd,
                char                 **feedback,
                clock_t               *feedback_expiration,
                float                 *framerate,
@@ -623,7 +626,6 @@ handle_command(char                  *cmdline,
                bool                  *no_glowcolor,
                const clock_t          now,
                bool                  *paused,
-               const char            *pwd,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
                bool                  *th_vision,
@@ -652,12 +654,12 @@ handle_command(char                  *cmdline,
 #ifdef SDL_BACKEND
 			                        font,
 #endif
+			                        cwd,
 			                        feedback,
 			                        feedback_expiration,
 			                        framerate,
 			                        ip_address,
 			                        now,
-			                        pwd,
 			                        statusbar_elems,
 			                        statusbar_elem,
 			                        tickrate,
@@ -678,13 +680,13 @@ handle_command(char                  *cmdline,
 
 	handle_simple_command(cmdline,
 	                      active,
+	                      cwd,
 	                      feedback,
 	                      feedback_expiration,
 	                      framerate,
 	                      no_glowcolor,
 	                      now,
 	                      paused,
-	                      pwd,
 	                      th_vision,
 	                      tickrate,
 	                      tool_opts,
@@ -695,13 +697,13 @@ handle_command(char                  *cmdline,
 void
 handle_simple_command(const char          *cmdline,
                       bool                *active,
+                      const char          *cwd,
                       char               **feedback,
                       clock_t             *feedback_expiration,
                       float               *framerate,
                       bool                *no_glowcolor,
                       clock_t              now,
                       bool                *paused,
-                      const char          *pwd,
                       bool                *th_vision,
                       float               *tickrate,
                       struct ToolOptions  *tool_opts,
@@ -755,7 +757,7 @@ handle_simple_command(const char          *cmdline,
 		tool_opts->sel_tool = TOOL_HEATER;
 	} else if (strcmp(cmdline, CMD_LOAD) == 0 ||
 	           strcmp(cmdline, CMD_LOAD_SHORT) == 0) {
-		command_load_core(WORLDNAME_NEW, pwd, &tempworld);
+		command_load_core(cwd, &tempworld, WORLDNAME_NEW);
 		if (0 == tempworld.w ||
 		    0 == tempworld.h) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -783,7 +785,7 @@ handle_simple_command(const char          *cmdline,
 		*active = false;
 	} else if (strcmp(cmdline, CMD_SAVE) == 0 ||
 	           strcmp(cmdline, CMD_SAVE_SHORT) == 0) {
-		command_save_core(world_name, pwd, *world);
+		command_save_core(cwd, *world, world_name);
 	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
 	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;
