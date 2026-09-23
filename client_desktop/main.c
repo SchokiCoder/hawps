@@ -428,11 +428,13 @@ handle_input(
 #ifdef SDL_BACKEND
              TTF_Font              *font,
              const size_t           font_size,
+             SDL_Renderer          *renderer,
              SDL_Window            *win,
              int                   *win_w,
              int                   *win_h,
              SDL_FRect             *world_draw,
              const size_t           world_scale,
+             SDL_Texture          **world_tx,
 #else
              size_t                *cmdline_shift,
              const char            *display,
@@ -811,11 +813,13 @@ handle_input(
 #ifdef SDL_BACKEND
              TTF_Font              *font,
              const size_t           font_size,
+             SDL_Renderer          *renderer,
              SDL_Window            *win,
              int                   *win_w,
              int                   *win_h,
              SDL_FRect             *world_draw,
              const size_t           world_scale,
+             SDL_Texture          **world_tx,
 #else
              size_t                *cmdline_shift,
              const char            *display,
@@ -902,6 +906,8 @@ handle_input(
 				handle_command(cmdline,
 				               *cmdline_len,
 				               font,
+				               renderer,
+				               world_tx,
 				               active,
 				               cwd,
 				               feedback,
@@ -1448,9 +1454,9 @@ main(int    argc,
 
 	if (!handle_args(argc, argv,
 #ifdef SDL_BACKEND
-			&font_path,
-			&font_size,
-			&world_scale,
+			 &font_path,
+			 &font_size,
+			 &world_scale,
 #else
 	                 &no_color,
 #endif
@@ -1561,11 +1567,7 @@ main(int    argc,
 	}
 
 #ifdef SDL_BACKEND
-	world_tx = SDL_CreateTexture(renderer,
-	                             SDL_PIXELFORMAT_RGBA8888,
-	                             SDL_TEXTUREACCESS_TARGET,
-	                             world.w, world.h);
-	SDL_SetTextureScaleMode(world_tx, SDL_SCALEMODE_PIXELART);
+	handle_world_resize(world, renderer, &world_tx);
 #else
 	handle_resize(cmdline_len,
 		      &cmdline_shift,
@@ -1595,11 +1597,13 @@ main(int    argc,
 #ifdef SDL_BACKEND
 		             font,
 		             font_size,
+		             renderer,
 		             win,
 		             &win_w,
 		             &win_h,
 		             &world_draw,
 		             world_scale,
+		             &world_tx,
 #else
 		             &cmdline_shift,
 		             display,

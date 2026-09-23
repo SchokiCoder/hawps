@@ -287,6 +287,7 @@ handle_command_input(const char            *in,
 	case '\n':
 		handle_command(cmdline,
 		               *cmdline_len,
+		               win_h,
 		               world_draw,
 		               world_draw_space_w,
 		               world_draw_space_h,
@@ -305,7 +306,6 @@ handle_command_input(const char            *in,
 		               tickrate,
 		               tool_opts,
 		               win_w,
-		               win_h,
 		               world,
 		               world_name);
 		/* fallthrough */

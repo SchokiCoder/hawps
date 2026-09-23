@@ -92,7 +92,10 @@ handle_advanced_command(const char            *cmd,
                         const char            *arg,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
+                        SDL_Renderer          *renderer,
+                        SDL_Texture          **world_tx,
 #else
+                        const int              win_h,
                         struct Rect           *world_draw,
                         int                   *world_draw_space_w,
                         int                   *world_draw_space_h,
@@ -108,7 +111,6 @@ handle_advanced_command(const char            *cmd,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
                         const int              win_w,
-                        const int              win_h,
                         struct World          *world,
                         char                  *world_name);
 
@@ -122,7 +124,10 @@ handle_command(char                  *cmdline,
                const size_t           cmdline_len,
 #ifdef SDL_BACKEND
                TTF_Font              *font,
+               SDL_Renderer          *renderer,
+               SDL_Texture          **world_tx,
 #else
+               const int              win_h,
                struct Rect           *world_draw,
                int                   *world_draw_space_w,
                int                   *world_draw_space_h,
@@ -142,7 +147,6 @@ handle_command(char                  *cmdline,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
                const int              win_w,
-               const int              win_h,
                struct World          *world,
                char                  *world_name);
 
@@ -163,9 +167,10 @@ handle_simple_command(const char          *cmdline,
                       const char          *world_name);
 
 void
-handle_world_resize(const struct World  world,
+handle_world_resize(const struct World   world,
 #ifdef SDL_BACKEND
-                    SDL_FRect          *world_draw);
+                    SDL_Renderer        *renderer,
+                    SDL_Texture        **world_tx);
 #else
                     const int           win_w,
                     const int           win_h,

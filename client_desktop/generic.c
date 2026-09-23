@@ -149,34 +149,6 @@ handle_statusbar_resize(
 	}
 }
 
-void
-handle_world_resize(const struct World  world,
-#ifdef SDL_BACKEND
-                    SDL_FRect          *world_draw)
-#else
-                    const int           win_w,
-                    const int           win_h,
-                    struct Rect        *world_draw,
-                    int                *world_draw_space_w,
-                    int                *world_draw_space_h)
-#endif
-{
-	world_draw->x = 0;
-	world_draw->y = 0;
-	world_draw->w = win_w;
-	world_draw->h = win_h - 2;
-
-	if (world.w <= win_w) {
-		world_draw->w = world.w;
-		*world_draw_space_w = win_w - world.w;
-	}
-
-	if (world.h <= win_h - 2) {
-		world_draw->h = world.h;
-		*world_draw_space_h = win_h - 2 - world.h;
-	}
-}
-
 size_t
 write_statusbar_elem(char                        *out,
                      const size_t                 out_size,
@@ -372,7 +344,10 @@ handle_advanced_command(const char            *cmd,
                         const char            *arg,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
+                        SDL_Renderer          *renderer,
+                        SDL_Texture          **world_tx,
 #else
+                        const int              win_h,
                         struct Rect           *world_draw,
                         int                   *world_draw_space_w,
                         int                   *world_draw_space_h,
@@ -388,7 +363,6 @@ handle_advanced_command(const char            *cmd,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
                         const int              win_w,
-                        const int              win_h,
                         struct World          *world,
                         char                  *world_name)
 {
@@ -481,7 +455,8 @@ handle_advanced_command(const char            *cmd,
 
 		handle_world_resize(*world,
 #ifdef SDL_BACKEND
-		                    world_draw);
+		                    renderer,
+		                    world_tx);
 #else
 		                    win_w,
 		                    win_h,
@@ -661,7 +636,10 @@ handle_command(char                  *cmdline,
                const size_t           cmdline_len,
 #ifdef SDL_BACKEND
                TTF_Font              *font,
+               SDL_Renderer          *renderer,
+               SDL_Texture          **world_tx,
 #else
+               const int              win_h,
                struct Rect           *world_draw,
                int                   *world_draw_space_w,
                int                   *world_draw_space_h,
@@ -681,7 +659,6 @@ handle_command(char                  *cmdline,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
                const int              win_w,
-               const int              win_h,
                struct World          *world,
                char                  *world_name)
 {
@@ -703,7 +680,10 @@ handle_command(char                  *cmdline,
 			handle_advanced_command(buf1, buf2,
 #ifdef SDL_BACKEND
 			                        font,
+			                        renderer,
+			                        world_tx,
 #else
+			                        win_h,
 			                        world_draw,
 			                        world_draw_space_w,
 			                        world_draw_space_h,
@@ -719,7 +699,6 @@ handle_command(char                  *cmdline,
 			                        tickrate,
 			                        tool_opts,
 			                        win_w,
-			                        win_h,
 			                        world,
 			                        world_name);
 			return;
@@ -851,6 +830,44 @@ handle_simple_command(const char          *cmdline,
 		set_feedback(feedback, feedback_expiration, now,
 		             "Command not recognized.");
 	}
+}
+
+void
+handle_world_resize(const struct World   world,
+#ifdef SDL_BACKEND
+                    SDL_Renderer        *renderer,
+                    SDL_Texture        **world_tx)
+#else
+                    const int           win_w,
+                    const int           win_h,
+                    struct Rect        *world_draw,
+                    int                *world_draw_space_w,
+                    int                *world_draw_space_h)
+#endif
+{
+#ifdef SDL_BACKEND
+	SDL_DestroyTexture(*world_tx);
+	*world_tx = SDL_CreateTexture(renderer,
+	                              SDL_PIXELFORMAT_RGBA8888,
+	                              SDL_TEXTUREACCESS_TARGET,
+	                              world.w, world.h);
+	SDL_SetTextureScaleMode(*world_tx, SDL_SCALEMODE_PIXELART);
+#else
+	world_draw->x = 0;
+	world_draw->y = 0;
+	world_draw->w = win_w;
+	world_draw->h = win_h - 2;
+
+	if (world.w <= win_w) {
+		world_draw->w = world.w;
+		*world_draw_space_w = win_w - world.w;
+	}
+
+	if (world.h <= win_h - 2) {
+		world_draw->h = world.h;
+		*world_draw_space_h = win_h - 2 - world.h;
+	}
+#endif /* SDL_BACKEND */
 }
 
 void

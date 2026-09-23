@@ -134,7 +134,10 @@ This replaces the hacked `argv[0]` with unistd.h's `getcwd`.
 - [x] terminal client: fix world loading not adjusting draw range
 This fixes a crash when loading world with different size from current one.
 
-- [ ] sdl client: fix world loading not adjusting world texture
+- [x] sdl client: fix world loading not adjusting world texture
+
+- [ ] sdl client: fix world loading breaking mouse coords
+world with different aspect ratios breake mouse coords
 
 - [ ] desktop client: fix world loading not resetting tool cursor
 - [ ] desktop client: fix arg-less load cmd loading "new" rather than current world
