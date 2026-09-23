@@ -439,8 +439,10 @@ handle_input(
              const size_t           dot_depth,
              bool                  *lmb_pressed,
              const int              win_w,
+             const int              win_h,
              struct Rect           *world_draw,
-             const int              world_draw_space_w,
+             int                   *world_draw_space_w,
+             int                   *world_draw_space_h,
 #endif /* SDL_BACKEND */
              bool                  *active,
              char                  *cmdline,
@@ -820,8 +822,10 @@ handle_input(
              const size_t           dot_depth,
              bool                  *lmb_pressed,
              const int              win_w,
+             const int              win_h,
              struct Rect           *world_draw,
-             const int              world_draw_space_w,
+             int                   *world_draw_space_w,
+             int                   *world_draw_space_h,
 #endif /* SDL_BACKEND */
              bool                  *active,
              char                  *cmdline,
@@ -1013,7 +1017,7 @@ handle_input(
 				                        tool_opts,
 				                        world,
 				                        world_draw,
-				                        world_draw_space_w);
+				                        *world_draw_space_w);
 			}
 		}
 		break;
@@ -1040,7 +1044,11 @@ handle_input(
 			                     tickrate,
 			                     tool_opts,
 			                     win_w,
+			                     win_h,
 			                     world,
+			                     world_draw,
+			                     world_draw_space_w,
+			                     world_draw_space_h,
 			                     world_name);
 		}
 		break;
@@ -1598,8 +1606,10 @@ main(int    argc,
 		             dot_depth,
 		             &lmb_pressed,
 		             win_w,
+		             win_h,
 		             &world_draw,
-		             world_draw_space_w,
+		             &world_draw_space_w,
+		             &world_draw_space_h,
 #endif
 		             &active,
 		             cmdline,

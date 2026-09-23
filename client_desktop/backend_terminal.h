@@ -60,7 +60,11 @@ handle_command_input(const char            *in,
                      float                 *tickrate,
                      struct ToolOptions    *tool_opts,
                      const int              win_w,
+                     const int              win_h,
                      struct World          *world,
+                     struct Rect           *world_draw,
+                     int                   *world_draw_space_w,
+                     int                   *world_draw_space_h,
                      char                  *world_name);
 
 void

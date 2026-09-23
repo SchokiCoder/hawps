@@ -131,7 +131,13 @@ as you might have already guessed from my previous two sentences.
 - [x] desktop client: fix "pwd" being just binary dir
 This replaces the hacked `argv[0]` with unistd.h's `getcwd`.
 
-- [ ] terminal client: fix crash when loading world with different size from current one
+- [x] terminal client: fix world loading not adjusting draw range
+This fixes a crash when loading world with different size from current one.
+
+- [ ] sdl client: fix world loading not adjusting world texture
+
+- [ ] desktop client: fix world loading not resetting tool cursor
+- [ ] desktop client: fix arg-less load cmd loading "new" rather than current world
 
 - [ ] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,

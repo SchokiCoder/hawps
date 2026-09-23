@@ -265,7 +265,11 @@ handle_command_input(const char            *in,
                      float                 *tickrate,
                      struct ToolOptions    *tool_opts,
                      const int              win_w,
+                     const int              win_h,
                      struct World          *world,
+                     struct Rect           *world_draw,
+                     int                   *world_draw_space_w,
+                     int                   *world_draw_space_h,
                      char                  *world_name)
 {
 	switch (in[0]) {
@@ -283,6 +287,9 @@ handle_command_input(const char            *in,
 	case '\n':
 		handle_command(cmdline,
 		               *cmdline_len,
+		               world_draw,
+		               world_draw_space_w,
+		               world_draw_space_h,
 		               active,
 		               cwd,
 		               feedback,
@@ -298,6 +305,7 @@ handle_command_input(const char            *in,
 		               tickrate,
 		               tool_opts,
 		               win_w,
+		               win_h,
 		               world,
 		               world_name);
 		/* fallthrough */
@@ -588,22 +596,12 @@ handle_resize(const size_t            cmdline_len,
 		*win_w = ws.ws_col;
 		*win_h = ws.ws_row;
 
-		world_draw->x = 0;
-		world_draw->y = 0;
-
-		if (world.w > *win_w) {
-			world_draw->w = *win_w;
-		} else {
-			world_draw->w = world.w;
-			*world_draw_space_w = *win_w - world.w;
-		}
-
-		if (world.h > *win_h - 2) {
-			world_draw->h = *win_h - 2;
-		} else {
-			world_draw->h = world.h;
-			*world_draw_space_h = *win_h - 2 - world.h;
-		}
+		handle_world_resize(world,
+		                    *win_w,
+		                    *win_h,
+		                    world_draw,
+		                    world_draw_space_w,
+		                    world_draw_space_h);
 
 		new_display_size = (size_t) ((float) *win_w *
 		                             (float) *win_h *

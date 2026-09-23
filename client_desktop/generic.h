@@ -92,6 +92,10 @@ handle_advanced_command(const char            *cmd,
                         const char            *arg,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
+#else
+                        struct Rect           *world_draw,
+                        int                   *world_draw_space_w,
+                        int                   *world_draw_space_h,
 #endif
                         const char            *cwd,
                         char                 **feedback,
@@ -103,7 +107,8 @@ handle_advanced_command(const char            *cmd,
                         enum StatusbarElement *statusbar_elem,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
-                        const size_t           win_w,
+                        const int              win_w,
+                        const int              win_h,
                         struct World          *world,
                         char                  *world_name);
 
@@ -117,6 +122,10 @@ handle_command(char                  *cmdline,
                const size_t           cmdline_len,
 #ifdef SDL_BACKEND
                TTF_Font              *font,
+#else
+               struct Rect           *world_draw,
+               int                   *world_draw_space_w,
+               int                   *world_draw_space_h,
 #endif
                bool                  *active,
                const char            *cwd,
@@ -132,7 +141,8 @@ handle_command(char                  *cmdline,
                bool                  *th_vision,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
-               const size_t           win_w,
+               const int              win_w,
+               const int              win_h,
                struct World          *world,
                char                  *world_name);
 
@@ -151,6 +161,18 @@ handle_simple_command(const char          *cmdline,
                       struct ToolOptions  *tool_opts,
                       struct World        *world,
                       const char          *world_name);
+
+void
+handle_world_resize(const struct World  world,
+#ifdef SDL_BACKEND
+                    SDL_FRect          *world_draw);
+#else
+                    const int           win_w,
+                    const int           win_h,
+                    struct Rect        *world_draw,
+                    int                *world_draw_space_w,
+                    int                *world_draw_space_h);
+#endif
 
 void
 set_feedback(char          **feedback,

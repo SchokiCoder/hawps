@@ -149,6 +149,34 @@ handle_statusbar_resize(
 	}
 }
 
+void
+handle_world_resize(const struct World  world,
+#ifdef SDL_BACKEND
+                    SDL_FRect          *world_draw)
+#else
+                    const int           win_w,
+                    const int           win_h,
+                    struct Rect        *world_draw,
+                    int                *world_draw_space_w,
+                    int                *world_draw_space_h)
+#endif
+{
+	world_draw->x = 0;
+	world_draw->y = 0;
+	world_draw->w = win_w;
+	world_draw->h = win_h - 2;
+
+	if (world.w <= win_w) {
+		world_draw->w = world.w;
+		*world_draw_space_w = win_w - world.w;
+	}
+
+	if (world.h <= win_h - 2) {
+		world_draw->h = world.h;
+		*world_draw_space_h = win_h - 2 - world.h;
+	}
+}
+
 size_t
 write_statusbar_elem(char                        *out,
                      const size_t                 out_size,
@@ -344,6 +372,10 @@ handle_advanced_command(const char            *cmd,
                         const char            *arg,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
+#else
+                        struct Rect           *world_draw,
+                        int                   *world_draw_space_w,
+                        int                   *world_draw_space_h,
 #endif
                         const char            *cwd,
                         char                 **feedback,
@@ -355,7 +387,8 @@ handle_advanced_command(const char            *cmd,
                         enum StatusbarElement *statusbar_elem,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
-                        const size_t           win_w,
+                        const int              win_w,
+                        const int              win_h,
                         struct World          *world,
                         char                  *world_name)
 {
@@ -435,6 +468,7 @@ handle_advanced_command(const char            *cmd,
 		*world = tempworld;
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
+
 		handle_statusbar_resize(
 #ifdef SDL_BACKEND
 		                        font,
@@ -444,6 +478,17 @@ handle_advanced_command(const char            *cmd,
 		                        statusbar_elem,
 		                        win_w,
 		                        world_name);
+
+		handle_world_resize(*world,
+#ifdef SDL_BACKEND
+		                    world_draw);
+#else
+		                    win_w,
+		                    win_h,
+		                    world_draw,
+		                    world_draw_space_w,
+		                    world_draw_space_h);
+#endif
 	} else if (strcmp(cmd, CMD_MAT) == 0 ||
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
 		switch (tool_opts->sel_tool) {
@@ -616,6 +661,10 @@ handle_command(char                  *cmdline,
                const size_t           cmdline_len,
 #ifdef SDL_BACKEND
                TTF_Font              *font,
+#else
+               struct Rect           *world_draw,
+               int                   *world_draw_space_w,
+               int                   *world_draw_space_h,
 #endif
                bool                  *active,
                const char            *cwd,
@@ -631,7 +680,8 @@ handle_command(char                  *cmdline,
                bool                  *th_vision,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
-               const size_t           win_w,
+               const int              win_w,
+               const int              win_h,
                struct World          *world,
                char                  *world_name)
 {
@@ -653,6 +703,10 @@ handle_command(char                  *cmdline,
 			handle_advanced_command(buf1, buf2,
 #ifdef SDL_BACKEND
 			                        font,
+#else
+			                        world_draw,
+			                        world_draw_space_w,
+			                        world_draw_space_h,
 #endif
 			                        cwd,
 			                        feedback,
@@ -665,6 +719,7 @@ handle_command(char                  *cmdline,
 			                        tickrate,
 			                        tool_opts,
 			                        win_w,
+			                        win_h,
 			                        world,
 			                        world_name);
 			return;
