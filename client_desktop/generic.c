@@ -453,17 +453,19 @@ handle_advanced_command(const char            *cmd,
 		                        win_w,
 		                        world_name);
 
-		handle_world_resize(*world,
+		handle_world_resize(
 #ifdef SDL_BACKEND
 		                    renderer,
-		                    world_tx);
+		                    world_tx,
 #else
 		                    win_w,
 		                    win_h,
 		                    world_draw,
 		                    world_draw_space_w,
-		                    world_draw_space_h);
+		                    world_draw_space_h,
 #endif
+		                    tool_opts,
+		                    *world);
 	} else if (strcmp(cmd, CMD_MAT) == 0 ||
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
 		switch (tool_opts->sel_tool) {
@@ -833,18 +835,23 @@ handle_simple_command(const char          *cmdline,
 }
 
 void
-handle_world_resize(const struct World   world,
+handle_world_resize(
 #ifdef SDL_BACKEND
                     SDL_Renderer        *renderer,
-                    SDL_Texture        **world_tx)
+                    SDL_Texture        **world_tx,
 #else
-                    const int           win_w,
-                    const int           win_h,
-                    struct Rect        *world_draw,
-                    int                *world_draw_space_w,
-                    int                *world_draw_space_h)
+                    const int            win_w,
+                    const int            win_h,
+                    struct Rect         *world_draw,
+                    int                 *world_draw_space_w,
+                    int                 *world_draw_space_h,
 #endif
+                    struct ToolOptions  *tool_opts,
+                    const struct World   world)
 {
+	tool_opts->x = 0;
+	tool_opts->y = 0;
+
 #ifdef SDL_BACKEND
 	SDL_DestroyTexture(*world_tx);
 	*world_tx = SDL_CreateTexture(renderer,

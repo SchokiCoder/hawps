@@ -574,6 +574,7 @@ handle_resize(const size_t            cmdline_len,
               const char             *ip_address,
               size_t                 *statusbar_elems,
               enum StatusbarElement  *statusbar_elem,
+              struct ToolOptions     *tool_opts,
               int                    *win_w,
               int                    *win_h,
               const struct World      world,
@@ -596,12 +597,13 @@ handle_resize(const size_t            cmdline_len,
 		*win_w = ws.ws_col;
 		*win_h = ws.ws_row;
 
-		handle_world_resize(world,
-		                    *win_w,
+		handle_world_resize(*win_w,
 		                    *win_h,
 		                    world_draw,
 		                    world_draw_space_w,
-		                    world_draw_space_h);
+		                    world_draw_space_h,
+		                    tool_opts,
+		                    world);
 
 		new_display_size = (size_t) ((float) *win_w *
 		                             (float) *win_h *

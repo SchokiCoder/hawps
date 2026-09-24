@@ -1567,7 +1567,7 @@ main(int    argc,
 	}
 
 #ifdef SDL_BACKEND
-	handle_world_resize(world, renderer, &world_tx);
+	handle_world_resize(renderer, &world_tx, &tool_opts, world);
 #else
 	handle_resize(cmdline_len,
 		      &cmdline_shift,
@@ -1578,6 +1578,7 @@ main(int    argc,
 		      ip_address,
 		      &statusbar_elems,
 		      statusbar_elem,
+		      &tool_opts,
 		      &win_w,
 		      &win_h,
 		      world,
@@ -1702,6 +1703,7 @@ main(int    argc,
 				      ip_address,
 				      &statusbar_elems,
 				      statusbar_elem,
+				      &tool_opts,
 				      &win_w,
 				      &win_h,
 				      world,

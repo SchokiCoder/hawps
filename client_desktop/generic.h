@@ -167,17 +167,19 @@ handle_simple_command(const char          *cmdline,
                       const char          *world_name);
 
 void
-handle_world_resize(const struct World   world,
+handle_world_resize(
 #ifdef SDL_BACKEND
                     SDL_Renderer        *renderer,
-                    SDL_Texture        **world_tx);
+                    SDL_Texture        **world_tx,
 #else
-                    const int           win_w,
-                    const int           win_h,
-                    struct Rect        *world_draw,
-                    int                *world_draw_space_w,
-                    int                *world_draw_space_h);
+                    const int            win_w,
+                    const int            win_h,
+                    struct Rect         *world_draw,
+                    int                 *world_draw_space_w,
+                    int                 *world_draw_space_h,
 #endif
+                    struct ToolOptions  *tool_opts,
+                    const struct World   world);
 
 void
 set_feedback(char          **feedback,
