@@ -793,7 +793,7 @@ handle_simple_command(const char          *cmdline,
 		tool_opts->sel_tool = TOOL_HEATER;
 	} else if (strcmp(cmdline, CMD_LOAD) == 0 ||
 	           strcmp(cmdline, CMD_LOAD_SHORT) == 0) {
-		command_load_core(cwd, &tempworld, WORLDNAME_NEW);
+		command_load_core(cwd, &tempworld, world_name);
 		if (0 == tempworld.w ||
 		    0 == tempworld.h) {
 			set_feedback(feedback, feedback_expiration, now,

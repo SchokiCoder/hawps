@@ -139,7 +139,7 @@ This fixes a crash when loading world with different size from current one.
 - [x] desktop client: fix world loading not resetting tool cursor
 Loading a smaller world could cause the cursor to go out of bounds.
 
-- [ ] desktop client: fix arg-less load cmd loading "new" rather than current world
+- [x] desktop client: fix quick load cmd loading "new" instead of current world
 
 - [ ] sdl client: fix world loading breaking mouse coords
 world with different aspect ratios breake mouse coords
