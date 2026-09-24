@@ -147,8 +147,15 @@ They are no longer 1:1 as they should.
 The terminal client's ability to generate differently sized worlds,
 and then World loading, made that issue notable.
 
-- [ ] sdl client: previous commit likely broke creation of new worlds
-(load-less init)
+- [x] sdl client: fix world creation
+A new world now will just fit the visible range,
+or be smaller, capped at dot size.
+Previous commit broke creation of new worlds,
+since that depended on... utter non sense math.
+
+- [ ] sdl client: fix tool movement not scrolling world when needed
+likely a very old regression
+in fact extreme tool movement (shift + l) does scroll, but incorrectly
 
 - [ ] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,

@@ -1523,12 +1523,8 @@ main(int    argc,
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_StartTextInput(win);
 
-	new_world_w = world_draw.w / world_scale;
-	new_world_h = world_draw.h;
-	if (new_world_h <= 0) {
-		new_world_h = win_h / 2;
-	}
-	new_world_h /= world_scale;
+	new_world_w = win_w / world_scale;
+	new_world_h = (win_h - (font_size * 2)) / world_scale;
 
 	handle_statusbar_resize(font,
 	                        ip_address,
