@@ -141,8 +141,14 @@ Loading a smaller world could cause the cursor to go out of bounds.
 
 - [x] desktop client: fix quick load cmd loading "new" instead of current world
 
-- [ ] sdl client: fix world loading breaking mouse coords
-world with different aspect ratios breake mouse coords
+- [x] sdl client: fix worlds with different aspect ratios
+They breake mouse coords while input handling, and stretch dots.
+They are no longer 1:1 as they should.
+The terminal client's ability to generate differently sized worlds,
+and then World loading, made that issue notable.
+
+- [ ] sdl client: previous commit likely broke creation of new worlds
+(load-less init)
 
 - [ ] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,

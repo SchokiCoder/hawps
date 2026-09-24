@@ -345,6 +345,8 @@ handle_advanced_command(const char            *cmd,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
                         SDL_Renderer          *renderer,
+                        SDL_FRect             *world_draw,
+                        const size_t           world_scale,
                         SDL_Texture          **world_tx,
 #else
                         const int              win_h,
@@ -456,6 +458,8 @@ handle_advanced_command(const char            *cmd,
 		handle_world_resize(
 #ifdef SDL_BACKEND
 		                    renderer,
+		                    world_draw,
+		                    world_scale,
 		                    world_tx,
 #else
 		                    win_w,
@@ -639,6 +643,8 @@ handle_command(char                  *cmdline,
 #ifdef SDL_BACKEND
                TTF_Font              *font,
                SDL_Renderer          *renderer,
+               SDL_FRect             *world_draw,
+               const size_t           world_scale,
                SDL_Texture          **world_tx,
 #else
                const int              win_h,
@@ -683,6 +689,8 @@ handle_command(char                  *cmdline,
 #ifdef SDL_BACKEND
 			                        font,
 			                        renderer,
+			                        world_draw,
+			                        world_scale,
 			                        world_tx,
 #else
 			                        win_h,
@@ -838,6 +846,8 @@ void
 handle_world_resize(
 #ifdef SDL_BACKEND
                     SDL_Renderer        *renderer,
+                    SDL_FRect           *world_draw,
+                    const size_t         world_scale,
                     SDL_Texture        **world_tx,
 #else
                     const int            win_w,
@@ -853,6 +863,10 @@ handle_world_resize(
 	tool_opts->y = 0;
 
 #ifdef SDL_BACKEND
+	world_draw->x = 0;
+	world_draw->y = 0;
+	world_draw->w = world.w * world_scale;
+	world_draw->h = world.h * world_scale;
 	SDL_DestroyTexture(*world_tx);
 	*world_tx = SDL_CreateTexture(renderer,
 	                              SDL_PIXELFORMAT_RGBA8888,

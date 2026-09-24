@@ -357,10 +357,10 @@ handle_mouse_state(const float           delta,
 }
 
 void
-handle_resize(SDL_Window   *win,
-              int          *win_w,
-              int          *win_h,
-              SDL_FRect    *world_draw)
+handle_resize(SDL_Window         *win,
+              int                *win_w,
+              int                *win_h,
+              SDL_FRect          *world_draw)
 {
 	SDL_GetWindowSize(win, win_w, win_h);
 	world_draw->x = 0;

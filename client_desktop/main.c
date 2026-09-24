@@ -907,6 +907,8 @@ handle_input(
 				               *cmdline_len,
 				               font,
 				               renderer,
+				               world_draw,
+				               world_scale,
 				               world_tx,
 				               active,
 				               cwd,
@@ -1515,13 +1517,11 @@ main(int    argc,
 		fprintf(stderr, "%s\n", SDL_GetError());
 		goto cleanup;
 	}
+	win_w = SDL_WIN_WIDTH;
+	win_h = SDL_WIN_HEIGHT;
+
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
 	SDL_StartTextInput(win);
-
-	handle_resize(win, &win_w, &win_h, &world_draw);
-	world_draw.w = win_w;
-	world_draw.h = win_h - (font_size * 2);
 
 	new_world_w = world_draw.w / world_scale;
 	new_world_h = world_draw.h;
@@ -1567,7 +1567,13 @@ main(int    argc,
 	}
 
 #ifdef SDL_BACKEND
-	handle_world_resize(renderer, &world_tx, &tool_opts, world);
+	handle_resize(win, &win_w, &win_h, &world_draw);
+	handle_world_resize(renderer,
+	                    &world_draw,
+	                    world_scale,
+	                    &world_tx,
+	                    &tool_opts,
+	                    world);
 #else
 	handle_resize(cmdline_len,
 		      &cmdline_shift,
