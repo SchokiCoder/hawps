@@ -93,7 +93,7 @@ handle_advanced_command(const char            *cmd,
 #ifdef SDL_BACKEND
                         TTF_Font              *font,
                         SDL_Renderer          *renderer,
-                        SDL_FRect             *world_draw,
+                        SDL_FRect             *world_dst,
                         const size_t           world_scale,
                         SDL_Texture          **world_tx,
 #else
@@ -127,7 +127,7 @@ handle_command(char                  *cmdline,
 #ifdef SDL_BACKEND
                TTF_Font              *font,
                SDL_Renderer          *renderer,
-               SDL_FRect             *world_draw,
+               SDL_FRect             *world_dst,
                const size_t           world_scale,
                SDL_Texture          **world_tx,
 #else
@@ -174,7 +174,7 @@ void
 handle_world_resize(
 #ifdef SDL_BACKEND
                     SDL_Renderer        *renderer,
-                    SDL_FRect           *world_draw,
+                    SDL_FRect           *world_dst,
                     const size_t         world_scale,
                     SDL_Texture        **world_tx,
 #else

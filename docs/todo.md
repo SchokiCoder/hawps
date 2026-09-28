@@ -60,8 +60,19 @@ Some are panics, despite a graceful shutdown being implemented
 # Web Update
 
 - [ ] desktop client: add networking
-How? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
+How (basics)? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
 the commit before networking got removed.
+How (architecture)?
+Let the client simulate a normal world,
+which occasionally gets overridden by a network transimission.
+The server transmits let's say 12/s while default tickrate is 24/s,
+meaning the client only has to simulate 12 times per second itself,
+to fill the gaps visually.
+(Get state and display, Sim state and display, Get state and display, ...)
+The server must communicate that transmission rate ahead of time of course.
+For hosts that are confident in their network,
+we can let them set the transmission rate high enough,
+so that client's normal tickrate is all covered by transmissions.
 This should be able to piggyback off the saving/loading serialization.
 Remember to update the ip address display to reflect this.
 
@@ -153,9 +164,17 @@ or be smaller, capped at dot size.
 Previous commit broke creation of new worlds,
 since that depended on... utter non sense math.
 
-- [ ] sdl client: fix tool movement not scrolling world when needed
-likely a very old regression
-in fact extreme tool movement (shift + l) does scroll, but incorrectly
+- [x] sdl client: fix keyboard navigation not scrolling world when needed
+This also renames `world_draw` to `world_dst`,
+because it sufficiently pissed me off by now.
+`SDL_RenderTexture` has a src rect and a dst rect,
+and it was never really clear what `world_draw` is,
+unless you have a cheat sheet of where `world_draw` was fed into
+`SDL_RenderTexture`, while also knowing which one parameter is what.
+
+- [ ] sdl client: fix keyboard navigation scroll being unclamped
+I could've done this with the prior commit already,
+but I was overworked, grumpy, and hungry.
 
 - [ ] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,
@@ -177,6 +196,8 @@ Type name is uppercase too.
 
 - [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.
+
+- [ ] desktop client: add command for new world
 
 - [ ] desktop client: update help text
 - [ ] update README

@@ -54,7 +54,7 @@ draw(const char                  *cmdline,
      const struct ToolOptions     tool_opts,
      SDL_Renderer                *r,
      const struct World           world,
-     const SDL_FRect              world_draw,
+     const SDL_FRect              world_dst,
      const char                  *world_name,
      SDL_Texture                 *world_tx);
 
@@ -62,16 +62,20 @@ void
 handle_mouse_state(const float           delta,
                    int                  *drag_start_x,
                    int                  *drag_start_y,
-                   const size_t          font_size,
                    struct ToolOptions   *tool_opts,
                    SDL_Window           *win,
                    struct World         *world,
-                   SDL_FRect            *world_draw);
+                   const size_t          world_area_w,
+                   const size_t          world_area_h,
+                   SDL_FRect            *world_dst);
 
 void
-handle_resize(SDL_Window         *win,
+handle_resize(const size_t        font_size,
+              SDL_Window         *win,
               int                *win_w,
               int                *win_h,
-              SDL_FRect          *world_draw);
+              size_t             *world_area_w,
+              size_t             *world_area_h,
+              SDL_FRect          *world_dst);
 
 #endif /* _BACKEND_SDL_H */

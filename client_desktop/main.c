@@ -432,7 +432,9 @@ handle_input(
              SDL_Window            *win,
              int                   *win_w,
              int                   *win_h,
-             SDL_FRect             *world_draw,
+             size_t                *world_area_w,
+             size_t                *world_area_h,
+             SDL_FRect             *world_dst,
              const size_t           world_scale,
              SDL_Texture          **world_tx,
 #else
@@ -488,7 +490,12 @@ handle_input(
 bool
 handle_normal_input(const char         *in,
 #ifdef SDL_BACKEND
-                    SDL_FRect          *world_draw,
+                    const int           win_w,
+                    const int           win_h,
+                    const size_t        world_area_w,
+                    const size_t        world_area_h,
+                    SDL_FRect          *world_dst,
+                    const size_t        world_scale,
 #else
                     struct Rect        *world_draw,
 #endif
@@ -817,7 +824,9 @@ handle_input(
              SDL_Window            *win,
              int                   *win_w,
              int                   *win_h,
-             SDL_FRect             *world_draw,
+             size_t                *world_area_w,
+             size_t                *world_area_h,
+             SDL_FRect             *world_dst,
              const size_t           world_scale,
              SDL_Texture          **world_tx,
 #else
@@ -863,8 +872,8 @@ handle_input(
 		switch (e.type) {
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			if (SDL_BUTTON_RIGHT == e.button.button) {
-				*drag_start_x = e.button.x - world_draw->x;
-				*drag_start_y = e.button.y - world_draw->y;
+				*drag_start_x = e.button.x - world_dst->x;
+				*drag_start_y = e.button.y - world_dst->y;
 			}
 			break;
 
@@ -885,8 +894,8 @@ handle_input(
 				my  = *win_h;
 			}
 
-			tool_opts->x = (mx - world_draw->x) / world_scale;
-			tool_opts->y = (my - world_draw->y) / world_scale;
+			tool_opts->x = (mx - world_dst->x) / world_scale;
+			tool_opts->y = (my - world_dst->y) / world_scale;
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
@@ -907,7 +916,7 @@ handle_input(
 				               *cmdline_len,
 				               font,
 				               renderer,
-				               world_draw,
+				               world_dst,
 				               world_scale,
 				               world_tx,
 				               active,
@@ -946,7 +955,12 @@ handle_input(
 
 			case IM_NORMAL:
 				handle_normal_input(e.text.text,
-				                    world_draw,
+				                    *win_w,
+				                    *win_h,
+				                    *world_area_w,
+				                    *world_area_h,
+				                    world_dst,
+				                    world_scale,
 				                    active,
 				                    delta,
 				                    input_mode,
@@ -966,7 +980,13 @@ handle_input(
 			break;
 
 		case SDL_EVENT_WINDOW_RESIZED:
-			handle_resize(win, win_w, win_h, world_draw);
+			handle_resize(font_size,
+			              win,
+			              win_w,
+			              win_h,
+			              world_area_w,
+			              world_area_h,
+			              world_dst);
 			handle_statusbar_resize(font,
 			                        ip_address,
 			                        statusbar_elems,
@@ -980,11 +1000,12 @@ handle_input(
 	handle_mouse_state(delta,
 	                   drag_start_x,
 	                   drag_start_y,
-	                   font_size,
 	                   tool_opts,
 	                   win,
 	                   world,
-	                   world_draw);
+	                   *world_area_w,
+	                   *world_area_h,
+	                   world_dst);
 
 #else /* SDL_BACKEND */
 
@@ -1067,7 +1088,12 @@ handle_input(
 bool
 handle_normal_input(const char         *in,
 #ifdef SDL_BACKEND
-                    SDL_FRect          *world_draw,
+                    const int           win_w,
+                    const int           win_h,
+                    const size_t        world_area_w,
+                    const size_t        world_area_h,
+                    SDL_FRect          *world_dst,
+                    const size_t        world_scale,
 #else
                     struct Rect        *world_draw,
 #endif
@@ -1209,57 +1235,109 @@ handle_normal_input(const char         *in,
 	case KEY_LEFT:
 		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
+#ifdef SDL_BACKEND
+			if (tool_opts->x * -1 > world_dst->x / world_scale) {
+				world_dst->x += world_scale;
+			}
+#else
 			if (tool_opts->x < world_draw->x) {
 				world_draw->x -= 1;
 			}
+#endif
 		}
 		break;
 
 	case KEY_LEFT_MAX:
 		tool_opts->x = 0;
+
+#ifdef SDL_BACKEND
+		world_dst->x = 0;
+#else
 		world_draw->x = 0;
+#endif
 		break;
 
 	case KEY_DOWN:
 		if (tool_opts->y < world->h - 1) {
 			tool_opts->y += 1;
+#ifdef SDL_BACKEND
+			if (tool_opts->y >= (int) ((world_area_h - world_dst->y) / world_scale)) {
+				world_dst->y -= world_scale;
+			}
+#else
 			if (tool_opts->y >= world_draw->y + world_draw->h) {
 				world_draw->y += 1;
 			}
+#endif
 		}
 		break;
 
 	case KEY_DOWN_MAX:
 		tool_opts->y = world->h - 1;
+
+#ifdef SDL_BACKEND
+		world_dst->y = world_area_h - world_dst->h;
+		if (world_dst->y > 0 ||
+		    win_h > world_dst->h) {
+			world_dst->y = 0;
+		}
+#else
 		world_draw->y = world->h - world_draw->h;
+#endif
 		break;
 
 	case KEY_UP:
 		if (tool_opts->y > 0) {
 			tool_opts->y -= 1;
+#ifdef SDL_BACKEND
+			if (tool_opts->y * -1 > world_dst->y / world_scale) {
+				world_dst->y += world_scale;
+			}
+#else
 			if (tool_opts->y < world_draw->y) {
 				world_draw->y -= 1;
 			}
+#endif
 		}
 		break;
 
 	case KEY_UP_MAX:
 		tool_opts->y = 0;
+
+#ifdef SDL_BACKEND
+		world_dst->y = 0;
+#else
 		world_draw->y = 0;
+#endif
 		break;
 
 	case KEY_RIGHT:
 		if (tool_opts->x < world->w - 1) {
 			tool_opts->x += 1;
+#ifdef SDL_BACKEND
+			if (tool_opts->x >= (int) ((world_area_w - world_dst->x) / world_scale)) {
+				world_dst->x -= world_scale;
+			}
+#else
 			if (tool_opts->x >= world_draw->x + world_draw->w) {
 				world_draw->x += 1;
 			}
+#endif
 		}
 		break;
 
 	case KEY_RIGHT_MAX:
 		tool_opts->x = world->w - 1;
+
+#ifdef SDL_BACKEND
+		world_dst->x = world_area_w - world_dst->w;
+		if (world_dst->x > 0 ||
+		    win_w > world_dst->w) {
+			world_dst->x = 0;
+		}
+#else
 		world_draw->x = world->w - world_draw->w;
+#endif
 		break;
 
 	case KEY_RADIUS_DOWN:
@@ -1425,11 +1503,13 @@ main(int    argc,
 	size_t        font_size = STD_FONT_SIZE;
 	size_t        i;
 	SDL_Window   *win = NULL;
-	SDL_FRect     world_draw = {
-		.x = 0,
-		.y = 0,
-		.w = 0,
-		.h = 0,
+	size_t        world_area_w = 0; /* how much space is allocated to display the world */
+	size_t        world_area_h = 0; /* how much space is allocated to display the world */
+	SDL_FRect     world_dst = {
+		.x = 0, /* scroll x */
+		.y = 0, /* scroll y */
+		.w = 0, /* entire world, scaled up */
+		.h = 0, /* entire world, scaled up */
 	};
 	size_t        world_scale = STD_WORLD_SCALE;
 	SDL_Texture  *world_tx = NULL;
@@ -1447,8 +1527,8 @@ main(int    argc,
 		.w = 0,
 		.h = 0,
 	};
-	int                    world_draw_space_w = 0;
-	int                    world_draw_space_h = 0;
+	int                    world_draw_space_w = 0; /* how much space comes after the world display */
+	int                    world_draw_space_h = 0; /* how much space comes after the world display */
 #endif
 
 	cmdline[0] = '\0';
@@ -1523,8 +1603,8 @@ main(int    argc,
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_StartTextInput(win);
 
-	new_world_w = win_w / world_scale;
-	new_world_h = (win_h - (font_size * 2)) / world_scale;
+	new_world_w = world_area_w / world_scale;
+	new_world_h = world_area_h / world_scale;
 
 	handle_statusbar_resize(font,
 	                        ip_address,
@@ -1563,9 +1643,15 @@ main(int    argc,
 	}
 
 #ifdef SDL_BACKEND
-	handle_resize(win, &win_w, &win_h, &world_draw);
+	handle_resize(font_size,
+	              win,
+	              &win_w,
+	              &win_h,
+	              &world_area_w,
+	              &world_area_h,
+	              &world_dst);
 	handle_world_resize(renderer,
-	                    &world_draw,
+	                    &world_dst,
 	                    world_scale,
 	                    &world_tx,
 	                    &tool_opts,
@@ -1604,7 +1690,9 @@ main(int    argc,
 		             win,
 		             &win_w,
 		             &win_h,
-		             &world_draw,
+		             &world_area_w,
+		             &world_area_h,
+		             &world_dst,
 		             world_scale,
 		             &world_tx,
 #else
@@ -1692,7 +1780,7 @@ main(int    argc,
 			     tool_opts,
 			     renderer,
 			     world,
-			     world_draw,
+			     world_dst,
 			     world_name,
 			     world_tx);
 #else
