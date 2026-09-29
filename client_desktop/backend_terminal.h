@@ -81,19 +81,20 @@ void
 handle_normal_csi_input(const char         *in,
                         const char         *cwd,
                         const float         delta,
-                        const char         *display,
+                        const size_t        display_size,
                         const size_t        dot_depth,
                         int                *drag_start_x,
                         int                *drag_start_y,
                         char              **feedback,
                         clock_t            *feedback_expiration,
                         bool               *lmb_pressed,
+                        const bool          no_color,
+                        const bool          no_glowcolor,
                         clock_t             now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
-                        struct Rect        *world_draw,
-                        const int           world_draw_space_w);
+                        struct Rect        *world_draw);
 
 void
 handle_resize(const size_t            cmdline_len,

@@ -185,7 +185,7 @@ which should have worked without issue, since it uses the same math,
 but disregards the point of time of it completely.
 *facepalm*
 
-- [ ] terminal client: futureproof screenshot code
+- [x] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,
 instead of using the actual display buffer.
 Once the drawing code changes, it would have broken.
@@ -193,6 +193,9 @@ Once the drawing code changes, it would have broken.
 - [ ] sdl client: add screenshot bind on F5
 - [ ] desktop client: add quicksave bind on F6
 - [ ] desktop client: add quickload bind on F7
+
+- [ ] terminal client: loading a world bigger than current botches view?
+(terminal resize fixes it)
 
 - [ ] libcore: test touch at 281 sometimes fails
 

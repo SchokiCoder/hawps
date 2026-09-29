@@ -442,19 +442,20 @@ void
 handle_normal_csi_input(const char         *in,
                         const char         *cwd,
                         const float         delta,
-                        const char         *display,
+                        const size_t        display_size,
                         const size_t        dot_depth,
                         int                *drag_start_x,
                         int                *drag_start_y,
                         char              **feedback,
                         clock_t            *feedback_expiration,
                         bool               *lmb_pressed,
+                        const bool          no_color,
+                        const bool          no_glowcolor,
                         clock_t             now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
-                        struct Rect        *world_draw,
-                        const int           world_draw_space_w)
+                        struct Rect        *world_draw)
 {
 	char    datetime[BUF_SIZE];
 	time_t  epoch_now;
@@ -462,6 +463,7 @@ handle_normal_csi_input(const char         *in,
 	int     i;
 	char    path[BUF_SIZE];
 	size_t  path_len = 0;
+	char   *world_print = NULL;
 
 	datetime[0] = '\0';
 	path[0] = '\0';
@@ -517,8 +519,21 @@ handle_normal_csi_input(const char         *in,
 			return;
 		}
 
+		world_print = malloc(display_size);
+		render_world(world_print,
+		             display_size,
+		             dot_depth,
+		             no_color,
+		             no_glowcolor,
+		             th_vision,
+		             *tool_opts,
+		             *world,
+		             *world_draw,
+		             0,
+		             0);
+
 		for (i = 0; i < world_draw->h; i++) {
-			fwrite(&display[i * ((dot_depth * world_draw->w) + world_draw_space_w)],
+			fwrite(&world_print[i * ((dot_depth * world_draw->w))],
 			       1,
 			       dot_depth * world_draw->w,
 			       f);
@@ -526,6 +541,7 @@ handle_normal_csi_input(const char         *in,
 		}
 
 		fclose(f);
+		free(world_print);
 
 		set_feedback(feedback, feedback_expiration, now,
 		             "Screenshot saved");
