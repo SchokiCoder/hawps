@@ -172,9 +172,11 @@ and it was never really clear what `world_draw` is,
 unless you have a cheat sheet of where `world_draw` was fed into
 `SDL_RenderTexture`, while also knowing which one parameter is what.
 
-- [ ] sdl client: fix keyboard navigation scroll being unclamped
+- [x] sdl client: fix keyboard navigation scroll being unclamped
 I could've done this with the prior commit already,
-but I was overworked, grumpy, and hungry.
+but I was overworked, grumpy, and hungry...
+and now I am none of these. I just didn't sleep!
+Don't call an ambulance, because I am very fine.
 
 - [ ] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,

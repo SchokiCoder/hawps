@@ -334,18 +334,8 @@ handle_mouse_state(const float           delta,
 		world_dst->x = x - *drag_start_x;
 		world_dst->y = y - *drag_start_y;
 
-		if (world_dst->x > 0 ||
-		    win_w > world_dst->w) {
-			world_dst->x = 0;
-		} else if (world_dst->x < world_area_w - world_dst->w) {
-			world_dst->x = world_area_w - world_dst->w;
-		}
-		if (world_dst->y > 0 ||
-		    win_h > world_dst->h) {
-			world_dst->y = 0;
-		} else if (world_dst->y < world_area_h - world_dst->h) {
-			world_dst->y = world_area_h - world_dst->h;
-		}
+		handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
+		handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
 		break;
 
 	case SDL_BUTTON_X1MASK:
@@ -371,6 +361,32 @@ handle_resize(const size_t        font_size,
 	*world_area_h = (*win_h - (font_size * 2));
 	world_dst->x = 0;
 	world_dst->y = 0;
+}
+
+void
+handle_world_dst_clamp_x(const int     win_w,
+                         const size_t  world_area_w,
+                         SDL_FRect    *world_dst)
+{
+	if (world_dst->x > 0 ||
+	    win_w > world_dst->w) {
+		world_dst->x = 0;
+	} else if (world_dst->x < world_area_w - world_dst->w) {
+		world_dst->x = world_area_w - world_dst->w;
+	}
+}
+
+void
+handle_world_dst_clamp_y(const int     win_h,
+                         const size_t  world_area_h,
+                         SDL_FRect    *world_dst)
+{
+	if (world_dst->y > 0 ||
+	    win_h > world_dst->h) {
+		world_dst->y = 0;
+	} else if (world_dst->y < world_area_h - world_dst->h) {
+		world_dst->y = world_area_h - world_dst->h;
+	}
 }
 
 #else

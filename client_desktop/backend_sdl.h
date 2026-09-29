@@ -78,4 +78,14 @@ handle_resize(const size_t        font_size,
               size_t             *world_area_h,
               SDL_FRect          *world_dst);
 
+void
+handle_world_dst_clamp_x(const int     win_w,
+                         const size_t  world_area_w,
+                         SDL_FRect    *world_dst);
+
+void
+handle_world_dst_clamp_y(const int     win_h,
+                         const size_t  world_area_h,
+                         SDL_FRect    *world_dst);
+
 #endif /* _BACKEND_SDL_H */

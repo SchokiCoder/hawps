@@ -1239,6 +1239,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->x * -1 > world_dst->x / world_scale) {
 				world_dst->x += world_scale;
 			}
+			handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
 #else
 			if (tool_opts->x < world_draw->x) {
 				world_draw->x -= 1;
@@ -1264,6 +1265,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->y >= (int) ((world_area_h - world_dst->y) / world_scale)) {
 				world_dst->y -= world_scale;
 			}
+			handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
 #else
 			if (tool_opts->y >= world_draw->y + world_draw->h) {
 				world_draw->y += 1;
@@ -1277,10 +1279,7 @@ handle_normal_input(const char         *in,
 
 #ifdef SDL_BACKEND
 		world_dst->y = world_area_h - world_dst->h;
-		if (world_dst->y > 0 ||
-		    win_h > world_dst->h) {
-			world_dst->y = 0;
-		}
+		handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
 #else
 		world_draw->y = world->h - world_draw->h;
 #endif
@@ -1293,6 +1292,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->y * -1 > world_dst->y / world_scale) {
 				world_dst->y += world_scale;
 			}
+			handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
 #else
 			if (tool_opts->y < world_draw->y) {
 				world_draw->y -= 1;
@@ -1318,6 +1318,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->x >= (int) ((world_area_w - world_dst->x) / world_scale)) {
 				world_dst->x -= world_scale;
 			}
+			handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
 #else
 			if (tool_opts->x >= world_draw->x + world_draw->w) {
 				world_draw->x += 1;
@@ -1331,10 +1332,7 @@ handle_normal_input(const char         *in,
 
 #ifdef SDL_BACKEND
 		world_dst->x = world_area_w - world_dst->w;
-		if (world_dst->x > 0 ||
-		    win_w > world_dst->w) {
-			world_dst->x = 0;
-		}
+		handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
 #else
 		world_draw->x = world->w - world_draw->w;
 #endif
