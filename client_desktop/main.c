@@ -1601,15 +1601,22 @@ main(int    argc,
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_StartTextInput(win);
 
-	new_world_w = world_area_w / world_scale;
-	new_world_h = world_area_h / world_scale;
-
+	handle_resize(font_size,
+	              win,
+	              &win_w,
+	              &win_h,
+	              &world_area_w,
+	              &world_area_h,
+	              &world_dst);
 	handle_statusbar_resize(font,
 	                        ip_address,
 	                        &statusbar_elems,
 	                        statusbar_elem,
 	                        win_w,
 	                        world_name);
+
+	new_world_w = world_area_w / world_scale;
+	new_world_h = world_area_h / world_scale;
 #else
 	CSI_set_raw();
 	fputs(CSI_CLEAR, stdout);
@@ -1641,13 +1648,6 @@ main(int    argc,
 	}
 
 #ifdef SDL_BACKEND
-	handle_resize(font_size,
-	              win,
-	              &win_w,
-	              &win_h,
-	              &world_area_w,
-	              &world_area_h,
-	              &world_dst);
 	handle_world_resize(renderer,
 	                    &world_dst,
 	                    world_scale,

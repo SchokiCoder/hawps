@@ -178,6 +178,13 @@ but I was overworked, grumpy, and hungry...
 and now I am none of these. I just didn't sleep!
 Don't call an ambulance, because I am very fine.
 
+- [x] sdl client: fix world creation... again
+a9c054bd73e0770932d9733f80123787e348ee32 aka the `world_draw` change,
+haphazardly brought `world_area` vars to `new_world` vars,
+which should have worked without issue, since it uses the same math,
+but disregards the point of time of it completely.
+*facepalm*
+
 - [ ] terminal client: futureproof screenshot code
 By redrawing the world in a temporary separate buffer, and saving that,
 instead of using the actual display buffer.
