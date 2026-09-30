@@ -201,8 +201,11 @@ Doesn't fix terminal client yet, but it's already an upgrade.
 - [x] libcore: turn into header only lib
 - [x] libextra: turn into header only lib
 
-- [ ] desktop client: unite backend headers into main OR
-make terminal screenshot go back to leeching off of the display buffer directly
+- [x] desktop client: unite backend headers into main
+This finally makes terminal client compilable again.
+The moment your modules get circular inclusion issues,
+just mash 'em into a big soup.
+Can't have inclusion issues, if you never include :)
 
 - [ ] desktop client: add quicksave bind on F6
 - [ ] desktop client: add quickload bind on F7

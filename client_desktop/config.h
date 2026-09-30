@@ -200,4 +200,6 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
  */
 #define CONFIGURED_AT "compile time"
 
+#define FIRST_REAL_MAT MAT_SAND
+
 #endif /* _CONFIG_H */

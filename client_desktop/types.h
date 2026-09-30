@@ -7,6 +7,8 @@
 
 #include <hawps_extra.h>
 
+#include "config.h"
+
 /* Types
  */
 
@@ -36,19 +38,6 @@ enum NumberRequirement {
 	NR_NONE,
 	NR_NOT_NEGATIVE,
 	NR_POSITIVE,
-};
-
-struct ToolOptions {
-	enum Mat  brush_mat;
-	int       brush_radius;
-	int       eraser_radius;
-	enum Tool sel_tool;
-	float     spawn_temperature;
-	enum Mat  spawner_mat;
-	int       thermo_radius;
-	float     thermo_rate;
-	int       x;
-	int       y;
 };
 
 #endif /* _TYPES_H */
