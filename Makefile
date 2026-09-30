@@ -34,7 +34,7 @@ C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FO
 
 CLIENT_DESKTOP_CFLAGS       :=$(CLIENT_DESKTOP_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)
 CLIENT_DESKTOP_FILE_DEPS    :=Makefile client_desktop/* client_desktop/int_to_string.h lib_core/* lib_extra/*
-CLIENT_DESKTOP_SRC_FILES    :=client_desktop/*.c lib_extra/*.c
+CLIENT_DESKTOP_SRC_FILES    :=client_desktop/main.c
 
 DEFAULT_CLIENT :=$(APP_NAME)_desktop
 
@@ -95,9 +95,9 @@ bin/$(APP_NAME)_desktop_release: $(CLIENT_DESKTOP_FILE_DEPS)
 		$(CLIENT_DESKTOP_SRC_FILES)
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
-	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
+	$(CC) $(C_FLAGS_DEBUG) -o $@ \
 		$$(pkg-config --cflags tcl tk) \
-		client_tk/*.c lib_extra/*.c \
+		client_tk/*.c \
 		$$(pkg-config --libs tcl tk)
 
 bin/gen_int_to_string_table: client_desktop/gen/gen_int_to_string_table.c
@@ -108,9 +108,9 @@ bin/lib_core_tests: lib_core/tests.c lib_core/*
 	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -lm \
 		$<
 
-bin/lib_extra_tests: lib_extra/test/tests.c lib_core/* lib_extra/*
+bin/lib_extra_tests: lib_extra/tests.c lib_core/* lib_extra/*
 	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
-		lib_extra/*.c $<
+		$<
 
 client_desktop/int_to_string.h: bin/gen_int_to_string_table
 	./$< $@

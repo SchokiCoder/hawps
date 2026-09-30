@@ -1012,7 +1012,7 @@ handle_statusbar_resize(
 
 	buf[0] = '\0';
 
-	for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
+	for (a = 0; a < ARRLEN(STATUSBAR_DISPLAY_PRIORITY); a++) {
 		/* Here it is important to render the biggest possible
 		 * thing, unless it's not expected to change.
 		 * Only in that case use real data.
@@ -1048,7 +1048,7 @@ handle_statusbar_resize(
 	sb_max_elems = a;
 	*statusbar_elems = 0;
 
-	for (a = 0; a < ARRSIZE(STATUSBAR_DISPLAY_PRIORITY); a++) {
+	for (a = 0; a < ARRLEN(STATUSBAR_DISPLAY_PRIORITY); a++) {
 		for (b = 0; b < sb_max_elems; b++) {
 			if (STATUSBAR_DISPLAY_ORDER[a] == STATUSBAR_DISPLAY_PRIORITY[b]) {
 				statusbar_elem[*statusbar_elems] = STATUSBAR_DISPLAY_ORDER[a];

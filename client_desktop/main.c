@@ -1500,7 +1500,7 @@ main(int    argc,
 	bool                   no_glowcolor = false;
 	clock_t                now = 0;
 	size_t                 statusbar_elems = 0;
-	enum StatusbarElement  statusbar_elem[ARRSIZE(STATUSBAR_DISPLAY_PRIORITY)];
+	enum StatusbarElement  statusbar_elem[ARRLEN(STATUSBAR_DISPLAY_PRIORITY)];
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;

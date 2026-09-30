@@ -199,7 +199,7 @@ that started to accumulate and annoy me.
 Doesn't fix terminal client yet, but it's already an upgrade.
 
 - [x] libcore: turn into header only lib
-- [ ] libextra: turn into header only lib
+- [x] libextra: turn into header only lib
 
 - [ ] desktop client: unite backend headers into main OR
 make terminal screenshot go back to leeching off of the display buffer directly

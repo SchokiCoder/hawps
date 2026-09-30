@@ -8,11 +8,32 @@
 #include "hawps_color.h"
 #include "hawps_tool.h"
 
-#ifndef ARRLEN
-#define ARRLEN(arr) (sizeof(arr) / sizeof(arr[0]))
-#endif
+/* Macros
+ */
+
+/* Constant defines
+ */
+
+/* Types
+ */
+
+/* Function declarations
+ */
 
 void
 hawps_extra_init(void);
+
+/* Function definitions
+ */
+
+#ifdef HAWPS_IMPL
+
+void
+hawps_extra_init(void)
+{
+	glowcolor_init();
+}
+
+#endif /* HAWPS_IMPL */
 
 #endif /* _HAWPS_EXTRA_H */

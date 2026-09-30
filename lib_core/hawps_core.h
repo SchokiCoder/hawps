@@ -14,11 +14,14 @@
 /* Macros
  */
 
-#ifndef ARRSIZE
-#define ARRSIZE(a) (sizeof(a) / sizeof(*(a)))
+#ifndef ARRLEN
+#define ARRLEN(arr) (sizeof(arr) / sizeof(arr[0]))
 #endif
 
 /* Constant defines
+ */
+
+/* Types
  */
 
 /* Function declarations
