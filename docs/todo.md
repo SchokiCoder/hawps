@@ -193,8 +193,13 @@ Once the drawing code changes, it would have broken.
 - [x] sdl client: add screenshot bind on F5
 This breaks the terminal client, due to carrying its screenshot code around.
 
-- [ ] desktop client: FFS i hate c header files with a burning passion
-toss EVERYTHING into main.c or make single header files that work!
+- [x] desktop client: turn modules into single header files
+This also fixes a lot function ordering mistakes,
+that started to accumulate and annoy me.
+Doesn't fix terminal client yet, but it's already an upgrade.
+
+- [ ] desktop client: unite backend headers into main OR
+make terminal screenshot go back to leeching off of the display buffer directly
 
 - [ ] desktop client: add quicksave bind on F6
 - [ ] desktop client: add quickload bind on F7

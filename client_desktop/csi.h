@@ -5,13 +5,23 @@
 #ifndef _CSI_H
 #define _CSI_H
 
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/ioctl.h>
+#include <termios.h>
+
+/* Macros
+ */
+
+/* Constant defines
+ */
+
+#define COLOR_BUF_SIZE 4
 
 #define CSI_COLORSTRING_LEN 19
 
-/* Single character strings, and characters.
+/* Constant defines: Single character strings, and characters.
  * This exists because C can't add chars to a string at compile time. Too bad.
  * Hit anyone who adds multichar strings here.
  */
@@ -20,7 +30,7 @@
 #define CHAR_ESCAPE    '\x1b'
 #define CSI_ESCAPE     "\x1b"
 
-/* Sequences.
+/* Constant defines: Sequences
  */
 #define CSI_FG_DEFAULT    CSI_ESCAPE "[39m"
 #define CSI_BG_DEFAULT    CSI_ESCAPE "[49m"
@@ -51,6 +61,9 @@
 #define CSI_ENABLE_MOUSE  CSI_ESCAPE "[?1003h" CSI_ESCAPE "[?1006h"
 #define CSI_DISABLE_MOUSE CSI_ESCAPE "[?1003l" CSI_ESCAPE "[?1006l"
 
+/* Types
+ */
+
 enum MouseButton {
 	CSI_MB_LEFT = 0,
 	CSI_MB_LEFT_DRAG = 32,
@@ -63,8 +76,14 @@ enum MouseButton {
 	CSI_MB_WHEELDOWN = 65,
 };
 
-struct winsize
-CSI_get_size(void);
+/* Global variables
+ */
+static bool           term_raw = false;
+static struct termios term_initial_settings;
+static int            term_stdin_initial_flags;
+
+/* Function declarations
+ */
 
 /* @r: Red
  * @g: Green
@@ -83,6 +102,9 @@ CSI_color_to_string(const unsigned char r,
                     char               *str,
                     const size_t        str_size);
 
+struct winsize
+CSI_get_size(void);
+
 void
 CSI_set_cursorpos(const int x,
                   const int y);
@@ -92,5 +114,100 @@ CSI_set_normal(void);
 
 void
 CSI_set_raw(void);
+
+/* Function definitions
+ */
+
+#ifdef HAWPS_IMPL
+
+size_t
+CSI_color_to_string(const unsigned char r,
+                    const unsigned char g,
+                    const unsigned char b,
+                    const bool          is_fg,
+                    char               *str,
+                    const size_t        str_size)
+{
+	char    buf[COLOR_BUF_SIZE];
+	char   *color_type;
+	size_t  str_len = 0;
+
+	str[0] = '\0';
+
+	if (is_fg)
+		color_type = "\x1b[38";
+	else
+		color_type = "\x1b[48";
+
+	str_len += string_cat(str, str_size, str_len, color_type);
+	str_len += string_cat(str, str_size, str_len, ";2;");
+	snprintf(buf, COLOR_BUF_SIZE, "%.3i", r);
+	str_len += string_cat(str, str_size, str_len, buf);
+	str_len += string_cat(str, str_size, str_len, ";");
+	snprintf(buf, COLOR_BUF_SIZE, "%.3i", g);
+	str_len += string_cat(str, str_size, str_len, buf);
+	str_len += string_cat(str, str_size, str_len, ";");
+	snprintf(buf, COLOR_BUF_SIZE, "%.3i", b);
+	str_len += string_cat(str, str_size, str_len, buf);
+	str_len += string_cat(str, str_size, str_len, "m");
+
+	return str_len;
+}
+
+struct winsize
+CSI_get_size(void)
+{
+	struct winsize ret;
+
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &ret);
+
+	return ret;
+}
+
+void
+CSI_set_cursorpos(const int x,
+                  const int y)
+{
+	printf("\033[%i;%iH", y, x);
+}
+
+void
+CSI_set_normal(void)
+{
+	if (!term_raw) {
+		return;
+	}
+
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &term_initial_settings);
+	fcntl(STDIN_FILENO, F_SETFL, term_stdin_initial_flags);
+	fputs(CSI_DISABLE_MOUSE, stdout);
+	fputs(CSI_CURSOR_SHOW, stdout);
+	fputs(CSI_FG_DEFAULT, stdout);
+	fputs(CSI_BG_DEFAULT, stdout);
+	term_raw = false;
+}
+
+void
+CSI_set_raw(void)
+{
+	struct termios raw;
+
+	if (term_raw) {
+		return;
+	}
+
+	setbuf(stdout, NULL);
+	tcgetattr(STDIN_FILENO, &term_initial_settings);
+	raw = term_initial_settings;
+	raw.c_lflag &= ~(ECHO | ICANON | ISIG);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	term_stdin_initial_flags = fcntl(STDIN_FILENO, F_GETFL);
+	fcntl(STDIN_FILENO, F_SETFL, term_stdin_initial_flags | O_NONBLOCK);
+	fputs(CSI_ENABLE_MOUSE, stdout);
+	fputs(CSI_CURSOR_HIDE, stdout);
+	term_raw = true;
+}
+
+#endif /* HAWPS_IMPL */
 
 #endif /* _CSI_H */

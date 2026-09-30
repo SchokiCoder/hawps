@@ -13,6 +13,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#define HAWPS_IMPL
 #include "config.h"
 #include "generic.h"
 #include "int_to_string.h"
