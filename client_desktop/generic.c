@@ -58,6 +58,116 @@ command_save_core(const char         *cwd,
 }
 
 void
+command_screenshot(
+#ifdef SDL_BACKEND
+                   SDL_Renderer             *r,
+                   const size_t              world_area_w,
+                   const size_t              world_area_h,
+#else
+                   const size_t              display_size,
+                   const size_t              dot_depth,
+                   const bool                no_color,
+                   const bool                no_glowcolor,
+                   const struct ToolOptions  tool_opts,
+                   const struct World        world,
+                   const struct Rect         world_draw,
+#endif
+                   const char               *cwd,
+                   char                    **feedback,
+                   clock_t                  *feedback_expiration,
+                   const clock_t             now,
+                   const bool                th_vision)
+{
+	char    datetime[BUF_SIZE];
+	time_t  epoch_now;
+	char    path[BUF_SIZE];
+	size_t  path_len = 0;
+
+#ifdef SDL_BACKEND
+	SDL_Rect     rect;
+	SDL_Surface *world_sf = NULL;
+#else
+	FILE   *f = NULL;
+	int     i;
+	char   *world_print = NULL;
+
+	datetime[0] = '\0';
+	path[0] = '\0';
+#endif
+
+	path_len = string_copy(path, BUF_SIZE, cwd);
+	path_len += string_cat(path, BUF_SIZE, path_len, PATH_DELIM);
+	path_len += string_cat(path, BUF_SIZE, path_len, APP_NAME);
+	path_len += string_cat(path,
+	                       BUF_SIZE,
+	                       path_len,
+	                       (th_vision ? "_thermal_" : "_normal_"));
+	epoch_now = time(NULL);
+	strftime(datetime, BUF_SIZE, "%F_%H-%M-%S", localtime(&epoch_now));
+	path_len += string_cat(path,
+	                       BUF_SIZE,
+	                       path_len,
+	                       datetime);
+
+#ifdef SDL_BACKEND
+	path_len += string_cat(path, BUF_SIZE, path_len, ".png");
+#else
+	path_len += string_cat(path, BUF_SIZE, path_len, ".txt");
+#endif
+
+#ifdef SDL_BACKEND
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = world_area_w;
+	rect.h = world_area_h;
+
+	world_sf = SDL_RenderReadPixels(r, &rect);
+
+	if (!SDL_SavePNG(world_sf, path)) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "Couldn't save the screenshot");
+		return;
+	}
+
+	SDL_DestroySurface(world_sf);
+#else
+	world_print = malloc(display_size);
+	render_world(world_print,
+	             display_size,
+	             dot_depth,
+	             no_color,
+	             no_glowcolor,
+	             th_vision,
+	             *tool_opts,
+	             *world,
+	             *world_draw,
+	             0,
+	             0);
+
+	f = fopen(path, "w");
+	if (NULL == f) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "Couldn't save the screenshot");
+		return;
+	}
+
+	for (i = 0; i < world_draw->h; i++) {
+		fwrite(&world_print[i * ((dot_depth * world_draw->w))],
+		       1,
+		       dot_depth * world_draw->w,
+		       f);
+		fwrite("\n", 1, 1, f);
+	}
+
+	fclose(f);
+	free(world_print);
+#endif /* SDL_BACKEND */
+
+	set_feedback(feedback, feedback_expiration, now,
+	             "Screenshot saved");
+}
+
+void
 command_temperature(const float   new_temperature,
                     struct World *world)
 {

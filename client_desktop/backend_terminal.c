@@ -451,23 +451,12 @@ handle_normal_csi_input(const char         *in,
                         bool               *lmb_pressed,
                         const bool          no_color,
                         const bool          no_glowcolor,
-                        clock_t             now,
+                        const clock_t       now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
                         struct Rect        *world_draw)
 {
-	char    datetime[BUF_SIZE];
-	time_t  epoch_now;
-	FILE   *f = NULL;
-	int     i;
-	char    path[BUF_SIZE];
-	size_t  path_len = 0;
-	char   *world_print = NULL;
-
-	datetime[0] = '\0';
-	path[0] = '\0';
-
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
 		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
@@ -497,54 +486,18 @@ handle_normal_csi_input(const char         *in,
 			}
 		}
 	} else if (strcmp(in, CSI_KEY_F5) == 0) {
-		path_len = string_copy(path, BUF_SIZE, cwd);
-		path_len += string_cat(path, BUF_SIZE, path_len, PATH_DELIM);
-		path_len += string_cat(path, BUF_SIZE, path_len, APP_NAME);
-		path_len += string_cat(path,
-		                       BUF_SIZE,
-		                       path_len,
-		                       (th_vision ? "_thermal_" : "_normal_"));
-		epoch_now = time(NULL);
-		strftime(datetime, BUF_SIZE, "%F_%H-%M-%S", localtime(&epoch_now));
-		path_len += string_cat(path,
-		                       BUF_SIZE,
-		                       path_len,
-		                       datetime);
-		path_len += string_cat(path, BUF_SIZE, path_len, ".txt");
-
-		f = fopen(path, "w");
-		if (NULL == f) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "Couldn't save the screenshot");
-			return;
-		}
-
-		world_print = malloc(display_size);
-		render_world(world_print,
-		             display_size,
-		             dot_depth,
-		             no_color,
-		             no_glowcolor,
-		             th_vision,
-		             *tool_opts,
-		             *world,
-		             *world_draw,
-		             0,
-		             0);
-
-		for (i = 0; i < world_draw->h; i++) {
-			fwrite(&world_print[i * ((dot_depth * world_draw->w))],
-			       1,
-			       dot_depth * world_draw->w,
-			       f);
-			fwrite("\n", 1, 1, f);
-		}
-
-		fclose(f);
-		free(world_print);
-
-		set_feedback(feedback, feedback_expiration, now,
-		             "Screenshot saved");
+		command_screenshot(display_size,
+		                   dot_depth,
+		                   no_color,
+		                   no_glowcolor,
+		                   *tool_opts,
+		                   *world,
+		                   *world_draw,
+		                   cwd,
+		                   feedback,
+		                   feedback_expiration,
+		                   now,
+		                   th_vision);
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
 		world_draw->x = 0;

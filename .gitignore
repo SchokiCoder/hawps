@@ -9,3 +9,5 @@ hawps
 *.glade#
 *.out
 *.wld
+*.png
+*.txt

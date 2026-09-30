@@ -190,7 +190,12 @@ By redrawing the world in a temporary separate buffer, and saving that,
 instead of using the actual display buffer.
 Once the drawing code changes, it would have broken.
 
-- [ ] sdl client: add screenshot bind on F5
+- [x] sdl client: add screenshot bind on F5
+This breaks the terminal client, due to carrying its screenshot code around.
+
+- [ ] desktop client: FFS i hate c header files with a burning passion
+toss EVERYTHING into main.c or make single header files that work!
+
 - [ ] desktop client: add quicksave bind on F6
 - [ ] desktop client: add quickload bind on F7
 

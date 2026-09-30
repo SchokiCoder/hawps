@@ -906,6 +906,17 @@ handle_input(
 
 		case SDL_EVENT_KEY_DOWN:
 			switch (e.key.key) {
+			case SDLK_F5:
+				command_screenshot(renderer,
+				                   *world_area_w,
+				                   *world_area_h,
+				                   cwd,
+				                   feedback,
+				                   feedback_expiration,
+				                   now,
+				                   *th_vision);
+				break;
+
 			case SDLK_BACKSPACE:
 				if (*cmdline_len > 0) {
 					cmdline[*cmdline_len - 1] = '\0';

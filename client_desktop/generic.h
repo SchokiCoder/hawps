@@ -42,6 +42,27 @@ command_save_core(const char         *cwd,
                   const char         *world_name);
 
 void
+command_screenshot(
+#ifdef SDL_BACKEND
+                   SDL_Renderer             *r,
+                   const size_t              world_area_w,
+                   const size_t              world_area_h,
+#else
+                   const size_t              display_size,
+                   const size_t              dot_depth,
+                   const bool                no_color,
+                   const bool                no_glowcolor,
+                   const struct ToolOptions  tool_opts,
+                   const struct World        world,
+                   const struct Rect         world_draw,
+#endif
+                   const char               *cwd,
+                   char                    **feedback,
+                   clock_t                  *feedback_expiration,
+                   const clock_t             now,
+                   const bool                th_vision);
+
+void
 command_temperature(const float   new_temperature,
                     struct World *world);
 
