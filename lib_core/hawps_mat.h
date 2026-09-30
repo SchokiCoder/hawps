@@ -6,6 +6,20 @@
 #define _HAWPS_MAT_H
 
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* Macros
+ */
+
+ /* Constant defines
+ */
+
+/* Function declarations
+ */
+
+/* Types
+ */
 
 enum Mat {
 	MAT_NONE,
@@ -46,6 +60,9 @@ enum MatState {
 	MS_COUNT
 };
 
+/* Constants
+ */
+
 static const char *MAT_NAME[]                 = {"None",    "Sand",    "Glass",   "Water",   "Iron",         "Oxygen",  "Hydrogen", "Carbon Dioxide", "Methane",          "Coal",             "Iron Oxide",      "Aluminum",         "Aluminum Oxide", "Thermite",   "Magnesium",         "Magnesium Oxide", "Sulfur",         "Sulfur Trioxide", "Black Powder",      "Sulfuric Acid", "Clay",         "Ceramic",    "Limestone",        "Quicklime",           "Slaked Lime"};
 static const float MAT_ACIDITY[]              = {0,         0,         0,         0,         0,              0,         0,          0,                0,                  0,                  0,                 0,                  0,                0,            0,                   0,                 0,                0,                 0,                   0.3334,          0,              0,            0,                  0,                     0};                     /* inflicts dissolution fraction per tick */
 static const float MAT_ACID_VULN[]            = {0,         0,         0,         0,         0.5,            0,         0,          0,                0,                  0.2,                1.0,               0.5,                1.0,              1.0,          0.5,                 1.0,               0.005,            0.05,              0.075,               0,               0.334,          0,            1.0,                1.0,                   0.5};                   /* factor at which acid damage is applied */
@@ -74,6 +91,9 @@ static const short MAT_R[]                    = {0,         238,       237,     
 static const short MAT_G[]                    = {0,         217,       237,       150,       175,            200,       200,        200,              65,                 30,                 9,                 200,                225,              59,          200,                  240,               169,              240,               60,                  255,             139,            191,          223,                240,                   215};                   /* G */
 static const short MAT_B[]                    = {0,         86,        237,       255,       175,            255,       255,        255,              65,                 30,                 0,                 210,                225,              65,          200,                  240,               49,               240,               60,                  255,             123,            169,          194,                240,                   215};                   /* B */
 
+/* Function declarations
+ */
+
 /* @str: String to be examined.
  * @mat: Result output. Not changed if nothing found.
  *
@@ -99,5 +119,91 @@ void
 mat_touch_prdcts(const enum Mat           mat,
                  enum Mat       *restrict out1,
                  enum Mat       *restrict out2);
+
+/* Function definitions
+ */
+
+#ifdef HAWPS_IMPL
+
+bool
+mat_from_string(const char *str,
+                enum Mat   *mat)
+{
+	size_t i;
+
+	for (i = 0; i < MAT_COUNT; i++) {
+		if (strcmp(str, MAT_NAME[i]) == 0) {
+			*mat = i;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+enum Mat
+mat_melt_prdct(const enum Mat mat)
+{
+	if ((rand() % 100) < MAT_MELT_PRDCT1_CHANCE[mat]) {
+		return MAT_MELT_PRDCT1[mat];
+	} else {
+		return MAT_MELT_PRDCT2[mat];
+	}
+}
+
+void
+mat_oxid_prdcts(const enum Mat           mat,
+                enum Mat       *restrict out1,
+                enum Mat       *restrict out2)
+{
+	if (MAT_OXID_RANDOM[mat]) {
+		if ((rand() % 100) <= MAT_OXID_PRDCT1_CHANCE[mat]) {
+			*out1 = MAT_OXID_PRDCT1[mat];
+		} else {
+			*out1 = MAT_OXID_PRDCT2[mat];
+		}
+		if ((rand() % 100) <= MAT_OXID_PRDCT1_CHANCE[mat]) {
+			*out2 = MAT_OXID_PRDCT1[mat];
+		} else {
+			*out2 = MAT_OXID_PRDCT2[mat];
+		}
+	} else {
+		*out1 = MAT_OXID_PRDCT1[mat];
+		*out2 = MAT_OXID_PRDCT2[mat];
+	}
+}
+
+enum MatState
+mat_thermo_to_state(const enum Mat mat,
+                    const float    thermo)
+{
+	enum MatState ret;
+
+	if (thermo < MAT_MELT_P[mat]) {
+		ret = MAT_SOLID_S[mat];
+	} else if (thermo < MAT_BOIL_P[mat]) {
+		ret = MS_LIQUID;
+	} else {
+		ret = MS_GAS;
+	}
+
+	return ret;
+}
+
+void
+mat_touch_prdcts(const enum Mat           mat,
+                 enum Mat       *restrict out1,
+                 enum Mat       *restrict out2)
+{
+	*out1 = MAT_TOUCH_PRDCT1[mat];
+
+	if ((rand() % 100) <= MAT_TOUCH_ALTPRDCT2_CHANCE[mat]) {
+		*out2 = MAT_TOUCH_ALTPRDCT2[mat];
+	} else {
+		*out2 = MAT_TOUCH_PRDCT2[mat];
+	}
+}
+
+#endif /* HAWPS_IMPL */
 
 #endif /* _HAWPS_MAT_H */

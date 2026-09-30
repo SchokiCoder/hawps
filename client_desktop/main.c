@@ -2,6 +2,7 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
+#define HAWPS_IMPL
 #include <errno.h>
 #include <hawps_core.h>
 #include <hawps_extra.h>
@@ -13,7 +14,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#define HAWPS_IMPL
 #include "config.h"
 #include "generic.h"
 #include "int_to_string.h"

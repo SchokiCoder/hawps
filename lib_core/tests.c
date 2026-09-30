@@ -2,6 +2,7 @@
  * Copyright (C) 2024 - 2026  Andy Frank Schoknecht
  */
 
+#define HAWPS_IMPL
 #include <assert.h>
 #include <hawps_core.h>
 #include <math.h>
