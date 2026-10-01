@@ -216,11 +216,10 @@ Can't have inclusion issues, if you never include :)
 This made the altproduct chance be 1 percent higher than intended,
 effectively enabling 0% altproducts with a 1% chance.
 
+- [x] libcore: add long overdue `world_clear` replacing manual implementations
+
 - [ ] terminal client: loading a world bigger than current botches view?
 (terminal resize fixes it)
-
-- [ ] libcore: add long overdue `world_clear`
-replacing manual impls in test and desktop client
 
 - [ ] libcore: make type based function names uppercase
 `world_do` -> `World_do`

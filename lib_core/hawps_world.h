@@ -85,6 +85,9 @@ world_can_displace(struct World *w,
                    const int     dy);
 
 void
+world_clear(struct World *w);
+
+void
 world_clear_dot(struct World *w,
                 const int     x,
                 const int     y);
@@ -325,6 +328,19 @@ world_can_displace(struct World *w,
 	}
 
 	return false;
+}
+
+void
+world_clear(struct World *w)
+{
+	int x, y;
+
+	for (x = 0; x < w->w; x++) {
+		for (y = 0; y < w->h; y++) {
+			w->spawner[x][y] = false;
+			world_clear_dot(w, x, y);
+		}
+	}
 }
 
 void
