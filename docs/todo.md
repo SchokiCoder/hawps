@@ -207,7 +207,9 @@ The moment your modules get circular inclusion issues,
 just mash 'em into a big soup.
 Can't have inclusion issues, if you never include :)
 
-- [ ] desktop client: add quicksave bind on F6
+- [x] desktop client: add quicksave bind on F6
+- [ ] desktop client: add feedback for successfully saving a world
+
 - [ ] desktop client: add quickload bind on F7
 
 - [ ] terminal client: loading a world bigger than current botches view?

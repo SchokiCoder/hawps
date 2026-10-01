@@ -379,6 +379,9 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "    F5\n"
 "        take a screenshot\n"
 "\n"
+"    F6\n"
+"        quicksave (save under current worldname)\n"
+"\n"
 "    %c Left-Mouse\n"
 "        use currently active tool\n"
 "\n"
@@ -812,7 +815,8 @@ handle_normal_csi_input(const char         *in,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
-                        struct Rect        *world_draw);
+                        struct Rect        *world_draw,
+                        const char         *world_name);
 #endif /* SDL_BACKEND */
 
 /* @in: Input.
@@ -2479,6 +2483,10 @@ handle_input(
 				                   *th_vision);
 				break;
 
+			case SDLK_F6:
+				command_save_core(cwd, *world, world_name);
+				break;
+
 			case SDLK_BACKSPACE:
 				if (*cmdline_len > 0) {
 					cmdline[*cmdline_len - 1] = '\0';
@@ -2622,7 +2630,8 @@ handle_input(
 				                        *th_vision,
 				                        tool_opts,
 				                        world,
-				                        world_draw);
+				                        world_draw,
+				                        world_name);
 			}
 		}
 		break;
@@ -2857,7 +2866,8 @@ handle_normal_csi_input(const char         *in,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
-                        struct Rect        *world_draw)
+                        struct Rect        *world_draw,
+                        const char         *world_name)
 {
 	if (strcmp(in, CSI_KEY_LEFT) == 0) {
 		if (tool_opts->x > 0) {
@@ -2900,6 +2910,8 @@ handle_normal_csi_input(const char         *in,
 		                   feedback_expiration,
 		                   now,
 		                   th_vision);
+	} else if (strcmp(in, CSI_KEY_F6) == 0) {
+		command_save_core(cwd, *world, world_name);
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
 		world_draw->x = 0;
