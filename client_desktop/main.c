@@ -1778,6 +1778,7 @@ handle_advanced_command(const char            *cmd,
 		}
 
 		command_save_core(cwd, *world, arg);
+		set_feedback(feedback, feedback_expiration, now, "World saved");
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
 		handle_statusbar_resize(
@@ -2485,6 +2486,8 @@ handle_input(
 
 			case SDLK_F6:
 				command_save_core(cwd, *world, world_name);
+				set_feedback(feedback, feedback_expiration, now,
+				             "World saved");
 				break;
 
 			case SDLK_BACKSPACE:
@@ -2912,6 +2915,7 @@ handle_normal_csi_input(const char         *in,
 		                   th_vision);
 	} else if (strcmp(in, CSI_KEY_F6) == 0) {
 		command_save_core(cwd, *world, world_name);
+		set_feedback(feedback, feedback_expiration, now, "World saved");
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
 		world_draw->x = 0;
@@ -3477,6 +3481,7 @@ handle_simple_command(const char          *cmdline,
 	} else if (strcmp(cmdline, CMD_SAVE) == 0 ||
 	           strcmp(cmdline, CMD_SAVE_SHORT) == 0) {
 		command_save_core(cwd, *world, world_name);
+		set_feedback(feedback, feedback_expiration, now, "World saved");
 	} else if (strcmp(cmdline, CMD_SPAWNER) == 0 ||
 	           strcmp(cmdline, CMD_SPAWNER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;

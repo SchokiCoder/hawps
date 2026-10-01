@@ -208,7 +208,7 @@ just mash 'em into a big soup.
 Can't have inclusion issues, if you never include :)
 
 - [x] desktop client: add quicksave bind on F6
-- [ ] desktop client: add feedback for successfully saving a world
+- [x] desktop client: add feedback for successfully saving a world
 
 - [ ] desktop client: add quickload bind on F7
 
