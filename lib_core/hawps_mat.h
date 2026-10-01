@@ -197,7 +197,7 @@ mat_touch_prdcts(const enum Mat           mat,
 {
 	*out1 = MAT_TOUCH_PRDCT1[mat];
 
-	if ((rand() % 100) <= MAT_TOUCH_ALTPRDCT2_CHANCE[mat]) {
+	if ((rand() % 100) < MAT_TOUCH_ALTPRDCT2_CHANCE[mat]) {
 		*out2 = MAT_TOUCH_ALTPRDCT2[mat];
 	} else {
 		*out2 = MAT_TOUCH_PRDCT2[mat];

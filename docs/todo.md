@@ -212,10 +212,12 @@ Can't have inclusion issues, if you never include :)
 
 - [x] desktop client: add quickload bind on F7
 
+- [x] libcore: fix touch altproduct chance being n + 1 percent
+This made the altproduct chance be 1 percent higher than intended,
+effectively enabling 0% altproducts with a 1% chance.
+
 - [ ] terminal client: loading a world bigger than current botches view?
 (terminal resize fixes it)
-
-- [ ] libcore: test touch at 281 sometimes fails
 
 - [ ] libcore: add long overdue `world_clear`
 replacing manual impls in test and desktop client
