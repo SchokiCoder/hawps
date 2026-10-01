@@ -210,7 +210,7 @@ Can't have inclusion issues, if you never include :)
 - [x] desktop client: add quicksave bind on F6
 - [x] desktop client: add feedback for successfully saving a world
 
-- [ ] desktop client: add quickload bind on F7
+- [x] desktop client: add quickload bind on F7
 
 - [ ] terminal client: loading a world bigger than current botches view?
 (terminal resize fixes it)

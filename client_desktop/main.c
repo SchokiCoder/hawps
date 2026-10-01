@@ -382,6 +382,9 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "    F6\n"
 "        quicksave (save under current worldname)\n"
 "\n"
+"    F7\n"
+"        quickload (load from current worldname)\n"
+"\n"
 "    %c Left-Mouse\n"
 "        use currently active tool\n"
 "\n"
@@ -897,7 +900,7 @@ handle_simple_command(const char          *cmdline,
                       clock_t             *feedback_expiration,
                       float               *framerate,
                       bool                *no_glowcolor,
-                      clock_t              now,
+                      const clock_t        now,
                       bool                *paused,
                       bool                *th_vision,
                       float               *tickrate,
@@ -946,6 +949,14 @@ handle_world_resize(
 #endif
                     struct ToolOptions  *tool_opts,
                     const struct World   world);
+
+void
+quickload(const char     *cwd,
+          char          **feedback,
+          clock_t        *feedback_expiration,
+          const clock_t	  now,
+          struct World   *world,
+          const char     *world_name);
 
 #ifdef SDL_BACKEND
 #else
@@ -2490,6 +2501,15 @@ handle_input(
 				             "World saved");
 				break;
 
+			case SDLK_F7:
+				quickload(cwd,
+				          feedback,
+				          feedback_expiration,
+				          now,
+				          world,
+				          world_name);
+				break;
+
 			case SDLK_BACKSPACE:
 				if (*cmdline_len > 0) {
 					cmdline[*cmdline_len - 1] = '\0';
@@ -2916,6 +2936,13 @@ handle_normal_csi_input(const char         *in,
 	} else if (strcmp(in, CSI_KEY_F6) == 0) {
 		command_save_core(cwd, *world, world_name);
 		set_feedback(feedback, feedback_expiration, now, "World saved");
+	} else if (strcmp(in, CSI_KEY_F7) == 0) {
+		quickload(cwd,
+		          feedback,
+		          feedback_expiration,
+		          now,
+		          world,
+		          world_name);
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
 		world_draw->x = 0;
@@ -3397,7 +3424,7 @@ handle_simple_command(const char          *cmdline,
                       clock_t             *feedback_expiration,
                       float               *framerate,
                       bool                *no_glowcolor,
-                      clock_t              now,
+                      const clock_t        now,
                       bool                *paused,
                       bool                *th_vision,
                       float               *tickrate,
@@ -3405,7 +3432,6 @@ handle_simple_command(const char          *cmdline,
                       struct World        *world,
                       const char          *world_name)
 {
-	struct World  tempworld;
 	int           x, y;
 
 	*feedback = NULL;
@@ -3452,15 +3478,12 @@ handle_simple_command(const char          *cmdline,
 		tool_opts->sel_tool = TOOL_HEATER;
 	} else if (strcmp(cmdline, CMD_LOAD) == 0 ||
 	           strcmp(cmdline, CMD_LOAD_SHORT) == 0) {
-		command_load_core(cwd, &tempworld, world_name);
-		if (0 == tempworld.w ||
-		    0 == tempworld.h) {
-			set_feedback(feedback, feedback_expiration, now,
-			             "World could not be loaded.");
-			return;
-		}
-		world_free(world);
-		*world = tempworld;
+		quickload(cwd,
+		          feedback,
+		          feedback_expiration,
+		          now,
+		          world,
+		          world_name);
 	} else if (strcmp(cmdline, CMD_NOGLOWCOLOR) == 0 ||
 	           strcmp(cmdline, CMD_NOGLOWCOLOR_SHORT) == 0) {
 		*no_glowcolor = true;
@@ -3644,6 +3667,27 @@ handle_world_resize(
 		*world_draw_space_h = win_h - 2 - world.h;
 	}
 #endif /* SDL_BACKEND */
+}
+
+void
+quickload(const char     *cwd,
+          char          **feedback,
+          clock_t        *feedback_expiration,
+          const clock_t	  now,
+          struct World   *world,
+          const char     *world_name)
+{
+	struct World tempworld;
+
+	command_load_core(cwd, &tempworld, world_name);
+	if (0 == tempworld.w ||
+	    0 == tempworld.h) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "World could not be loaded.");
+		return;
+	}
+	world_free(world);
+	*world = tempworld;
 }
 
 #ifdef SDL_BACKEND
