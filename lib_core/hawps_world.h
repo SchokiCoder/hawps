@@ -74,119 +74,119 @@ struct WorldFileV1 {
  */
 
 struct World
-world_new(const int w,
+World_new(const int w,
           const int h);
 
 bool
-world_can_displace(struct World *w,
+World_can_displace(struct World *w,
                    const int     x,
                    const int     y,
                    const int     dx,
                    const int     dy);
 
 void
-world_clear(struct World *w);
+World_clear(struct World *w);
 
 void
-world_clear_dot(struct World *w,
+World_clear_dot(struct World *w,
                 const int     x,
                 const int     y);
 
 static bool
-world_collapse_gas_stack(struct World *w,
+World_collapse_gas_stack(struct World *w,
                          const int     x,
                          const int     y,
                          const int     dx,
                          const int     dy);
 
 static bool
-world_collapse_liquid_stack(struct World *w,
+World_collapse_liquid_stack(struct World *w,
                             const int     x,
                             const int     y,
                             const int     dx,
                             const int     dy);
 
 static void
-world_drop_gas(struct World *w,
+World_drop_gas(struct World *w,
                const int     x,
                const int     y);
 
 static void
-world_drop_grain(struct World *w,
+World_drop_grain(struct World *w,
                  const int     x,
                  const int     y);
 
 static void
-world_drop_liquid(struct World *w,
+World_drop_liquid(struct World *w,
                   const int     x,
                   const int     y);
 
 void
-world_free(struct World *w);
+World_free(struct World *w);
 
 struct World
-world_load(FILE *f);
+World_load(FILE *f);
 
 void
-world_save(const struct World  w,
+World_save(const struct World  w,
            FILE               *f);
 
-/* You SHOULD call world_update before this.
+/* You SHOULD call World_update before this.
  */
 void
-world_sim(struct World *w);
+World_sim(struct World *w);
 
 static void
-world_sim_chemical_reaction(struct World *w,
+World_sim_chemical_reaction(struct World *w,
                             const int     x,
                             const int     y,
                             const int     dx,
                             const int     dy);
 
 static void
-world_sim_gravity(struct World *w,
+World_sim_gravity(struct World *w,
                   const int     x,
                   const int     y);
 
 static void
-world_sim_th_conduction(struct World *w,
+World_sim_th_conduction(struct World *w,
                         const int     x,
                         const int     y,
                         const int     x2,
                         const int     y2);
 
 static void
-world_sim_to_right(struct World *w,
+World_sim_to_right(struct World *w,
                    int          *x,
                    const int     y);
 
 static void
-world_sim_to_left(struct World *w,
+World_sim_to_left(struct World *w,
                   int          *x,
                   const int     y);
 
 /* Swaps all properties of two coordinates.
  */
 static void
-world_swap_dots(struct World *w,
+World_swap_dots(struct World *w,
                 const int     x,
                 const int     y,
                 const int     x2,
                 const int     y2);
 
-/* You may want to call world_sim after this.
+/* You may want to call World_sim after this.
  */
 void
-world_update(struct World *w,
+World_update(struct World *w,
              const float   spawner_temperature);
 
 static void
-world_update_dot_from_thermo(struct World *w,
+World_update_dot_from_thermo(struct World *w,
                              const int     x,
                              const int     y);
 
 void
-world_use_brush(struct World   *w,
+World_use_brush(struct World   *w,
                 const enum Mat  m,
                 const float     t,
                 const int       x_c,
@@ -195,27 +195,27 @@ world_use_brush(struct World   *w,
 
 /* Using this to increase temperature, by giving a negative delta,
  * is inefficient. Cooling requires an additional check.
- * To heat, see world_use_heater
+ * To heat, see World_use_heater
  */
 void
-world_use_cooler(struct World *w,
+World_use_cooler(struct World *w,
                  const float   delta,
                  const int     x_c,
                  const int     y_c,
                  const int     radius);
 
 void
-world_use_eraser(struct World *w,
+World_use_eraser(struct World *w,
                  const int     x_c,
                  const int     y_c,
                  const int     radius);
 
 /* Using this to decrease temperature, by giving a negative delta,
  * may cause issues, as soon as the temperature of a dot goes negative.
- * To cool, see world_use_cooler
+ * To cool, see World_use_cooler
  */
 void
-world_use_heater(struct World *w,
+World_use_heater(struct World *w,
                  const float   delta,
                  const int     x_c,
                  const int     y_c,
@@ -253,7 +253,7 @@ WorldFileV1_free(struct WorldFileV1 *pw);
 #ifdef HAWPS_IMPL
 
 struct World
-world_new(const int w,
+World_new(const int w,
           const int h)
 {
 	int x;
@@ -295,7 +295,7 @@ world_new(const int w,
 }
 
 bool
-world_can_displace(struct World *w,
+World_can_displace(struct World *w,
                    const int     x,
                    const int     y,
                    const int     dx,
@@ -331,20 +331,20 @@ world_can_displace(struct World *w,
 }
 
 void
-world_clear(struct World *w)
+World_clear(struct World *w)
 {
 	int x, y;
 
 	for (x = 0; x < w->w; x++) {
 		for (y = 0; y < w->h; y++) {
 			w->spawner[x][y] = false;
-			world_clear_dot(w, x, y);
+			World_clear_dot(w, x, y);
 		}
 	}
 }
 
 void
-world_clear_dot(struct World *w,
+World_clear_dot(struct World *w,
                 const int     x,
                 const int     y)
 {
@@ -354,14 +354,14 @@ world_clear_dot(struct World *w,
 }
 
 static bool
-world_collapse_gas_stack(struct World *w,
+World_collapse_gas_stack(struct World *w,
                          const int     x,
                          const int     y,
                          const int     dx,
                          const int     dy)
 {
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
+	if (World_can_displace(w, x, y, dx, dy)) {
+		World_swap_dots(w, x, y, dx, dy);
 		return false;
 	}
 
@@ -374,14 +374,14 @@ world_collapse_gas_stack(struct World *w,
 }
 
 static bool
-world_collapse_liquid_stack(struct World *w,
+World_collapse_liquid_stack(struct World *w,
                             const int     x,
                             const int     y,
                             const int     dx,
                             const int     dy)
 {
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
+	if (World_can_displace(w, x, y, dx, dy)) {
+		World_swap_dots(w, x, y, dx, dy);
 		return false;
 	}
 
@@ -394,7 +394,7 @@ world_collapse_liquid_stack(struct World *w,
 }
 
 static void
-world_drop_gas(struct World *w,
+World_drop_gas(struct World *w,
                const int     x,
                const int     y)
 {
@@ -402,26 +402,26 @@ world_drop_gas(struct World *w,
 
 	dx = x;
 	dy = y + 1;
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
+	if (World_can_displace(w, x, y, dx, dy)) {
+		World_swap_dots(w, x, y, dx, dy);
 		return;
 	}
 
 	dy = y + 1;
 	for (dx = x - 1; dx >= 0; dx--) {
-		if (world_collapse_gas_stack(w, x, y, dx, dy)) {
+		if (World_collapse_gas_stack(w, x, y, dx, dy)) {
 			break;
 		}
 	}
 	for (dx = x + 1; dx < w->w; dx++) {
-		if (world_collapse_gas_stack(w, x, y, dx, dy)) {
+		if (World_collapse_gas_stack(w, x, y, dx, dy)) {
 			break;
 		}
 	}
 }
 
 static void
-world_drop_grain(struct World *w,
+World_drop_grain(struct World *w,
                  const int     x,
                  const int     y)
 {
@@ -429,8 +429,8 @@ world_drop_grain(struct World *w,
 
 	dx = x;
 	dy = y + 1;
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
+	if (World_can_displace(w, x, y, dx, dy)) {
+		World_swap_dots(w, x, y, dx, dy);
 		return;
 	}
 
@@ -438,8 +438,8 @@ world_drop_grain(struct World *w,
 		dx = x - 1;
 		dy = y + 1;
 
-		if (world_can_displace(w, x, y, dx, dy)) {
-			world_swap_dots(w, x, y, dx, dy);
+		if (World_can_displace(w, x, y, dx, dy)) {
+			World_swap_dots(w, x, y, dx, dy);
 			return;
 		}
 	}
@@ -447,15 +447,15 @@ world_drop_grain(struct World *w,
 		dx = x + 1;
 		dy = y + 1;
 
-		if (world_can_displace(w, x, y, dx, dy)) {
-			world_swap_dots(w, x, y, dx, dy);
+		if (World_can_displace(w, x, y, dx, dy)) {
+			World_swap_dots(w, x, y, dx, dy);
 			return;
 		}
 	}
 }
 
 static void
-world_drop_liquid(struct World *w,
+World_drop_liquid(struct World *w,
                   const int     x,
                   const int     y)
 {
@@ -463,26 +463,26 @@ world_drop_liquid(struct World *w,
 
 	dx = x;
 	dy = y + 1;
-	if (world_can_displace(w, x, y, dx, dy)) {
-		world_swap_dots(w, x, y, dx, dy);
+	if (World_can_displace(w, x, y, dx, dy)) {
+		World_swap_dots(w, x, y, dx, dy);
 		return;
 	}
 
 	dy = y + 1;
 	for (dx = x - 1; dx >= 0; dx--) {
-		if (world_collapse_liquid_stack(w, x, y, dx, dy)) {
+		if (World_collapse_liquid_stack(w, x, y, dx, dy)) {
 			break;
 		}
 	}
 	for (dx = x + 1; dx < w->w; dx++) {
-		if (world_collapse_liquid_stack(w, x, y, dx, dy)) {
+		if (World_collapse_liquid_stack(w, x, y, dx, dy)) {
 			break;
 		}
 	}
 }
 
 void
-world_free(struct World *w)
+World_free(struct World *w)
 {
 	if (w->dissol != NULL) {
 		free(w->dissol);
@@ -566,7 +566,7 @@ world_free(struct World *w)
 }
 
 struct World
-world_load(FILE *f)
+World_load(FILE *f)
 {
 	struct World       ret;
 	struct WorldFileV1 wf;
@@ -586,7 +586,7 @@ world_load(FILE *f)
 }
 
 void
-world_save(const struct World  w,
+World_save(const struct World  w,
            FILE               *f)
 {
 	struct WorldFileV1 wf;
@@ -598,7 +598,7 @@ world_save(const struct World  w,
 }
 
 void
-world_sim(struct World *w)
+World_sim(struct World *w)
 {
 	int x, y;
 
@@ -608,28 +608,28 @@ world_sim(struct World *w)
 			continue;
 		}
 
-		world_sim_th_conduction(w, x, y, x - 1, y);
-		world_sim_th_conduction(w, x, y, x + 1, y);
-		world_sim_chemical_reaction(w, x, y, x - 1, y);
-		world_sim_chemical_reaction(w, x, y, x + 1, y);
-		world_sim_chemical_reaction(w, x, y, x, y - 1);
+		World_sim_th_conduction(w, x, y, x - 1, y);
+		World_sim_th_conduction(w, x, y, x + 1, y);
+		World_sim_chemical_reaction(w, x, y, x - 1, y);
+		World_sim_chemical_reaction(w, x, y, x + 1, y);
+		World_sim_chemical_reaction(w, x, y, x, y - 1);
 	}
 
-	world_sim_chemical_reaction(w, 0, w->h - 1, 1, w->h - 1);
-	world_sim_chemical_reaction(w, w->w - 1, w->h - 1, w->w - 2, w->h - 1);
+	World_sim_chemical_reaction(w, 0, w->h - 1, 1, w->h - 1);
+	World_sim_chemical_reaction(w, w->w - 1, w->h - 1, w->w - 2, w->h - 1);
 
 	y = w->h - 2;
 	while (1) {
 		if (y <= 0) {
 			break;
 		}
-		world_sim_to_right(w, &x, y);
+		World_sim_to_right(w, &x, y);
 		y -= 1;
 
 		if (y <= 0) {
 			break;
 		}
-		world_sim_to_left(w, &x, y);
+		World_sim_to_left(w, &x, y);
 		y -= 1;
 	}
 
@@ -639,17 +639,17 @@ world_sim(struct World *w)
 			continue;
 		}
 
-		world_sim_th_conduction(w, x, y, x, y + 1);
-		world_sim_th_conduction(w, x, y, x - 1, y);
-		world_sim_th_conduction(w, x, y, x + 1, y);
-		world_sim_chemical_reaction(w, x, y, x, y + 1);
-		world_sim_chemical_reaction(w, x, y, x - 1, y);
-		world_sim_chemical_reaction(w, x, y, x + 1, y);
-		world_sim_gravity(w, x, y);
+		World_sim_th_conduction(w, x, y, x, y + 1);
+		World_sim_th_conduction(w, x, y, x - 1, y);
+		World_sim_th_conduction(w, x, y, x + 1, y);
+		World_sim_chemical_reaction(w, x, y, x, y + 1);
+		World_sim_chemical_reaction(w, x, y, x - 1, y);
+		World_sim_chemical_reaction(w, x, y, x + 1, y);
+		World_sim_gravity(w, x, y);
 	}
 
-	world_sim_chemical_reaction(w, 0, 0, 1, 0);
-	world_sim_chemical_reaction(w, w->w - 1, 0, w->w - 2, 0);
+	World_sim_chemical_reaction(w, 0, 0, 1, 0);
+	World_sim_chemical_reaction(w, w->w - 1, 0, w->w - 2, 0);
 
 	x = 0;
 	for (y = w->h - 2; y >= 0; y--) {
@@ -657,10 +657,10 @@ world_sim(struct World *w)
 			continue;
 		}
 
-		world_sim_th_conduction(w, x, y, x, y + 1);
-		world_sim_chemical_reaction(w, x, y, x, y + 1);
-		world_sim_chemical_reaction(w, x, y, x + 1, y);
-		world_sim_gravity(w, x, y);
+		World_sim_th_conduction(w, x, y, x, y + 1);
+		World_sim_chemical_reaction(w, x, y, x, y + 1);
+		World_sim_chemical_reaction(w, x, y, x + 1, y);
+		World_sim_gravity(w, x, y);
 	}
 
 	x = w->w - 1;
@@ -669,15 +669,15 @@ world_sim(struct World *w)
 			continue;
 		}
 
-		world_sim_th_conduction(w, x, y, x, y + 1);
-		world_sim_chemical_reaction(w, x, y, x, y + 1);
-		world_sim_chemical_reaction(w, x, y, x - 1, y);
-		world_sim_gravity(w, x, y);
+		World_sim_th_conduction(w, x, y, x, y + 1);
+		World_sim_chemical_reaction(w, x, y, x, y + 1);
+		World_sim_chemical_reaction(w, x, y, x - 1, y);
+		World_sim_gravity(w, x, y);
 	}
 }
 
 static void
-world_sim_chemical_reaction(struct World *w,
+World_sim_chemical_reaction(struct World *w,
                             const int     x,
                             const int     y,
                             const int     dx,
@@ -689,7 +689,7 @@ world_sim_chemical_reaction(struct World *w,
 	                   MAT_ACID_VULN[w->dot[x][y]];
 	if (w->dissol[x][y] >= 1.0) {
 		w->dissol[x][y] = 0.0;
-		world_clear_dot(w, x, y);
+		World_clear_dot(w, x, y);
 	}
 
 	if (MAT_OXYGEN == w->dot[dx][dy] &&
@@ -704,7 +704,7 @@ world_sim_chemical_reaction(struct World *w,
 		w->thermo[dx][dy] += th;
 
 		if (w->oxid[x][y] >= 1.0) {
-			mat_oxid_prdcts(w->dot[x][y],
+			Mat_oxid_prdcts(w->dot[x][y],
 			                &w->dot[x][y],
 			                &w->dot[dx][dy]);
 			w->oxid[x][y] = 0.0;
@@ -713,26 +713,26 @@ world_sim_chemical_reaction(struct World *w,
 
 	if (MAT_TOUCH_REAGENT[w->dot[x][y]] != MAT_NONE &&
 	    MAT_TOUCH_REAGENT[w->dot[x][y]] == w->dot[dx][dy]) {
-		mat_touch_prdcts(w->dot[x][y], &w->dot[x][y], &w->dot[dx][dy]);
+		Mat_touch_prdcts(w->dot[x][y], &w->dot[x][y], &w->dot[dx][dy]);
 	}
 }
 
 static void
-world_sim_gravity(struct World *w,
+World_sim_gravity(struct World *w,
                   const int     x,
                   const int     y)
 {
 	switch (w->state[x][y]) {
 	case MS_GAS:
-		world_drop_gas(w, x, y);
+		World_drop_gas(w, x, y);
 		break;
 
 	case MS_GRAIN:
-		world_drop_grain(w, x, y);
+		World_drop_grain(w, x, y);
 		break;
 
 	case MS_LIQUID:
-		world_drop_liquid(w, x, y);
+		World_drop_liquid(w, x, y);
 		break;
 
 	default:
@@ -741,7 +741,7 @@ world_sim_gravity(struct World *w,
 }
 
 static void
-world_sim_th_conduction(struct World *w,
+World_sim_th_conduction(struct World *w,
                         const int     x,
                         const int     y,
                         const int     x2,
@@ -762,7 +762,7 @@ world_sim_th_conduction(struct World *w,
 }
 
 static void
-world_sim_to_right(struct World *w,
+World_sim_to_right(struct World *w,
                    int          *x,
                    const int     y)
 {
@@ -771,19 +771,19 @@ world_sim_to_right(struct World *w,
 			continue;
 		}
 
-		world_sim_th_conduction(w, *x, y, *x, y + 1);
-		world_sim_th_conduction(w, *x, y, *x - 1, y);
-		world_sim_th_conduction(w, *x, y, *x + 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x, y + 1);
-		world_sim_chemical_reaction(w, *x, y, *x, y - 1);
-		world_sim_chemical_reaction(w, *x, y, *x - 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
-		world_sim_gravity(w, *x, y);
+		World_sim_th_conduction(w, *x, y, *x, y + 1);
+		World_sim_th_conduction(w, *x, y, *x - 1, y);
+		World_sim_th_conduction(w, *x, y, *x + 1, y);
+		World_sim_chemical_reaction(w, *x, y, *x, y + 1);
+		World_sim_chemical_reaction(w, *x, y, *x, y - 1);
+		World_sim_chemical_reaction(w, *x, y, *x - 1, y);
+		World_sim_chemical_reaction(w, *x, y, *x + 1, y);
+		World_sim_gravity(w, *x, y);
 	}
 }
 
 static void
-world_sim_to_left(struct World *w,
+World_sim_to_left(struct World *w,
                   int          *x,
                   const int     y)
 {
@@ -792,19 +792,19 @@ world_sim_to_left(struct World *w,
 			continue;
 		}
 
-		world_sim_th_conduction(w, *x, y, *x, y + 1);
-		world_sim_th_conduction(w, *x, y, *x - 1, y);
-		world_sim_th_conduction(w, *x, y, *x + 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x, y + 1);
-		world_sim_chemical_reaction(w, *x, y, *x, y - 1);
-		world_sim_chemical_reaction(w, *x, y, *x - 1, y);
-		world_sim_chemical_reaction(w, *x, y, *x + 1, y);
-		world_sim_gravity(w, *x, y);
+		World_sim_th_conduction(w, *x, y, *x, y + 1);
+		World_sim_th_conduction(w, *x, y, *x - 1, y);
+		World_sim_th_conduction(w, *x, y, *x + 1, y);
+		World_sim_chemical_reaction(w, *x, y, *x, y + 1);
+		World_sim_chemical_reaction(w, *x, y, *x, y - 1);
+		World_sim_chemical_reaction(w, *x, y, *x - 1, y);
+		World_sim_chemical_reaction(w, *x, y, *x + 1, y);
+		World_sim_gravity(w, *x, y);
 	}
 }
 
 static void
-world_swap_dots(struct World *w,
+World_swap_dots(struct World *w,
                 const int     x,
                 const int     y,
                 const int     x2,
@@ -830,7 +830,7 @@ world_swap_dots(struct World *w,
 }
 
 void
-world_update(struct World *w,
+World_update(struct World *w,
              const float   spawner_temperature)
 {
 	int x, y;
@@ -842,13 +842,13 @@ world_update(struct World *w,
 				w->thermo[x][y] = spawner_temperature;
 			}
 
-			world_update_dot_from_thermo(w, x, y);
+			World_update_dot_from_thermo(w, x, y);
 		}
 	}
 }
 
 static void
-world_update_dot_from_thermo(struct World *w,
+World_update_dot_from_thermo(struct World *w,
                              const int     x,
                              const int     y)
 {
@@ -859,7 +859,7 @@ world_update_dot_from_thermo(struct World *w,
 		w->state[x][y] = MS_LIQUID;
 
 		if (MAT_MELT_DECOMP[w->dot[x][y]]) {
-			w->dot[x][y] = mat_melt_prdct(w->dot[x][y]);
+			w->dot[x][y] = Mat_melt_prdct(w->dot[x][y]);
 		}
 
 		w->weight[x][y] = MAT_FULL_WEIGHT[w->dot[x][y]] *
@@ -876,7 +876,7 @@ world_update_dot_from_thermo(struct World *w,
 }
 
 void
-world_use_brush(struct World   *w,
+World_use_brush(struct World   *w,
                 const enum Mat  m,
                 const float     t,
                 const int       x_c,
@@ -911,7 +911,7 @@ world_use_brush(struct World   *w,
 
 			if (w->thermo[x][y] >= MAT_BOIL_P[w->dot[x][y]]) {
 				if (MAT_MELT_DECOMP[w->dot[x][y]]) {
-					w->dot[x][y] = mat_melt_prdct(w->dot[x][y]);
+					w->dot[x][y] = Mat_melt_prdct(w->dot[x][y]);
 				}
 			}
 		}
@@ -919,7 +919,7 @@ world_use_brush(struct World   *w,
 }
 
 void
-world_use_cooler(struct World *w,
+World_use_cooler(struct World *w,
                  const float   delta,
                  const int     x_c,
                  const int     y_c,
@@ -956,7 +956,7 @@ world_use_cooler(struct World *w,
 }
 
 void
-world_use_eraser(struct World *w,
+World_use_eraser(struct World *w,
                  const int     x_c,
                  const int     y_c,
                  const int     radius)
@@ -982,14 +982,14 @@ world_use_eraser(struct World *w,
 
 	for (x = x1; x <= x2; x++) {
 		for (y = y1; y <= y2; y++) {
-			world_clear_dot(w, x, y);
+			World_clear_dot(w, x, y);
 			w->spawner[x][y] = 0;
 		}
 	}
 }
 
 void
-world_use_heater(struct World *w,
+World_use_heater(struct World *w,
                  const float   delta,
                  const int     x_c,
                  const int     y_c,
@@ -1211,7 +1211,7 @@ WorldFileV1_to_world(const struct WorldFileV1 wf)
 	struct World ret;
 	uint32_t i, x, y;
 
-	ret = world_new(wf.width, wf.height);
+	ret = World_new(wf.width, wf.height);
 
 	for (x = 0; x < wf.width; x++) {
 		for (y = 0; y < wf.height; y++) {

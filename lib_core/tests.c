@@ -17,8 +17,8 @@ static struct World world;
 void
 tick_world(void)
 {
-	world_update(&world, WORLD_TEMPERATURE);
-	world_sim(&world);
+	World_update(&world, WORLD_TEMPERATURE);
+	World_sim(&world);
 }
 
 float
@@ -38,8 +38,8 @@ test_trunc_float(void)
 void
 test_gravity(void)
 {
-	world_clear(&world);
-	world_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE, 0, 0, 0);
+	World_clear(&world);
+	World_use_brush(&world, MAT_SAND, WORLD_TEMPERATURE, 0, 0, 0);
 	tick_world();
 	assert(world.dot[0][0] != MAT_SAND);
 }
@@ -50,9 +50,9 @@ test_stack_collapse_grain(void)
 	const enum Mat mat = MAT_SAND;
 	int i;
 
-	world_clear(&world);
+	World_clear(&world);
 	for (i = 1; i < 5; i++) {
-		world_use_brush(&world, mat, WORLD_TEMPERATURE,
+		World_use_brush(&world, mat, WORLD_TEMPERATURE,
 			        WORLD_W / 2, WORLD_H - i, 0);
 	}
 	for (i = 0; i < 100; i++) {
@@ -72,9 +72,9 @@ test_stack_collapse_liquid_or_gas(const enum Mat mat)
 {
 	int i;
 
-	world_clear(&world);
+	World_clear(&world);
 	for (i = 1; i < 5; i++) {
-		world_use_brush(&world, mat, WORLD_TEMPERATURE,
+		World_use_brush(&world, mat, WORLD_TEMPERATURE,
 			        WORLD_W / 2, WORLD_H - i, 0);
 	}
 	for (i = 0; i < 4; i++) {
@@ -100,11 +100,11 @@ test_thermal_conduction(void)
 	const float cold = 0.0;
 	const float hot = 9001.69;
 
-	world_clear(&world);
+	World_clear(&world);
 
-	world_use_brush(&world, MAT_IRON, cold,
+	World_use_brush(&world, MAT_IRON, cold,
 		        WORLD_W / 2, WORLD_H - 1, 0);
-	world_use_brush(&world, MAT_IRON, hot,
+	World_use_brush(&world, MAT_IRON, hot,
 		        WORLD_W / 2, WORLD_H - 2, 0);
 
 	assert(trunc_float(cold) ==
@@ -125,11 +125,11 @@ test_thermal_nonconduction(void)
 {
 	const float temp = 420.0;
 
-	world_clear(&world);
+	World_clear(&world);
 
-	world_use_brush(&world, MAT_IRON, temp,
+	World_use_brush(&world, MAT_IRON, temp,
 		        WORLD_W / 2, WORLD_H - 1, 0);
-	world_use_brush(&world, MAT_IRON, temp,
+	World_use_brush(&world, MAT_IRON, temp,
 		        WORLD_W / 2, WORLD_H - 2, 0);
 
 	assert(trunc_float(temp) ==
@@ -148,9 +148,9 @@ test_thermal_nonconduction(void)
 void
 test_melt_decomposition(void)
 {
-	world_clear(&world);
-	world_use_brush(&world, MAT_SAND, 9999.9, 0, 0, 0);
-	world_use_brush(&world, MAT_CALCIUM_CARBONATE, 9999.9, 0, 1, 0);
+	World_clear(&world);
+	World_use_brush(&world, MAT_SAND, 9999.9, 0, 0, 0);
+	World_use_brush(&world, MAT_CALCIUM_CARBONATE, 9999.9, 0, 1, 0);
 	/* no tick needed */
 
 	assert(MAT_MELT_PRDCT1[MAT_SAND] == world.dot[0][0]);
@@ -168,9 +168,9 @@ test_oxidation(void)
 	const int oy = y;
 	int i;
 
-	world_clear(&world);
-	world_use_brush(&world, mat, WORLD_TEMPERATURE, x, y, 0);
-	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE, ox, oy, 0);
+	World_clear(&world);
+	World_use_brush(&world, mat, WORLD_TEMPERATURE, x, y, 0);
+	World_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE, ox, oy, 0);
 
 	assert(mat        == world.dot[x][y]);
 	assert(MAT_OXYGEN == world.dot[ox][oy]);
@@ -194,15 +194,15 @@ test_nonoxidation(void)
 	const int      by = ay;
 	int i;
 
-	world_clear(&world);
-	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE,
+	World_clear(&world);
+	World_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE,
 	                WORLD_W / 2, WORLD_H / 2, WORLD_W * 2);
 
 	assert(MAT_OXYGEN == world.dot[WORLD_W / 2][0]);
 	assert(MAT_OXYGEN == world.dot[WORLD_W / 2][WORLD_H - 1]);
 
-	world_use_brush(&world, amat, WORLD_TEMPERATURE, ax, ay, 0);
-	world_use_brush(&world, bmat, WORLD_TEMPERATURE, bx, by, 0);
+	World_use_brush(&world, amat, WORLD_TEMPERATURE, ax, ay, 0);
+	World_use_brush(&world, bmat, WORLD_TEMPERATURE, bx, by, 0);
 
 	assert(amat == world.dot[ax][ay]);
 	assert(bmat == world.dot[bx][by]);
@@ -228,9 +228,9 @@ test_random_oxidation(void)
 	const int oy = y;
 	int i;
 
-	world_clear(&world);
-	world_use_brush(&world, mat, MAT_OXID_P[mat] + 1, x, y, 0);
-	world_use_brush(&world, MAT_OXYGEN, MAT_OXID_P[mat] + 1, ox, oy, 0);
+	World_clear(&world);
+	World_use_brush(&world, mat, MAT_OXID_P[mat] + 1, x, y, 0);
+	World_use_brush(&world, MAT_OXYGEN, MAT_OXID_P[mat] + 1, ox, oy, 0);
 
 	assert(mat        == world.dot[x][y]);
 	assert(MAT_OXYGEN == world.dot[ox][oy]);
@@ -254,10 +254,10 @@ test_touch(void)
 	const int by = ay;
 	const enum Mat mat = MAT_CALCIUM_OXIDE;
 
-	world_clear(&world);
-	world_use_brush(&world, mat, WORLD_TEMPERATURE,
+	World_clear(&world);
+	World_use_brush(&world, mat, WORLD_TEMPERATURE,
 	                ax, ay, 0);
-	world_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
+	World_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
 	                bx, by, 0);
 
 	assert(mat                    == world.dot[ax][ay]);
@@ -278,10 +278,10 @@ test_random_touch(void)
 	const int by = ay;
 	const enum Mat mat = MAT_CALCIUM_HYDROXIDE;
 
-	world_clear(&world);
-	world_use_brush(&world, mat, WORLD_TEMPERATURE,
+	World_clear(&world);
+	World_use_brush(&world, mat, WORLD_TEMPERATURE,
 	                ax, ay, 0);
-	world_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
+	World_use_brush(&world, MAT_TOUCH_REAGENT[mat], WORLD_TEMPERATURE,
 	                bx, by, 0);
 
 	assert(mat                    == world.dot[ax][ay]);
@@ -301,15 +301,15 @@ test_mass_loss_upon_heat_up(void)
 	const int x = 0;
 	const int y = WORLD_H - 1;
 
-	world_clear(&world);
-	world_use_brush(&world, mat, 0.0, x, y, 0);
+	World_clear(&world);
+	World_use_brush(&world, mat, 0.0, x, y, 0);
 
 	tick_world();
 
 	assert(trunc_float(MAT_FULL_WEIGHT[mat]) ==
 	       trunc_float(world.weight[x][y]));
 
-	world_use_heater(&world, MAT_BOIL_P[mat], x, y, 0);
+	World_use_heater(&world, MAT_BOIL_P[mat], x, y, 0);
 	tick_world();
 
 	assert(trunc_float(world.weight[x][y]) <
@@ -323,7 +323,7 @@ test_spawner(void)
 	const int x = 0;
 	const int y = 0;
 
-	world_clear(&world);
+	World_clear(&world);
 
 	assert(MAT_NONE == world.dot[x][y]);
 	assert(MAT_NONE == world.dot[x][y + 1]);
@@ -372,10 +372,10 @@ test_acidity(void)
 
 	assert(acid_found);
 
-	world_clear(&world);
+	World_clear(&world);
 
-	world_use_brush(&world, vuln, WORLD_TEMPERATURE, vx, vy, 0);
-	world_use_brush(&world, acid, WORLD_TEMPERATURE, ax, ay, 0);
+	World_use_brush(&world, vuln, WORLD_TEMPERATURE, vx, vy, 0);
+	World_use_brush(&world, acid, WORLD_TEMPERATURE, ax, ay, 0);
 
 	for (i = 0; i < (1.0 / (MAT_ACIDITY[acid] * MAT_ACID_VULN[vuln])); i++) {
 		tick_world();
@@ -422,7 +422,7 @@ test_world_file_v1(void)
 {
 	struct WorldFileV1 wf;
 
-	world_clear(&world);
+	World_clear(&world);
 
 	wf = WorldFileV1_from_world(world);
 
@@ -449,9 +449,9 @@ test_world_file_v1_save(const char *path)
 	FILE *f;
 	struct WorldFileV1 wf;
 
-	world_clear(&world);
-	world_use_brush(&world, MAT_IRON, WORLD_TEMPERATURE, 0, 0, 0);
-	world_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE, WORLD_W - 1, WORLD_H - 1, 0);
+	World_clear(&world);
+	World_use_brush(&world, MAT_IRON, WORLD_TEMPERATURE, 0, 0, 0);
+	World_use_brush(&world, MAT_OXYGEN, WORLD_TEMPERATURE, WORLD_W - 1, WORLD_H - 1, 0);
 	world.spawner[WORLD_W - 1][0] = true;
 	world.spawner_mat[WORLD_W - 1][0] = MAT_WATER;
 
@@ -497,7 +497,7 @@ test_world_file_v1_load(const char *path)
 	assert(MAT_OXYGEN == tw.dot[WORLD_W - 1][WORLD_H - 1]);
 
 	fclose(f);
-	world_free(&tw);
+	World_free(&tw);
 	WorldFileV1_free(&wf);
 }
 
@@ -506,7 +506,7 @@ main(int    argc,
      char **argv)
 {
 	hawps_core_init();
-	world = world_new(WORLD_W, WORLD_H);
+	world = World_new(WORLD_W, WORLD_H);
 
 	assert(2 <= argc);
 	test_trunc_float();
@@ -531,7 +531,7 @@ main(int    argc,
 	test_world_file_v1_save(argv[1]);
 	test_world_file_v1_load(argv[1]);
 
-	world_free(&world); /* goodbye, cruel world */
+	World_free(&world); /* goodbye, cruel world */
 	printf("All tests passed :)\n");
 	return 0;
 }

@@ -218,12 +218,10 @@ effectively enabling 0% altproducts with a 1% chance.
 
 - [x] libcore: add long overdue `world_clear` replacing manual implementations
 
+- [x] libcore: make type based function names uppercase
+
 - [ ] terminal client: loading a world bigger than current botches view?
 (terminal resize fixes it)
-
-- [ ] libcore: make type based function names uppercase
-`world_do` -> `World_do`
-Type name is uppercase too.
 
 - [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.

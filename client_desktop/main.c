@@ -1075,7 +1075,7 @@ command_load_core(const char   *cwd,
 		return;
 	}
 
-	*world = world_load(file);
+	*world = World_load(file);
 	fclose(file);
 }
 
@@ -1094,7 +1094,7 @@ command_save_core(const char         *cwd,
 	path_len += string_cat(path, PATH_SIZE, path_len, WORLDNAME_TYPE);
 
 	file = fopen(path, "w");
-	world_save(world, file);
+	World_save(world, file);
 	fclose(file);
 }
 
@@ -1220,7 +1220,7 @@ command_temperature(const float   new_temperature,
 
 			if (world->thermo[x][y] >= MAT_BOIL_P[world->dot[x][y]]) {
 				if (MAT_MELT_DECOMP[world->dot[x][y]]) {
-					world->dot[x][y] = mat_melt_prdct(world->dot[x][y]);
+					world->dot[x][y] = Mat_melt_prdct(world->dot[x][y]);
 				}
 			}
 		}
@@ -1658,7 +1658,7 @@ handle_advanced_command(const char            *cmd,
 	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
 	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_BRUSH;
-		if (mat_from_string(arg, &tool_opts->brush_mat)) {
+		if (Mat_from_string(arg, &tool_opts->brush_mat)) {
 			return;
 		}
 
@@ -1721,7 +1721,7 @@ handle_advanced_command(const char            *cmd,
 			             "World could not be loaded.");
 			return;
 		}
-		world_free(world);
+		World_free(world);
 		*world = tempworld;
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
@@ -1755,7 +1755,7 @@ handle_advanced_command(const char            *cmd,
 	           strcmp(cmd, CMD_MAT_SHORT) == 0) {
 		switch (tool_opts->sel_tool) {
 		case TOOL_BRUSH:
-			if (mat_from_string(arg, &tool_opts->brush_mat)) {
+			if (Mat_from_string(arg, &tool_opts->brush_mat)) {
 				return;
 			}
 
@@ -1764,7 +1764,7 @@ handle_advanced_command(const char            *cmd,
 			break;
 
 		case TOOL_SPAWNER:
-			if (mat_from_string(arg, &tool_opts->spawner_mat)) {
+			if (Mat_from_string(arg, &tool_opts->spawner_mat)) {
 				return;
 			}
 
@@ -1804,7 +1804,7 @@ handle_advanced_command(const char            *cmd,
 	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
 	           strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;
-		if (mat_from_string(arg, &tool_opts->spawner_mat)) {
+		if (Mat_from_string(arg, &tool_opts->spawner_mat)) {
 			return;
 		}
 
@@ -3443,12 +3443,12 @@ handle_simple_command(const char          *cmdline,
 	           strcmp(cmdline, CMD_CLEAR_SHORT) == 0) {
 		for (x = 0; x < world->w; x++) {
 			for (y = 0; y < world->h; y++) {
-				world_clear_dot(world, x, y);
+				World_clear_dot(world, x, y);
 			}
 		}
 	} else if (strcmp(cmdline, CMD_CLEARALL) == 0 ||
 	           strcmp(cmdline, CMD_CLEARALL_SHORT) == 0) {
-		world_clear(world);
+		World_clear(world);
 	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
 	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_COOLER;
@@ -3681,7 +3681,7 @@ quickload(const char     *cwd,
 		             "World could not be loaded.");
 		return;
 	}
-	world_free(world);
+	World_free(world);
 	*world = tempworld;
 }
 
@@ -4010,7 +4010,7 @@ use_tool(const float         delta,
 {
 	switch (tool_opts.sel_tool) {
 	case TOOL_BRUSH:
-		world_use_brush(world,
+		World_use_brush(world,
 		                tool_opts.brush_mat,
 		                tool_opts.spawn_temperature,
 		                tool_opts.x,
@@ -4024,14 +4024,14 @@ use_tool(const float         delta,
 		break;
 
 	case TOOL_ERASER:
-		world_use_eraser(world,
+		World_use_eraser(world,
 		                 tool_opts.x,
 		                 tool_opts.y,
 		                 tool_opts.eraser_radius);
 		break;
 
 	case TOOL_HEATER:
-		world_use_heater(world,
+		World_use_heater(world,
 		                 tool_opts.thermo_rate * delta,
 		                 tool_opts.x,
 		                 tool_opts.y,
@@ -4039,7 +4039,7 @@ use_tool(const float         delta,
 		break;
 
 	case TOOL_COOLER:
-		world_use_cooler(world,
+		World_use_cooler(world,
 		                 tool_opts.thermo_rate * delta,
 		                 tool_opts.x,
 		                 tool_opts.y,
@@ -4356,7 +4356,7 @@ main(int    argc,
 
 	if (0 == world.w ||
 	    0 == world.h) {
-		world = world_new(new_world_w, new_world_h);
+		world = World_new(new_world_w, new_world_h);
 	}
 
 #ifdef SDL_BACKEND
@@ -4450,10 +4450,10 @@ main(int    argc,
 		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
 			last_tick = now;
 
-			world_update(&world, tool_opts.spawn_temperature);
+			World_update(&world, tool_opts.spawn_temperature);
 
 			if (!paused) {
-				world_sim(&world);
+				World_sim(&world);
 			}
 
 			if (now - last_autosave >=
@@ -4568,7 +4568,7 @@ cleanup:
 	}
 #endif
 
-	world_free(&world);
+	World_free(&world);
 
 	return 0;
 }

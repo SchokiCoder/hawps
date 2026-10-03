@@ -100,23 +100,23 @@ static const short MAT_B[]                    = {0,         86,        237,     
  * Returns if the str contained a mat name at all.
  */
 bool
-mat_from_string(const char *str,
+Mat_from_string(const char *str,
                 enum Mat   *mat);
 
 enum Mat
-mat_melt_prdct(const enum Mat mat);
+Mat_melt_prdct(const enum Mat mat);
 
 void
-mat_oxid_prdcts(const enum Mat           mat,
+Mat_oxid_prdcts(const enum Mat           mat,
                 enum Mat       *restrict out1,
                 enum Mat       *restrict out2);
 
 enum MatState
-mat_thermo_to_state(const enum Mat mat,
+Mat_thermo_to_state(const enum Mat mat,
                     const float    thermo);
 
 void
-mat_touch_prdcts(const enum Mat           mat,
+Mat_touch_prdcts(const enum Mat           mat,
                  enum Mat       *restrict out1,
                  enum Mat       *restrict out2);
 
@@ -126,7 +126,7 @@ mat_touch_prdcts(const enum Mat           mat,
 #ifdef HAWPS_IMPL
 
 bool
-mat_from_string(const char *str,
+Mat_from_string(const char *str,
                 enum Mat   *mat)
 {
 	size_t i;
@@ -142,7 +142,7 @@ mat_from_string(const char *str,
 }
 
 enum Mat
-mat_melt_prdct(const enum Mat mat)
+Mat_melt_prdct(const enum Mat mat)
 {
 	if ((rand() % 100) < MAT_MELT_PRDCT1_CHANCE[mat]) {
 		return MAT_MELT_PRDCT1[mat];
@@ -152,7 +152,7 @@ mat_melt_prdct(const enum Mat mat)
 }
 
 void
-mat_oxid_prdcts(const enum Mat           mat,
+Mat_oxid_prdcts(const enum Mat           mat,
                 enum Mat       *restrict out1,
                 enum Mat       *restrict out2)
 {
@@ -174,7 +174,7 @@ mat_oxid_prdcts(const enum Mat           mat,
 }
 
 enum MatState
-mat_thermo_to_state(const enum Mat mat,
+Mat_thermo_to_state(const enum Mat mat,
                     const float    thermo)
 {
 	enum MatState ret;
@@ -191,7 +191,7 @@ mat_thermo_to_state(const enum Mat mat,
 }
 
 void
-mat_touch_prdcts(const enum Mat           mat,
+Mat_touch_prdcts(const enum Mat           mat,
                  enum Mat       *restrict out1,
                  enum Mat       *restrict out2)
 {
