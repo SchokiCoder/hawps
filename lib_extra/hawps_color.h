@@ -83,11 +83,11 @@ glow_range_def_to_glow_color_step(const float i1,
                                   const float c2);
 
 struct Rgba
-rgba_blend(const struct Rgba src,
+Rgba_blend(const struct Rgba src,
            const struct Rgba dest);
 
 struct Rgba
-thermo_to_color(const float thermo);
+Rgba_from_thermo(const float thermo);
 
 /* Function definitions
  */
@@ -165,7 +165,7 @@ glow_range_def_to_glow_color_step(const float i1,
 }
 
 struct Rgba
-rgba_blend(const struct Rgba src,
+Rgba_blend(const struct Rgba src,
            const struct Rgba dest)
 {
 	struct Rgba ret;
@@ -179,7 +179,7 @@ rgba_blend(const struct Rgba src,
 }
 
 struct Rgba
-thermo_to_color(const float thermo)
+Rgba_from_thermo(const float thermo)
 {
 	struct Rgba ret = {.r = 0, .g = 0, .b = 0, .a = 0};
 	int glow_index;

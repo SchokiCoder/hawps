@@ -37,7 +37,7 @@ test_rgba_blend(void)
 	};
 	struct Rgba res;
 
-	res = rgba_blend(src, dest);
+	res = Rgba_blend(src, dest);
 
 	assert(expected.r == res.r);
 	assert(expected.g == res.g);
@@ -53,10 +53,10 @@ test_heat_glow(void)
 	struct Rgba hot;
 	struct Rgba super_hot;
 
-	cold = thermo_to_color(0.0);
-	draper = thermo_to_color(800.0);
-	hot = thermo_to_color(3000.0);
-	super_hot = thermo_to_color(9001.0);
+	cold = Rgba_from_thermo(0.0);
+	draper = Rgba_from_thermo(800.0);
+	hot = Rgba_from_thermo(3000.0);
+	super_hot = Rgba_from_thermo(9001.0);
 
 	assert(0 == cold.a);
 	assert(draper.a > 0);
