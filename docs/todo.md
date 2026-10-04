@@ -225,8 +225,7 @@ effectively enabling 0% altproducts with a 1% chance.
 The vars don't get reset before *conditionally* receiving a value.
 This caused the view to get botched when loading a world bigger than current.
 
-- [ ] desktop client: add flag for loading world from file
-Remember to update the world name display to reflect this.
+- [x] desktop client: add flag for loading world from file
 
 - [ ] desktop client: add command for new world
 

@@ -89,6 +89,8 @@
 #define FLAG_FRAMERATE_SHORT        "-fr"
 #define FLAG_HELP                   "-help"
 #define FLAG_HELP_SHORT             "-h"
+#define FLAG_LOAD_WORLD             "-load-world"
+#define FLAG_LOAD_WORLD_SHORT       "-ldwld"
 #define FLAG_NOGLOWCOLOR            "-noglowcolor"
 #define FLAG_NOGLOWCOLOR_SHORT      "-nogc"
 #define FLAG_SPAWNTEMPERATURE       "-spawntemperature"
@@ -316,6 +318,9 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
+"\n"
+"    " FLAG_LOAD_WORLD_SHORT " " FLAG_LOAD_WORLD " TEXT\n"
+"        filepath to world to load when starting up\n"
 "\n"
 "    " FLAG_NOGLOWCOLOR_SHORT " " FLAG_NOGLOWCOLOR "\n"
 "        disables dot glow coloring\n"
@@ -637,7 +642,8 @@ handle_args(int                  argc,
             float               *framerate,
             bool                *no_glowcolor,
             float               *tickrate,
-            struct ToolOptions  *tool_opts);
+            struct ToolOptions  *tool_opts,
+            char               **world_init_path);
 
 void
 handle_autosave(const bool          autosave_all,
@@ -1019,6 +1025,11 @@ void
 use_tool(const float         delta,
          struct ToolOptions  tool_opts,
          struct World       *world);
+
+void
+world_name_from_path(char         *path,
+                     char         *world_name,
+                     const size_t  world_name_size);
 
 size_t
 write_statusbar_elem(char                        *out,
@@ -1922,7 +1933,8 @@ handle_args(int                  argc,
             float               *framerate,
             bool                *no_glowcolor,
             float               *tickrate,
-            struct ToolOptions  *tool_opts)
+            struct ToolOptions  *tool_opts,
+            char               **world_init_path)
 {
 	float f;
 	int   i;
@@ -2038,6 +2050,13 @@ handle_args(int                  argc,
 			printf("\n");
 
 			return false;
+		} else if (strcmp(argv[i], FLAG_LOAD_WORLD) == 0 ||
+		           strcmp(argv[i], FLAG_LOAD_WORLD_SHORT) == 0) {
+			if (!check_flag_arg(argc, argv, i)) {
+				return false;
+			}
+			i++;
+			*world_init_path = argv[i];
 		} else if (strcmp(argv[i], FLAG_NOGLOWCOLOR) == 0 ||
 		           strcmp(argv[i], FLAG_NOGLOWCOLOR_SHORT) == 0) {
 			*no_glowcolor = true;
@@ -4053,6 +4072,34 @@ use_tool(const float         delta,
 	}
 }
 
+void
+world_name_from_path(char         *path,
+                     char         *world_name,
+                     const size_t  world_name_size)
+{
+	size_t a = 0;
+	size_t b = 0;
+	size_t i;
+	size_t path_len = strlen(path);
+	char   temp;
+
+	for (i = path_len; i > 0; i--) {
+		if ('.' == path[i]) {
+			b = i;
+			continue;
+		}
+		if (PATH_DELIM[0] == path[i]) {
+			a = i + 1;
+			break;
+		}
+	}
+
+	temp = path[b];
+	path[b] = '\0';
+	string_copy(world_name, world_name_size, &path[a]);
+	path[b] = temp;
+}
+
 size_t
 write_statusbar_elem(char                        *out,
                      const size_t                 out_size,
@@ -4185,6 +4232,7 @@ main(int    argc,
 	int                    drag_start_y = 0;
 	char                  *feedback = NULL;
 	clock_t                feedback_expiration = 0;
+	FILE                  *file = NULL;
 	float                  framerate = STD_FRAMERATE;
 	enum InputMode         input_mode = IM_NORMAL;
 	char                  *ip_address = "localhost";
@@ -4206,6 +4254,7 @@ main(int    argc,
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
+	char                  *world_init_path = NULL;
 	char                   world_name[WORLDNAME_SIZE];
 
 #ifdef SDL_BACKEND
@@ -4259,7 +4308,8 @@ main(int    argc,
 	                 &framerate,
 	                 &no_glowcolor,
 	                 &tickrate,
-	                 &tool_opts)) {
+	                 &tool_opts,
+	                 &world_init_path)) {
 		return 0;
 	}
 
@@ -4268,7 +4318,13 @@ main(int    argc,
 	hawps_core_init();
 	hawps_extra_init();
 
-	string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);
+	if (NULL == world_init_path) {
+		string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);
+	} else {
+		world_name_from_path(world_init_path,
+		                     world_name,
+		                     WORLDNAME_SIZE);
+	}
 
 #ifdef SDL_BACKEND
 	// TODO add proper identifier
@@ -4354,10 +4410,22 @@ main(int    argc,
 	}
 #endif /* SDL_BACKEND */
 
-	command_load_core(cwd, &world, WORLDNAME_NEW);
+	if (NULL != world_init_path) {
+		file = fopen(world_init_path, "r");
+		if (NULL == file) {
+			fprintf(stderr, "Could not load world, given via argument\n");
+			goto cleanup;
+		}
+
+		world = World_load(file);
+		fclose(file);
+	} else {
+		command_load_core(cwd, &world, WORLDNAME_NEW);
+	}
 
 	if (0 == world.w ||
 	    0 == world.h) {
+		fprintf(stderr, "Tried to open a corrupted world, creating new\n");
 		world = World_new(new_world_w, new_world_h);
 	}
 
