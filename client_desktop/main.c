@@ -3651,6 +3651,8 @@ handle_world_resize(
 	world_draw->y = 0;
 	world_draw->w = win_w;
 	world_draw->h = win_h - 2;
+	*world_draw_space_w = 0;
+	*world_draw_space_h = 0;
 
 	if (world.w <= win_w) {
 		world_draw->w = world.w;

@@ -221,8 +221,9 @@ effectively enabling 0% altproducts with a 1% chance.
 - [x] libcore: make type based function names uppercase
 - [x] libextra: normalize function names
 
-- [ ] terminal client: loading a world bigger than current botches view?
-(terminal resize fixes it)
+- [x] terminal client: fix `word_draw_space` getting set improperly
+The vars don't get reset before *conditionally* receiving a value.
+This caused the view to get botched when loading a world bigger than current.
 
 - [ ] desktop client: add flag for loading world from file
 Remember to update the world name display to reflect this.
