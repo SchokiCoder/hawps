@@ -4533,6 +4533,24 @@ main(int    argc,
 		fprintf(stderr, "Could not allocate memory\n");
 		goto cleanup;
 	}
+
+	handle_resize(cmdline_len,
+		      &cmdline_shift,
+		      &display,
+		      &display_size,
+		      dot_depth,
+		      input_mode,
+		      ip_address,
+		      &statusbar_elems,
+		      statusbar_elem,
+		      &tool_opts,
+		      &win_w,
+		      &win_h,
+		      world,
+		      &world_draw,
+		      &world_draw_space_w,
+		      &world_draw_space_h,
+		      world_name);
 #endif /* SDL_BACKEND */
 
 	if (NULL != world_init_path) {
@@ -4570,32 +4588,21 @@ main(int    argc,
 		            world_name);
 	}
 
+	handle_world_resize(
 #ifdef SDL_BACKEND
-	handle_world_resize(renderer,
+	                    renderer,
 	                    &world_dst,
 	                    world_scale,
 	                    &world_tx,
+#else
+	                    win_w,
+	                    win_h,
+	                    &world_draw,
+	                    &world_draw_space_w,
+	                    &world_draw_space_h,
+#endif
 	                    &tool_opts,
 	                    world);
-#else
-	handle_resize(cmdline_len,
-		      &cmdline_shift,
-		      &display,
-		      &display_size,
-		      dot_depth,
-		      input_mode,
-		      ip_address,
-		      &statusbar_elems,
-		      statusbar_elem,
-		      &tool_opts,
-		      &win_w,
-		      &win_h,
-		      world,
-		      &world_draw,
-		      &world_draw_space_w,
-		      &world_draw_space_h,
-		      world_name);
-#endif /* SDL_BACKEND */
 
 	while (active) {
 		now = clock();

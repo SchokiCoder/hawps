@@ -235,7 +235,15 @@ since `world_area_w == win_w`.
 When `win_h` is large enough for `world_dst.h`, scroll was clamped,
 even when the bottom part is still overlapped by statusbar and cmdline.
 
-- [ ] desktop client: update help text
+- [x] terminal client: fix crash when creating new world on init
+This also makes the general init code less annoying to look at.
+Me like.
+
+- [ ] desktop client: eliminate brushmat, spawnermat cmds
+By giving "brush" and "spawner" an optional text arg (as string to mat),
+it functionally replaces the respective toolmat cmd.
+Also remove from help text
+
 - [ ] update README
 
 -----
