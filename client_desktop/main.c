@@ -871,8 +871,6 @@ handle_normal_csi_input(const char         *in,
 bool
 handle_normal_input(const char         *in,
 #ifdef SDL_BACKEND
-                    const int           win_w,
-                    const int           win_h,
                     const size_t        world_area_w,
                     const size_t        world_area_h,
                     SDL_FRect          *world_dst,
@@ -966,15 +964,13 @@ handle_statusbar_resize(
 
 #ifdef SDL_BACKEND
 void
-handle_world_dst_clamp_x(const int     win_w,
-                         const size_t  world_area_w,
+handle_world_dst_clamp_x(const size_t  world_area_w,
                          SDL_FRect    *world_dst);
 #endif /* SDL_BACKEND */
 
 #ifdef SDL_BACKEND
 void
-handle_world_dst_clamp_y(const int     win_h,
-                         const size_t  world_area_h,
+handle_world_dst_clamp_y(const size_t  world_area_h,
                          SDL_FRect    *world_dst);
 #endif /* SDL_BACKEND */
 
@@ -2692,8 +2688,6 @@ handle_input(
 
 			case IM_NORMAL:
 				handle_normal_input(e.text.text,
-				                    *win_w,
-				                    *win_h,
 				                    *world_area_w,
 				                    *world_area_h,
 				                    world_dst,
@@ -2878,8 +2872,8 @@ handle_mouse_state(const float           delta,
 		world_dst->x = x - *drag_start_x;
 		world_dst->y = y - *drag_start_y;
 
-		handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
-		handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
+		handle_world_dst_clamp_x(world_area_w, world_dst);
+		handle_world_dst_clamp_y(world_area_h, world_dst);
 		break;
 
 	case SDL_BUTTON_X1MASK:
@@ -3113,8 +3107,6 @@ handle_normal_csi_input(const char         *in,
 bool
 handle_normal_input(const char         *in,
 #ifdef SDL_BACKEND
-                    const int           win_w,
-                    const int           win_h,
                     const size_t        world_area_w,
                     const size_t        world_area_h,
                     SDL_FRect          *world_dst,
@@ -3264,7 +3256,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->x * -1 > world_dst->x / world_scale) {
 				world_dst->x += world_scale;
 			}
-			handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
+			handle_world_dst_clamp_x(world_area_w, world_dst);
 #else
 			if (tool_opts->x < world_draw->x) {
 				world_draw->x -= 1;
@@ -3290,7 +3282,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->y >= (int) ((world_area_h - world_dst->y) / world_scale)) {
 				world_dst->y -= world_scale;
 			}
-			handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
+			handle_world_dst_clamp_y(world_area_h, world_dst);
 #else
 			if (tool_opts->y >= world_draw->y + world_draw->h) {
 				world_draw->y += 1;
@@ -3304,7 +3296,7 @@ handle_normal_input(const char         *in,
 
 #ifdef SDL_BACKEND
 		world_dst->y = world_area_h - world_dst->h;
-		handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
+		handle_world_dst_clamp_y(world_area_h, world_dst);
 #else
 		world_draw->y = world->h - world_draw->h;
 #endif
@@ -3317,7 +3309,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->y * -1 > world_dst->y / world_scale) {
 				world_dst->y += world_scale;
 			}
-			handle_world_dst_clamp_y(win_h, world_area_h, world_dst);
+			handle_world_dst_clamp_y(world_area_h, world_dst);
 #else
 			if (tool_opts->y < world_draw->y) {
 				world_draw->y -= 1;
@@ -3343,7 +3335,7 @@ handle_normal_input(const char         *in,
 			if (tool_opts->x >= (int) ((world_area_w - world_dst->x) / world_scale)) {
 				world_dst->x -= world_scale;
 			}
-			handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
+			handle_world_dst_clamp_x(world_area_w, world_dst);
 #else
 			if (tool_opts->x >= world_draw->x + world_draw->w) {
 				world_draw->x += 1;
@@ -3357,7 +3349,7 @@ handle_normal_input(const char         *in,
 
 #ifdef SDL_BACKEND
 		world_dst->x = world_area_w - world_dst->w;
-		handle_world_dst_clamp_x(win_w, world_area_w, world_dst);
+		handle_world_dst_clamp_x(world_area_w, world_dst);
 #else
 		world_draw->x = world->w - world_draw->w;
 #endif
@@ -3751,12 +3743,11 @@ handle_statusbar_resize(
 
 #ifdef SDL_BACKEND
 void
-handle_world_dst_clamp_x(const int     win_w,
-                         const size_t  world_area_w,
+handle_world_dst_clamp_x(const size_t  world_area_w,
                          SDL_FRect    *world_dst)
 {
 	if (world_dst->x > 0 ||
-	    win_w > world_dst->w) {
+	    world_area_w > world_dst->w) {
 		world_dst->x = 0;
 	} else if (world_dst->x < world_area_w - world_dst->w) {
 		world_dst->x = world_area_w - world_dst->w;
@@ -3766,12 +3757,11 @@ handle_world_dst_clamp_x(const int     win_w,
 
 #ifdef SDL_BACKEND
 void
-handle_world_dst_clamp_y(const int     win_h,
-                         const size_t  world_area_h,
+handle_world_dst_clamp_y(const size_t  world_area_h,
                          SDL_FRect    *world_dst)
 {
 	if (world_dst->y > 0 ||
-	    win_h > world_dst->h) {
+	    world_area_h > world_dst->h) {
 		world_dst->y = 0;
 	} else if (world_dst->y < world_area_h - world_dst->h) {
 		world_dst->y = world_area_h - world_dst->h;

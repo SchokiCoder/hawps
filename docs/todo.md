@@ -229,9 +229,11 @@ This caused the view to get botched when loading a world bigger than current.
 
 - [x] desktop client: add command for new world
 
-- [ ] sdl client: vertical scroll clamp takes textlines not into account
-(when win-h is large enough for world, scroll is disabled,
-even when bottom part is overlapped by statusbar and cmdline)
+- [x] sdl client: fix scroll clamp using win size instead of world area size
+This only caused a bug with vertical scroll for now,
+since `world_area_w == win_w`.
+When `win_h` is large enough for `world_dst.h`, scroll was clamped,
+even when the bottom part is still overlapped by statusbar and cmdline.
 
 - [ ] desktop client: update help text
 - [ ] update README
