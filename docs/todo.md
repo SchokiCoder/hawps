@@ -227,7 +227,11 @@ This caused the view to get botched when loading a world bigger than current.
 
 - [x] desktop client: add flag for loading world from file
 
-- [ ] desktop client: add command for new world
+- [x] desktop client: add command for new world
+
+- [ ] sdl client: vertical scroll clamp takes textlines not into account
+(when win-h is large enough for world, scroll is disabled,
+even when bottom part is overlapped by statusbar and cmdline)
 
 - [ ] desktop client: update help text
 - [ ] update README

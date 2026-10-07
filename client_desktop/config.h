@@ -68,6 +68,7 @@ static const char DOT_APPEARANCE[] = {
 #define CMD_LOAD_SHORT              "ld"
 #define CMD_MAT                     "mat"
 #define CMD_MAT_SHORT               "m"
+#define CMD_NEW                     "new"
 #define CMD_NOGLOWCOLOR             "noglowcolor"
 #define CMD_NOGLOWCOLOR_SHORT       "nogc"
 #define CMD_NORMALVISION            "normalvision"
