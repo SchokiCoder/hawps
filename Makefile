@@ -6,7 +6,7 @@ BIN_DESTDIR:="/usr/local/bin"
 #BIN_DESTDIR:="$(HOME)/.local/bin"
 
 # comment out to use terminal backend
-CLIENT_DESKTOP_BACKEND:=-D SDL_BACKEND
+CLIENT_DESKTOP_BACKEND:=-D BACKEND_SDL
 
 
 

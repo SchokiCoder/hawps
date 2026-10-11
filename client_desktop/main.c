@@ -19,7 +19,7 @@
 #include "str.h"
 #include "types.h"
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #else
@@ -29,7 +29,7 @@
 /* Macros
  */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 
 #define DOT_EMPTY_LINES_RENDER_LOOP \
@@ -66,12 +66,12 @@
 	} \
 	DOT_EMPTY_LINES_RENDER_LOOP
 
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 /* Constant defines
  */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #define CMDL_SIZE (CMDLINE_SIZE + 2)
 #endif
 
@@ -104,7 +104,7 @@
 #define FLAG_VERSION                "-version"
 #define FLAG_VERSION_SHORT          "-v"
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #define FLAG_FONT_PATH              "-fontpath"
 #define FLAG_FONT_PATH_SHORT        "-fp"
 #define FLAG_FONT_SIZE              "-fontsize"
@@ -116,7 +116,7 @@
 #define FLAG_NOCOLOR_SHORT          "-noc"
 #endif
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #if defined(__linux__)
 static const char *FONTPATH[] = {
 	"/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
@@ -143,7 +143,7 @@ static const char *FONTPATH[] = {
 	"/usr/share/fonts/truetype/freefont/FreeSans.ttf",
 };
 #endif
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 #define KEY_USE_THERMO_CONTINUE_LIMIT 0.5
 
@@ -343,7 +343,7 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        prints version information then exits\n"
 "\n";
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 static const char APP_HELP_FLAGS_SDL[] = "SDL backend options:\n"
 "\n"
 "    " FLAG_FONT_PATH_SHORT " " FLAG_FONT_PATH " TEXT\n"
@@ -503,7 +503,7 @@ command_load_core(const char   *cwd,
 
 void
 command_new(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
             SDL_Renderer       *renderer,
             const size_t        world_area_w,
             const size_t        world_area_h,
@@ -528,7 +528,7 @@ command_save_core(const char         *cwd,
 
 void
 command_screenshot(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                    SDL_Renderer             *r,
                    const size_t              world_area_w,
                    const size_t              world_area_h,
@@ -551,7 +551,7 @@ void
 command_temperature(const float   new_temperature,
                     struct World *world);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 draw(const char                  *cmdline,
      const char                  *feedback,
@@ -598,7 +598,7 @@ draw(const char                  *cmdline,
      const int                    world_draw_space_w,
      const int                    world_draw_space_h,
      const char                  *world_name);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 struct Rgba
 get_normal_dot_color(const struct World world,
@@ -618,7 +618,7 @@ get_thermal_dot_color(const struct World world,
 void
 handle_advanced_command(const char            *cmd,
                         const char            *arg,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                         TTF_Font              *font,
                         SDL_Renderer          *renderer,
                         SDL_FRect             *world_dst,
@@ -647,7 +647,7 @@ handle_advanced_command(const char            *cmd,
 bool
 handle_args(int                  argc,
             char               **argv,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
             char               **font_path,
             size_t              *font_size,
             size_t              *world_scale,
@@ -679,7 +679,7 @@ handle_cmdline_shift(const size_t          cmdline_len,
 void
 handle_command(char                  *cmdline,
                const size_t           cmdline_len,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                TTF_Font              *font,
                SDL_Renderer          *renderer,
                const size_t           world_area_w,
@@ -711,7 +711,7 @@ handle_command(char                  *cmdline,
                struct World          *world,
                char                  *world_name);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 void
 handle_command_input(const char            *in,
@@ -740,7 +740,7 @@ handle_command_input(const char            *in,
                      int                   *world_draw_space_w,
                      int                   *world_draw_space_h,
                      char                  *world_name);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 bool
 handle_flag_number_arg(int                            argc,
@@ -751,7 +751,7 @@ handle_flag_number_arg(int                            argc,
 
 void
 handle_input(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
              TTF_Font              *font,
              const size_t           font_size,
              SDL_Renderer          *renderer,
@@ -774,7 +774,7 @@ handle_input(
              struct Rect           *world_draw,
              int                   *world_draw_space_w,
              int                   *world_draw_space_h,
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
              bool                  *active,
              char                  *cmdline,
              size_t                *cmdline_len,
@@ -799,7 +799,7 @@ handle_input(
              struct World          *world,
              char                  *world_name);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_mouse_state(const float           delta,
                    int                  *drag_start_x,
@@ -822,9 +822,9 @@ handle_mouse_input(const char         *in,
                    struct ToolOptions *tool_opts,
                    struct World       *world,
                    struct Rect        *world_draw);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 void
 handle_normal_csi_input(const char         *in,
@@ -845,7 +845,7 @@ handle_normal_csi_input(const char         *in,
                         struct World       *world,
                         struct Rect        *world_draw,
                         const char         *world_name);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 /* @in: Input.
  * @world_draw: Runtime data.
@@ -864,7 +864,7 @@ handle_normal_csi_input(const char         *in,
  */
 bool
 handle_normal_input(const char         *in,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                     const size_t        world_area_w,
                     const size_t        world_area_h,
                     SDL_FRect          *world_dst,
@@ -883,7 +883,7 @@ handle_normal_input(const char         *in,
                     struct ToolOptions *tool_opts,
                     struct World       *world);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_resize(const size_t        font_size,
               SDL_Window         *win,
@@ -913,11 +913,11 @@ handle_resize(const size_t            cmdline_len,
               int                    *world_draw_space_w,
               int                    *world_draw_space_h,
               const char             *world_name);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 void
 handle_simple_command(const char          *cmdline,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                       SDL_Renderer        *renderer,
                       const size_t         world_area_w,
                       const size_t         world_area_h,
@@ -947,7 +947,7 @@ handle_simple_command(const char          *cmdline,
 
 void
 handle_statusbar_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                         TTF_Font              *font,
 #endif
                         const char            *ip_address,
@@ -956,21 +956,21 @@ handle_statusbar_resize(
                         const size_t           win_w,
                         const char            *world_name);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_world_dst_clamp_x(const size_t  world_area_w,
                          SDL_FRect    *world_dst);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_world_dst_clamp_y(const size_t  world_area_h,
                          SDL_FRect    *world_dst);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 void
 handle_world_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                     SDL_Renderer        *renderer,
                     SDL_FRect           *world_dst,
                     const size_t         world_scale,
@@ -993,7 +993,7 @@ quickload(const char     *cwd,
           struct World   *world,
           const char     *world_name);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 size_t
 render_dot(char               *out,
@@ -1002,18 +1002,18 @@ render_dot(char               *out,
            const struct World  world,
            const int           x,
            const int           y);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 size_t
 render_dot_no_color(char               *out,
                     const struct World  world,
                     const int           x,
                     const int           y);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 render_world(const bool          no_glowcolor,
              SDL_Renderer       *r,
@@ -1035,7 +1035,7 @@ render_world(char               *out,
              const struct Rect   world_draw,
              const int           world_draw_space_w,
              const int           world_draw_space_h);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 void
 set_feedback(char          **feedback,
@@ -1121,7 +1121,7 @@ command_load_core(const char   *cwd,
 
 void
 command_new(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
             SDL_Renderer       *renderer,
             const size_t        world_area_w,
             const size_t        world_area_h,
@@ -1146,7 +1146,7 @@ command_new(
 	world->w = 0;
 	world->h = 0;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	new_world_w = world_area_w / world_scale;
 	new_world_h = world_area_h / world_scale;
 #else
@@ -1158,7 +1158,7 @@ command_new(
 	*world = World_new(new_world_w, new_world_h);
 
 	handle_world_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	                    renderer,
 	                    world_dst,
 	                    world_scale,
@@ -1195,7 +1195,7 @@ command_save_core(const char         *cwd,
 
 void
 command_screenshot(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                    SDL_Renderer             *r,
                    const size_t              world_area_w,
                    const size_t              world_area_h,
@@ -1219,7 +1219,7 @@ command_screenshot(
 	char    path[BUF_SIZE];
 	size_t  path_len = 0;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	SDL_Rect     rect;
 	SDL_Surface *world_sf = NULL;
 #else
@@ -1245,13 +1245,13 @@ command_screenshot(
 	                       path_len,
 	                       datetime);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	path_len += string_cat(path, BUF_SIZE, path_len, ".png");
 #else
 	path_len += string_cat(path, BUF_SIZE, path_len, ".txt");
 #endif
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	rect.x = 0;
 	rect.y = 0;
 	rect.w = world_area_w;
@@ -1297,7 +1297,7 @@ command_screenshot(
 
 	fclose(f);
 	free(world_print);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 	set_feedback(feedback, feedback_expiration, now,
 	             "Screenshot saved");
@@ -1322,7 +1322,7 @@ command_temperature(const float   new_temperature,
 	}
 }
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 draw(const char                  *cmdline,
      const char                  *feedback,
@@ -1640,7 +1640,7 @@ draw(const char                  *cmdline,
 		                  stdout);
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 struct Rgba
 get_normal_dot_color(const struct World world,
@@ -1718,7 +1718,7 @@ get_thermal_dot_color(const struct World world,
 void
 handle_advanced_command(const char            *cmd,
                         const char            *arg,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                         TTF_Font              *font,
                         SDL_Renderer          *renderer,
                         SDL_FRect             *world_dst,
@@ -1822,7 +1822,7 @@ handle_advanced_command(const char            *cmd,
 		string_copy(world_name, WORLDNAME_SIZE, arg);
 
 		handle_statusbar_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		                        font,
 #endif
 		                        ip_address,
@@ -1832,7 +1832,7 @@ handle_advanced_command(const char            *cmd,
 		                        world_name);
 
 		handle_world_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		                    renderer,
 		                    world_dst,
 		                    world_scale,
@@ -1888,7 +1888,7 @@ handle_advanced_command(const char            *cmd,
 
 		string_copy(world_name, WORLDNAME_SIZE, arg);
 		handle_statusbar_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		                        font,
 #endif
 		                        ip_address,
@@ -2005,7 +2005,7 @@ handle_advanced_command(const char            *cmd,
 bool
 handle_args(int                  argc,
             char               **argv,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
             char               **font_path,
             size_t              *font_size,
             size_t              *world_scale,
@@ -2076,7 +2076,7 @@ handle_args(int                  argc,
 			       STD_THERMO_RATE,
 			       STD_TICKRATE);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			printf(APP_HELP_FLAGS_SDL,
 			       STD_FONT_SIZE,
 			       MAX_FONT_SIZE,
@@ -2181,7 +2181,7 @@ handle_args(int                  argc,
 		           strcmp(argv[i], FLAG_VERSION) == 0) {
 			printf("%s: version %s\n", APP_NAME, APP_VERSION);
 			return false;
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		} else if (strcmp(argv[i], FLAG_FONT_PATH_SHORT) == 0 ||
 		           strcmp(argv[i], FLAG_FONT_PATH) == 0) {
 			if (!check_flag_arg(argc, argv, i)) {
@@ -2259,7 +2259,7 @@ handle_cmdline_shift(const size_t          cmdline_len,
 void
 handle_command(char                  *cmdline,
                const size_t           cmdline_len,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                TTF_Font              *font,
                SDL_Renderer          *renderer,
                const size_t           world_area_w,
@@ -2307,7 +2307,7 @@ handle_command(char                  *cmdline,
 			string_cat(buf2, BUF_SIZE, 0, &cmdline[i + 1]);
 
 			handle_advanced_command(buf1, buf2,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			                        font,
 			                        renderer,
 			                        world_dst,
@@ -2344,7 +2344,7 @@ handle_command(char                  *cmdline,
 	}
 
 	handle_simple_command(cmdline,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	                      renderer,
 	                      world_area_w,
 	                      world_area_h,
@@ -2373,7 +2373,7 @@ handle_command(char                  *cmdline,
 	                      world_name);
 }
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 void
 handle_command_input(const char            *in,
@@ -2461,7 +2461,7 @@ handle_command_input(const char            *in,
 		}
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 bool
 handle_flag_number_arg(int                            argc,
@@ -2515,7 +2515,7 @@ handle_flag_number_arg(int                            argc,
 
 void
 handle_input(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
              TTF_Font              *font,
              const size_t           font_size,
              SDL_Renderer          *renderer,
@@ -2538,7 +2538,7 @@ handle_input(
              struct Rect           *world_draw,
              int                   *world_draw_space_w,
              int                   *world_draw_space_h,
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
              bool                  *active,
              char                  *cmdline,
              size_t                *cmdline_len,
@@ -2563,7 +2563,7 @@ handle_input(
              struct World          *world,
              char                  *world_name)
 {
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	SDL_Event e;
 	int mx, my;
 
@@ -2732,7 +2732,7 @@ handle_input(
 	                   *world_area_h,
 	                   world_dst);
 
-#else /* SDL_BACKEND */
+#else /* BACKEND_SDL */
 
 	ssize_t input_len = 0;
 	char    input[INPUT_SIZE];
@@ -2809,10 +2809,10 @@ handle_input(
 		}
 		break;
 	}
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 }
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_mouse_state(const float           delta,
                    int                  *drag_start_x,
@@ -2987,9 +2987,9 @@ handle_mouse_input(const char         *in,
 		break;
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 void
 handle_normal_csi_input(const char         *in,
@@ -3096,11 +3096,11 @@ handle_normal_csi_input(const char         *in,
 		                   world_draw);
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 bool
 handle_normal_input(const char         *in,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                     const size_t        world_area_w,
                     const size_t        world_area_h,
                     SDL_FRect          *world_dst,
@@ -3246,7 +3246,7 @@ handle_normal_input(const char         *in,
 	case KEY_LEFT:
 		if (tool_opts->x > 0) {
 			tool_opts->x -= 1;
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			if (tool_opts->x * -1 > world_dst->x / world_scale) {
 				world_dst->x += world_scale;
 			}
@@ -3262,7 +3262,7 @@ handle_normal_input(const char         *in,
 	case KEY_LEFT_MAX:
 		tool_opts->x = 0;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		world_dst->x = 0;
 #else
 		world_draw->x = 0;
@@ -3272,7 +3272,7 @@ handle_normal_input(const char         *in,
 	case KEY_DOWN:
 		if (tool_opts->y < world->h - 1) {
 			tool_opts->y += 1;
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			if (tool_opts->y >= (int) ((world_area_h - world_dst->y) / world_scale)) {
 				world_dst->y -= world_scale;
 			}
@@ -3288,7 +3288,7 @@ handle_normal_input(const char         *in,
 	case KEY_DOWN_MAX:
 		tool_opts->y = world->h - 1;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		world_dst->y = world_area_h - world_dst->h;
 		handle_world_dst_clamp_y(world_area_h, world_dst);
 #else
@@ -3299,7 +3299,7 @@ handle_normal_input(const char         *in,
 	case KEY_UP:
 		if (tool_opts->y > 0) {
 			tool_opts->y -= 1;
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			if (tool_opts->y * -1 > world_dst->y / world_scale) {
 				world_dst->y += world_scale;
 			}
@@ -3315,7 +3315,7 @@ handle_normal_input(const char         *in,
 	case KEY_UP_MAX:
 		tool_opts->y = 0;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		world_dst->y = 0;
 #else
 		world_draw->y = 0;
@@ -3325,7 +3325,7 @@ handle_normal_input(const char         *in,
 	case KEY_RIGHT:
 		if (tool_opts->x < world->w - 1) {
 			tool_opts->x += 1;
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			if (tool_opts->x >= (int) ((world_area_w - world_dst->x) / world_scale)) {
 				world_dst->x -= world_scale;
 			}
@@ -3341,7 +3341,7 @@ handle_normal_input(const char         *in,
 	case KEY_RIGHT_MAX:
 		tool_opts->x = world->w - 1;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		world_dst->x = world_area_w - world_dst->w;
 		handle_world_dst_clamp_x(world_area_w, world_dst);
 #else
@@ -3449,7 +3449,7 @@ handle_normal_input(const char         *in,
 	return true;
 }
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_resize(const size_t        font_size,
               SDL_Window         *win,
@@ -3531,11 +3531,11 @@ handle_resize(const size_t            cmdline_len,
 		}
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 void
 handle_simple_command(const char          *cmdline,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                       SDL_Renderer        *renderer,
                       const size_t         world_area_w,
                       const size_t         world_area_h,
@@ -3612,7 +3612,7 @@ handle_simple_command(const char          *cmdline,
 		          world_name);
 	} else if (strcmp(cmdline, CMD_NEW) == 0) {
 		command_new(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		            renderer,
 		            world_area_w,
 		            world_area_h,
@@ -3664,7 +3664,7 @@ handle_simple_command(const char          *cmdline,
 
 void
 handle_statusbar_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                         TTF_Font              *font,
 #endif
                         const char            *ip_address,
@@ -3683,7 +3683,7 @@ handle_statusbar_resize(
 	size_t             sb_max_elems = 0;
 	size_t             sb_w = 0;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	SDL_Surface *text = NULL;
 #endif
 
@@ -3704,7 +3704,7 @@ handle_statusbar_resize(
 	                                        maxcoords_to,
 	                                        world_name);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		text = TTF_RenderText_LCD(font,
 		                          buf,
 		                          buf_len,
@@ -3735,7 +3735,7 @@ handle_statusbar_resize(
 	}
 }
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_world_dst_clamp_x(const size_t  world_area_w,
                          SDL_FRect    *world_dst)
@@ -3747,9 +3747,9 @@ handle_world_dst_clamp_x(const size_t  world_area_w,
 		world_dst->x = world_area_w - world_dst->w;
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 handle_world_dst_clamp_y(const size_t  world_area_h,
                          SDL_FRect    *world_dst)
@@ -3761,11 +3761,11 @@ handle_world_dst_clamp_y(const size_t  world_area_h,
 		world_dst->y = world_area_h - world_dst->h;
 	}
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 void
 handle_world_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
                     SDL_Renderer        *renderer,
                     SDL_FRect           *world_dst,
                     const size_t         world_scale,
@@ -3783,7 +3783,7 @@ handle_world_resize(
 	tool_opts->x = 0;
 	tool_opts->y = 0;
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	world_dst->x = 0;
 	world_dst->y = 0;
 	world_dst->w = world.w * world_scale;
@@ -3811,7 +3811,7 @@ handle_world_resize(
 		world_draw->h = world.h;
 		*world_draw_space_h = win_h - 2 - world.h;
 	}
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 }
 
 void
@@ -3835,7 +3835,7 @@ quickload(const char     *cwd,
 	*world = tempworld;
 }
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 size_t
 render_dot(char               *out,
@@ -3877,9 +3877,9 @@ render_dot(char               *out,
 	out[written] = '\0';
 	return written;
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 size_t
 render_dot_no_color(char               *out,
@@ -3903,9 +3903,9 @@ render_dot_no_color(char               *out,
 	out[written] = '\0';
 	return written;
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 void
 render_world(const bool          no_glowcolor,
              SDL_Renderer       *r,
@@ -4087,7 +4087,7 @@ render_world(char               *out,
 
 	return written;
 }
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 void
 set_feedback(char          **feedback,
@@ -4384,7 +4384,7 @@ main(int    argc,
 	char                  *world_init_path = NULL;
 	char                   world_name[WORLDNAME_SIZE];
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	SDL_Renderer *renderer = NULL;
 	TTF_Font     *font = NULL;
 	char         *font_path = NULL;
@@ -4422,7 +4422,7 @@ main(int    argc,
 	tool_opts = ToolOptions_new();
 
 	if (!handle_args(argc, argv,
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			 &font_path,
 			 &font_size,
 			 &world_scale,
@@ -4452,7 +4452,7 @@ main(int    argc,
 		                     WORLDNAME_SIZE);
 	}
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	// TODO add proper identifier
 	SDL_SetAppMetadata(APP_NAME, APP_VERSION, "lol.69." APP_NAME);
 
@@ -4545,7 +4545,7 @@ main(int    argc,
 		      &world_draw_space_w,
 		      &world_draw_space_h,
 		      world_name);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 
 	if (NULL != world_init_path) {
 		file = fopen(world_init_path, "r");
@@ -4563,7 +4563,7 @@ main(int    argc,
 	if (0 == world.w ||
 	    0 == world.h) {
 		command_new(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		            renderer,
 		            world_area_w,
 		            world_area_h,
@@ -4583,7 +4583,7 @@ main(int    argc,
 	}
 
 	handle_world_resize(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	                    renderer,
 	                    &world_dst,
 	                    world_scale,
@@ -4605,7 +4605,7 @@ main(int    argc,
 		last_input = now;
 
 		handle_input(
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 		             font,
 		             font_size,
 		             renderer,
@@ -4653,7 +4653,7 @@ main(int    argc,
 		             &world,
 		             world_name);
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 #else
 		if (lmb_pressed) {
 			use_tool(delta, tool_opts, &world);
@@ -4687,7 +4687,7 @@ main(int    argc,
 				feedback = NULL;
 			}
 
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 			draw(cmdline,
 			     feedback,
 			     font,
@@ -4748,7 +4748,7 @@ main(int    argc,
 			     world_draw_space_w,
 			     world_draw_space_h,
 			     world_name);
-#endif /* SDL_BACKEND */
+#endif /* BACKEND_SDL */
 		}
 	}
 
@@ -4761,7 +4761,7 @@ main(int    argc,
 	                world_name);
 
 cleanup:
-#ifdef SDL_BACKEND
+#ifdef BACKEND_SDL
 	SDL_DestroyTexture(world_tx);
 	SDL_StopTextInput(win);
 	SDL_DestroyRenderer(renderer);

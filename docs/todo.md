@@ -57,7 +57,7 @@ Thus redo all the conductivity values to remove the artifical flattening?
 - [ ] unify approach to flag error prints
 Some are panics, despite a graceful shutdown being implemented
 
-# Web Update
+# Transmission Update
 
 - [ ] desktop client: add networking
 How (basics)? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
@@ -84,7 +84,7 @@ Remember to update the ip address display to reflect this.
 - [ ] desktop client: update help text
 - [ ] update README
 
-# File Update
+# State Update
 
 - [x] fix tool-size-change-binds redundancy in help text
 The actions were already there, just lacked their hardcoded binds.
@@ -244,9 +244,7 @@ By giving "brush" and "spawner" an optional text arg (as string to mat),
 it functionally replaces the respective toolmat cmd.
 The actual code basically didn't change.
 
-- [ ] rename `SDL_BACKEND` to `BACKEND_SDL` because it treads on SDL namespace
-
-- [ ] update README
+- [x] rename `SDL_BACKEND` to `BACKEND_SDL` because it treads on SDL namespace
 
 -----
 
