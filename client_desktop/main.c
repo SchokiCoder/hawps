@@ -202,11 +202,8 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    There is a short and a long variant for most commands.\n"
 "    Some accept arguments.\n"
 "\n"
-"    " CMD_BRUSH_SHORT " " CMD_BRUSH "\n"
-"        selects the brush as active tool\n"
-"\n"
-"    " CMD_BRUSHMAT_SHORT " " CMD_BRUSHMAT " TEXT\n"
-"        selects the given material for the brush\n"
+"    " CMD_BRUSH_SHORT " " CMD_BRUSH " [TEXT]\n"
+"        selects the brush as active tool and when given a material for it\n"
 "\n"
 "    " CMD_BRUSHRADIUS_SHORT " " CMD_BRUSHRADIUS " NUMBER\n"
 "        sets the brush radius to the given number\n"
@@ -264,11 +261,8 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "        saves the world with given name or with current name\n"
 "        max name length: %i\n"
 "\n"
-"    " CMD_SPAWNER_SHORT " " CMD_SPAWNER "\n"
-"        selects the spawner as active tool\n"
-"\n"
-"    " CMD_SPAWNERMAT_SHORT " " CMD_SPAWNERMAT "\n"
-"        selects the given material for the spawner\n"
+"    " CMD_SPAWNER_SHORT " " CMD_SPAWNER " [TEXT]\n"
+"        selects the spawner as active tool and when given a material for it\n"
 "\n"
 "    " CMD_SPAWNTEMPERATURE_SHORT " " CMD_SPAWNTEMPERATURE " DECIMAL\n"
 "        sets the temperature of newly spawned dots\n"
@@ -1756,8 +1750,8 @@ handle_advanced_command(const char            *cmd,
 	struct World  tempworld;
 	int           x, y;
 
-	if (strcmp(cmd, CMD_BRUSHMAT) == 0 ||
-	    strcmp(cmd, CMD_BRUSHMAT_SHORT) == 0) {
+	if (strcmp(cmd, CMD_BRUSH) == 0 ||
+	    strcmp(cmd, CMD_BRUSH_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_BRUSH;
 		if (Mat_from_string(arg, &tool_opts->brush_mat)) {
 			return;
@@ -1902,8 +1896,8 @@ handle_advanced_command(const char            *cmd,
 		                        statusbar_elem,
 		                        win_w,
 		                        world_name);
-	} else if (strcmp(cmd, CMD_SPAWNERMAT) == 0 ||
-	           strcmp(cmd, CMD_SPAWNERMAT_SHORT) == 0) {
+	} else if (strcmp(cmd, CMD_SPAWNER) == 0 ||
+	           strcmp(cmd, CMD_SPAWNER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_SPAWNER;
 		if (Mat_from_string(arg, &tool_opts->spawner_mat)) {
 			return;

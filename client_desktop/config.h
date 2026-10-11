@@ -42,8 +42,6 @@ static const char DOT_APPEARANCE[] = {
  */
 #define CMD_BRUSH                   "brush"
 #define CMD_BRUSH_SHORT             "b"
-#define CMD_BRUSHMAT                "brushmat"
-#define CMD_BRUSHMAT_SHORT          "bm"
 #define CMD_BRUSHRADIUS             "brushradius"
 #define CMD_BRUSHRADIUS_SHORT       "br"
 #define CMD_CLEAR                   "clear"
@@ -81,8 +79,6 @@ static const char DOT_APPEARANCE[] = {
 #define CMD_SAVE_SHORT              "sv"
 #define CMD_SPAWNER                 "spawner"
 #define CMD_SPAWNER_SHORT           "s"
-#define CMD_SPAWNERMAT              "spawnermat"
-#define CMD_SPAWNERMAT_SHORT        "sm"
 #define CMD_SPAWNTEMPERATURE        "spawntemperature"
 #define CMD_SPAWNTEMPERATURE_SHORT  "st"
 #define CMD_SPAWNTEMPERATUREK       "spawntemperaturek"

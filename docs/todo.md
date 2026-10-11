@@ -239,10 +239,12 @@ even when the bottom part is still overlapped by statusbar and cmdline.
 This also makes the general init code less annoying to look at.
 Me like.
 
-- [ ] desktop client: eliminate brushmat, spawnermat cmds
+- [x] desktop client: remove brushmat, spawnermat cmds
 By giving "brush" and "spawner" an optional text arg (as string to mat),
 it functionally replaces the respective toolmat cmd.
-Also remove from help text
+The actual code basically didn't change.
+
+- [ ] rename `SDL_BACKEND` to `BACKEND_SDL` because it treads on SDL namespace
 
 - [ ] update README
 
