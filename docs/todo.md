@@ -84,6 +84,8 @@ Remember to update the ip address display to reflect this.
 - [ ] desktop client: update help text
 - [ ] update README
 
+-----
+
 # State Update
 
 - [x] fix tool-size-change-binds redundancy in help text
@@ -245,8 +247,6 @@ it functionally replaces the respective toolmat cmd.
 The actual code basically didn't change.
 
 - [x] rename `SDL_BACKEND` to `BACKEND_SDL` because it treads on SDL namespace
-
------
 
 # Simple and Direct Update
 

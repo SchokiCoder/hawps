@@ -30,7 +30,7 @@ C_FLAGS         :=-std=c99 -pedantic -Wall -Wextra -Wvla -Wno-unused-variable -W
 C_FLAGS_DEBUG   :=$(C_FLAGS) -fsanitize=address,undefined -g
 C_FLAGS_PROFILE :=$(C_FLAGS) -g -O3 -pg
 C_FLAGS_RELEASE :=$(C_FLAGS) -O3
-C_DEFINES       :=-D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
+C_DEFINES       :=-D _DEFAULT_SOURCE -D APP_NAME='"$(APP_NAME)"' -D APP_NAME_FORMAL='"$(APP_NAME_FORMAL)"' -D APP_LICENSE='"$(APP_LICENSE)"' -D APP_LICENSE_URL='"$(APP_LICENSE_URL)"' -D APP_REPOSITORY='"$(APP_REPOSITORY)"' -D APP_VERSION='"$(APP_VERSION)"'
 
 CLIENT_DESKTOP_CFLAGS       :=$(CLIENT_DESKTOP_BACKEND) -I lib_core -I lib_extra $(PKG_CONFIG_CFLAGS_SDL) $(PKG_CONFIG_LIBS_SDL)
 CLIENT_DESKTOP_FILE_DEPS    :=Makefile client_desktop/* client_desktop/int_to_string.h lib_core/* lib_extra/*
