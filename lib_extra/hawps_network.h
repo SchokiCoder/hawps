@@ -6,6 +6,7 @@
 #define _HAWPS_NETWORK_H
 
 #include <netdb.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -18,8 +19,6 @@
 #define MSG_EST1    "I love you"
 #define MSG_EST2    "It's mutual"
 
-#define PORT "25565"
-
 /* Constant defines
  */
 
@@ -29,6 +28,7 @@
 struct Connection {
 	struct addrinfo *ai;
 	struct addrinfo *aip;
+	char            *port;
 	int              socket;
 	char            *target;
 	bool             target_serves;
@@ -41,9 +41,10 @@ struct Connection
 Connection_new();
 
 int
-Connection_bind(struct Connection *c,
-                char              *target,
-                const bool         target_serves);
+Connection_bind(struct Connection          *c,
+                char              *restrict target,
+                char              *restrict port,
+                const bool                  target_serves);
 
 int
 Connection_establish(struct Connection *c);
@@ -67,9 +68,10 @@ Connection_new() {
 }
 
 int
-Connection_bind(struct Connection *c,
-                char              *target,
-                const bool         target_serves) {
+Connection_bind(struct Connection          *c,
+                char              *restrict target,
+                char              *restrict port,
+                const bool                  target_serves) {
 	int              e;
 	struct addrinfo  hints;
 
@@ -83,7 +85,7 @@ Connection_bind(struct Connection *c,
 	hints.ai_canonname = NULL;
 	hints.ai_next = NULL;
 
-	e = getaddrinfo(target, PORT, &hints, &c->ai);
+	e = getaddrinfo(target, port, &hints, &c->ai);
 	if (e) {
 		fprintf(stderr, "%s\n", gai_strerror(e));
 		return 1;
@@ -119,6 +121,7 @@ Connection_bind(struct Connection *c,
 		return 2;
 	}
 
+	c->port = port;
 	c->target = target;
 	c->target_serves = target_serves;
 
