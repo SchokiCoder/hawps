@@ -15,11 +15,12 @@
 
 #define MAX_RETRIES 4
 
-#define MSG_SIZE         16
-#define MSG_EST1         "I love you"
-#define MSG_EST2         "It's mutual"
-#define MSG_COMPATIBLE   "We're a match"
-#define MSG_INCOMPATIBLE "We don't fit"
+#define MSG_SIZE          16              // <- visual max len
+#define MSG_EST1          "I love you"
+#define MSG_EST2          "It's mutual"
+#define MSG_COMPATIBLE    "We're a match"
+#define MSG_INCOMPATIBLE  "We don't fit"
+#define MSG_WORLDINFO_PLS "Gime winfo pls"
 
 /* Constant defines
  */
@@ -36,6 +37,19 @@ struct Connection {
 	bool             target_serves;
 };
 
+/* Tells which array is being sent/received.
+ * Those commented out, don't need to exist,
+ * as they can be calculated on client side.
+ */
+enum MsgWorldArrtype {
+	MSGWAT_DISSOL,
+	MSGWAT_DOT,
+	MSGWAT_OXID,
+	/* MSGWAT_STATE, */
+	MSGWAT_THERMO,
+	/* MSGWAT_WEIGHT, */
+};
+
 /* Function declarations
  */
 
@@ -50,6 +64,25 @@ Connection_bind(struct Connection          *c,
 
 int
 Connection_establish(struct Connection *c);
+
+void
+Connection_recv_worldarr(struct Connection  *c,
+                         char               *buf,
+                         const size_t        buf_size,
+                         struct World       *w);
+
+void
+Connection_run(struct Connection *c,
+               const bool        *active, 
+               struct World      *w);
+
+void
+Connection_send_worldarr(struct Connection         *c,
+                         char                      *buf,
+                         const size_t               buf_size,
+                         const struct World         w,
+                         char                      *world_arr,
+                         const enum MsgWorldArrtype wat);
 
 void
 Connection_free(struct Connection *c);
@@ -194,6 +227,134 @@ Connection_establish(struct Connection *c) {
 	}
 
 	return 0;
+}
+
+void
+Connection_recv_worldarr(struct Connection  *c,
+                         char               *buf,
+                         const size_t        buf_size,
+                         struct World       *w) {
+	char                 temp;
+	enum MsgWorldArrtype wat;
+	size_t               wat_len = sizeof(wat);
+
+	recv(c->socket, buf, buf_size, 0);
+	temp = buf[wat_len];
+	buf[wat_len] = '\0';
+	wat = buf[0];
+	buf[wat_len] = temp;
+
+	switch (wat) {
+	case MSGWAT_DISSOL:
+		memcpy(&w->_dissol, &buf[wat_len], buf_size - wat_len);
+		break;
+
+	case MSGWAT_DOT:
+		memcpy(&w->_dot, &buf[wat_len], buf_size - wat_len);
+		break;
+
+	case MSGWAT_OXID:
+		memcpy(&w->_oxid, &buf[wat_len], buf_size - wat_len);
+		break;
+
+	case MSGWAT_THERMO:
+		memcpy(&w->_thermo, &buf[wat_len], buf_size - wat_len);
+		break;
+	}
+}
+
+void
+Connection_run(struct Connection *c,
+               const bool        *active, 
+               struct World      *w) {
+	size_t  buf_size = 0;
+	size_t  len;
+	size_t  pos;
+	char   *recvbuf = NULL;
+	char   *sendbuf = NULL;
+
+	buf_size = sizeof(enum MsgWorldArrtype) +
+	           (sizeof(float) * w->w * w->h) +
+	           1;
+	if (buf_size < MSG_SIZE) {
+		buf_size = MSG_SIZE;
+	}
+
+	recvbuf = malloc(buf_size);
+	sendbuf = malloc(buf_size);
+
+	while (*active) {
+		if (c->target_serves) {
+			if (w->w == 0 || w->h == 0) {
+				strncpy(sendbuf, MSG_WORLDINFO_PLS, MSG_SIZE);
+				send(c->socket, sendbuf, MSG_SIZE, 0);
+
+				recv(c->socket, recvbuf, MSG_SIZE, 0);
+				w->h = recvbuf[sizeof(w->w)];
+				recvbuf[sizeof(w->w)] = '\0';
+				w->h = recvbuf[0];
+				*w = World_new(w->w, w->h);
+			}
+
+			Connection_recv_worldarr(c, recvbuf, buf_size, w);
+		} else {
+			if (recv(c->socket, recvbuf, MSG_SIZE, MSG_DONTWAIT) != 0 &&
+			    strcmp(recvbuf, MSG_WORLDINFO_PLS) == 0) {
+				pos = 0;
+				memset(&sendbuf[pos], w->w, sizeof(w->w));
+				pos += sizeof(w->w);
+				memset(&sendbuf[pos], w->h, sizeof(w->h));
+				pos += sizeof(w->h);
+				sendbuf[pos] = '\0';
+				send(c->socket, sendbuf, MSG_SIZE, 0);
+			} else {
+				Connection_send_worldarr(c,
+				                         sendbuf,
+				                         buf_size,
+				                         *w,
+				                         (char*) w->_dissol,
+				                         MSGWAT_DISSOL);
+				Connection_send_worldarr(c,
+				                         sendbuf,
+				                         buf_size,
+				                         *w,
+				                         (char*) w->_dot,
+				                         MSGWAT_DOT);
+				Connection_send_worldarr(c,
+				                         sendbuf,
+				                         buf_size,
+				                         *w,
+				                         (char*) w->_oxid,
+				                         MSGWAT_OXID);
+				Connection_send_worldarr(c,
+				                         sendbuf,
+				                         buf_size,
+				                         *w,
+				                         (char*) w->_thermo,
+				                         MSGWAT_THERMO);
+			}
+		}
+	}
+}
+
+void
+Connection_send_worldarr(struct Connection         *c,
+                         char                      *buf,
+                         const size_t               buf_size,
+                         const struct World         w,
+                         char                      *world_arr,
+                         const enum MsgWorldArrtype wat) {
+	size_t len;
+	size_t pos;
+
+	len = sizeof(wat);
+	memset(buf, wat, len);
+	pos = len;
+	len = w.w * w.h * sizeof(world_arr[0]);
+	memcpy(&buf[pos], world_arr, len);
+	pos = len;
+	buf[pos] = '\0';
+	send(c->socket, buf, buf_size, 0);
 }
 
 void
