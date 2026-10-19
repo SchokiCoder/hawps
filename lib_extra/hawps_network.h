@@ -15,9 +15,11 @@
 
 #define MAX_RETRIES 4
 
-#define MSG_SIZE    16
-#define MSG_EST1    "I love you"
-#define MSG_EST2    "It's mutual"
+#define MSG_SIZE         16
+#define MSG_EST1         "I love you"
+#define MSG_EST2         "It's mutual"
+#define MSG_COMPATIBLE   "We're a match"
+#define MSG_INCOMPATIBLE "We don't fit"
 
 /* Constant defines
  */
@@ -153,6 +155,16 @@ Connection_establish(struct Connection *c) {
 			        MAX_RETRIES);
 			return 1;
 		}
+
+		strncpy(sendbuf, APP_VERSION, MSG_SIZE);
+		send(c->socket, sendbuf, MSG_SIZE, 0);
+
+		memset(recvbuf, 0, MSG_SIZE);
+		recv(c->socket, recvbuf, MSG_SIZE, 0);
+		if (strcmp(recvbuf, MSG_COMPATIBLE) != 0) {
+			fprintf(stderr, "Server version doesn't match\n");
+			return 2;
+		}
 	} else {
 		recvfrom(c->socket, recvbuf, MSG_SIZE, 0, &client_addr, &client_addr_len);
 		if (strcmp(recvbuf, MSG_EST1) != 0) {
@@ -168,6 +180,17 @@ Connection_establish(struct Connection *c) {
 
 		strncpy(sendbuf, MSG_EST2, MSG_SIZE);
 		send(c->socket, sendbuf, MSG_SIZE, 0);
+
+		recv(c->socket, recvbuf, MSG_SIZE, 0);
+		if (strcmp(recvbuf, APP_VERSION) != 0) {
+			strncpy(sendbuf, MSG_INCOMPATIBLE, MSG_SIZE);
+			send(c->socket, sendbuf, MSG_SIZE, 0);
+			fprintf(stderr, "Client version doesn't match\n");
+			return 3;
+		} else {
+			strncpy(sendbuf, MSG_COMPATIBLE, MSG_SIZE);
+			send(c->socket, sendbuf, MSG_SIZE, 0);
+		}
 	}
 
 	return 0;
