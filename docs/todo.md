@@ -59,6 +59,20 @@ Some are panics, despite a graceful shutdown being implemented
 
 # Transmission Update
 
+- [x] libextra net: add basic header for networking
+- [x] libextra net: separate client and server code
+This also adds actual server code, supporting multiple clients.
+This is a WIP and does not yet work.
+
+- [ ] libextra net: fix client not receiving a response in `Client_connect`
+- [ ] libextra net: add traffic metering to server
+- [ ] libextra net: replace magic error codes with defs
+- [ ] libextra net: add a lifesignal check to server and lifesignal to client
+- [ ] libextra net: add tool signals
+This way clients can make changes to the world.
+
+- [ ] libextra net: add logging to file for server
+
 - [ ] desktop client: add networking
 How (basics)? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
 the commit before networking got removed.

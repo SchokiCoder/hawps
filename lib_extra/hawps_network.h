@@ -5,6 +5,8 @@
 #ifndef _HAWPS_NETWORK_H
 #define _HAWPS_NETWORK_H
 
+#include <arpa/inet.h>
+#include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -13,14 +15,9 @@
 /* Macros
  */
 
-#define MAX_RETRIES 4
-
-#define MSG_SIZE          16              // <- visual max len
-#define MSG_EST1          "I love you"
-#define MSG_EST2          "It's mutual"
-#define MSG_COMPATIBLE    "We're a match"
-#define MSG_INCOMPATIBLE  "We don't fit"
-#define MSG_WORLDINFO_PLS "Gime winfo pls"
+#define NET_MAX_CONNECT_RETRIES 4
+#define NET_MEDIUM_MSG_SIZE     64 /* enough for type, version info | world info */
+#define NET_RETRY_SLEEP_LEN     5  /* second */
 
 /* Constant defines
  */
@@ -28,90 +25,118 @@
 /* Types
  */
 
-struct Connection {
+struct Client {
 	struct addrinfo *ai;
 	struct addrinfo *aip;
 	char            *port;
-	int              socket;
+	int              sockfd;
 	char            *target;
-	bool             target_serves;
 };
 
-/* Tells which array is being sent/received.
- * Those commented out, don't need to exist,
- * as they can be calculated on client side.
- */
-enum MsgWorldArrtype {
-	MSGWAT_DISSOL,
-	MSGWAT_DOT,
-	MSGWAT_OXID,
-	/* MSGWAT_STATE, */
-	MSGWAT_THERMO,
-	/* MSGWAT_WEIGHT, */
+struct Server {
+	size_t           clients;
+	struct sockaddr *cl_addr;
+	socklen_t       *cl_addr_len;
+	bool            *cl_connected;
+	int              sockfd;
+};
+
+enum Message {
+	MSG_CONNECT,
+	MSG_CONNECTED,
+	MSG_INCOMPATIBLE,
+	MSG_NOSLOTS,
+
+	MSG_REQ_WORLDINFO,
+
+	/* Tells which array is being sent/received.
+	 * Those commented out, don't need to exist,
+	 * as they can be calculated on client side. */
+	MSG_WAT_DISSOL,
+	MSG_WAT_DOT,
+	MSG_WAT_OXID,
+	/* MSG_WAT_STATE, */
+	MSG_WAT_THERMO,
+	/* MSG_WAT_WEIGHT, */
 };
 
 /* Function declarations
  */
 
-struct Connection
-Connection_new();
+struct Client
+Client_new();
 
 int
-Connection_bind(struct Connection          *c,
-                char              *restrict target,
-                char              *restrict port,
-                const bool                  target_serves);
-
-int
-Connection_establish(struct Connection *c);
+Client_connect(struct Client *c,
+               char          *restrict target,
+               char          *restrict port);
 
 void
-Connection_recv_worldarr(struct Connection  *c,
-                         char               *buf,
-                         const size_t        buf_size,
-                         struct World       *w);
+Client_mainloop(struct Client *c,
+                const bool    *active,
+                struct World  *w);
 
 void
-Connection_run(struct Connection *c,
-               const bool        *active, 
-               struct World      *w);
+Client_recv_worldarr(struct Client *c,
+                     char          *buf,
+                     const size_t   buf_size,
+                     struct World  *w);
 
 void
-Connection_send_worldarr(struct Connection         *c,
-                         char                      *buf,
-                         const size_t               buf_size,
-                         const struct World         w,
-                         char                      *world_arr,
-                         const enum MsgWorldArrtype wat);
+Client_free(struct Client *c);
+
+struct Server
+Server_new(size_t         max_clients,
+           const uint16_t port);
 
 void
-Connection_free(struct Connection *c);
+Server_mainloop(struct Server *s,
+                const bool    *active,
+                struct World  *w);
+
+void
+Server_send_worldarr(struct Server      *s,
+                     char               *buf,
+                     const size_t        buf_size,
+                     size_t              client_id,
+                     const struct World  w,
+                     char               *world_arr,
+                     const enum Message  msg_wat);
+
+void
+Server_free(struct Server *s);
 
 /* Function definitions
  */
 
 #ifdef HAWPS_IMPL
 
-struct Connection
-Connection_new() {
-	struct Connection ret;
+struct Client
+Client_new() {
+	struct Client ret;
 
-	memset(&ret, 0, sizeof(struct Connection));
-	ret.socket = -1;
+	memset(&ret, 0, sizeof(ret));
+	ret.sockfd = -1;
 
 	return ret;
 }
 
 int
-Connection_bind(struct Connection          *c,
-                char              *restrict target,
-                char              *restrict port,
-                const bool                  target_serves) {
+Client_connect(struct Client *c,
+               char          *restrict target,
+               char          *restrict port)
+{
 	int              e;
 	struct addrinfo  hints;
+	size_t           i;
+	size_t           pos;
+	char             recv_buf[NET_MEDIUM_MSG_SIZE] = "\0";
+	enum Message     recv_msg;
+	char             send_buf[NET_MEDIUM_MSG_SIZE] = "\0";
+	enum Message     send_msg;
 
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_flags = (target_serves ? 0 : AI_PASSIVE);
+	hints.ai_flags = 0;
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_protocol = 0;
@@ -127,240 +152,356 @@ Connection_bind(struct Connection          *c,
 	}
 
 	for (c->aip = c->ai; c->aip != NULL; c->aip = c->aip->ai_next) {
-		c->socket = socket(c->aip->ai_family,
+		c->sockfd = socket(c->aip->ai_family,
 		                   c->aip->ai_socktype,
 		                   c->aip->ai_protocol);
-		if (c->socket == -1) {
+		if (c->sockfd == -1) {
 			continue;
 		}
 
-		if (target_serves) {
-			if (connect(c->socket,
-			            c->aip->ai_addr,
-			            c->aip->ai_addrlen) == 0) {
-				break;
-			}
+		if (connect(c->sockfd,
+		            c->aip->ai_addr,
+		            c->aip->ai_addrlen) != 0) {
+			close(c->sockfd);
+			fprintf(stderr, "socket connect: %i\n", errno);
 		} else {
-			if (bind(c->socket,
-			         c->aip->ai_addr,
-			         c->aip->ai_addrlen) == 0) {
-				break;
-			}
+			break;
 		}
-
-		close(c->socket);
 	}
 
 	if (c->aip == NULL) {
-		fprintf(stderr, "Could not bind\n");
+		fprintf(stderr, "Could not connect\n");
 		return 2;
 	}
 
 	c->port = port;
 	c->target = target;
-	c->target_serves = target_serves;
+
+	for (i = 0; i < NET_MAX_CONNECT_RETRIES; i++) {
+		send_msg = MSG_CONNECT;
+		pos = 0;
+		memcpy(&send_buf[pos], &send_msg, sizeof(send_msg));
+		pos += sizeof(send_msg);
+		strncpy(&send_buf[pos], APP_VERSION, NET_MEDIUM_MSG_SIZE - pos);
+		send(c->sockfd, send_buf, NET_MEDIUM_MSG_SIZE, 0);
+
+		if (recv(c->sockfd, &recv_msg, sizeof(recv_msg), MSG_DONTWAIT) > 0) {
+			break;
+		}
+		sleep(NET_RETRY_SLEEP_LEN);
+	}
+
+	if (i >= NET_MAX_CONNECT_RETRIES) {
+		fprintf(stderr,
+		        "Connection failed after %i retries\n",
+		        NET_MAX_CONNECT_RETRIES);
+		return 3;
+	}
+
+	switch (recv_msg) {
+	case MSG_CONNECTED:
+		printf("Connected\n");
+		return 0;
+		break;
+
+	case MSG_INCOMPATIBLE:
+		fprintf(stderr, "Server version doesn't match\n");
+		return 4;
+		break;
+
+	case MSG_NOSLOTS:
+		fprintf(stderr, "Server has no slots available\n");
+		return 5;
+		break;
+
+	default:
+		fprintf(stderr, "Server did not respond properly\n");
+		return 6;
+		break;
+	}
 
 	return 0;
 }
 
-int
-Connection_establish(struct Connection *c) {
-	struct sockaddr client_addr;
-	socklen_t       client_addr_len = sizeof(client_addr);
-	size_t          i;
-	char            recvbuf[MSG_SIZE] = "\0";
-	char            sendbuf[MSG_SIZE] = "\0";
+void
+Client_mainloop(struct Client *c,
+                const bool    *active,
+                struct World  *w)
+{
+	size_t        buf_size = NET_MEDIUM_MSG_SIZE;
+	char         *buf = malloc(buf_size);
+	size_t        pos;
+	enum Message  send_msg;
 
-	if (c->target_serves) {
-		for (i = 0; i < MAX_RETRIES; i++) {
-			strncpy(sendbuf, MSG_EST1, MSG_SIZE);
-			send(c->socket, sendbuf, MSG_SIZE, 0);
-			recv(c->socket, recvbuf, MSG_SIZE, 0);
-		
-			if (strcmp(recvbuf, MSG_EST2) == 0) {
-				break;
-			}
-		}
+	if (w->w == 0 || w->h == 0) {
+		send_msg = MSG_REQ_WORLDINFO;
+		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 
-		if (i >= MAX_RETRIES) {
-			fprintf(stderr,
-			        "Connection failed after %i retries\n",
-			        MAX_RETRIES);
-			return 1;
-		}
+		recv(c->sockfd, buf, buf_size, 0);
+		w->w = buf[0];
+		w->h = buf[sizeof(w->w)];
+		*w = World_new(w->w, w->h);
+	}
 
-		strncpy(sendbuf, APP_VERSION, MSG_SIZE);
-		send(c->socket, sendbuf, MSG_SIZE, 0);
+	buf_size = sizeof(enum Message) + (sizeof(float) * w->w * w->h) + 1;
+	if (buf_size < NET_MEDIUM_MSG_SIZE) {
+		buf_size = NET_MEDIUM_MSG_SIZE;
+	}
+	buf = realloc(buf, buf_size);
+	while (*active) {
+		Client_recv_worldarr(c, buf, buf_size, w);
+	}
+}
 
-		memset(recvbuf, 0, MSG_SIZE);
-		recv(c->socket, recvbuf, MSG_SIZE, 0);
-		if (strcmp(recvbuf, MSG_COMPATIBLE) != 0) {
-			fprintf(stderr, "Server version doesn't match\n");
-			return 2;
-		}
-	} else {
-		recvfrom(c->socket, recvbuf, MSG_SIZE, 0, &client_addr, &client_addr_len);
-		if (strcmp(recvbuf, MSG_EST1) != 0) {
-			return 1;
-		}
+void
+Client_recv_worldarr(struct Client *c,
+                     char          *buf,
+                     const size_t   buf_size,
+                     struct World  *w)
+{
+	enum Message msg_wat;
 
-		if (connect(c->socket,
-		            &client_addr,
-		            client_addr_len) != 0) {
-			fprintf(stderr, "Could not connect\n");
-			return 2;
-		}
+	recv(c->sockfd, buf, buf_size, 0);
+	msg_wat = buf[0];
 
-		strncpy(sendbuf, MSG_EST2, MSG_SIZE);
-		send(c->socket, sendbuf, MSG_SIZE, 0);
+	switch (msg_wat) {
+	case MSG_WAT_DISSOL:
+		memcpy(&w->_dissol, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		break;
 
-		recv(c->socket, recvbuf, MSG_SIZE, 0);
-		if (strcmp(recvbuf, APP_VERSION) != 0) {
-			strncpy(sendbuf, MSG_INCOMPATIBLE, MSG_SIZE);
-			send(c->socket, sendbuf, MSG_SIZE, 0);
+	case MSG_WAT_DOT:
+		memcpy(&w->_dot, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		break;
+
+	case MSG_WAT_OXID:
+		memcpy(&w->_oxid, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		break;
+
+	case MSG_WAT_THERMO:
+		memcpy(&w->_thermo, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		break;
+
+	default:
+		break;
+	}
+}
+
+void
+Client_free(struct Client *c)
+{
+	freeaddrinfo(c->ai);
+	close(c->sockfd);
+}
+
+struct Server
+Server_new(size_t         max_clients,
+           const uint16_t port) {
+	struct sockaddr_in6 addr = {
+		.sin6_family = AF_INET6,
+		.sin6_port = htons(port),
+		.sin6_addr = in6addr_any,
+	};
+	struct Server ret;
+	int val = 0;
+
+	memset(&ret, 0, sizeof(ret));
+
+	ret.sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (ret.sockfd == -1) {
+		fprintf(stderr, "Couldn't get socket: %i\n", errno);
+		return ret;
+	}
+	if (setsockopt(ret.sockfd, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val))) {
+		fprintf(stderr, "Couldn't set IPv& only: %i\n", errno);
+		return ret;
+	}
+	if (bind(ret.sockfd, (struct sockaddr*) &addr, sizeof(addr))) {
+		fprintf(stderr, "Couldn't bind: %i\n", errno);
+		return ret;
+	}
+
+	ret.clients = max_clients;
+	ret.cl_addr = calloc(ret.clients, sizeof(struct sockaddr));
+	ret.cl_addr_len = calloc(ret.clients, sizeof(socklen_t));
+	ret.cl_connected = calloc(ret.clients, sizeof(bool));
+
+	return ret;
+}
+
+void
+Server_handle_message(struct Server         *s,
+                      const struct sockaddr  recv_addr,
+                      const socklen_t        recv_addr_len,
+                      const char            *recv_buf,
+                      const struct World     w)
+{
+	size_t           i;
+	char             ip[INET_ADDRSTRLEN];
+	size_t           pos;
+	enum Message     recv_msg;
+	char             send_buf[NET_MEDIUM_MSG_SIZE];
+	enum Message     send_msg;
+
+	recv_msg = recv_buf[0];
+	switch (recv_msg) {
+	case MSG_CONNECT:
+		if (strcmp(&recv_buf[sizeof(recv_msg)], APP_VERSION) != 0) {
+			send_msg = MSG_INCOMPATIBLE;
+			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+			       &recv_addr, recv_addr_len);
 			fprintf(stderr, "Client version doesn't match\n");
-			return 3;
-		} else {
-			strncpy(sendbuf, MSG_COMPATIBLE, MSG_SIZE);
-			send(c->socket, sendbuf, MSG_SIZE, 0);
+			break;
 		}
-	}
 
-	return 0;
+		for (i = 0; i < s->clients; i++) {
+			if (s->cl_connected[i] == true) {
+				continue;
+			}
+
+			inet_ntop(AF_INET, &recv_addr, ip, INET_ADDRSTRLEN);
+			printf("Connection established with %s\n", ip);
+			s->cl_addr[i] = recv_addr;
+			s->cl_addr_len[i] = recv_addr_len;
+			s->cl_connected[i] = true;
+			send_msg = MSG_CONNECTED;
+			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+			       &recv_addr, recv_addr_len);
+			break;
+		}
+
+		if (i >= s->clients) {
+			send_msg = MSG_NOSLOTS;
+			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+			       &recv_addr, recv_addr_len);
+		}
+		break;
+
+	case MSG_REQ_WORLDINFO:
+		pos = 0;
+		memcpy(&send_buf[pos], &w.w, sizeof(w.w));
+		pos += sizeof(w.w);
+		memcpy(&send_buf[pos], &w.h, sizeof(w.h));
+		pos += sizeof(w.h);
+		send_buf[pos] = '\0';
+		sendto(s->sockfd, send_buf, NET_MEDIUM_MSG_SIZE, 0,
+		       &recv_addr, recv_addr_len);
+		break;
+
+	default:
+		// TODO add counter for invalid messages,
+		// and disconnect clients that keep sending them
+		break;
+	}
 }
 
 void
-Connection_recv_worldarr(struct Connection  *c,
-                         char               *buf,
-                         const size_t        buf_size,
-                         struct World       *w) {
-	char                 temp;
-	enum MsgWorldArrtype wat;
-	size_t               wat_len = sizeof(wat);
+Server_mainloop(struct Server *s,
+                const bool    *active,
+                struct World  *w)
+{
+	size_t           i;
+	struct sockaddr  recv_addr;
+	socklen_t        recv_addr_len;
+	char             recv_buf[NET_MEDIUM_MSG_SIZE];
+	size_t           send_buf_size = 0;
+	char            *send_buf = NULL;
 
-	recv(c->socket, buf, buf_size, 0);
-	temp = buf[wat_len];
-	buf[wat_len] = '\0';
-	wat = buf[0];
-	buf[wat_len] = temp;
-
-	switch (wat) {
-	case MSGWAT_DISSOL:
-		memcpy(&w->_dissol, &buf[wat_len], buf_size - wat_len);
-		break;
-
-	case MSGWAT_DOT:
-		memcpy(&w->_dot, &buf[wat_len], buf_size - wat_len);
-		break;
-
-	case MSGWAT_OXID:
-		memcpy(&w->_oxid, &buf[wat_len], buf_size - wat_len);
-		break;
-
-	case MSGWAT_THERMO:
-		memcpy(&w->_thermo, &buf[wat_len], buf_size - wat_len);
-		break;
+	send_buf_size = sizeof(enum Message) +
+	                (sizeof(float) * w->w * w->h) +
+	                1;
+	if (send_buf_size < sizeof(enum Message)) {
+		send_buf_size = sizeof(enum Message);
 	}
-}
-
-void
-Connection_run(struct Connection *c,
-               const bool        *active, 
-               struct World      *w) {
-	size_t  buf_size = 0;
-	size_t  len;
-	size_t  pos;
-	char   *recvbuf = NULL;
-	char   *sendbuf = NULL;
-
-	buf_size = sizeof(enum MsgWorldArrtype) +
-	           (sizeof(float) * w->w * w->h) +
-	           1;
-	if (buf_size < MSG_SIZE) {
-		buf_size = MSG_SIZE;
-	}
-
-	recvbuf = malloc(buf_size);
-	sendbuf = malloc(buf_size);
+	send_buf = malloc(send_buf_size);
 
 	while (*active) {
-		if (c->target_serves) {
-			if (w->w == 0 || w->h == 0) {
-				strncpy(sendbuf, MSG_WORLDINFO_PLS, MSG_SIZE);
-				send(c->socket, sendbuf, MSG_SIZE, 0);
+		if (recvfrom(s->sockfd,
+		             &recv_buf,
+		             NET_MEDIUM_MSG_SIZE,
+		             MSG_DONTWAIT,
+		             &recv_addr,
+		             &recv_addr_len) > 0) {
+			Server_handle_message(s,
+			                      recv_addr,
+			                      recv_addr_len,
+			                      recv_buf,
+			                      *w);
+		}
 
-				recv(c->socket, recvbuf, MSG_SIZE, 0);
-				w->h = recvbuf[sizeof(w->w)];
-				recvbuf[sizeof(w->w)] = '\0';
-				w->h = recvbuf[0];
-				*w = World_new(w->w, w->h);
+		for (i = 0; i < s->clients; i++) {
+			if (!s->cl_connected[i]) {
+				continue;
 			}
 
-			Connection_recv_worldarr(c, recvbuf, buf_size, w);
-		} else {
-			if (recv(c->socket, recvbuf, MSG_SIZE, MSG_DONTWAIT) != 0 &&
-			    strcmp(recvbuf, MSG_WORLDINFO_PLS) == 0) {
-				pos = 0;
-				memset(&sendbuf[pos], w->w, sizeof(w->w));
-				pos += sizeof(w->w);
-				memset(&sendbuf[pos], w->h, sizeof(w->h));
-				pos += sizeof(w->h);
-				sendbuf[pos] = '\0';
-				send(c->socket, sendbuf, MSG_SIZE, 0);
-			} else {
-				Connection_send_worldarr(c,
-				                         sendbuf,
-				                         buf_size,
-				                         *w,
-				                         (char*) w->_dissol,
-				                         MSGWAT_DISSOL);
-				Connection_send_worldarr(c,
-				                         sendbuf,
-				                         buf_size,
-				                         *w,
-				                         (char*) w->_dot,
-				                         MSGWAT_DOT);
-				Connection_send_worldarr(c,
-				                         sendbuf,
-				                         buf_size,
-				                         *w,
-				                         (char*) w->_oxid,
-				                         MSGWAT_OXID);
-				Connection_send_worldarr(c,
-				                         sendbuf,
-				                         buf_size,
-				                         *w,
-				                         (char*) w->_thermo,
-				                         MSGWAT_THERMO);
-			}
+			Server_send_worldarr(s,
+			                     send_buf,
+			                     send_buf_size,
+			                     i,
+			                     *w,
+			                     (char*) w->_dissol,
+			                     MSG_WAT_DISSOL);
+			Server_send_worldarr(s,
+			                     send_buf,
+			                     send_buf_size,
+			                     i,
+			                     *w,
+			                     (char*) w->_dot,
+			                     MSG_WAT_DOT);
+			Server_send_worldarr(s,
+			                     send_buf,
+			                     send_buf_size,
+			                     i,
+			                     *w,
+			                     (char*) w->_oxid,
+			                     MSG_WAT_OXID);
+			Server_send_worldarr(s,
+			                     send_buf,
+			                     send_buf_size,
+			                     i,
+			                     *w,
+			                     (char*) w->_thermo,
+			                     MSG_WAT_THERMO);
 		}
 	}
 }
 
 void
-Connection_send_worldarr(struct Connection         *c,
-                         char                      *buf,
-                         const size_t               buf_size,
-                         const struct World         w,
-                         char                      *world_arr,
-                         const enum MsgWorldArrtype wat) {
+Server_send_worldarr(struct Server      *s,
+                     char               *buf,
+                     const size_t        buf_size,
+                     size_t              client_id,
+                     const struct World  w,
+                     char               *world_arr,
+                     const enum Message  msg_wat)
+{
 	size_t len;
 	size_t pos;
 
-	len = sizeof(wat);
-	memset(buf, wat, len);
+	len = sizeof(msg_wat);
+	memset(buf, msg_wat, len);
 	pos = len;
 	len = w.w * w.h * sizeof(world_arr[0]);
 	memcpy(&buf[pos], world_arr, len);
 	pos = len;
 	buf[pos] = '\0';
-	send(c->socket, buf, buf_size, 0);
+	sendto(s->sockfd, buf, buf_size, 0,
+	       &s->cl_addr[client_id], s->cl_addr_len[client_id]);
 }
 
 void
-Connection_free(struct Connection *c) {
-	freeaddrinfo(c->ai);
-	close(c->socket);
+Server_free(struct Server *s)
+{
+	if (s->cl_addr != NULL) {
+		free(s->cl_addr);
+	}
+	if (s->cl_addr_len != NULL) {
+		free(s->cl_addr_len);
+	}
+	if (s->cl_connected != NULL) {
+		free(s->cl_connected);
+	}
+	s->clients = 0;
+	close(s->sockfd);
 }
 
 #endif /* HAWPS_IMPL */
