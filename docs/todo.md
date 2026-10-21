@@ -64,7 +64,10 @@ Some are panics, despite a graceful shutdown being implemented
 This also adds actual server code, supporting multiple clients.
 This is a WIP and does not yet work.
 
-- [ ] libextra net: fix client not receiving a response in `Client_connect`
+- [x] ~libextra net: fix client not receiving a response in `Client_connect`~
+Nevermind, suddenly just works, lmao
+
+- [x] libextra net: fix buffer overflows when sending/receiving world arrs
 - [ ] libextra net: add traffic metering to server
 - [ ] libextra net: replace magic error codes with defs
 - [ ] libextra net: add a lifesignal check to server and lifesignal to client

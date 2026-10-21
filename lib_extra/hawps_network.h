@@ -18,6 +18,7 @@
 #define NET_MAX_CONNECT_RETRIES 4
 #define NET_MEDIUM_MSG_SIZE     64 /* enough for type, version info | world info */
 #define NET_RETRY_SLEEP_LEN     5  /* second */
+#define NET_WORLD_AE_BYTES      8
 
 /* Constant defines
  */
@@ -99,8 +100,8 @@ Server_send_worldarr(struct Server      *s,
                      char               *buf,
                      const size_t        buf_size,
                      size_t              client_id,
-                     const struct World  w,
-                     char               *world_arr,
+                     void               *world_arr,
+                     const size_t        world_arr_size,
                      const enum Message  msg_wat);
 
 void
@@ -243,7 +244,9 @@ Client_mainloop(struct Client *c,
 		*w = World_new(w->w, w->h);
 	}
 
-	buf_size = sizeof(enum Message) + (sizeof(float) * w->w * w->h) + 1;
+	buf_size = sizeof(enum Message) +
+	           (NET_WORLD_AE_BYTES * w->w * w->h) +
+	           1;
 	if (buf_size < NET_MEDIUM_MSG_SIZE) {
 		buf_size = NET_MEDIUM_MSG_SIZE;
 	}
@@ -260,25 +263,27 @@ Client_recv_worldarr(struct Client *c,
                      struct World  *w)
 {
 	enum Message msg_wat;
+	size_t       pos;
 
 	recv(c->sockfd, buf, buf_size, 0);
 	msg_wat = buf[0];
+	pos = sizeof(msg_wat);
 
 	switch (msg_wat) {
 	case MSG_WAT_DISSOL:
-		memcpy(&w->_dissol, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		memcpy(w->_dissol, &buf[pos], w->w * w->h * sizeof(*w->_dissol));
 		break;
 
 	case MSG_WAT_DOT:
-		memcpy(&w->_dot, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		memcpy(w->_dot, &buf[pos], w->w * w->h * sizeof(*w->_dot));
 		break;
 
 	case MSG_WAT_OXID:
-		memcpy(&w->_oxid, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		memcpy(w->_oxid, &buf[pos], w->w * w->h * sizeof(*w->_oxid));
 		break;
 
 	case MSG_WAT_THERMO:
-		memcpy(&w->_thermo, &buf[sizeof(msg_wat)], buf_size - sizeof(msg_wat));
+		memcpy(w->_thermo, &buf[pos], w->w * w->h * sizeof(*w->_thermo));
 		break;
 
 	default:
@@ -407,7 +412,7 @@ Server_mainloop(struct Server *s,
 	char            *send_buf = NULL;
 
 	send_buf_size = sizeof(enum Message) +
-	                (sizeof(float) * w->w * w->h) +
+	                (NET_WORLD_AE_BYTES * w->w * w->h) +
 	                1;
 	if (send_buf_size < sizeof(enum Message)) {
 		send_buf_size = sizeof(enum Message);
@@ -437,29 +442,29 @@ Server_mainloop(struct Server *s,
 			                     send_buf,
 			                     send_buf_size,
 			                     i,
-			                     *w,
-			                     (char*) w->_dissol,
+			                     w->_dissol,
+			                     w->w * w->h * sizeof(*w->_dissol),
 			                     MSG_WAT_DISSOL);
 			Server_send_worldarr(s,
 			                     send_buf,
 			                     send_buf_size,
 			                     i,
-			                     *w,
-			                     (char*) w->_dot,
+			                     w->_dot,
+			                     w->w * w->h * sizeof(*w->_dot),
 			                     MSG_WAT_DOT);
 			Server_send_worldarr(s,
 			                     send_buf,
 			                     send_buf_size,
 			                     i,
-			                     *w,
-			                     (char*) w->_oxid,
+			                     w->_oxid,
+			                     w->w * w->h * sizeof(*w->_oxid),
 			                     MSG_WAT_OXID);
 			Server_send_worldarr(s,
 			                     send_buf,
 			                     send_buf_size,
 			                     i,
-			                     *w,
-			                     (char*) w->_thermo,
+			                     w->_thermo,
+			                     w->w * w->h * sizeof(*w->_thermo),
 			                     MSG_WAT_THERMO);
 		}
 	}
@@ -470,19 +475,20 @@ Server_send_worldarr(struct Server      *s,
                      char               *buf,
                      const size_t        buf_size,
                      size_t              client_id,
-                     const struct World  w,
-                     char               *world_arr,
+                     void               *world_arr,
+                     const size_t        world_arr_size,
                      const enum Message  msg_wat)
 {
 	size_t len;
 	size_t pos;
 
+	pos = 0;
 	len = sizeof(msg_wat);
 	memset(buf, msg_wat, len);
-	pos = len;
-	len = w.w * w.h * sizeof(world_arr[0]);
+	pos += len;
+	len = world_arr_size;
 	memcpy(&buf[pos], world_arr, len);
-	pos = len;
+	pos += len;
 	buf[pos] = '\0';
 	sendto(s->sockfd, buf, buf_size, 0,
 	       &s->cl_addr[client_id], s->cl_addr_len[client_id]);
