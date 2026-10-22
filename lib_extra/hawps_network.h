@@ -17,9 +17,10 @@
  */
 
 #define NET_MAX_CONNECT_RETRIES 4
-#define NET_MEDIUM_MSG_SIZE     64 /* enough for type, version info | world info */
-#define NET_RETRY_SLEEP_LEN     5  /* second */
+#define NET_MEDIUM_MSG_SIZE     64   /* enough for type, version info | world info */
+#define NET_RETRY_SLEEP_LEN     5    /* second */
 #define NET_TICKRATE            30.0
+#define NET_UPDATERATE          1.0
 #define NET_WORLD_AE_BYTES      8
 
 /* Constant defines
@@ -41,6 +42,7 @@ struct Server {
 	struct sockaddr *cl_addr;
 	socklen_t       *cl_addr_len;
 	bool            *cl_connected;
+	clock_t         *cl_last_update;
 	int              sockfd;
 };
 
@@ -339,6 +341,7 @@ Server_new(size_t         max_clients,
 	ret.cl_addr = calloc(ret.clients, sizeof(struct sockaddr));
 	ret.cl_addr_len = calloc(ret.clients, sizeof(socklen_t));
 	ret.cl_connected = calloc(ret.clients, sizeof(bool));
+	ret.cl_last_update = calloc(ret.clients, sizeof(clock_t));
 
 	return ret;
 }
@@ -452,9 +455,13 @@ Server_mainloop(struct Server *s,
 		}
 
 		for (i = 0; i < s->clients; i++) {
-			if (!s->cl_connected[i]) {
+			if (!s->cl_connected[i] ||
+			    (now - s->cl_last_update[i] <
+			     (long) (CLOCKS_PER_SEC / NET_UPDATERATE))) {
 				continue;
 			}
+
+			s->cl_last_update[i] = now;
 
 			Server_send_worldarr(s,
 			                     send_buf,
@@ -523,6 +530,9 @@ Server_free(struct Server *s)
 	}
 	if (s->cl_connected != NULL) {
 		free(s->cl_connected);
+	}
+	if (s->cl_last_update != NULL) {
+		free(s->cl_last_update);
 	}
 	s->clients = 0;
 	close(s->sockfd);

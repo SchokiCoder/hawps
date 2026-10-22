@@ -69,13 +69,23 @@ Nevermind, suddenly just works, lmao
 
 - [x] libextra net: fix buffer overflows when sending/receiving world arrs
 - [x] libextra net: add tickrates to server and client mainloops
-- [ ] libextra net: add traffic metering to server
+- [x] libextra net: add traffic metering to server
+- [ ] libextra net: fix one client having three connections
 - [ ] libextra net: replace magic error codes with defs
 - [ ] libextra net: add a lifesignal check to server and lifesignal to client
+After thirty seconds without one they get kicked.
+This also allows for an optimization,
+where sending world arrs depends not on an if for each client,
+but on a prepared list of active connections.
+Every ten seconds clients should send an "alive" signal to be considered active.
+Make client code send alive signal every 3 seconds.
+
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
 
 - [ ] libextra net: add logging to file for server
+- [ ] libextra net: make tickrates configurable as vars
+- [ ] libextra net: make updaterate configurable as var
 
 - [ ] desktop client: add networking
 How (basics)? Look at ca22d7451c87b6d090e35328ae6994459117e86c,
