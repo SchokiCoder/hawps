@@ -206,6 +206,8 @@ Client_connect(struct Client *c,
 	switch (recv_msg) {
 	case MSG_CONNECTED:
 		printf("Connected\n");
+		send_msg = MSG_CONNECTED;
+		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 		return 0;
 		break;
 
@@ -377,10 +379,9 @@ Server_handle_message(struct Server         *s,
 			}
 
 			inet_ntop(AF_INET, &recv_addr, ip, INET_ADDRSTRLEN);
-			printf("Connection established with %s\n", ip);
+			printf("Connection establishing with %s\n", ip);
 			s->cl_addr[i] = recv_addr;
 			s->cl_addr_len[i] = recv_addr_len;
-			s->cl_connected[i] = true;
 			send_msg = MSG_CONNECTED;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
@@ -391,6 +392,19 @@ Server_handle_message(struct Server         *s,
 			send_msg = MSG_NOSLOTS;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
+		}
+		break;
+
+	case MSG_CONNECTED:
+		for (i = 0; i < s->clients; i++) {
+			if (recv_addr_len == s->cl_addr_len[i] &&
+			    recv_addr.sa_family == s->cl_addr[i].sa_family &&
+			    strcmp(recv_addr.sa_data, s->cl_addr[i].sa_data) == 0) {
+				inet_ntop(AF_INET, &recv_addr, ip, INET_ADDRSTRLEN);
+				printf("Connection established with %s\n", ip);
+				s->cl_connected[i] = true;
+				break;
+			}
 		}
 		break;
 
