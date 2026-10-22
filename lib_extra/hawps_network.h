@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
 
 /* Macros
@@ -18,6 +19,7 @@
 #define NET_MAX_CONNECT_RETRIES 4
 #define NET_MEDIUM_MSG_SIZE     64 /* enough for type, version info | world info */
 #define NET_RETRY_SLEEP_LEN     5  /* second */
+#define NET_TICKRATE            30.0
 #define NET_WORLD_AE_BYTES      8
 
 /* Constant defines
@@ -231,6 +233,8 @@ Client_mainloop(struct Client *c,
 {
 	size_t        buf_size = NET_MEDIUM_MSG_SIZE;
 	char         *buf = malloc(buf_size);
+	clock_t       last_tick = 0;
+	clock_t       now = 0;
 	size_t        pos;
 	enum Message  send_msg;
 
@@ -252,6 +256,12 @@ Client_mainloop(struct Client *c,
 	}
 	buf = realloc(buf, buf_size);
 	while (*active) {
+		now = clock();
+		if (now - last_tick < (long) (CLOCKS_PER_SEC / NET_TICKRATE)) {
+			continue;
+		}
+		last_tick = now;
+
 		Client_recv_worldarr(c, buf, buf_size, w);
 	}
 }
@@ -405,6 +415,8 @@ Server_mainloop(struct Server *s,
                 struct World  *w)
 {
 	size_t           i;
+	clock_t          last_tick = 0;
+	clock_t          now = 0;
 	struct sockaddr  recv_addr;
 	socklen_t        recv_addr_len;
 	char             recv_buf[NET_MEDIUM_MSG_SIZE];
@@ -420,6 +432,12 @@ Server_mainloop(struct Server *s,
 	send_buf = malloc(send_buf_size);
 
 	while (*active) {
+		now = clock();
+		if (now - last_tick < (long) (CLOCKS_PER_SEC / NET_TICKRATE)) {
+			continue;
+		}
+		last_tick = now;
+
 		if (recvfrom(s->sockfd,
 		             &recv_buf,
 		             NET_MEDIUM_MSG_SIZE,

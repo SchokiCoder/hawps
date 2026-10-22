@@ -68,6 +68,7 @@ This is a WIP and does not yet work.
 Nevermind, suddenly just works, lmao
 
 - [x] libextra net: fix buffer overflows when sending/receiving world arrs
+- [x] libextra net: add tickrates to server and client mainloops
 - [ ] libextra net: add traffic metering to server
 - [ ] libextra net: replace magic error codes with defs
 - [ ] libextra net: add a lifesignal check to server and lifesignal to client
