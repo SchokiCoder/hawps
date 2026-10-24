@@ -71,21 +71,30 @@ Nevermind, suddenly just works, lmao
 - [x] libextra net: add tickrates to server and client mainloops
 - [x] libextra net: add traffic metering to server
 - [x] libextra net: fix one client having many active connection slots
-- [ ] libextra net: add connection candidate slots
+
+- [x] libextra net: add connection candidate slots
 These are just *2 slots for the normal server slot arrays,
 which are NOT going to be filled with permanent connections.
 So server has n * 2 slots, but will only fill n slots with actual connections,
 refusing any more.
 These are needed because one client needs multiple during the join process.
 
-- [ ] libextra net: replace magic error codes with defs
 - [ ] libextra net: add a lifesignal check to server and lifesignal to client
 After thirty seconds without one they get kicked.
-This also allows for an optimization,
+
+- [ ] libextra net: add optimization
 where sending world arrs depends not on an if for each client,
 but on a prepared list of active connections.
 Every ten seconds clients should send an "alive" signal to be considered active.
 Make client code send alive signal every 3 seconds.
+
+- [ ] libextra net: add slots check upon connection
+There is indeed none at all,
+which will cause a crash when running out of slots... hopefully.
+Anyway, check `cl_slots` for `MSG_CONNECT` and `max_clients` for `MSG_CONNECTED`
+
+- [ ] libextra net: account for `sa_family` when printing ip address
+- [ ] libextra net: replace magic error codes with defs
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.

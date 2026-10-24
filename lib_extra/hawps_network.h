@@ -16,12 +16,16 @@
 /* Macros
  */
 
-#define NET_MAX_CONNECT_RETRIES 4
-#define NET_MEDIUM_MSG_SIZE     64   /* enough for type, version info | world info */
-#define NET_RETRY_SLEEP_LEN     5    /* second */
-#define NET_TICKRATE            30.0
-#define NET_UPDATERATE          1.0
-#define NET_WORLD_AE_BYTES      8
+#define NET_MAX_CONNECT_RETRIES         4
+#define NET_MEDIUM_MSG_SIZE             64   /* enough for type, version info | world info */
+#define NET_RETRY_SLEEP_LEN             5    /* seconds */
+#define NET_SERVER_HOUSEKEEPRATE        0.2
+#define NET_SERVER_SLOT_DEACTIVATE_TIME "life signal code" // TODO
+#define NET_SERVER_SLOT_DISCONNECT_TIME 20   /* seconds */
+#define NET_SERVER_SLOTS_MULTIPLIER     2.0
+#define NET_TICKRATE                    30.0
+#define NET_UPDATERATE                  1.0
+#define NET_WORLD_AE_BYTES              8
 
 /* Constant defines
  */
@@ -38,10 +42,13 @@ struct Client {
 };
 
 struct Server {
-	size_t           clients;
+	size_t           max_clients;
+	size_t           cl_slots;
+	bool            *cl_active;
 	struct sockaddr *cl_addr;
 	socklen_t       *cl_addr_len;
 	bool            *cl_connected;
+	clock_t         *cl_last_seen;
 	clock_t         *cl_last_update;
 	int              sockfd;
 };
@@ -93,6 +100,10 @@ Client_free(struct Client *c);
 struct Server
 Server_new(size_t         max_clients,
            const uint16_t port);
+
+void
+Server_housekeeping(struct Server *s,
+                    const clock_t  now);
 
 void
 Server_mainloop(struct Server *s,
@@ -339,17 +350,21 @@ Server_new(size_t         max_clients,
 		return ret;
 	}
 
-	ret.clients = max_clients;
-	ret.cl_addr = calloc(ret.clients, sizeof(struct sockaddr));
-	ret.cl_addr_len = calloc(ret.clients, sizeof(socklen_t));
-	ret.cl_connected = calloc(ret.clients, sizeof(bool));
-	ret.cl_last_update = calloc(ret.clients, sizeof(clock_t));
+	ret.max_clients = max_clients;
+	ret.cl_slots = max_clients * NET_SERVER_SLOTS_MULTIPLIER;
+	ret.cl_active = calloc(ret.cl_slots, sizeof(bool));
+	ret.cl_addr = calloc(ret.cl_slots, sizeof(struct sockaddr));
+	ret.cl_addr_len = calloc(ret.cl_slots, sizeof(socklen_t));
+	ret.cl_connected = calloc(ret.cl_slots, sizeof(bool));
+	ret.cl_last_seen = calloc(ret.cl_slots, sizeof(clock_t));
+	ret.cl_last_update = calloc(ret.cl_slots, sizeof(clock_t));
 
 	return ret;
 }
 
 void
 Server_handle_message(struct Server         *s,
+                      const clock_t          now,
                       const struct sockaddr  recv_addr,
                       const socklen_t        recv_addr_len,
                       const char            *recv_buf,
@@ -373,7 +388,7 @@ Server_handle_message(struct Server         *s,
 			break;
 		}
 
-		for (i = 0; i < s->clients; i++) {
+		for (i = 0; i < s->cl_slots; i++) {
 			if (s->cl_connected[i] == true) {
 				continue;
 			}
@@ -382,13 +397,14 @@ Server_handle_message(struct Server         *s,
 			printf("Connection establishing with %s\n", ip);
 			s->cl_addr[i] = recv_addr;
 			s->cl_addr_len[i] = recv_addr_len;
+			s->cl_connected[i] = true;
 			send_msg = MSG_CONNECTED;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
 			break;
 		}
 
-		if (i >= s->clients) {
+		if (i >= s->cl_slots) {
 			send_msg = MSG_NOSLOTS;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
@@ -396,13 +412,14 @@ Server_handle_message(struct Server         *s,
 		break;
 
 	case MSG_CONNECTED:
-		for (i = 0; i < s->clients; i++) {
+		for (i = 0; i < s->cl_slots; i++) {
 			if (recv_addr_len == s->cl_addr_len[i] &&
 			    recv_addr.sa_family == s->cl_addr[i].sa_family &&
 			    strcmp(recv_addr.sa_data, s->cl_addr[i].sa_data) == 0) {
 				inet_ntop(AF_INET, &recv_addr, ip, INET_ADDRSTRLEN);
 				printf("Connection established with %s\n", ip);
-				s->cl_connected[i] = true;
+				s->cl_active[i] = true;
+				s->cl_last_seen[i] = now;
 				break;
 			}
 		}
@@ -427,11 +444,33 @@ Server_handle_message(struct Server         *s,
 }
 
 void
+Server_housekeeping(struct Server *s,
+                    const clock_t  now)
+{
+	size_t i;
+
+	for (i = 0; i < s->cl_slots; i++) {
+		if (true == s->cl_connected[i] &&
+		    false == s->cl_active[i] &&
+		    (now - s->cl_last_seen[i]) / CLOCKS_PER_SEC >
+		     NET_SERVER_SLOT_DISCONNECT_TIME) {
+			memset(&s->cl_addr[i], 0, sizeof(s->cl_addr[i]));
+			s->cl_active[i] = false;
+			s->cl_addr_len[i] = 0;
+			s->cl_connected[i] = false;
+			s->cl_last_seen[i] = 0;
+			s->cl_last_update[i] = 0;
+		}
+	}
+}
+
+void
 Server_mainloop(struct Server *s,
                 const bool    *active,
                 struct World  *w)
 {
 	size_t           i;
+	clock_t          last_housekeep = 0;
 	clock_t          last_tick = 0;
 	clock_t          now = 0;
 	struct sockaddr  recv_addr;
@@ -455,20 +494,7 @@ Server_mainloop(struct Server *s,
 		}
 		last_tick = now;
 
-		if (recvfrom(s->sockfd,
-		             &recv_buf,
-		             NET_MEDIUM_MSG_SIZE,
-		             MSG_DONTWAIT,
-		             &recv_addr,
-		             &recv_addr_len) > 0) {
-			Server_handle_message(s,
-			                      recv_addr,
-			                      recv_addr_len,
-			                      recv_buf,
-			                      *w);
-		}
-
-		for (i = 0; i < s->clients; i++) {
+		for (i = 0; i < s->cl_slots; i++) {
 			if (!s->cl_connected[i] ||
 			    (now - s->cl_last_update[i] <
 			     (long) (CLOCKS_PER_SEC / NET_UPDATERATE))) {
@@ -506,6 +532,27 @@ Server_mainloop(struct Server *s,
 			                     w->w * w->h * sizeof(*w->_thermo),
 			                     MSG_WAT_THERMO);
 		}
+
+		if (recvfrom(s->sockfd,
+		             &recv_buf,
+		             NET_MEDIUM_MSG_SIZE,
+		             MSG_DONTWAIT,
+		             &recv_addr,
+		             &recv_addr_len) > 0) {
+			Server_handle_message(s,
+			                      now,
+			                      recv_addr,
+			                      recv_addr_len,
+			                      recv_buf,
+			                      *w);
+		}
+
+		if (now - last_housekeep <
+		    (long) (CLOCKS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
+			continue;
+		}
+		last_housekeep = now;
+		Server_housekeeping(s, now);
 	}
 }
 
@@ -548,7 +595,8 @@ Server_free(struct Server *s)
 	if (s->cl_last_update != NULL) {
 		free(s->cl_last_update);
 	}
-	s->clients = 0;
+	s->max_clients = 0;
+	s->cl_slots = 0;
 	close(s->sockfd);
 }
 
