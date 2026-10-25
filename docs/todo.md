@@ -86,8 +86,12 @@ When waiting, `clock` doesn't progress, desyncing it from real time passage.
 
 - [x] libextra net: also replace `clock` with `clock_gettime`
 
-- [ ] libextra net: add a lifesignal check to server and lifesignal to client
-After thirty seconds without one they get kicked.
+- [x] libextra net: add a lifesignal system
+After thirty seconds without sending one, the client gets kicked.
+Also account for `sa_family` when printing ip addresses.
+
+- [ ] libextra net: fix multiple slots getting reserved for same client connection
+use `Server_get_clientid` ez
 
 - [ ] libextra net: add optimization
 where sending world arrs depends not on an if for each client,
@@ -100,7 +104,6 @@ There is indeed none at all,
 which will cause a crash when running out of slots... hopefully.
 Anyway, check `cl_slots` for `MSG_CONNECT` and `max_clients` for `MSG_CONNECTED`
 
-- [ ] libextra net: account for `sa_family` when printing ip address
 - [ ] libextra net: replace magic error codes with defs
 
 - [ ] libextra net: add tool signals

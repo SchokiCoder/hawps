@@ -16,11 +16,13 @@
 /* Macros
  */
 
+#define NET_CLIENT_LIFESIGNALRATE       0.33
+#define NET_IPSTR_LEN                   INET6_ADDRSTRLEN
 #define NET_MAX_CONNECT_RETRIES         4
 #define NET_MEDIUM_MSG_SIZE             64   /* enough for type, version info | world info */
 #define NET_RETRY_SLEEP_LEN             5    /* seconds */
 #define NET_SERVER_HOUSEKEEPRATE        0.2
-#define NET_SERVER_SLOT_DEACTIVATE_TIME "life signal code" // TODO
+#define NET_SERVER_SLOT_DEACTIVATE_TIME 30
 #define NET_SERVER_SLOT_DISCONNECT_TIME 20   /* seconds */
 #define NET_SERVER_SLOTS_MULTIPLIER     2.0
 #define NET_TICKRATE                    30.0
@@ -50,6 +52,7 @@ struct Server {
 	struct sockaddr *cl_addr;
 	socklen_t       *cl_addr_len;
 	bool            *cl_connected;
+	char           **cl_ip;
 	uint64_t        *cl_last_seen;
 	uint64_t        *cl_last_update;
 	int              sockfd;
@@ -62,6 +65,7 @@ enum Message {
 	MSG_NOSLOTS,
 
 	MSG_REQ_WORLDINFO,
+	MSG_STILL_ALIVE,
 
 	/* Tells which array is being sent/received.
 	 * Those commented out, don't need to exist,
@@ -102,6 +106,26 @@ Client_free(struct Client *c);
 struct Server
 Server_new(size_t         max_clients,
            const uint16_t port);
+
+/* @s: Server
+ * @addr: addr from a recv call
+ * @addr_len: addr length
+ *
+ * Returns client id or -1 upon failure.
+ * Check with if (ret > Server.cl_slots).
+ */
+size_t
+Server_get_clientid(struct Server         *s,
+                    const struct sockaddr  addr,
+                    const socklen_t        addr_len);
+
+void
+Server_handle_message(struct Server         *s,
+                      const uint64_t         now,
+                      const struct sockaddr  recv_addr,
+                      const socklen_t        recv_addr_len,
+                      const char            *recv_buf,
+                      const struct World     w);
 
 void
 Server_housekeeping(struct Server  *s,
@@ -250,6 +274,7 @@ Client_mainloop(struct Client *c,
 {
 	size_t           buf_size = NET_MEDIUM_MSG_SIZE;
 	char            *buf = malloc(buf_size);
+	uint64_t         last_lifesignal = 0;
 	uint64_t         last_tick = 0;
 	uint64_t         now = 0;
 	size_t           pos;
@@ -282,6 +307,14 @@ Client_mainloop(struct Client *c,
 		last_tick = now;
 
 		Client_recv_worldarr(c, buf, buf_size, w);
+
+		if (now - last_lifesignal >=
+		    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
+			last_lifesignal = now;
+
+			send_msg = MSG_STILL_ALIVE;
+			send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+		}
 	}
 }
 
@@ -335,6 +368,7 @@ Server_new(size_t         max_clients,
 		.sin6_port = htons(port),
 		.sin6_addr = in6addr_any,
 	};
+	size_t i;
 	struct Server ret;
 	int val = 0;
 
@@ -360,10 +394,32 @@ Server_new(size_t         max_clients,
 	ret.cl_addr = calloc(ret.cl_slots, sizeof(struct sockaddr));
 	ret.cl_addr_len = calloc(ret.cl_slots, sizeof(socklen_t));
 	ret.cl_connected = calloc(ret.cl_slots, sizeof(bool));
+	ret.cl_ip = calloc(ret.cl_slots, sizeof(char*));
 	ret.cl_last_seen = calloc(ret.cl_slots, sizeof(uint64_t));
 	ret.cl_last_update = calloc(ret.cl_slots, sizeof(uint64_t));
 
+	for (i = 0; i < ret.cl_slots; i++) {
+		ret.cl_ip[i] = calloc(NET_IPSTR_LEN, sizeof(char));
+	}
+
 	return ret;
+}
+
+size_t
+Server_get_clientid(struct Server         *s,
+                    const struct sockaddr  addr,
+                    const socklen_t        addr_len) {
+	size_t i;
+
+	for (i = 0; i < s->cl_slots; i++) {
+		if (addr_len == s->cl_addr_len[i] &&
+		    addr.sa_family == s->cl_addr[i].sa_family &&
+		    strcmp(addr.sa_data, s->cl_addr[i].sa_data) == 0) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void
@@ -375,7 +431,7 @@ Server_handle_message(struct Server         *s,
                       const struct World     w)
 {
 	size_t           i;
-	char             ip[INET_ADDRSTRLEN];
+	char             ip[NET_IPSTR_LEN];
 	size_t           pos;
 	enum Message     recv_msg;
 	char             send_buf[NET_MEDIUM_MSG_SIZE];
@@ -397,8 +453,11 @@ Server_handle_message(struct Server         *s,
 				continue;
 			}
 
-			inet_ntop(AF_INET, &recv_addr, ip, INET_ADDRSTRLEN);
-			printf("Connection establishing with %s\n", ip);
+			inet_ntop(recv_addr.sa_family,
+			          &recv_addr,
+			          s->cl_ip[i],
+			          NET_IPSTR_LEN);
+			printf("Connection establishing with %s\n", s->cl_ip[i]);
 			s->cl_addr[i] = recv_addr;
 			s->cl_addr_len[i] = recv_addr_len;
 			s->cl_connected[i] = true;
@@ -416,17 +475,20 @@ Server_handle_message(struct Server         *s,
 		break;
 
 	case MSG_CONNECTED:
-		for (i = 0; i < s->cl_slots; i++) {
-			if (recv_addr_len == s->cl_addr_len[i] &&
-			    recv_addr.sa_family == s->cl_addr[i].sa_family &&
-			    strcmp(recv_addr.sa_data, s->cl_addr[i].sa_data) == 0) {
-				inet_ntop(AF_INET, &recv_addr, ip, INET_ADDRSTRLEN);
-				printf("Connection established with %s\n", ip);
-				s->cl_active[i] = true;
-				s->cl_last_seen[i] = now;
-				break;
-			}
+		i = Server_get_clientid(s, recv_addr, recv_addr_len);
+		if (i >= s->cl_slots) {
+			inet_ntop(recv_addr.sa_family,
+			          &recv_addr,
+			          ip,
+			          NET_IPSTR_LEN);
+			printf("Invalid recipient %s\n", ip);
+			return;
 		}
+
+		printf("Connection established with %s\n", s->cl_ip[i]);
+
+		s->cl_active[i] = true;
+		s->cl_last_seen[i] = now;
 		break;
 
 	case MSG_REQ_WORLDINFO:
@@ -438,6 +500,20 @@ Server_handle_message(struct Server         *s,
 		send_buf[pos] = '\0';
 		sendto(s->sockfd, send_buf, NET_MEDIUM_MSG_SIZE, 0,
 		       &recv_addr, recv_addr_len);
+		break;
+
+	case MSG_STILL_ALIVE:
+		i = Server_get_clientid(s, recv_addr, recv_addr_len);
+		if (i >= s->cl_slots) {
+			inet_ntop(recv_addr.sa_family,
+			          &recv_addr,
+			          ip,
+			          NET_IPSTR_LEN);
+			printf("Invalid recipient %s\n", ip);
+			return;
+		}
+
+		s->cl_last_seen[i] = now;
 		break;
 
 	default:
@@ -454,16 +530,27 @@ Server_housekeeping(struct Server  *s,
 	size_t i;
 
 	for (i = 0; i < s->cl_slots; i++) {
-		if (true == s->cl_connected[i] &&
-		    false == s->cl_active[i] &&
-		    (now - s->cl_last_seen[i]) / NANOS_PER_SEC >
-		     NET_SERVER_SLOT_DISCONNECT_TIME) {
-			memset(&s->cl_addr[i], 0, sizeof(s->cl_addr[i]));
-			s->cl_active[i] = false;
-			s->cl_addr_len[i] = 0;
-			s->cl_connected[i] = false;
-			s->cl_last_seen[i] = 0;
-			s->cl_last_update[i] = 0;
+		if (false == s->cl_connected[i]) {
+			continue;
+		}
+
+		if (true == s->cl_active[i]) {
+			if ((now - s->cl_last_seen[i]) / NANOS_PER_SEC >
+			     NET_SERVER_SLOT_DEACTIVATE_TIME) {
+				s->cl_active[i] = false;
+				printf("No lifesignal from %s, disconnecting\n",
+				       s->cl_ip[i]);
+			}
+		} else {
+			if ((now - s->cl_last_seen[i]) / NANOS_PER_SEC >
+			     NET_SERVER_SLOT_DISCONNECT_TIME) {
+				memset(&s->cl_addr[i], 0, sizeof(s->cl_addr[i]));
+				s->cl_active[i] = false;
+				s->cl_addr_len[i] = 0;
+				s->cl_connected[i] = false;
+				s->cl_last_seen[i] = 0;
+				s->cl_last_update[i] = 0;
+			}
 		}
 	}
 }
@@ -589,6 +676,8 @@ Server_send_worldarr(struct Server      *s,
 void
 Server_free(struct Server *s)
 {
+	size_t i;
+
 	if (s->cl_addr != NULL) {
 		free(s->cl_addr);
 	}
@@ -597,6 +686,12 @@ Server_free(struct Server *s)
 	}
 	if (s->cl_connected != NULL) {
 		free(s->cl_connected);
+	}
+	if (s->cl_ip != NULL) {
+		for (i = 0; i < s->cl_slots; i++) {
+			free(s->cl_ip[i]);
+		}
+		free(s->cl_ip);
 	}
 	if (s->cl_last_update != NULL) {
 		free(s->cl_last_update);
