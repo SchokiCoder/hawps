@@ -79,6 +79,13 @@ So server has n * 2 slots, but will only fill n slots with actual connections,
 refusing any more.
 These are needed because one client needs multiple during the join process.
 
+- [x] desktop client: replace `clock` with `clock_gettime`
+`clock` is no longer a good fit, if it ever was.
+`recv` shows its downfall.
+When waiting, `clock` doesn't progress, desyncing it from real time passage.
+
+- [ ] libextra net: also replace `clock` with `clock_gettime`
+
 - [ ] libextra net: add a lifesignal check to server and lifesignal to client
 After thirty seconds without one they get kicked.
 

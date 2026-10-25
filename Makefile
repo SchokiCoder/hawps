@@ -105,11 +105,11 @@ bin/gen_int_to_string_table: client_desktop/gen/gen_int_to_string_table.c
 		$<
 
 bin/lib_core_tests: lib_core/tests.c lib_core/*
-	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -lm \
+	$(CC) $(C_FLAGS_DEBUG) $(C_DEFINES) -o $@ -I lib_core -lm \
 		$<
 
 bin/lib_extra_tests: lib_extra/tests.c lib_core/* lib_extra/*
-	$(CC) $(C_FLAGS_DEBUG) -o $@ -I lib_core -I lib_extra \
+	$(CC) $(C_FLAGS_DEBUG) $(C_DEFINES) -o $@ -I lib_core -I lib_extra \
 		$<
 
 client_desktop/int_to_string.h: bin/gen_int_to_string_table

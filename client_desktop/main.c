@@ -116,38 +116,11 @@
 #define FLAG_NOCOLOR_SHORT          "-noc"
 #endif
 
-#ifdef BACKEND_SDL
-#if defined(__linux__)
-static const char *FONTPATH[] = {
-	"/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
-	"/usr/share/fonts/open-sans/OpenSans-Regular.ttf",
-	"/usr/share/fonts/adwaita-sans-fonts/AdwaitaSans-Regular.ttf",
-	"/usr/share/fonts/google-noto-sans-cjk-vf-fonts/NotoSansCJK-VF.ttc",
-	"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-	"/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-	"/usr/share/fonts/truetype/ubuntu/Ubuntu-Th.ttf",
-	"/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
-};
-#elif defined(_WIN32)
-static const char *FONTPATH[] = {
-	"C:\\Windows\\Fonts\\segoeui.ttf",
-	"C:\\Windows\\Fonts\\arial.ttf",
-	"C:\\Windows\\Fonts\\cour.ttf",
-};
-#elif defined(__APPLE__)
-static const char *FONTPATH[] = {
-	"/System/Library/Fonts/SFNS.ttf",
-};
-#else
-static const char *FONTPATH[] = {
-	"/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-};
-#endif
-#endif /* BACKEND_SDL */
-
 #define KEY_USE_THERMO_CONTINUE_LIMIT 0.5
 
 #define MAX_FONT_SIZE 128
+
+#define NANOS_PER_SEC ((uint64_t) 1000000000)
 
 #ifdef _WIN32
 #define PATH_DELIM "\\"
@@ -488,6 +461,35 @@ static const char APP_HELP_KEYBINDS[] = "Keybinds:\n"
 "        pause world\n"
 "\n";
 
+#ifdef BACKEND_SDL
+#if defined(__linux__)
+static const char *FONTPATH[] = {
+	"/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
+	"/usr/share/fonts/open-sans/OpenSans-Regular.ttf",
+	"/usr/share/fonts/adwaita-sans-fonts/AdwaitaSans-Regular.ttf",
+	"/usr/share/fonts/google-noto-sans-cjk-vf-fonts/NotoSansCJK-VF.ttc",
+	"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+	"/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+	"/usr/share/fonts/truetype/ubuntu/Ubuntu-Th.ttf",
+	"/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+};
+#elif defined(_WIN32)
+static const char *FONTPATH[] = {
+	"C:\\Windows\\Fonts\\segoeui.ttf",
+	"C:\\Windows\\Fonts\\arial.ttf",
+	"C:\\Windows\\Fonts\\cour.ttf",
+};
+#elif defined(__APPLE__)
+static const char *FONTPATH[] = {
+	"/System/Library/Fonts/SFNS.ttf",
+};
+#else
+static const char *FONTPATH[] = {
+	"/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+};
+#endif
+#endif /* BACKEND_SDL */
+
 /* Function declarations
  */
 
@@ -543,8 +545,8 @@ command_screenshot(
 #endif
                    const char               *cwd,
                    char                    **feedback,
-                   clock_t                  *feedback_expiration,
-                   const clock_t             now,
+                   uint64_t                 *feedback_expiration,
+                   const uint64_t            now,
                    const bool                th_vision);
 
 void
@@ -632,10 +634,10 @@ handle_advanced_command(const char            *cmd,
 #endif
                         const char            *cwd,
                         char                 **feedback,
-                        clock_t               *feedback_expiration,
+                        uint64_t              *feedback_expiration,
                         float                 *framerate,
                         const char            *ip_address,
-                        const clock_t          now,
+                        const uint64_t         now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
                         float                 *tickrate,
@@ -666,8 +668,8 @@ void
 handle_autosave(const bool          autosave_all,
                 const bool          autosave_none,
                 const char         *cwd,
-                clock_t            *last_autosave,
-                const clock_t       now,
+                uint64_t           *last_autosave,
+                const uint64_t      now,
                 const struct World  world,
                 const char         *world_name);
 
@@ -696,11 +698,11 @@ handle_command(char                  *cmdline,
                bool                  *active,
                const char            *cwd,
                char                 **feedback,
-               clock_t               *feedback_expiration,
+               uint64_t              *feedback_expiration,
                float                 *framerate,
                const char            *ip_address,
                bool                  *no_glowcolor,
-               const clock_t          now,
+               const uint64_t         now,
                bool                  *paused,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
@@ -721,12 +723,12 @@ handle_command_input(const char            *in,
                      size_t                *cmdline_shift,
                      const char            *cwd,
                      char                 **feedback,
-                     clock_t               *feedback_expiration,
+                     uint64_t              *feedback_expiration,
                      float                 *framerate,
                      enum InputMode        *input_mode,
                      const char            *ip_address,
                      bool                  *no_glowcolor,
-                     clock_t                now,
+                     uint64_t               now,
                      bool                  *paused,
                      size_t                *statusbar_elems,
                      enum StatusbarElement *statusbar_elem,
@@ -783,13 +785,13 @@ handle_input(
              int                   *drag_start_x,
              int                   *drag_start_y,
              char                 **feedback,
-             clock_t               *feedback_expiration,
+             uint64_t              *feedback_expiration,
              float                 *framerate,
              enum InputMode        *input_mode,
              const char            *ip_address,
-             clock_t               *last_key_use,
+             uint64_t              *last_key_use,
              bool                  *no_glowcolor,
-             const clock_t          now,
+             const uint64_t         now,
              bool                  *paused,
              size_t                *statusbar_elems,
              enum StatusbarElement *statusbar_elem,
@@ -835,11 +837,11 @@ handle_normal_csi_input(const char         *in,
                         int                *drag_start_x,
                         int                *drag_start_y,
                         char              **feedback,
-                        clock_t            *feedback_expiration,
+                        uint64_t           *feedback_expiration,
                         bool               *lmb_pressed,
                         const bool          no_color,
                         const bool          no_glowcolor,
-                        const clock_t       now,
+                        const uint64_t      now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
@@ -875,8 +877,8 @@ handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
-                    clock_t            *last_key_use,
-                    const clock_t       now,
+                    uint64_t           *last_key_use,
+                    const uint64_t      now,
                     bool               *paused,
                     float              *tickrate,
                     bool               *th_vision,
@@ -934,10 +936,10 @@ handle_simple_command(const char          *cmdline,
                       bool                *active,
                       const char          *cwd,
                       char               **feedback,
-                      clock_t             *feedback_expiration,
+                      uint64_t            *feedback_expiration,
                       float               *framerate,
                       bool                *no_glowcolor,
-                      const clock_t        now,
+                      const uint64_t       now,
                       bool                *paused,
                       bool                *th_vision,
                       float               *tickrate,
@@ -988,8 +990,8 @@ handle_world_resize(
 void
 quickload(const char     *cwd,
           char          **feedback,
-          clock_t        *feedback_expiration,
-          const clock_t	  now,
+          uint64_t       *feedback_expiration,
+          const uint64_t  now,
           struct World   *world,
           const char     *world_name);
 
@@ -1039,8 +1041,8 @@ render_world(char               *out,
 
 void
 set_feedback(char          **feedback,
-             clock_t        *feedback_expiration,
-             const clock_t   now,
+             uint64_t       *feedback_expiration,
+             const uint64_t  now,
              char           *str);
 
 void
@@ -1210,8 +1212,8 @@ command_screenshot(
 #endif
                    const char               *cwd,
                    char                    **feedback,
-                   clock_t                  *feedback_expiration,
-                   const clock_t             now,
+                   uint64_t                 *feedback_expiration,
+                   const uint64_t            now,
                    const bool                th_vision)
 {
 	char    datetime[BUF_SIZE];
@@ -1732,10 +1734,10 @@ handle_advanced_command(const char            *cmd,
 #endif
                         const char            *cwd,
                         char                 **feedback,
-                        clock_t               *feedback_expiration,
+                        uint64_t              *feedback_expiration,
                         float                 *framerate,
                         const char            *ip_address,
-                        const clock_t          now,
+                        const uint64_t         now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
                         float                 *tickrate,
@@ -2231,8 +2233,8 @@ void
 handle_autosave(const bool          autosave_all,
                 const bool          autosave_none,
                 const char         *cwd,
-                clock_t            *last_autosave,
-                const clock_t       now,
+                uint64_t           *last_autosave,
+                const uint64_t      now,
                 const struct World  world,
                 const char         *world_name)
 {
@@ -2276,11 +2278,11 @@ handle_command(char                  *cmdline,
                bool                  *active,
                const char            *cwd,
                char                 **feedback,
-               clock_t               *feedback_expiration,
+               uint64_t              *feedback_expiration,
                float                 *framerate,
                const char            *ip_address,
                bool                  *no_glowcolor,
-               const clock_t          now,
+               const uint64_t         now,
                bool                  *paused,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
@@ -2383,12 +2385,12 @@ handle_command_input(const char            *in,
                      size_t                *cmdline_shift,
                      const char            *cwd,
                      char                 **feedback,
-                     clock_t               *feedback_expiration,
+                     uint64_t              *feedback_expiration,
                      float                 *framerate,
                      enum InputMode        *input_mode,
                      const char            *ip_address,
                      bool                  *no_glowcolor,
-                     clock_t                now,
+                     uint64_t               now,
                      bool                  *paused,
                      size_t                *statusbar_elems,
                      enum StatusbarElement *statusbar_elem,
@@ -2547,13 +2549,13 @@ handle_input(
              int                   *drag_start_x,
              int                   *drag_start_y,
              char                 **feedback,
-             clock_t               *feedback_expiration,
+             uint64_t              *feedback_expiration,
              float                 *framerate,
              enum InputMode        *input_mode,
              const char            *ip_address,
-             clock_t               *last_key_use,
+             uint64_t              *last_key_use,
              bool                  *no_glowcolor,
-             const clock_t          now,
+             const uint64_t         now,
              bool                  *paused,
              size_t                *statusbar_elems,
              enum StatusbarElement *statusbar_elem,
@@ -3000,11 +3002,11 @@ handle_normal_csi_input(const char         *in,
                         int                *drag_start_x,
                         int                *drag_start_y,
                         char              **feedback,
-                        clock_t            *feedback_expiration,
+                        uint64_t           *feedback_expiration,
                         bool               *lmb_pressed,
                         const bool          no_color,
                         const bool          no_glowcolor,
-                        const clock_t       now,
+                        const uint64_t      now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
@@ -3111,8 +3113,8 @@ handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
-                    clock_t            *last_key_use,
-                    const clock_t       now,
+                    uint64_t           *last_key_use,
+                    const uint64_t      now,
                     bool               *paused,
                     float              *tickrate,
                     bool               *th_vision,
@@ -3128,7 +3130,7 @@ handle_normal_input(const char         *in,
 
 	case KEY_USE:
 		use_tool_delta = (float) (now - *last_key_use) /
-		                 (float) CLOCKS_PER_SEC;
+		                 (float) NANOS_PER_SEC;
 		if (use_tool_delta > KEY_USE_THERMO_CONTINUE_LIMIT) {
 			use_tool_delta = delta;
 		}
@@ -3552,10 +3554,10 @@ handle_simple_command(const char          *cmdline,
                       bool                *active,
                       const char          *cwd,
                       char               **feedback,
-                      clock_t             *feedback_expiration,
+                      uint64_t            *feedback_expiration,
                       float               *framerate,
                       bool                *no_glowcolor,
-                      const clock_t        now,
+                      const uint64_t       now,
                       bool                *paused,
                       bool                *th_vision,
                       float               *tickrate,
@@ -3817,8 +3819,8 @@ handle_world_resize(
 void
 quickload(const char     *cwd,
           char          **feedback,
-          clock_t        *feedback_expiration,
-          const clock_t	  now,
+          uint64_t       *feedback_expiration,
+          const uint64_t  now,
           struct World   *world,
           const char     *world_name)
 {
@@ -4091,12 +4093,12 @@ render_world(char               *out,
 
 void
 set_feedback(char          **feedback,
-             clock_t        *feedback_expiration,
-             const clock_t   now,
+             uint64_t       *feedback_expiration,
+             const uint64_t  now,
              char           *str)
 {
 	*feedback = str;
-	*feedback_expiration = now + (CLOCKS_PER_SEC * FEEDBACK_LIFETIME);
+	*feedback_expiration = now + (NANOS_PER_SEC * FEEDBACK_LIFETIME);
 }
 
 void
@@ -4360,24 +4362,25 @@ main(int    argc,
 	int                    drag_start_x = 0;
 	int                    drag_start_y = 0;
 	char                  *feedback = NULL;
-	clock_t                feedback_expiration = 0;
+	uint64_t               feedback_expiration = 0;
 	FILE                  *file = NULL;
 	float                  framerate = STD_FRAMERATE;
 	enum InputMode         input_mode = IM_NORMAL;
 	char                  *ip_address = "localhost";
 	bool                   paused = false;
-	clock_t                last_autosave = 0;
-	clock_t                last_input = 0;
-	clock_t                last_frame = 0;
-	clock_t                last_key_use = 0;
-	clock_t                last_tick = 0;
+	uint64_t               last_autosave = 0;
+	uint64_t               last_input = 0;
+	uint64_t               last_frame = 0;
+	uint64_t               last_key_use = 0;
+	uint64_t               last_tick = 0;
 	bool                   no_glowcolor = false;
-	clock_t                now = 0;
+	uint64_t               now = 0;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[ARRLEN(STATUSBAR_DISPLAY_PRIORITY)];
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;
+	struct timespec        ts;
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
@@ -4599,8 +4602,9 @@ main(int    argc,
 	                    world);
 
 	while (active) {
-		now = clock();
-		delta = (float) (now - last_input) / (float) CLOCKS_PER_SEC;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		now = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+		delta = (float) (now - last_input) / (float) NANOS_PER_SEC;
 
 		last_input = now;
 
@@ -4659,7 +4663,7 @@ main(int    argc,
 			use_tool(delta, tool_opts, &world);
 		}
 #endif
-		if (now - last_tick >= (long) (CLOCKS_PER_SEC / tickrate)) {
+		if (now - last_tick >= (uint64_t) (NANOS_PER_SEC / tickrate)) {
 			last_tick = now;
 
 			World_update(&world, tool_opts.spawn_temperature);
@@ -4669,7 +4673,7 @@ main(int    argc,
 			}
 
 			if (now - last_autosave >=
-			    CLOCKS_PER_SEC * AUTOSAVE_INTERVAL) {
+			    NANOS_PER_SEC * AUTOSAVE_INTERVAL) {
 				handle_autosave(autosave_all,
 					        autosave_none,
 					        cwd,
@@ -4680,7 +4684,7 @@ main(int    argc,
 			}
 		}
 
-		if (now - last_frame >= (long) (CLOCKS_PER_SEC / framerate)) {
+		if (now - last_frame >= (uint64_t) (NANOS_PER_SEC / framerate)) {
 			last_frame = now;
 
 			if (now > feedback_expiration) {
