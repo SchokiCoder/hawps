@@ -84,7 +84,7 @@ These are needed because one client needs multiple during the join process.
 `recv` shows its downfall.
 When waiting, `clock` doesn't progress, desyncing it from real time passage.
 
-- [ ] libextra net: also replace `clock` with `clock_gettime`
+- [x] libextra net: also replace `clock` with `clock_gettime`
 
 - [ ] libextra net: add a lifesignal check to server and lifesignal to client
 After thirty seconds without one they get kicked.

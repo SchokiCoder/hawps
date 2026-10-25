@@ -30,6 +30,8 @@
 /* Constant defines
  */
 
+#define NANOS_PER_SEC ((uint64_t) 1000000000)
+
 /* Types
  */
 
@@ -48,8 +50,8 @@ struct Server {
 	struct sockaddr *cl_addr;
 	socklen_t       *cl_addr_len;
 	bool            *cl_connected;
-	clock_t         *cl_last_seen;
-	clock_t         *cl_last_update;
+	uint64_t        *cl_last_seen;
+	uint64_t        *cl_last_update;
 	int              sockfd;
 };
 
@@ -102,8 +104,8 @@ Server_new(size_t         max_clients,
            const uint16_t port);
 
 void
-Server_housekeeping(struct Server *s,
-                    const clock_t  now);
+Server_housekeeping(struct Server  *s,
+                    const uint64_t  now);
 
 void
 Server_mainloop(struct Server *s,
@@ -246,12 +248,13 @@ Client_mainloop(struct Client *c,
                 const bool    *active,
                 struct World  *w)
 {
-	size_t        buf_size = NET_MEDIUM_MSG_SIZE;
-	char         *buf = malloc(buf_size);
-	clock_t       last_tick = 0;
-	clock_t       now = 0;
-	size_t        pos;
-	enum Message  send_msg;
+	size_t           buf_size = NET_MEDIUM_MSG_SIZE;
+	char            *buf = malloc(buf_size);
+	uint64_t         last_tick = 0;
+	uint64_t         now = 0;
+	size_t           pos;
+	enum Message     send_msg;
+	struct timespec  ts;
 
 	if (w->w == 0 || w->h == 0) {
 		send_msg = MSG_REQ_WORLDINFO;
@@ -271,8 +274,9 @@ Client_mainloop(struct Client *c,
 	}
 	buf = realloc(buf, buf_size);
 	while (*active) {
-		now = clock();
-		if (now - last_tick < (long) (CLOCKS_PER_SEC / NET_TICKRATE)) {
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		now = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
 			continue;
 		}
 		last_tick = now;
@@ -356,15 +360,15 @@ Server_new(size_t         max_clients,
 	ret.cl_addr = calloc(ret.cl_slots, sizeof(struct sockaddr));
 	ret.cl_addr_len = calloc(ret.cl_slots, sizeof(socklen_t));
 	ret.cl_connected = calloc(ret.cl_slots, sizeof(bool));
-	ret.cl_last_seen = calloc(ret.cl_slots, sizeof(clock_t));
-	ret.cl_last_update = calloc(ret.cl_slots, sizeof(clock_t));
+	ret.cl_last_seen = calloc(ret.cl_slots, sizeof(uint64_t));
+	ret.cl_last_update = calloc(ret.cl_slots, sizeof(uint64_t));
 
 	return ret;
 }
 
 void
 Server_handle_message(struct Server         *s,
-                      const clock_t          now,
+                      const uint64_t         now,
                       const struct sockaddr  recv_addr,
                       const socklen_t        recv_addr_len,
                       const char            *recv_buf,
@@ -444,15 +448,15 @@ Server_handle_message(struct Server         *s,
 }
 
 void
-Server_housekeeping(struct Server *s,
-                    const clock_t  now)
+Server_housekeeping(struct Server  *s,
+                    const uint64_t  now)
 {
 	size_t i;
 
 	for (i = 0; i < s->cl_slots; i++) {
 		if (true == s->cl_connected[i] &&
 		    false == s->cl_active[i] &&
-		    (now - s->cl_last_seen[i]) / CLOCKS_PER_SEC >
+		    (now - s->cl_last_seen[i]) / NANOS_PER_SEC >
 		     NET_SERVER_SLOT_DISCONNECT_TIME) {
 			memset(&s->cl_addr[i], 0, sizeof(s->cl_addr[i]));
 			s->cl_active[i] = false;
@@ -470,14 +474,15 @@ Server_mainloop(struct Server *s,
                 struct World  *w)
 {
 	size_t           i;
-	clock_t          last_housekeep = 0;
-	clock_t          last_tick = 0;
-	clock_t          now = 0;
+	uint64_t         last_housekeep = 0;
+	uint64_t         last_tick = 0;
+	uint64_t         now = 0;
 	struct sockaddr  recv_addr;
 	socklen_t        recv_addr_len;
 	char             recv_buf[NET_MEDIUM_MSG_SIZE];
 	size_t           send_buf_size = 0;
 	char            *send_buf = NULL;
+	struct timespec  ts;
 
 	send_buf_size = sizeof(enum Message) +
 	                (NET_WORLD_AE_BYTES * w->w * w->h) +
@@ -488,8 +493,9 @@ Server_mainloop(struct Server *s,
 	send_buf = malloc(send_buf_size);
 
 	while (*active) {
-		now = clock();
-		if (now - last_tick < (long) (CLOCKS_PER_SEC / NET_TICKRATE)) {
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		now = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
 			continue;
 		}
 		last_tick = now;
@@ -497,7 +503,7 @@ Server_mainloop(struct Server *s,
 		for (i = 0; i < s->cl_slots; i++) {
 			if (!s->cl_connected[i] ||
 			    (now - s->cl_last_update[i] <
-			     (long) (CLOCKS_PER_SEC / NET_UPDATERATE))) {
+			     (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE))) {
 				continue;
 			}
 
@@ -548,7 +554,7 @@ Server_mainloop(struct Server *s,
 		}
 
 		if (now - last_housekeep <
-		    (long) (CLOCKS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
+		    (uint64_t) (NANOS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
 			continue;
 		}
 		last_housekeep = now;
