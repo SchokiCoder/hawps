@@ -24,7 +24,6 @@
 #define NET_SERVER_HOUSEKEEPRATE        0.2
 #define NET_SERVER_SLOT_DEACTIVATE_TIME 30
 #define NET_SERVER_SLOT_DISCONNECT_TIME 20   /* seconds */
-#define NET_SERVER_SLOTS_MULTIPLIER     2.0
 #define NET_TICKRATE                    30.0
 #define NET_UPDATERATE                  1.0
 #define NET_WORLD_AE_BYTES              8
@@ -46,7 +45,6 @@ struct Client {
 };
 
 struct Server {
-	size_t           max_clients;
 	size_t           cl_slots;
 	bool            *cl_active;
 	struct sockaddr *cl_addr;
@@ -388,8 +386,7 @@ Server_new(size_t         max_clients,
 		return ret;
 	}
 
-	ret.max_clients = max_clients;
-	ret.cl_slots = max_clients * NET_SERVER_SLOTS_MULTIPLIER;
+	ret.cl_slots = max_clients;
 	ret.cl_active = calloc(ret.cl_slots, sizeof(bool));
 	ret.cl_addr = calloc(ret.cl_slots, sizeof(struct sockaddr));
 	ret.cl_addr_len = calloc(ret.cl_slots, sizeof(socklen_t));
@@ -711,7 +708,6 @@ Server_free(struct Server *s)
 	if (s->cl_last_update != NULL) {
 		free(s->cl_last_update);
 	}
-	s->max_clients = 0;
 	s->cl_slots = 0;
 	close(s->sockfd);
 }

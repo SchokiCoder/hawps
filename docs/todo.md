@@ -104,7 +104,7 @@ Thus a client's first connection attempt could get cleared way too soon,
 wasting time and causing two "Connection establishing" prints.
 This print also got removed now. It was mostly of debugging use.
 
-- [ ] libextra net: remove connection candidate slot system
+- [x] libextra net: remove connection candidate slot system
 It is a crutch from a time without any input filtering.
 
 - [ ] libextra net: add timeout to client after connection has been made
