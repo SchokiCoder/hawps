@@ -107,6 +107,8 @@ This print also got removed now. It was mostly of debugging use.
 - [x] libextra net: remove connection candidate slot system
 It is a crutch from a time without any input filtering.
 
+- [x] libextra net: fix inactive clients getting world updates
+
 - [ ] libextra net: add timeout to client after connection has been made
 Otherwise it will keep staying in a useless mainloop.
 

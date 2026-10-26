@@ -470,15 +470,15 @@ Server_handle_message(struct Server         *s,
 			return;
 		}
 
+		s->cl_addr[i] = recv_addr;
+		s->cl_addr_len[i] = recv_addr_len;
+		s->cl_connected[i] = true;
 		inet_ntop(recv_addr.sa_family,
 		          &recv_addr,
 		          s->cl_ip[i],
 		          NET_IPSTR_LEN);
-
-		s->cl_addr[i] = recv_addr;
-		s->cl_addr_len[i] = recv_addr_len;
-		s->cl_connected[i] = true;
 		s->cl_last_seen[i] = now;
+
 		send_msg = MSG_CONNECTED;
 		sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 		       &recv_addr, recv_addr_len);
@@ -602,12 +602,11 @@ Server_mainloop(struct Server *s,
 		last_tick = now;
 
 		for (i = 0; i < s->cl_slots; i++) {
-			if (!s->cl_connected[i] ||
+			if (!s->cl_active[i] ||
 			    (now - s->cl_last_update[i] <
 			     (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE))) {
 				continue;
 			}
-
 			s->cl_last_update[i] = now;
 
 			Server_send_worldarr(s,
