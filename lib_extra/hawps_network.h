@@ -460,18 +460,6 @@ Server_handle_message(struct Server         *s,
 				continue;
 			}
 
-			inet_ntop(recv_addr.sa_family,
-			          &recv_addr,
-			          s->cl_ip[i],
-			          NET_IPSTR_LEN);
-
-			s->cl_addr[i] = recv_addr;
-			s->cl_addr_len[i] = recv_addr_len;
-			s->cl_connected[i] = true;
-			s->cl_last_seen[i] = now;
-			send_msg = MSG_CONNECTED;
-			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
-			       &recv_addr, recv_addr_len);
 			break;
 		}
 
@@ -479,7 +467,21 @@ Server_handle_message(struct Server         *s,
 			send_msg = MSG_NOSLOTS;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
+			return;
 		}
+
+		inet_ntop(recv_addr.sa_family,
+		          &recv_addr,
+		          s->cl_ip[i],
+		          NET_IPSTR_LEN);
+
+		s->cl_addr[i] = recv_addr;
+		s->cl_addr_len[i] = recv_addr_len;
+		s->cl_connected[i] = true;
+		s->cl_last_seen[i] = now;
+		send_msg = MSG_CONNECTED;
+		sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+		       &recv_addr, recv_addr_len);
 		break;
 
 	case MSG_CONNECTED:
