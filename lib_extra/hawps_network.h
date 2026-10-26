@@ -437,6 +437,11 @@ Server_handle_message(struct Server         *s,
 	char             send_buf[NET_MEDIUM_MSG_SIZE];
 	enum Message     send_msg;
 
+	if (recv_addr.sa_family != AF_INET &&
+	    recv_addr.sa_family != AF_INET6) {
+		return;
+	}
+
 	recv_msg = recv_buf[0];
 	switch (recv_msg) {
 	case MSG_CONNECT:

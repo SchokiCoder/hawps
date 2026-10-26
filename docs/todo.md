@@ -94,7 +94,7 @@ Also account for `sa_family` when printing ip addresses.
 This caused the first package to become a *ghost* package,
 where `recv_addr` is entirely null.
 
-- [ ] libextra net: add filter to server against non IP messages
+- [x] libextra net: add filter to server against non IP messages
 
 - [ ] libextra net: fix multiple slots getting reserved for same client connection
 use `Server_get_clientid` ez
