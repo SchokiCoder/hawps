@@ -90,6 +90,12 @@ When waiting, `clock` doesn't progress, desyncing it from real time passage.
 After thirty seconds without sending one, the client gets kicked.
 Also account for `sa_family` when printing ip addresses.
 
+- [x] libextra net: fix uninitialized `recv_addr_len` in `Server_mainloop`
+This caused the first package to become a *ghost* package,
+where `recv_addr` is entirely null.
+
+- [ ] libextra net: add filter to server against non IP messages
+
 - [ ] libextra net: fix multiple slots getting reserved for same client connection
 use `Server_get_clientid` ez
 

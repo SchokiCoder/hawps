@@ -457,6 +457,7 @@ Server_handle_message(struct Server         *s,
 			          &recv_addr,
 			          s->cl_ip[i],
 			          NET_IPSTR_LEN);
+
 			printf("Connection establishing with %s\n", s->cl_ip[i]);
 			s->cl_addr[i] = recv_addr;
 			s->cl_addr_len[i] = recv_addr_len;
@@ -565,7 +566,7 @@ Server_mainloop(struct Server *s,
 	uint64_t         last_tick = 0;
 	uint64_t         now = 0;
 	struct sockaddr  recv_addr;
-	socklen_t        recv_addr_len;
+	socklen_t        recv_addr_len = sizeof(recv_addr);
 	char             recv_buf[NET_MEDIUM_MSG_SIZE];
 	size_t           send_buf_size = 0;
 	char            *send_buf = NULL;
