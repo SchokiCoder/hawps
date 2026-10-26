@@ -98,9 +98,11 @@ where `recv_addr` is entirely null.
 
 - [x] libextra net: fix server handling connect msgs from connected clients
 
-- [ ] libextra net: fix overaggressive housekeeping for new connections
-A client first connection attempt is getting cleared way too soon,
-wasting time and causing two "establishing messages."
+- [x] libextra net: fix overaggressive server housekeeping for new connections
+The last seen was not set in the first part of the connection process.
+Thus a client's first connection attempt could get cleared way too soon,
+wasting time and causing two "Connection establishing" prints.
+This print also got removed now. It was mostly of debugging use.
 
 - [ ] libextra net: remove connection candidate slot system
 It is a crutch from a time without any input filtering.

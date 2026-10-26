@@ -468,10 +468,10 @@ Server_handle_message(struct Server         *s,
 			          s->cl_ip[i],
 			          NET_IPSTR_LEN);
 
-			printf("Connection establishing with %s\n", s->cl_ip[i]);
 			s->cl_addr[i] = recv_addr;
 			s->cl_addr_len[i] = recv_addr_len;
 			s->cl_connected[i] = true;
+			s->cl_last_seen[i] = now;
 			send_msg = MSG_CONNECTED;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
