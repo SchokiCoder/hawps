@@ -445,6 +445,11 @@ Server_handle_message(struct Server         *s,
 	recv_msg = recv_buf[0];
 	switch (recv_msg) {
 	case MSG_CONNECT:
+		i = Server_get_clientid(s, recv_addr, recv_addr_len);
+		if (i < s->cl_slots) {
+			return;
+		}
+
 		if (strcmp(&recv_buf[sizeof(recv_msg)], APP_VERSION) != 0) {
 			send_msg = MSG_INCOMPATIBLE;
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
@@ -488,6 +493,10 @@ Server_handle_message(struct Server         *s,
 			          ip,
 			          NET_IPSTR_LEN);
 			printf("Invalid recipient %s\n", ip);
+			return;
+		}
+
+		if (true == s->cl_active[i]) {
 			return;
 		}
 

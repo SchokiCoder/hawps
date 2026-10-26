@@ -96,8 +96,17 @@ where `recv_addr` is entirely null.
 
 - [x] libextra net: add filter to server against non IP messages
 
-- [ ] libextra net: fix multiple slots getting reserved for same client connection
-use `Server_get_clientid` ez
+- [x] libextra net: fix server handling connect msgs from connected clients
+
+- [ ] libextra net: fix overaggressive housekeeping for new connections
+A client first connection attempt is getting cleared way too soon,
+wasting time and causing two "establishing messages."
+
+- [ ] libextra net: remove connection candidate slot system
+It is a crutch from a time without any input filtering.
+
+- [ ] libextra net: add timeout to client after connection has been made
+Otherwise it will keep staying in a useless mainloop.
 
 - [ ] libextra net: add optimization
 where sending world arrs depends not on an if for each client,
