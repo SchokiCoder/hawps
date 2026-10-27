@@ -10,28 +10,28 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <sys/socket.h>
-#include <time.h>
 #include <unistd.h>
+
+#include "hawps_runtime.h"
 
 /* Macros
  */
 
+/* Constant defines
+ */
+
 #define NET_CLIENT_LIFESIGNALRATE       0.33
+#define NET_CLIENT_DISCONNECT_TIME      30   /* seconds */
 #define NET_IPSTR_LEN                   INET6_ADDRSTRLEN
 #define NET_MAX_CONNECT_RETRIES         4
 #define NET_MEDIUM_MSG_SIZE             64   /* enough for type, version info | world info */
 #define NET_RETRY_SLEEP_LEN             5    /* seconds */
 #define NET_SERVER_HOUSEKEEPRATE        0.2
-#define NET_SERVER_SLOT_DEACTIVATE_TIME 30
+#define NET_SERVER_SLOT_DEACTIVATE_TIME 30   /* seconds */
 #define NET_SERVER_SLOT_DISCONNECT_TIME 20   /* seconds */
 #define NET_TICKRATE                    30.0
 #define NET_UPDATERATE                  1.0
 #define NET_WORLD_AE_BYTES              8
-
-/* Constant defines
- */
-
-#define NANOS_PER_SEC ((uint64_t) 1000000000)
 
 /* Types
  */
@@ -39,6 +39,7 @@
 struct Client {
 	struct addrinfo *ai;
 	struct addrinfo *aip;
+	uint64_t         last_update;
 	char            *port;
 	int              sockfd;
 	char            *target;
@@ -92,11 +93,12 @@ Client_mainloop(struct Client *c,
                 const bool    *active,
                 struct World  *w);
 
-void
-Client_recv_worldarr(struct Client *c,
-                     char          *buf,
-                     const size_t   buf_size,
-                     struct World  *w);
+size_t
+Client_recv_worldarr(struct Client  *c,
+                     char           *buf,
+                     const size_t    buf_size,
+                     const uint64_t  now,
+                     struct World   *w);
 
 void
 Client_free(struct Client *c);
@@ -243,6 +245,7 @@ Client_connect(struct Client *c,
 		printf("Connected\n");
 		send_msg = MSG_CONNECTED;
 		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+		c->last_update = get_now();
 		return 0;
 		break;
 
@@ -277,7 +280,6 @@ Client_mainloop(struct Client *c,
 	uint64_t         now = 0;
 	size_t           pos;
 	enum Message     send_msg;
-	struct timespec  ts;
 
 	if (w->w == 0 || w->h == 0) {
 		send_msg = MSG_REQ_WORLDINFO;
@@ -297,14 +299,13 @@ Client_mainloop(struct Client *c,
 	}
 	buf = realloc(buf, buf_size);
 	while (*active) {
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		now = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+		now = get_now();
 		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
 			continue;
 		}
 		last_tick = now;
 
-		Client_recv_worldarr(c, buf, buf_size, w);
+		Client_recv_worldarr(c, buf, buf_size, now, w);
 
 		if (now - last_lifesignal >=
 		    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
@@ -313,19 +314,33 @@ Client_mainloop(struct Client *c,
 			send_msg = MSG_STILL_ALIVE;
 			send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 		}
+
+		if ((now - c->last_update) / NANOS_PER_SEC >=
+		    NET_CLIENT_DISCONNECT_TIME) {
+			printf("Server stopped responding, disconnecting\n");
+			break;
+		}
 	}
 }
 
-void
-Client_recv_worldarr(struct Client *c,
-                     char          *buf,
-                     const size_t   buf_size,
-                     struct World  *w)
+size_t
+Client_recv_worldarr(struct Client  *c,
+                     char           *buf,
+                     const size_t    buf_size,
+                     const uint64_t  now,
+                     struct World   *w)
 {
 	enum Message msg_wat;
 	size_t       pos;
+	size_t       ret = 0;
 
-	recv(c->sockfd, buf, buf_size, 0);
+	errno = 0;
+	ret = recv(c->sockfd, buf, buf_size, MSG_DONTWAIT);
+	if (ret == 0 ||
+	    errno != 0) {
+		return ret;
+	}
+	c->last_update = now;
 	msg_wat = buf[0];
 	pos = sizeof(msg_wat);
 
@@ -349,6 +364,8 @@ Client_recv_worldarr(struct Client *c,
 	default:
 		break;
 	}
+
+	return ret;
 }
 
 void
@@ -583,7 +600,6 @@ Server_mainloop(struct Server *s,
 	char             recv_buf[NET_MEDIUM_MSG_SIZE];
 	size_t           send_buf_size = 0;
 	char            *send_buf = NULL;
-	struct timespec  ts;
 
 	send_buf_size = sizeof(enum Message) +
 	                (NET_WORLD_AE_BYTES * w->w * w->h) +
@@ -594,8 +610,7 @@ Server_mainloop(struct Server *s,
 	send_buf = malloc(send_buf_size);
 
 	while (*active) {
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		now = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+		now = get_now();
 		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
 			continue;
 		}

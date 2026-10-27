@@ -109,8 +109,10 @@ It is a crutch from a time without any input filtering.
 
 - [x] libextra net: fix inactive clients getting world updates
 
-- [ ] libextra net: add timeout to client after connection has been made
-Otherwise it will keep staying in a useless mainloop.
+- [x] libextra net: add timeout to client for active connection
+Otherwise it will keep staying in a useless mainloop,
+when server is unreachable.
+Here we also DRY the "clock" or "now" value acquisition.
 
 - [ ] libextra net: add optimization
 where sending world arrs depends not on an if for each client,
@@ -118,12 +120,9 @@ but on a prepared list of active connections.
 Every ten seconds clients should send an "alive" signal to be considered active.
 Make client code send alive signal every 3 seconds.
 
-- [ ] libextra net: add slots check upon connection
-There is indeed none at all,
-which will cause a crash when running out of slots... hopefully.
-Anyway, check `cl_slots` for `MSG_CONNECT` and `max_clients` for `MSG_CONNECTED`
-
 - [ ] libextra net: replace magic error codes with defs
+
+- [ ] add dedicated server
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.

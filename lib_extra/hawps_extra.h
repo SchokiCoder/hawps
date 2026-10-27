@@ -7,6 +7,7 @@
 
 #include "hawps_color.h"
 #include "hawps_network.h"
+#include "hawps_runtime.h"
 #include "hawps_tool.h"
 
 /* Macros

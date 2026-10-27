@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "config.h"
@@ -119,8 +118,6 @@
 #define KEY_USE_THERMO_CONTINUE_LIMIT 0.5
 
 #define MAX_FONT_SIZE 128
-
-#define NANOS_PER_SEC ((uint64_t) 1000000000)
 
 #ifdef _WIN32
 #define PATH_DELIM "\\"
@@ -4380,7 +4377,6 @@ main(int    argc,
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;
-	struct timespec        ts;
 	int                    win_w = 0;
 	int                    win_h = 0;
 	struct World           world;
@@ -4602,8 +4598,7 @@ main(int    argc,
 	                    world);
 
 	while (active) {
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		now = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+		now = get_now();
 		delta = (float) (now - last_input) / (float) NANOS_PER_SEC;
 
 		last_input = now;
