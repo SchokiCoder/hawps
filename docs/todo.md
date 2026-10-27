@@ -114,11 +114,9 @@ Otherwise it will keep staying in a useless mainloop,
 when server is unreachable.
 Here we also DRY the "clock" or "now" value acquisition.
 
-- [ ] libextra net: add optimization
-where sending world arrs depends not on an if for each client,
-but on a prepared list of active connections.
-Every ten seconds clients should send an "alive" signal to be considered active.
-Make client code send alive signal every 3 seconds.
+- [x] libextra net: add server optimization for active clients
+Sending world arrs depends not on an if for each client,
+but on a prepared list of active connections now.
 
 - [ ] libextra net: replace magic error codes with defs
 

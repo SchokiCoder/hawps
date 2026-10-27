@@ -46,15 +46,18 @@ struct Client {
 };
 
 struct Server {
+	int              sockfd;
+
 	size_t           cl_slots;
-	bool            *cl_active;
 	struct sockaddr *cl_addr;
 	socklen_t       *cl_addr_len;
 	bool            *cl_connected;
 	char           **cl_ip;
 	uint64_t        *cl_last_seen;
 	uint64_t        *cl_last_update;
-	int              sockfd;
+
+	size_t           active_cls;
+	size_t          *active_cl;
 };
 
 enum Message {
@@ -107,6 +110,10 @@ struct Server
 Server_new(size_t         max_clients,
            const uint16_t port);
 
+bool
+Server_get_client_active(struct Server *s,
+                         const size_t   cid);
+
 /* @s: Server
  * @addr: addr from a recv call
  * @addr_len: addr length
@@ -115,9 +122,9 @@ Server_new(size_t         max_clients,
  * Check with if (ret > Server.cl_slots).
  */
 size_t
-Server_get_clientid(struct Server         *s,
-                    const struct sockaddr  addr,
-                    const socklen_t        addr_len);
+Server_get_client_id(struct Server         *s,
+                     const struct sockaddr  addr,
+                     const socklen_t        addr_len);
 
 void
 Server_handle_message(struct Server         *s,
@@ -144,6 +151,11 @@ Server_send_worldarr(struct Server      *s,
                      void               *world_arr,
                      const size_t        world_arr_size,
                      const enum Message  msg_wat);
+
+void
+Server_set_client_active(struct Server *s,
+                         const size_t   cid,
+                         const bool     active);
 
 void
 Server_free(struct Server *s);
@@ -404,7 +416,6 @@ Server_new(size_t         max_clients,
 	}
 
 	ret.cl_slots = max_clients;
-	ret.cl_active = calloc(ret.cl_slots, sizeof(bool));
 	ret.cl_addr = calloc(ret.cl_slots, sizeof(struct sockaddr));
 	ret.cl_addr_len = calloc(ret.cl_slots, sizeof(socklen_t));
 	ret.cl_connected = calloc(ret.cl_slots, sizeof(bool));
@@ -416,13 +427,31 @@ Server_new(size_t         max_clients,
 		ret.cl_ip[i] = calloc(NET_IPSTR_LEN, sizeof(char));
 	}
 
+	ret.active_cl = calloc(ret.cl_slots, sizeof(size_t));
+
 	return ret;
 }
 
+bool
+Server_get_client_active(struct Server *s,
+                         const size_t   cid)
+{
+	size_t i;
+
+	for (i = 0; i < s->active_cls; i++) {
+		if (cid == s->active_cl[i]) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 size_t
-Server_get_clientid(struct Server         *s,
-                    const struct sockaddr  addr,
-                    const socklen_t        addr_len) {
+Server_get_client_id(struct Server         *s,
+                     const struct sockaddr  addr,
+                     const socklen_t        addr_len)
+{
 	size_t i;
 
 	for (i = 0; i < s->cl_slots; i++) {
@@ -459,7 +488,7 @@ Server_handle_message(struct Server         *s,
 	recv_msg = recv_buf[0];
 	switch (recv_msg) {
 	case MSG_CONNECT:
-		i = Server_get_clientid(s, recv_addr, recv_addr_len);
+		i = Server_get_client_id(s, recv_addr, recv_addr_len);
 		if (i < s->cl_slots) {
 			return;
 		}
@@ -502,7 +531,7 @@ Server_handle_message(struct Server         *s,
 		break;
 
 	case MSG_CONNECTED:
-		i = Server_get_clientid(s, recv_addr, recv_addr_len);
+		i = Server_get_client_id(s, recv_addr, recv_addr_len);
 		if (i >= s->cl_slots) {
 			inet_ntop(recv_addr.sa_family,
 			          &recv_addr,
@@ -512,13 +541,13 @@ Server_handle_message(struct Server         *s,
 			return;
 		}
 
-		if (true == s->cl_active[i]) {
+		if (true == Server_get_client_active(s, i)) {
 			return;
 		}
 
 		printf("Connection established with %s\n", s->cl_ip[i]);
 
-		s->cl_active[i] = true;
+		Server_set_client_active(s, i, true);
 		s->cl_last_seen[i] = now;
 		break;
 
@@ -534,7 +563,7 @@ Server_handle_message(struct Server         *s,
 		break;
 
 	case MSG_STILL_ALIVE:
-		i = Server_get_clientid(s, recv_addr, recv_addr_len);
+		i = Server_get_client_id(s, recv_addr, recv_addr_len);
 		if (i >= s->cl_slots) {
 			inet_ntop(recv_addr.sa_family,
 			          &recv_addr,
@@ -565,10 +594,10 @@ Server_housekeeping(struct Server  *s,
 			continue;
 		}
 
-		if (true == s->cl_active[i]) {
+		if (true == Server_get_client_active(s, i)) {
 			if ((now - s->cl_last_seen[i]) / NANOS_PER_SEC >
 			     NET_SERVER_SLOT_DEACTIVATE_TIME) {
-				s->cl_active[i] = false;
+				Server_set_client_active(s, i, false);
 				printf("No lifesignal from %s, disconnecting\n",
 				       s->cl_ip[i]);
 			}
@@ -576,7 +605,6 @@ Server_housekeeping(struct Server  *s,
 			if ((now - s->cl_last_seen[i]) / NANOS_PER_SEC >
 			     NET_SERVER_SLOT_DISCONNECT_TIME) {
 				memset(&s->cl_addr[i], 0, sizeof(s->cl_addr[i]));
-				s->cl_active[i] = false;
 				s->cl_addr_len[i] = 0;
 				s->cl_connected[i] = false;
 				s->cl_last_seen[i] = 0;
@@ -617,7 +645,7 @@ Server_mainloop(struct Server *s,
 		last_tick = now;
 
 		for (i = 0; i < s->cl_slots; i++) {
-			if (!s->cl_active[i] ||
+			if (false == Server_get_client_active(s, i) ||
 			    (now - s->cl_last_update[i] <
 			     (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE))) {
 				continue;
@@ -702,6 +730,40 @@ Server_send_worldarr(struct Server      *s,
 }
 
 void
+Server_set_client_active(struct Server *s,
+                         const size_t   cid,
+                         const bool     active)
+{
+	size_t i;
+	bool is_active;
+
+	is_active = Server_get_client_active(s, cid);
+
+	if (active == is_active) {
+		return; /* you're dumb lol */
+	}
+
+	if (active == true) {
+		/* no bounds check needed */
+		s->active_cl[s->active_cls] = cid;
+		s->active_cls++;
+	} else {
+		for (i = 0; i < s->active_cls; i++) {
+			if (cid != s->active_cl[i]) {
+				continue;
+			}
+
+			break;
+		}
+
+		for ( ; i < s->active_cls - 1; i++) {
+			s->active_cl[i] = s->active_cl[i + 1];
+		}
+		s->active_cls--;
+	}
+}
+
+void
 Server_free(struct Server *s)
 {
 	size_t i;
@@ -724,7 +786,13 @@ Server_free(struct Server *s)
 	if (s->cl_last_update != NULL) {
 		free(s->cl_last_update);
 	}
+
+	if (s->active_cl != NULL) {
+		free(s->active_cl);
+	}
+
 	s->cl_slots = 0;
+	s->active_cls = 0;
 	close(s->sockfd);
 }
 
