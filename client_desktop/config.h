@@ -189,7 +189,6 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 
 /* @User, DO NOT TOUCH, beyond this point!
  */
-#define CELSIUS_TO_KELVIN 273.15
 
 /* This constant is not meant to stick around,
  * if the configuration method changes.

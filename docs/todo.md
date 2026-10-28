@@ -120,14 +120,18 @@ but on a prepared list of active connections now.
 
 - [x] libextra net: replace magic error codes with an enum
 
-- [ ] add dedicated server
+- [x] add basic dedicated server
+Also fix missing `free` in `Server_mainloop` and on `Server.cl_last_seen`.
+
+- [ ] server: add help command
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
 
-- [ ] libextra net: add logging to file for server
-- [ ] libextra net: make tickrates configurable as vars
-- [ ] libextra net: make updaterate configurable as var
+- [ ] server: add pausing
+- [ ] server: add logging to file
+- [ ] server: make tickrates configurable as flags
+- [ ] server: make client updaterate configurable as flags
 
 - [ ] desktop client: add networking
 How (basics)? Look at ca22d7451c87b6d090e35328ae6994459117e86c,

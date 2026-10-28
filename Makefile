@@ -40,9 +40,11 @@ DEFAULT_CLIENT :=$(APP_NAME)_desktop
 
 GO_DEFINES :=-ldflags "-X 'main.AppName=$(APP_NAME)' -X 'main.AppNameFormal=$(APP_NAME_FORMAL)' -X 'main.AppLicense=$(APP_LICENSE)' -X 'main.AppLicenseUrl=$(APP_LICENSE_URL)' -X 'main.AppRepository=$(APP_REPOSITORY)' -X 'main.AppVersion=$(APP_VERSION)'"
 
+SERVER_FILE_DEPS :=Makefile server/* lib_core/* lib_extra/*
+
 .PHONY: all build clean generate install preinstall prerun preprofile profile remove run test vet
 
-all: bin/$(DEFAULT_CLIENT)
+all: bin/$(DEFAULT_CLIENT) bin/$(APP_NAME)_server
 
 clean:
 	rm -f bin/*
@@ -93,6 +95,11 @@ bin/$(APP_NAME)_desktop_release: $(CLIENT_DESKTOP_FILE_DEPS)
 	$(CC) $(C_FLAGS_RELEASE) $(C_DEFINES) -o $@ \
 		$(CLIENT_DESKTOP_CFLAGS) \
 		$(CLIENT_DESKTOP_SRC_FILES)
+
+bin/$(APP_NAME)_server: $(SERVER_FILE_DEPS)
+	$(CC) $(C_FLAGS_DEBUG) $(C_DEFINES) -o $@ \
+		-I lib_core -I lib_extra \
+		server/main.c
 
 bin/$(APP_NAME)_tk: client_tk/* lib_core/* lib_extra/*
 	$(CC) $(C_FLAGS_DEBUG) -o $@ \

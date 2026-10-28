@@ -717,6 +717,8 @@ Server_mainloop(struct Server *s,
 		last_housekeep = now;
 		Server_housekeeping(s, now);
 	}
+
+	free(send_buf);
 }
 
 void
@@ -797,6 +799,9 @@ Server_free(struct Server *s)
 		}
 		free(s->cl_ip);
 	}
+	if (s->cl_last_seen != NULL) {
+		free(s->cl_last_seen);
+	}
 	if (s->cl_last_update != NULL) {
 		free(s->cl_last_update);
 	}
@@ -805,9 +810,9 @@ Server_free(struct Server *s)
 		free(s->active_cl);
 	}
 
-	s->cl_slots = 0;
-	s->active_cls = 0;
 	close(s->sockfd);
+
+	memset(s, 0, sizeof(*s));
 }
 
 #endif /* HAWPS_IMPL */

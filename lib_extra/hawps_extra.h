@@ -16,6 +16,8 @@
 /* Constant defines
  */
 
+#define CELSIUS_TO_KELVIN 273.15
+
 /* Types
  */
 
