@@ -80,13 +80,26 @@ enum Message {
 	/* MSG_WAT_WEIGHT, */
 };
 
+enum NetError {
+	NE_OKAY,
+	NE_COULDNT_GET_ADDRINFO,
+	NE_COULDNT_CONNECT,
+	NE_SERVER_UNREACHABLE,
+	NE_INCOMPATIBLE_VERSIONS,
+	NE_SERVER_IS_FULL,
+	NE_IRREGULAR_RESPONSE,
+	NE_COULDNT_GET_SOCKET,
+	NE_COULDNT_DISABLE_IPV6ONLY,
+	NE_COULDNT_BIND_SOCKET,
+};
+
 /* Function declarations
  */
 
 struct Client
 Client_new();
 
-int
+enum NetError
 Client_connect(struct Client *c,
                char          *restrict target,
                char          *restrict port);
@@ -106,8 +119,9 @@ Client_recv_worldarr(struct Client  *c,
 void
 Client_free(struct Client *c);
 
-struct Server
-Server_new(size_t         max_clients,
+enum NetError
+Server_new(struct Server *s,
+           size_t         max_clients,
            const uint16_t port);
 
 bool
@@ -175,7 +189,7 @@ Client_new() {
 	return ret;
 }
 
-int
+enum NetError
 Client_connect(struct Client *c,
                char          *restrict target,
                char          *restrict port)
@@ -202,7 +216,7 @@ Client_connect(struct Client *c,
 	e = getaddrinfo(target, port, &hints, &c->ai);
 	if (e) {
 		fprintf(stderr, "%s\n", gai_strerror(e));
-		return 1;
+		return NE_COULDNT_GET_ADDRINFO;
 	}
 
 	for (c->aip = c->ai; c->aip != NULL; c->aip = c->aip->ai_next) {
@@ -225,7 +239,7 @@ Client_connect(struct Client *c,
 
 	if (c->aip == NULL) {
 		fprintf(stderr, "Could not connect\n");
-		return 2;
+		return NE_COULDNT_CONNECT;
 	}
 
 	c->port = port;
@@ -249,7 +263,7 @@ Client_connect(struct Client *c,
 		fprintf(stderr,
 		        "Connection failed after %i retries\n",
 		        NET_MAX_CONNECT_RETRIES);
-		return 3;
+		return NE_SERVER_UNREACHABLE;
 	}
 
 	switch (recv_msg) {
@@ -258,26 +272,26 @@ Client_connect(struct Client *c,
 		send_msg = MSG_CONNECTED;
 		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 		c->last_update = get_now();
-		return 0;
+		return NE_OKAY;
 		break;
 
 	case MSG_INCOMPATIBLE:
 		fprintf(stderr, "Server version doesn't match\n");
-		return 4;
+		return NE_INCOMPATIBLE_VERSIONS;
 		break;
 
 	case MSG_NOSLOTS:
 		fprintf(stderr, "Server has no slots available\n");
-		return 5;
+		return NE_SERVER_IS_FULL;
 		break;
 
 	default:
 		fprintf(stderr, "Server did not respond properly\n");
-		return 6;
+		return NE_IRREGULAR_RESPONSE;
 		break;
 	}
 
-	return 0;
+	return NE_OKAY;
 }
 
 void
@@ -387,8 +401,9 @@ Client_free(struct Client *c)
 	close(c->sockfd);
 }
 
-struct Server
-Server_new(size_t         max_clients,
+enum NetError
+Server_new(struct Server *s,
+           size_t         max_clients,
            const uint16_t port) {
 	struct sockaddr_in6 addr = {
 		.sin6_family = AF_INET6,
@@ -396,40 +411,39 @@ Server_new(size_t         max_clients,
 		.sin6_addr = in6addr_any,
 	};
 	size_t i;
-	struct Server ret;
 	int val = 0;
 
-	memset(&ret, 0, sizeof(ret));
+	memset(s, 0, sizeof(*s));
 
-	ret.sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
-	if (ret.sockfd == -1) {
+	s->sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (s->sockfd == -1) {
 		fprintf(stderr, "Couldn't get socket: %i\n", errno);
-		return ret;
+		return NE_COULDNT_GET_SOCKET;
 	}
-	if (setsockopt(ret.sockfd, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val))) {
+	if (setsockopt(s->sockfd, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val))) {
 		fprintf(stderr, "Couldn't set IPv& only: %i\n", errno);
-		return ret;
+		return NE_COULDNT_DISABLE_IPV6ONLY;
 	}
-	if (bind(ret.sockfd, (struct sockaddr*) &addr, sizeof(addr))) {
+	if (bind(s->sockfd, (struct sockaddr*) &addr, sizeof(addr))) {
 		fprintf(stderr, "Couldn't bind: %i\n", errno);
-		return ret;
+		return NE_COULDNT_BIND_SOCKET;
 	}
 
-	ret.cl_slots = max_clients;
-	ret.cl_addr = calloc(ret.cl_slots, sizeof(struct sockaddr));
-	ret.cl_addr_len = calloc(ret.cl_slots, sizeof(socklen_t));
-	ret.cl_connected = calloc(ret.cl_slots, sizeof(bool));
-	ret.cl_ip = calloc(ret.cl_slots, sizeof(char*));
-	ret.cl_last_seen = calloc(ret.cl_slots, sizeof(uint64_t));
-	ret.cl_last_update = calloc(ret.cl_slots, sizeof(uint64_t));
+	s->cl_slots = max_clients;
+	s->cl_addr = calloc(s->cl_slots, sizeof(struct sockaddr));
+	s->cl_addr_len = calloc(s->cl_slots, sizeof(socklen_t));
+	s->cl_connected = calloc(s->cl_slots, sizeof(bool));
+	s->cl_ip = calloc(s->cl_slots, sizeof(char*));
+	s->cl_last_seen = calloc(s->cl_slots, sizeof(uint64_t));
+	s->cl_last_update = calloc(s->cl_slots, sizeof(uint64_t));
 
-	for (i = 0; i < ret.cl_slots; i++) {
-		ret.cl_ip[i] = calloc(NET_IPSTR_LEN, sizeof(char));
+	for (i = 0; i < s->cl_slots; i++) {
+		s->cl_ip[i] = calloc(NET_IPSTR_LEN, sizeof(char));
 	}
 
-	ret.active_cl = calloc(ret.cl_slots, sizeof(size_t));
+	s->active_cl = calloc(s->cl_slots, sizeof(size_t));
 
-	return ret;
+	return NE_OKAY;
 }
 
 bool

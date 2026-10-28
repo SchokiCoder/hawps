@@ -118,7 +118,7 @@ Here we also DRY the "clock" or "now" value acquisition.
 Sending world arrs depends not on an if for each client,
 but on a prepared list of active connections now.
 
-- [ ] libextra net: replace magic error codes with defs
+- [x] libextra net: replace magic error codes with an enum
 
 - [ ] add dedicated server
 
