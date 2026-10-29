@@ -29,7 +29,6 @@
 #define NET_SERVER_HOUSEKEEPRATE        0.2
 #define NET_SERVER_SLOT_DEACTIVATE_TIME 30   /* seconds */
 #define NET_SERVER_SLOT_DISCONNECT_TIME 20   /* seconds */
-#define NET_TICKRATE                    30.0
 #define NET_UPDATERATE                  1.0
 #define NET_WORLD_AE_BYTES              8
 
@@ -39,13 +38,19 @@
 struct Client {
 	struct addrinfo *ai;
 	struct addrinfo *aip;
+	uint64_t         last_lifesignal;
 	uint64_t         last_update;
 	char            *port;
+	size_t           recvbuf_size;
+	char            *recvbuf;
 	int              sockfd;
 	char            *target;
 };
 
 struct Server {
+	uint64_t         last_housekeep;
+	size_t           sendbuf_size;
+	char            *sendbuf;
 	int              sockfd;
 
 	size_t           cl_slots;
@@ -91,6 +96,7 @@ enum NetError {
 	NE_COULDNT_GET_SOCKET,
 	NE_COULDNT_DISABLE_IPV6ONLY,
 	NE_COULDNT_BIND_SOCKET,
+	NE_SERVER_DOESNT_RESPOND,
 };
 
 /* Function declarations
@@ -102,19 +108,18 @@ Client_new();
 enum NetError
 Client_connect(struct Client *c,
                char          *restrict target,
-               char          *restrict port);
-
-void
-Client_mainloop(struct Client *c,
-                const bool    *active,
-                struct World  *w);
+               char          *restrict port,
+               struct World  *world);
 
 size_t
 Client_recv_worldarr(struct Client  *c,
-                     char           *buf,
-                     const size_t    buf_size,
                      const uint64_t  now,
                      struct World   *w);
+
+enum NetError
+Client_tick(struct Client  *c,
+            const uint64_t  now,
+            struct World   *w);
 
 void
 Client_free(struct Client *c);
@@ -122,7 +127,9 @@ Client_free(struct Client *c);
 enum NetError
 Server_new(struct Server *s,
            size_t         max_clients,
-           const uint16_t port);
+           const uint16_t port,
+           const int      wld_w,
+           const int      wld_h);
 
 bool
 Server_get_client_active(struct Server *s,
@@ -153,14 +160,7 @@ Server_housekeeping(struct Server  *s,
                     const uint64_t  now);
 
 void
-Server_mainloop(struct Server *s,
-                const bool    *active,
-                struct World  *w);
-
-void
 Server_send_worldarr(struct Server      *s,
-                     char               *buf,
-                     const size_t        buf_size,
                      size_t              client_id,
                      void               *world_arr,
                      const size_t        world_arr_size,
@@ -170,6 +170,11 @@ void
 Server_set_client_active(struct Server *s,
                          const size_t   cid,
                          const bool     active);
+
+void
+Server_tick(struct Server  *s,
+            const uint64_t  now,
+            struct World   *w);
 
 void
 Server_free(struct Server *s);
@@ -192,7 +197,8 @@ Client_new() {
 enum NetError
 Client_connect(struct Client *c,
                char          *restrict target,
-               char          *restrict port)
+               char          *restrict port,
+               struct World  *world)
 {
 	int              e;
 	struct addrinfo  hints;
@@ -291,68 +297,28 @@ Client_connect(struct Client *c,
 		break;
 	}
 
+	// TODO this sucks for now
+	send_msg = MSG_REQ_WORLDINFO; // unnecessary, change protocol
+	send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+
+	recv(c->sockfd, recv_buf, sizeof(recv_buf), 0); // no msg type here, change protocol
+	world->w = recv_buf[0];
+	world->h = recv_buf[sizeof(world->w)];
+	*world = World_new(world->w, world->h);
+
+	c->recvbuf_size = sizeof(enum Message) +
+	                  (NET_WORLD_AE_BYTES * world->w * world->h) +
+	                  1;
+	if (c->recvbuf_size < NET_MEDIUM_MSG_SIZE) {
+		c->recvbuf_size = NET_MEDIUM_MSG_SIZE;
+	}
+	c->recvbuf = malloc(c->recvbuf_size);
+
 	return NE_OKAY;
-}
-
-void
-Client_mainloop(struct Client *c,
-                const bool    *active,
-                struct World  *w)
-{
-	size_t           buf_size = NET_MEDIUM_MSG_SIZE;
-	char            *buf = malloc(buf_size);
-	uint64_t         last_lifesignal = 0;
-	uint64_t         last_tick = 0;
-	uint64_t         now = 0;
-	size_t           pos;
-	enum Message     send_msg;
-
-	if (w->w == 0 || w->h == 0) {
-		send_msg = MSG_REQ_WORLDINFO;
-		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
-
-		recv(c->sockfd, buf, buf_size, 0);
-		w->w = buf[0];
-		w->h = buf[sizeof(w->w)];
-		*w = World_new(w->w, w->h);
-	}
-
-	buf_size = sizeof(enum Message) +
-	           (NET_WORLD_AE_BYTES * w->w * w->h) +
-	           1;
-	if (buf_size < NET_MEDIUM_MSG_SIZE) {
-		buf_size = NET_MEDIUM_MSG_SIZE;
-	}
-	buf = realloc(buf, buf_size);
-	while (*active) {
-		now = get_now();
-		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
-			continue;
-		}
-		last_tick = now;
-
-		Client_recv_worldarr(c, buf, buf_size, now, w);
-
-		if (now - last_lifesignal >=
-		    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
-			last_lifesignal = now;
-
-			send_msg = MSG_STILL_ALIVE;
-			send(c->sockfd, &send_msg, sizeof(send_msg), 0);
-		}
-
-		if ((now - c->last_update) / NANOS_PER_SEC >=
-		    NET_CLIENT_DISCONNECT_TIME) {
-			printf("Server stopped responding, disconnecting\n");
-			break;
-		}
-	}
 }
 
 size_t
 Client_recv_worldarr(struct Client  *c,
-                     char           *buf,
-                     const size_t    buf_size,
                      const uint64_t  now,
                      struct World   *w)
 {
@@ -361,30 +327,38 @@ Client_recv_worldarr(struct Client  *c,
 	size_t       ret = 0;
 
 	errno = 0;
-	ret = recv(c->sockfd, buf, buf_size, MSG_DONTWAIT);
+	ret = recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT);
 	if (ret == 0 ||
 	    errno != 0) {
 		return ret;
 	}
 	c->last_update = now;
-	msg_wat = buf[0];
+	msg_wat = c->recvbuf[0];
 	pos = sizeof(msg_wat);
 
 	switch (msg_wat) {
 	case MSG_WAT_DISSOL:
-		memcpy(w->_dissol, &buf[pos], w->w * w->h * sizeof(*w->_dissol));
+		memcpy(w->_dissol,
+		       &c->recvbuf[pos],
+		       w->w * w->h * sizeof(*w->_dissol));
 		break;
 
 	case MSG_WAT_DOT:
-		memcpy(w->_dot, &buf[pos], w->w * w->h * sizeof(*w->_dot));
+		memcpy(w->_dot,
+		       &c->recvbuf[pos],
+		       w->w * w->h * sizeof(*w->_dot));
 		break;
 
 	case MSG_WAT_OXID:
-		memcpy(w->_oxid, &buf[pos], w->w * w->h * sizeof(*w->_oxid));
+		memcpy(w->_oxid,
+		       &c->recvbuf[pos],
+		       w->w * w->h * sizeof(*w->_oxid));
 		break;
 
 	case MSG_WAT_THERMO:
-		memcpy(w->_thermo, &buf[pos], w->w * w->h * sizeof(*w->_thermo));
+		memcpy(w->_thermo,
+		       &c->recvbuf[pos],
+		       w->w * w->h * sizeof(*w->_thermo));
 		break;
 
 	default:
@@ -394,17 +368,52 @@ Client_recv_worldarr(struct Client  *c,
 	return ret;
 }
 
+enum NetError
+Client_tick(struct Client  *c,
+            const uint64_t  now,
+            struct World   *w)
+{
+	size_t       pos;
+	enum Message send_msg;
+
+	Client_recv_worldarr(c, now, w);
+
+	if (now - c->last_lifesignal >=
+	    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
+		c->last_lifesignal = now;
+
+		send_msg = MSG_STILL_ALIVE;
+		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+	}
+
+	if ((now - c->last_update) / NANOS_PER_SEC >=
+	    NET_CLIENT_DISCONNECT_TIME) {
+		return NE_SERVER_DOESNT_RESPOND;
+	}
+
+	return NE_OKAY;
+}
+
 void
 Client_free(struct Client *c)
 {
 	freeaddrinfo(c->ai);
+
+	if (c->recvbuf != NULL) {
+		free(c->recvbuf);
+		c->recvbuf = NULL;
+	}
+
 	close(c->sockfd);
 }
 
 enum NetError
 Server_new(struct Server *s,
            size_t         max_clients,
-           const uint16_t port) {
+           const uint16_t port,
+           const int      wld_w,
+           const int      wld_h)
+{
 	struct sockaddr_in6 addr = {
 		.sin6_family = AF_INET6,
 		.sin6_port = htons(port),
@@ -428,6 +437,14 @@ Server_new(struct Server *s,
 		fprintf(stderr, "Couldn't bind: %i\n", errno);
 		return NE_COULDNT_BIND_SOCKET;
 	}
+
+	s->sendbuf_size = sizeof(enum Message) +
+	                  (NET_WORLD_AE_BYTES * wld_w * wld_h) +
+	                  1;
+	if (s->sendbuf_size < sizeof(enum Message)) {
+		s->sendbuf_size = sizeof(enum Message);
+	}
+	s->sendbuf = malloc(s->sendbuf_size);
 
 	s->cl_slots = max_clients;
 	s->cl_addr = calloc(s->cl_slots, sizeof(struct sockaddr));
@@ -629,102 +646,7 @@ Server_housekeeping(struct Server  *s,
 }
 
 void
-Server_mainloop(struct Server *s,
-                const bool    *active,
-                struct World  *w)
-{
-	size_t           i;
-	uint64_t         last_housekeep = 0;
-	uint64_t         last_tick = 0;
-	uint64_t         now = 0;
-	struct sockaddr  recv_addr;
-	socklen_t        recv_addr_len = sizeof(recv_addr);
-	char             recv_buf[NET_MEDIUM_MSG_SIZE];
-	size_t           send_buf_size = 0;
-	char            *send_buf = NULL;
-
-	send_buf_size = sizeof(enum Message) +
-	                (NET_WORLD_AE_BYTES * w->w * w->h) +
-	                1;
-	if (send_buf_size < sizeof(enum Message)) {
-		send_buf_size = sizeof(enum Message);
-	}
-	send_buf = malloc(send_buf_size);
-
-	while (*active) {
-		now = get_now();
-		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
-			continue;
-		}
-		last_tick = now;
-
-		for (i = 0; i < s->cl_slots; i++) {
-			if (false == Server_get_client_active(s, i) ||
-			    (now - s->cl_last_update[i] <
-			     (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE))) {
-				continue;
-			}
-			s->cl_last_update[i] = now;
-
-			Server_send_worldarr(s,
-			                     send_buf,
-			                     send_buf_size,
-			                     i,
-			                     w->_dissol,
-			                     w->w * w->h * sizeof(*w->_dissol),
-			                     MSG_WAT_DISSOL);
-			Server_send_worldarr(s,
-			                     send_buf,
-			                     send_buf_size,
-			                     i,
-			                     w->_dot,
-			                     w->w * w->h * sizeof(*w->_dot),
-			                     MSG_WAT_DOT);
-			Server_send_worldarr(s,
-			                     send_buf,
-			                     send_buf_size,
-			                     i,
-			                     w->_oxid,
-			                     w->w * w->h * sizeof(*w->_oxid),
-			                     MSG_WAT_OXID);
-			Server_send_worldarr(s,
-			                     send_buf,
-			                     send_buf_size,
-			                     i,
-			                     w->_thermo,
-			                     w->w * w->h * sizeof(*w->_thermo),
-			                     MSG_WAT_THERMO);
-		}
-
-		if (recvfrom(s->sockfd,
-		             &recv_buf,
-		             NET_MEDIUM_MSG_SIZE,
-		             MSG_DONTWAIT,
-		             &recv_addr,
-		             &recv_addr_len) > 0) {
-			Server_handle_message(s,
-			                      now,
-			                      recv_addr,
-			                      recv_addr_len,
-			                      recv_buf,
-			                      *w);
-		}
-
-		if (now - last_housekeep <
-		    (uint64_t) (NANOS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
-			continue;
-		}
-		last_housekeep = now;
-		Server_housekeeping(s, now);
-	}
-
-	free(send_buf);
-}
-
-void
 Server_send_worldarr(struct Server      *s,
-                     char               *buf,
-                     const size_t        buf_size,
                      size_t              client_id,
                      void               *world_arr,
                      const size_t        world_arr_size,
@@ -735,13 +657,13 @@ Server_send_worldarr(struct Server      *s,
 
 	pos = 0;
 	len = sizeof(msg_wat);
-	memset(buf, msg_wat, len);
+	memset(s->sendbuf, msg_wat, len);
 	pos += len;
 	len = world_arr_size;
-	memcpy(&buf[pos], world_arr, len);
+	memcpy(&s->sendbuf[pos], world_arr, len);
 	pos += len;
-	buf[pos] = '\0';
-	sendto(s->sockfd, buf, buf_size, 0,
+	s->sendbuf[pos] = '\0';
+	sendto(s->sockfd, s->sendbuf, s->sendbuf_size, 0,
 	       &s->cl_addr[client_id], s->cl_addr_len[client_id]);
 }
 
@@ -780,37 +702,111 @@ Server_set_client_active(struct Server *s,
 }
 
 void
+Server_tick(struct Server  *s,
+            const uint64_t  now,
+            struct World   *w)
+{
+	size_t           i;
+	struct sockaddr  recv_addr;
+	socklen_t        recv_addr_len = sizeof(recv_addr);
+	char             recv_buf[NET_MEDIUM_MSG_SIZE];
+
+	for (i = 0; i < s->cl_slots; i++) {
+		if (false == Server_get_client_active(s, i) ||
+		    (now - s->cl_last_update[i] <
+		     (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE))) {
+			continue;
+		}
+		s->cl_last_update[i] = now;
+
+		Server_send_worldarr(s,
+		                     i,
+		                     w->_dissol,
+		                     w->w * w->h * sizeof(*w->_dissol),
+		                     MSG_WAT_DISSOL);
+		Server_send_worldarr(s,
+		                     i,
+		                     w->_dot,
+		                     w->w * w->h * sizeof(*w->_dot),
+		                     MSG_WAT_DOT);
+		Server_send_worldarr(s,
+		                     i,
+		                     w->_oxid,
+		                     w->w * w->h * sizeof(*w->_oxid),
+		                     MSG_WAT_OXID);
+		Server_send_worldarr(s,
+		                     i,
+		                     w->_thermo,
+		                     w->w * w->h * sizeof(*w->_thermo),
+		                     MSG_WAT_THERMO);
+	}
+
+	if (recvfrom(s->sockfd,
+	             &recv_buf,
+	             NET_MEDIUM_MSG_SIZE,
+	             MSG_DONTWAIT,
+	             &recv_addr,
+	             &recv_addr_len) > 0) {
+		Server_handle_message(s,
+		                      now,
+		                      recv_addr,
+		                      recv_addr_len,
+		                      recv_buf,
+		                      *w);
+	}
+
+	if (now - s->last_housekeep <
+	    (uint64_t) (NANOS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
+		return;
+	}
+	s->last_housekeep = now;
+	Server_housekeeping(s, now);
+}
+
+void
 Server_free(struct Server *s)
 {
 	size_t i;
 
+	if (s->sendbuf != NULL) {
+		free(s->sendbuf);
+		s->sendbuf = NULL;
+	}
 	if (s->cl_addr != NULL) {
 		free(s->cl_addr);
+		s->cl_addr = NULL;
 	}
 	if (s->cl_addr_len != NULL) {
 		free(s->cl_addr_len);
+		s->cl_addr_len = NULL;
 	}
 	if (s->cl_connected != NULL) {
 		free(s->cl_connected);
+		s->cl_connected = NULL;
 	}
 	if (s->cl_ip != NULL) {
 		for (i = 0; i < s->cl_slots; i++) {
 			free(s->cl_ip[i]);
 		}
 		free(s->cl_ip);
+		s->cl_ip = NULL;
 	}
 	if (s->cl_last_seen != NULL) {
 		free(s->cl_last_seen);
+		s->cl_last_seen = NULL;
 	}
 	if (s->cl_last_update != NULL) {
 		free(s->cl_last_update);
+		s->cl_last_update = NULL;
 	}
 
 	if (s->active_cl != NULL) {
 		free(s->active_cl);
+		s->active_cl = NULL;
 	}
 
 	close(s->sockfd);
+	s->sockfd = -1;
 
 	memset(s, 0, sizeof(*s));
 }

@@ -22,18 +22,20 @@
 #define TEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
 #define TICKRATE    24.0
 #define PORT        25565
+#define WORLD_W     24
+#define WORLD_H     24
 
 /* Types
  */
 
 struct ThServerArgs {
-	bool          *active;
+	volatile bool *active;
 	struct Server *sv;
 	struct World  *w;
 };
 
 struct ThWorldArgs {
-	bool          *active;
+	volatile bool *active;
 	struct World  *w;
 };
 
@@ -50,10 +52,18 @@ void*
 threadfn_server(void *arg)
 {
 	struct ThServerArgs *args = arg;
+	uint64_t            last_tick = 0;
+	uint64_t            now = 0;
 
-	Server_mainloop(args->sv, args->active, args->w);
+	while (*args->active) {
+		now = get_now();
+		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / TICKRATE)) {
+			continue;
+		}
+		last_tick = now;
 
-	args->active = false;
+		Server_tick(args->sv, now, args->w);
+	}
 
 	return NULL;
 }
@@ -82,7 +92,7 @@ threadfn_world(void *arg)
 int
 main()
 {
-	bool                active = true;
+	volatile bool       active = true;
 	size_t              i;
 	char               *input = NULL;
 	size_t              input_len = 64;
@@ -100,8 +110,11 @@ main()
 	th_sva.sv = &sv;
 	th_sva.w = &w;
 
-	w = World_new(24, 24);
-	Server_new(&sv, SLOTS, PORT);
+	w = World_new(WORLD_W, WORLD_H);
+	if (Server_new(&sv, SLOTS, PORT, WORLD_W, WORLD_H) != NE_OKAY) {
+		fprintf(stderr, "Couldn't set up server\n");
+		goto cleanup;
+	}
 
 	if (pthread_create(&th_w, NULL, threadfn_world, &th_wa) != 0 ||
 	    pthread_create(&th_sv, NULL, threadfn_server, &th_sva) != 0) {

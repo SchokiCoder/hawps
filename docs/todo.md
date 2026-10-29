@@ -123,7 +123,21 @@ but on a prepared list of active connections now.
 - [x] add basic dedicated server
 Also fix missing `free` in `Server_mainloop` and on `Server.cl_last_seen`.
 
+- [x] libextra net: replace mainloop functions with tick functions
+This allows to avoid concurrency or being locked into just network processing.
+
 - [ ] server: add help command
+
+- [ ] libextra net: handle in code todos
+
+- [ ] desktop client: add flag for connecting to a server (ip or hostname)
+- [ ] desktop client: display world or hostname/ip in the same statusbar SBE
+Because we don't know the worldname the server uses,
+and its none of the client's business to know.
+This means we don't need to display both a worldname statusbar element,
+and one for hostname/ip.
+
+- [ ] desktop client: add cmd for connecting to a server
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
@@ -152,8 +166,6 @@ Remember to update the ip address display to reflect this.
 
 - [ ] desktop client: add flag to enable hosting a server
 - [ ] desktop client: add flag to enable hosting a dedicated server
-- [ ] desktop client: add flag for connecting to an ip address
-- [ ] desktop client: add cmd for connecting to an ip address
 
 - [ ] desktop client: update help text
 - [ ] update README
