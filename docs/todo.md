@@ -131,7 +131,12 @@ This allows to avoid concurrency or being locked into just network processing.
 - [x] client and server: fix help prints using `APP_NAME` instead binary name
 - [x] server: add about flag
 
-- [ ] libextra net: handle in code todos
+- [x] libextra net: improve worldinfo exchange
+It had no explicit message enum,
+and was expected to arrive in a separate package after the "connected" signal,
+which you can't do with UDP.
+So this technically fixes `Client_connect` having corrupt world info,
+in those cases.
 
 - [ ] desktop client: add flag for connecting to a server (ip or hostname)
 - [ ] desktop client: display world or hostname/ip in the same statusbar SBE

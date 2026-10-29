@@ -72,6 +72,7 @@ enum Message {
 	MSG_NOSLOTS,
 
 	MSG_REQ_WORLDINFO,
+	MSG_WORLDINFO,
 	MSG_STILL_ALIVE,
 
 	/* Tells which array is being sent/received.
@@ -109,12 +110,17 @@ enum NetError
 Client_connect(struct Client *c,
                char          *restrict target,
                char          *restrict port,
-               struct World  *world);
+               struct World  *w);
 
-size_t
-Client_recv_worldarr(struct Client  *c,
-                     const uint64_t  now,
-                     struct World   *w);
+void
+Client_handle_message(struct Client  *c,
+                      struct World   *w);
+
+void
+Client_handle_worldinfo(struct Client  *c,
+                        struct World   *w,
+                        const int       wld_w,
+                        const int       wld_h);
 
 enum NetError
 Client_tick(struct Client  *c,
@@ -185,11 +191,15 @@ Server_free(struct Server *s);
 #ifdef HAWPS_IMPL
 
 struct Client
-Client_new() {
+Client_new()
+{
 	struct Client ret;
 
 	memset(&ret, 0, sizeof(ret));
 	ret.sockfd = -1;
+
+	ret.recvbuf_size = NET_MEDIUM_MSG_SIZE;
+	ret.recvbuf = malloc(ret.recvbuf_size);
 
 	return ret;
 }
@@ -198,7 +208,7 @@ enum NetError
 Client_connect(struct Client *c,
                char          *restrict target,
                char          *restrict port,
-               struct World  *world)
+               struct World  *w)
 {
 	int              e;
 	struct addrinfo  hints;
@@ -278,7 +288,6 @@ Client_connect(struct Client *c,
 		send_msg = MSG_CONNECTED;
 		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 		c->last_update = get_now();
-		return NE_OKAY;
 		break;
 
 	case MSG_INCOMPATIBLE:
@@ -297,46 +306,41 @@ Client_connect(struct Client *c,
 		break;
 	}
 
-	// TODO this sucks for now
-	send_msg = MSG_REQ_WORLDINFO; // unnecessary, change protocol
+	send_msg = MSG_REQ_WORLDINFO;
 	send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 
-	recv(c->sockfd, recv_buf, sizeof(recv_buf), 0); // no msg type here, change protocol
-	world->w = recv_buf[0];
-	world->h = recv_buf[sizeof(world->w)];
-	*world = World_new(world->w, world->h);
-
-	c->recvbuf_size = sizeof(enum Message) +
-	                  (NET_WORLD_AE_BYTES * world->w * world->h) +
-	                  1;
-	if (c->recvbuf_size < NET_MEDIUM_MSG_SIZE) {
-		c->recvbuf_size = NET_MEDIUM_MSG_SIZE;
-	}
-	c->recvbuf = malloc(c->recvbuf_size);
+	recv(c->sockfd, &recv_buf, sizeof(recv_buf), 0);
+	recv_msg = recv_buf[0];
+	pos = sizeof(recv_msg);
+	w->w = recv_buf[pos];
+	pos += sizeof(w->w);
+	w->h = recv_buf[pos];
+	pos += sizeof(w->h);
+	Client_handle_worldinfo(c, w, w->w, w->h);
 
 	return NE_OKAY;
 }
 
-size_t
-Client_recv_worldarr(struct Client  *c,
-                     const uint64_t  now,
-                     struct World   *w)
+void
+Client_handle_message(struct Client  *c,
+                      struct World   *w)
 {
-	enum Message msg_wat;
+	enum Message recv_msg;
 	size_t       pos;
 	size_t       ret = 0;
 
-	errno = 0;
-	ret = recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT);
-	if (ret == 0 ||
-	    errno != 0) {
-		return ret;
-	}
-	c->last_update = now;
-	msg_wat = c->recvbuf[0];
-	pos = sizeof(msg_wat);
+	recv_msg = c->recvbuf[0];
+	pos = sizeof(recv_msg);
 
-	switch (msg_wat) {
+	switch (recv_msg) {
+	case MSG_WORLDINFO:
+		w->w = c->recvbuf[pos];
+		pos += sizeof(w->w);
+		w->h = c->recvbuf[pos];
+		pos += sizeof(w->h);
+		Client_handle_worldinfo(c, w, w->w, w->h);
+		break;
+
 	case MSG_WAT_DISSOL:
 		memcpy(w->_dissol,
 		       &c->recvbuf[pos],
@@ -364,8 +368,24 @@ Client_recv_worldarr(struct Client  *c,
 	default:
 		break;
 	}
+}
 
-	return ret;
+void
+Client_handle_worldinfo(struct Client  *c,
+                        struct World   *w,
+                        const int       wld_w,
+                        const int       wld_h)
+{
+	World_free(w);
+	*w = World_new(wld_w, wld_h);
+
+	c->recvbuf_size = sizeof(enum Message) +
+		          (NET_WORLD_AE_BYTES * w->w * w->h) +
+		          1;
+	if (c->recvbuf_size < NET_MEDIUM_MSG_SIZE) {
+		c->recvbuf_size = NET_MEDIUM_MSG_SIZE;
+	}
+	c->recvbuf = realloc(c->recvbuf, c->recvbuf_size);
 }
 
 enum NetError
@@ -376,7 +396,12 @@ Client_tick(struct Client  *c,
 	size_t       pos;
 	enum Message send_msg;
 
-	Client_recv_worldarr(c, now, w);
+	errno = 0;
+	if (recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT) > 0 &&
+	    errno == 0) {
+		Client_handle_message(c, w);
+		c->last_update = now;
+	}
 
 	if (now - c->last_lifesignal >=
 	    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
@@ -583,7 +608,10 @@ Server_handle_message(struct Server         *s,
 		break;
 
 	case MSG_REQ_WORLDINFO:
+		send_msg = MSG_WORLDINFO;
 		pos = 0;
+		memcpy(&send_buf[pos], &send_msg, sizeof(send_msg));
+		pos += sizeof(send_msg);
 		memcpy(&send_buf[pos], &w.w, sizeof(w.w));
 		pos += sizeof(w.w);
 		memcpy(&send_buf[pos], &w.h, sizeof(w.h));
