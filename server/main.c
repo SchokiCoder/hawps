@@ -18,6 +18,9 @@
 #define CMD_QUIT       "quit"
 #define CMD_QUIT_SHORT "q"
 
+#define FLAG_HELP       "-help"
+#define FLAG_HELP_SHORT "-h"
+
 #define SLOTS       16
 #define TEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
 #define TICKRATE    24.0
@@ -42,6 +45,12 @@ struct ThWorldArgs {
 /* Constants
  */
 
+static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
+"\n"
+"Serious program to distribute *very* convincing physics worldwide.\n"
+"Together we will cause a resonance cascade!\n"
+"\n";
+
 static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "\n"
 "    " CMD_HELP_SHORT " " CMD_HELP "\n"
@@ -51,11 +60,36 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "        gracefully shuts down the server\n"
 "\n";
 
+static const char APP_HELP_FLAGS[] = "Options:\n"
+"\n"
+"    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
+"        prints this message then exits\n"
+"\n";
+
 /* Function declarations
  */
 
 /* Function definitions
  */
+
+bool
+handle_args(int    argc,
+            char **argv)
+{
+	int i;
+
+	for (i = 1; i < argc; i++) {
+		if (strcmp(argv[i], FLAG_HELP_SHORT) == 0 ||
+		    strcmp(argv[i], FLAG_HELP) == 0) {
+			printf(APP_HELP);
+			printf(APP_HELP_FLAGS);
+			printf(APP_HELP_COMMANDS);
+			return false;
+		}
+	}
+
+	return true;
+}
 
 void*
 threadfn_server(void *arg)
@@ -99,7 +133,8 @@ threadfn_world(void *arg)
 }
 
 int
-main()
+main(int    argc,
+     char **argv)
 {
 	volatile bool       active = true;
 	size_t              i;
@@ -111,6 +146,10 @@ main()
 	struct ThWorldArgs  th_wa;
 	struct Server       sv;
 	struct World        w;
+
+	if (handle_args(argc, argv) == false) {
+		return 0;
+	}
 
 	th_wa.active = &active;
 	th_wa.w = &w;

@@ -127,7 +127,8 @@ Also fix missing `free` in `Server_mainloop` and on `Server.cl_last_seen`.
 This allows to avoid concurrency or being locked into just network processing.
 
 - [x] server: add help command
-- [ ] server: add help flag
+- [x] server: add help flag
+- [ ] client and server: fix help prints using `APP_NAME` instead binary name
 - [ ] server: add about flag
 
 - [ ] libextra net: handle in code todos
