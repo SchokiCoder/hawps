@@ -42,6 +42,15 @@ struct ThWorldArgs {
 /* Constants
  */
 
+static const char APP_HELP_COMMANDS[] = "Commands:\n"
+"\n"
+"    " CMD_HELP_SHORT " " CMD_HELP "\n"
+"        prints this text, duh\n"
+"\n"
+"    " CMD_QUIT_SHORT " " CMD_QUIT "\n"
+"        gracefully shuts down the server\n"
+"\n";
+
 /* Function declarations
  */
 
@@ -127,6 +136,7 @@ main()
 	       CMD_HELP, CMD_HELP_SHORT);
 
 	while (active) {
+		printf("> ");
 		getline(&input, &input_len, stdin);
 		for (i = 0; i < input_len; i++) {
 			if ('\n' == input[i]) {
@@ -140,7 +150,7 @@ main()
 			/* empty, do nothing */
 		} else if (strcmp(input, CMD_HELP) == 0 ||
 		    strcmp(input, CMD_HELP_SHORT) == 0) {
-			printf("no");
+			printf(APP_HELP_COMMANDS);
 		} else if (strcmp(input, CMD_QUIT) == 0 ||
 		           strcmp(input, CMD_QUIT_SHORT) == 0) {
 			active = false;

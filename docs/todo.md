@@ -126,7 +126,9 @@ Also fix missing `free` in `Server_mainloop` and on `Server.cl_last_seen`.
 - [x] libextra net: replace mainloop functions with tick functions
 This allows to avoid concurrency or being locked into just network processing.
 
-- [ ] server: add help command
+- [x] server: add help command
+- [ ] server: add help flag
+- [ ] server: add about flag
 
 - [ ] libextra net: handle in code todos
 
