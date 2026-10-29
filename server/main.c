@@ -18,8 +18,10 @@
 #define CMD_QUIT       "quit"
 #define CMD_QUIT_SHORT "q"
 
-#define FLAG_HELP       "-help"
-#define FLAG_HELP_SHORT "-h"
+#define FLAG_ABOUT       "-about"
+#define FLAG_ABOUT_SHORT "-a"
+#define FLAG_HELP        "-help"
+#define FLAG_HELP_SHORT  "-h"
 
 #define SLOTS       16
 #define TEMPERATURE (20.0 + CELSIUS_TO_KELVIN)
@@ -45,6 +47,14 @@ struct ThWorldArgs {
 /* Constants
  */
 
+static const char APP_ABOUT[] = "The source code of \"" APP_NAME_FORMAL "\" "
+"aka " APP_NAME " " APP_VERSION " is available,\n"
+"licensed under the " APP_LICENSE " at:\n"
+APP_REPOSITORY "\n"
+"\n"
+"If you did not receive a copy of the license, see below:\n"
+APP_LICENSE_URL "\n";
+
 static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "\n"
 "Serious program to distribute *very* convincing physics worldwide.\n"
@@ -61,6 +71,9 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "\n";
 
 static const char APP_HELP_FLAGS[] = "Options:\n"
+"\n"
+"    " FLAG_ABOUT_SHORT " " FLAG_ABOUT "\n"
+"        prints program name, version, license and repository information then exits\n"
 "\n"
 "    " FLAG_HELP_SHORT " " FLAG_HELP "\n"
 "        prints this message then exits\n"
@@ -79,7 +92,11 @@ handle_args(int    argc,
 	int i;
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], FLAG_HELP_SHORT) == 0 ||
+		if (strcmp(argv[i], FLAG_ABOUT_SHORT) == 0 ||
+		    strcmp(argv[i], FLAG_ABOUT) == 0) {
+			printf(APP_ABOUT);
+			return false;
+		} else if (strcmp(argv[i], FLAG_HELP_SHORT) == 0 ||
 		    strcmp(argv[i], FLAG_HELP) == 0) {
 			printf(APP_HELP, argv[0]);
 			printf(APP_HELP_FLAGS);
