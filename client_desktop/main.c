@@ -160,7 +160,7 @@ APP_REPOSITORY "\n"
 "If you did not receive a copy of the license, see below:\n"
 APP_LICENSE_URL "\n";
 
-static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
+static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "\n"
 "Silly program to simulate physics in *very* convincing ways.\n"
 "It'll be great. Trust me.\n"
@@ -2063,7 +2063,7 @@ handle_args(int                  argc,
 			*framerate = f;
 		} else if (strcmp(argv[i], FLAG_HELP) == 0 ||
 		           strcmp(argv[i], FLAG_HELP_SHORT) == 0) {
-			printf(APP_HELP);
+			printf(APP_HELP, argv[0]);
 
 			printf(APP_HELP_FLAGS,
 			       STD_BRUSH_RADIUS,

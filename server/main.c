@@ -45,7 +45,7 @@ struct ThWorldArgs {
 /* Constants
  */
 
-static const char APP_HELP[] = "Usage: " APP_NAME " [OPTIONS]\n"
+static const char APP_HELP[] = "Usage: %s [OPTIONS]\n"
 "\n"
 "Serious program to distribute *very* convincing physics worldwide.\n"
 "Together we will cause a resonance cascade!\n"
@@ -81,7 +81,7 @@ handle_args(int    argc,
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], FLAG_HELP_SHORT) == 0 ||
 		    strcmp(argv[i], FLAG_HELP) == 0) {
-			printf(APP_HELP);
+			printf(APP_HELP, argv[0]);
 			printf(APP_HELP_FLAGS);
 			printf(APP_HELP_COMMANDS);
 			return false;

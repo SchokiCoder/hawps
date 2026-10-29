@@ -128,7 +128,7 @@ This allows to avoid concurrency or being locked into just network processing.
 
 - [x] server: add help command
 - [x] server: add help flag
-- [ ] client and server: fix help prints using `APP_NAME` instead binary name
+- [x] client and server: fix help prints using `APP_NAME` instead binary name
 - [ ] server: add about flag
 
 - [ ] libextra net: handle in code todos
