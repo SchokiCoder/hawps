@@ -66,6 +66,65 @@ test_heat_glow(void)
 	assert(0 == super_hot.a);
 }
 
+void
+test_strtoaddr(void)
+{
+	char *host = NULL;
+	char *port = NULL;
+
+	strtoaddr("192.168.0.43", &host, &port);
+	assert(strcmp("192.168.0.43", host) == 0);
+	assert(NULL == port);
+	free(host);
+	host = NULL;
+
+	strtoaddr("102.16.0.200:25565", &host, &port);
+	assert(strcmp("102.16.0.200", host) == 0);
+	assert(strcmp("25565", port) == 0);
+	free(host);
+	host = NULL;
+	free(port);
+	port = NULL;
+
+	strtoaddr("a00:d993::", &host, &port);
+	assert(strcmp("a00:d993::", host) == 0);
+	assert(NULL == port);
+	free(host);
+	host = NULL;
+
+	strtoaddr("[a00:d993::]", &host, &port);
+	assert(strcmp("a00:d993::", host) == 0);
+	assert(NULL == port);
+	free(host);
+	host = NULL;
+
+	strtoaddr("[a00:d993::]:25565", &host, &port);
+	assert(strcmp("a00:d993::", host) == 0);
+	assert(strcmp("25565", port) == 0);
+	free(host);
+	host = NULL;
+	free(port);
+	port = NULL;
+
+	strtoaddr("www.youactuallyhostthis.net", &host, &port);
+	assert(strcmp("www.youactuallyhostthis.net", host) == 0);
+	assert(NULL == port);
+	free(host);
+	host = NULL;
+
+	strtoaddr("www.youactuallyhostthis.net:420", &host, &port);
+	assert(strcmp("www.youactuallyhostthis.net", host) == 0);
+	assert(strcmp("420", port) == 0);
+	free(host);
+	host = NULL;
+	free(port);
+	port = NULL;
+
+	strtoaddr("]a00:d993::[:25565", &host, &port);
+	assert(NULL == host);
+	assert(NULL == port);
+}
+
 int
 main()
 {
@@ -74,6 +133,7 @@ main()
 
 	test_rgba_blend();
 	test_heat_glow();
+	test_strtoaddr();
 
 	printf("All tests passed :)\n");
 	return 0;

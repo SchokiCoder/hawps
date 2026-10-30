@@ -82,6 +82,8 @@
 #define FLAG_AUTOSAVE_NONE_SHORT    "-asvn"
 #define FLAG_BRUSHRADIUS            "-brushradius"
 #define FLAG_BRUSHRADIUS_SHORT      "-br"
+#define FLAG_CONNECT                "-connect"
+#define FLAG_CONNECT_SHORT          "-cn"
 #define FLAG_ERASERRADIUS           "-eraserradius"
 #define FLAG_ERASERRADIUS_SHORT     "-er"
 #define FLAG_FRAMERATE              "-framerate"
@@ -274,6 +276,18 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "    " FLAG_BRUSHRADIUS_SHORT " " FLAG_BRUSHRADIUS " NUMBER\n"
 "        sets the radius of the brush\n"
 "        default: %i\n"
+"\n"
+"    " FLAG_CONNECT_SHORT " " FLAG_CONNECT " HOST[:PORT]\n"
+"        sets the host and if given the port, and tries to connect\n"
+"        the host can be an IPv4, IPv6 address, or a hostname\n"
+"        valid examples:\n"
+"            192.168.0.43\n"
+"            102.16.0.200:25565\n"
+"            a00:d993::\n"
+"            [a00:d993::]:25565\n"
+"            www.youactuallyhostthis.net\n"
+"        port can range from %i to %i\n"
+"        default port: %s\n"
 "\n"
 "    " FLAG_ERASERRADIUS_SHORT " " FLAG_ERASERRADIUS " NUMBER\n"
 "        sets the radius of the eraser\n"
@@ -656,6 +670,8 @@ handle_args(int                  argc,
             bool                *autosave_all,
             bool                *autosave_none,
             float               *framerate,
+            char               **net_host,
+            char               **net_port,
             bool                *no_glowcolor,
             float               *tickrate,
             struct ToolOptions  *tool_opts,
@@ -2014,6 +2030,8 @@ handle_args(int                  argc,
             bool                *autosave_all,
             bool                *autosave_none,
             float               *framerate,
+            char               **net_host,
+            char               **net_port,
             bool                *no_glowcolor,
             float               *tickrate,
             struct ToolOptions  *tool_opts,
@@ -2043,6 +2061,9 @@ handle_args(int                  argc,
 				return false;
 			}
 			tool_opts->brush_radius = f;
+		} else if (strcmp(argv[i], FLAG_CONNECT) == 0 ||
+		           strcmp(argv[i], FLAG_CONNECT_SHORT) == 0) {
+			strtoaddr(argv[i + 1], net_host, net_port);
 		} else if (strcmp(argv[i], FLAG_ERASERRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_ERASERRADIUS_SHORT) == 0) {
 			if (!handle_flag_number_arg(argc, argv,
@@ -2067,6 +2088,8 @@ handle_args(int                  argc,
 
 			printf(APP_HELP_FLAGS,
 			       STD_BRUSH_RADIUS,
+			       0, UINT16_MAX,
+			       STD_NET_PORT,
 			       STD_ERASER_RADIUS,
 			       STD_FRAMERATE,
 			       CELSIUS_TO_KELVIN,
@@ -4370,6 +4393,8 @@ main(int    argc,
 	uint64_t               last_frame = 0;
 	uint64_t               last_key_use = 0;
 	uint64_t               last_tick = 0;
+	char                  *net_host = NULL;
+	char                  *net_port = NULL;
 	bool                   no_glowcolor = false;
 	uint64_t               now = 0;
 	size_t                 statusbar_elems = 0;
@@ -4431,6 +4456,8 @@ main(int    argc,
 	                 &autosave_all,
 	                 &autosave_none,
 	                 &framerate,
+	                 &net_host,
+	                 &net_port,
 	                 &no_glowcolor,
 	                 &tickrate,
 	                 &tool_opts,
@@ -4442,6 +4469,10 @@ main(int    argc,
 
 	hawps_core_init();
 	hawps_extra_init();
+
+	if (net_host != NULL) {
+		now what;
+	}
 
 	if (NULL == world_init_path) {
 		string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);

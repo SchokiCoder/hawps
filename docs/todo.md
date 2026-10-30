@@ -138,7 +138,12 @@ which you can't do with UDP.
 So this technically fixes `Client_connect` having corrupt world info,
 in those cases.
 
-- [ ] desktop client: add flag for connecting to a server (ip or hostname)
+- [x] desktop client: add flag for connecting to a server (ip or hostname)
+WIP
+
+- [ ] desktop client: add network logic
+This completes prior commit.
+
 - [ ] desktop client: display world or hostname/ip in the same statusbar SBE
 Because we don't know the worldname the server uses,
 and its none of the client's business to know.

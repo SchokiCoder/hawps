@@ -173,6 +173,7 @@ static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 /* defaults for startup settings
  */
 #define STD_FONT_SIZE         22
+#define STD_NET_PORT          "25565"
 #define STD_WORLD_SCALE       16
 
 /* size values

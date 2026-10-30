@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -184,6 +185,17 @@ Server_tick(struct Server  *s,
 
 void
 Server_free(struct Server *s);
+
+/* @str: strint to examine
+ * @host: will receive hostname or ip address
+ * @port: will receive port or NULL
+ *
+ * The output pointers need to be freed by you.
+ */
+void
+strtoaddr(const char  *restrict str,
+          char       **restrict host,
+          char       **restrict port);
 
 /* Function definitions
  */
@@ -837,6 +849,113 @@ Server_free(struct Server *s)
 	s->sockfd = -1;
 
 	memset(s, 0, sizeof(*s));
+}
+
+void
+strtoaddr(const char  *restrict str,
+          char       **restrict host,
+          char       **restrict port)
+{
+	const size_t NONE = -1;
+
+	size_t i = 0;
+	size_t bracket1 = -1;
+	size_t bracket2 = -1;
+	bool   dots = false;
+	size_t host_size = 0;
+	size_t last_colon = -1;
+	size_t port_size = 0;
+	size_t str_len = strlen(str);
+
+	for (i = str_len; i > 0; i--) {
+		if (':' == str[i]) {
+			last_colon = i;
+			break;
+		}
+	}
+	for (i = str_len; i > 0; i--) {
+		if (']' == str[i]) {
+			bracket2 = i;
+			break;
+		}
+	}
+	for (i = 0; i < str_len; i++) {
+		if ('[' == str[i]) {
+			bracket1 = i;
+			break;
+		}
+	}
+	for (i = 0; i < str_len; i++) {
+		if ('.' == str[i]) {
+			dots = true;
+			break;
+		}
+	}
+
+	if (true == dots &&
+	    NONE == last_colon &&
+	    NONE == bracket1 &&
+	    NONE == bracket2) {
+		/* ipv4 */
+		host_size = str_len + 1;
+		*host = malloc(host_size);
+		strncpy(*host, str, host_size);
+		(*host)[host_size - 1] = '\0';
+
+		port = NULL;
+	} else if (true == dots &&
+	           NONE != last_colon &&
+	           NONE == bracket1 &&
+	           NONE == bracket2) {
+		/* ipv4:port */
+		host_size = last_colon + 1;
+		*host = malloc(host_size);
+		strncpy(*host, str, host_size);
+		(*host)[host_size - 1] = '\0';
+
+		port_size = str_len - last_colon + 1;
+		*port = malloc(port_size);
+		strncpy(*port, &str[last_colon + 1], port_size);
+		(*port)[port_size - 1] = '\0';
+	} else if (false == dots &&
+	           NONE == bracket1 &&
+	           NONE == bracket2) {
+		/* ipv6 */
+		host_size = str_len + 1;
+		*host = malloc(host_size);
+		strncpy(*host, str, host_size);
+		(*host)[host_size - 1] = '\0';
+
+		port = NULL;
+	} else if (false == dots &&
+	           NONE != bracket1 &&
+	           NONE != bracket2 &&
+	           last_colon < bracket2) {
+		/* [ipv6] */
+		host_size = bracket2 - bracket1;
+		*host = malloc(host_size);
+		strncpy(*host, &str[bracket1 + 1], host_size);
+		(*host)[host_size - 1] = '\0';
+
+		port = NULL;
+	} else if (false == dots &&
+	           NONE != bracket1 &&
+	           NONE != bracket2 &&
+	           bracket2 < last_colon) {
+		/* [ipv6]:port */
+		host_size = bracket2 - bracket1;
+		*host = malloc(host_size);
+		strncpy(*host, &str[bracket1 + 1], host_size);
+		(*host)[host_size - 1] = '\0';
+
+		port_size = str_len - last_colon + 1;
+		*port = malloc(port_size);
+		strncpy(*port, &str[last_colon + 1], port_size);
+		(*port)[port_size - 1] = '\0';
+	} else {
+		host = NULL;
+		port = NULL;
+	}
 }
 
 #endif /* HAWPS_IMPL */
