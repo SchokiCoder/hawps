@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <hawps_core.h>
 #include <hawps_extra.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -137,6 +138,12 @@
 
 /* Types
  */
+
+struct ThArgsClient {
+	volatile bool *active;
+	struct Client *cl;
+	struct World  *w;
+};
 
 struct ToolOptions {
 	enum Mat  brush_mat;
@@ -1057,6 +1064,9 @@ set_feedback(char          **feedback,
              uint64_t       *feedback_expiration,
              const uint64_t  now,
              char           *str);
+
+void*
+thrdfn_cl(void *arg);
 
 void
 tool_radius_add(const int           radius_change,
@@ -2063,7 +2073,11 @@ handle_args(int                  argc,
 			tool_opts->brush_radius = f;
 		} else if (strcmp(argv[i], FLAG_CONNECT) == 0 ||
 		           strcmp(argv[i], FLAG_CONNECT_SHORT) == 0) {
-			strtoaddr(argv[i + 1], net_host, net_port);
+			if (!check_flag_arg(argc, argv, i)) {
+				return false;
+			}
+			i++;
+			strtoaddr(argv[i], net_host, net_port);
 		} else if (strcmp(argv[i], FLAG_ERASERRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_ERASERRADIUS_SHORT) == 0) {
 			if (!handle_flag_number_arg(argc, argv,
@@ -4121,6 +4135,26 @@ set_feedback(char          **feedback,
 	*feedback_expiration = now + (NANOS_PER_SEC * FEEDBACK_LIFETIME);
 }
 
+void*
+thrdfn_cl(void *arg)
+{
+	struct ThArgsClient *args = arg;
+	uint64_t             last_tick = 0;
+	uint64_t             now = 0;
+
+	while (*args->active) {
+		now = get_now();
+		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
+			continue;
+		}
+		last_tick = now;
+
+		Client_tick(args->cl, now, args->w);
+	}
+
+	return NULL;
+}
+
 void
 tool_radius_add(const int           radius_change,
                 struct ToolOptions *tool_opts)
@@ -4368,6 +4402,153 @@ write_tool_hint(char                     *out,
 	return written;
 }
 
+bool
+main_init(
+#ifdef BACKEND_SDL
+              TTF_Font              **font,
+              const char             *font_path,
+              const size_t            font_size,
+              SDL_Renderer          **renderer,
+              SDL_Window            **win,
+              size_t                 *world_area_w,
+              size_t                 *world_area_h,
+              SDL_FRect              *world_dst,
+#else
+              const size_t            cmdline_len,
+              size_t                 *cmdline_shift,
+              char                  **display,
+              size_t                 *display_size,
+              size_t                 *dot_depth,
+              const enum InputMode    input_mode,
+              const bool              no_color,
+              struct ToolOptions     *tool_opts,
+              const struct World      world,
+              struct Rect            *world_draw,
+              int                    *world_draw_space_w,
+              int                    *world_draw_space_h,
+#endif /* BACKEND_SDL */
+              char                   *cwd,
+              const char             *ip_address,
+              size_t                 *statusbar_elems,
+              enum StatusbarElement  *statusbar_elem,
+              int                    *win_w,
+              int                    *win_h,
+              char                   *world_init_path,
+              char                   *world_name)
+{
+	size_t i;
+
+	getcwd(cwd, PATH_SIZE);
+
+	hawps_core_init();
+	hawps_extra_init();
+
+	if (NULL == world_init_path) {
+		string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);
+	} else {
+		world_name_from_path(world_init_path,
+		                     world_name,
+		                     WORLDNAME_SIZE);
+	}
+
+#ifdef BACKEND_SDL
+	// TODO add proper identifier
+	SDL_SetAppMetadata(APP_NAME, APP_VERSION, "lol.69." APP_NAME);
+
+	if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) {
+		fprintf(stderr, "%s\n", SDL_GetError());
+		return false;
+	}
+
+	if (!TTF_Init()) {
+		fprintf(stderr, "%s\n", SDL_GetError());
+		return false;
+	}
+
+	if (NULL != font_path) {
+		*font = TTF_OpenFont(font_path, font_size);
+	} else {
+		for (i = 0; i < ARRLEN(FONTPATH); i++) {
+			*font = TTF_OpenFont(FONTPATH[i], font_size);
+			if (NULL != font) {
+				break;
+			}
+		}
+	}
+
+	if (NULL == *font) {
+		fprintf(stderr, "Font couldn't be opened\n%s\n", SDL_GetError());
+		return false;
+	}
+	TTF_SetFontDirection(*font, TTF_DIRECTION_LTR);
+	TTF_SetFontLanguage(*font, "en");
+
+	if (!SDL_CreateWindowAndRenderer(APP_NAME_FORMAL,
+	                                 SDL_WIN_WIDTH, SDL_WIN_HEIGHT,
+	                                 SDL_WINDOW_RESIZABLE,
+	                                 win, renderer)) {
+		fprintf(stderr, "%s\n", SDL_GetError());
+		return false;
+	}
+	*win_w = SDL_WIN_WIDTH;
+	*win_h = SDL_WIN_HEIGHT;
+
+	SDL_SetRenderDrawBlendMode(*renderer, SDL_BLENDMODE_BLEND);
+	SDL_StartTextInput(*win);
+
+	handle_resize(font_size,
+	              *win,
+	              win_w,
+	              win_h,
+	              world_area_w,
+	              world_area_h,
+	              world_dst);
+	handle_statusbar_resize(*font,
+	                        ip_address,
+	                        statusbar_elems,
+	                        statusbar_elem,
+	                        *win_w,
+	                        world_name);
+#else
+	CSI_set_raw();
+	fputs(CSI_CLEAR, stdout);
+
+	if (no_color) {
+		*dot_depth = 1;
+	} else {
+		*dot_depth = CSI_COLORSTRING_LEN + 1;
+	}
+
+	/* we love hacks
+	 * handle_resize ONLY reallocs for performance */
+	*display = malloc(1);
+	if (NULL == *display) {
+		fprintf(stderr, "Could not allocate memory\n");
+		return false;
+	}
+
+	handle_resize(cmdline_len,
+		      cmdline_shift,
+		      display,
+		      display_size,
+		      *dot_depth,
+		      input_mode,
+		      ip_address,
+		      statusbar_elems,
+		      statusbar_elem,
+		      tool_opts,
+		      win_w,
+		      win_h,
+		      world,
+		      world_draw,
+		      world_draw_space_w,
+		      world_draw_space_h,
+		      world_name);
+#endif /* BACKEND_SDL */
+
+	return true;
+}
+
 int
 main(int    argc,
      char **argv)
@@ -4375,6 +4556,7 @@ main(int    argc,
 	bool                   active = true;
 	bool                   autosave_all = false;
 	bool                   autosave_none = false;
+	struct Client          cl;
 	char                   cmdline[CMDLINE_SIZE];
 	size_t                 cmdline_len = 0;
 	char                   cwd[PATH_SIZE];
@@ -4399,6 +4581,8 @@ main(int    argc,
 	uint64_t               now = 0;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[ARRLEN(STATUSBAR_DISPLAY_PRIORITY)];
+	pthread_t              thrd_cl = 0;
+	struct ThArgsClient    tha_cl;
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
 	struct ToolOptions     tool_opts;
@@ -4426,20 +4610,20 @@ main(int    argc,
 	size_t        world_scale = STD_WORLD_SCALE;
 	SDL_Texture  *world_tx = NULL;
 #else
-	size_t                 cmdline_shift = 0;
-	char                  *display = NULL;
-	size_t                 display_size = 0;
-	size_t                 dot_depth = 0;
-	bool                   lmb_pressed = false;
-	bool                   no_color = false;
-	struct Rect            world_draw = {
+	size_t       cmdline_shift = 0;
+	char        *display = NULL;
+	size_t       display_size = 0;
+	size_t       dot_depth = 0;
+	bool         lmb_pressed = false;
+	bool         no_color = false;
+	struct Rect  world_draw = {
 		.x = 0,
 		.y = 0,
 		.w = 0,
 		.h = 0,
 	};
-	int                    world_draw_space_w = 0; /* how much space comes after the world display */
-	int                    world_draw_space_h = 0; /* how much space comes after the world display */
+	int          world_draw_space_w = 0; /* how much space comes after the world display */
+	int          world_draw_space_h = 0; /* how much space comes after the world display */
 #endif
 
 	cmdline[0] = '\0';
@@ -4465,151 +4649,94 @@ main(int    argc,
 		return 0;
 	}
 
-	getcwd(cwd, PATH_SIZE);
-
-	hawps_core_init();
-	hawps_extra_init();
-
-	if (net_host != NULL) {
-		now what;
-	}
-
-	if (NULL == world_init_path) {
-		string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);
-	} else {
-		world_name_from_path(world_init_path,
-		                     world_name,
-		                     WORLDNAME_SIZE);
-	}
-
+	if (main_init(
 #ifdef BACKEND_SDL
-	// TODO add proper identifier
-	SDL_SetAppMetadata(APP_NAME, APP_VERSION, "lol.69." APP_NAME);
-
-	if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) {
-		fprintf(stderr, "%s\n", SDL_GetError());
-		goto cleanup;
-	}
-
-	if (!TTF_Init()) {
-		fprintf(stderr, "%s\n", SDL_GetError());
-		goto cleanup;
-	}
-
-	if (NULL != font_path) {
-		font = TTF_OpenFont(font_path, font_size);
-	} else {
-		for (i = 0; i < ARRLEN(FONTPATH); i++) {
-			font = TTF_OpenFont(FONTPATH[i], font_size);
-			if (NULL != font) {
-				break;
-			}
-		}
-	}
-
-	if (NULL == font) {
-		fprintf(stderr, "Font couldn't be opened\n%s\n", SDL_GetError());
-		goto cleanup;
-	}
-	TTF_SetFontDirection(font, TTF_DIRECTION_LTR);
-	TTF_SetFontLanguage(font, "en");
-
-	if (!SDL_CreateWindowAndRenderer(APP_NAME_FORMAL,
-	                                 SDL_WIN_WIDTH, SDL_WIN_HEIGHT,
-	                                 SDL_WINDOW_RESIZABLE,
-	                                 &win, &renderer)) {
-		fprintf(stderr, "%s\n", SDL_GetError());
-		goto cleanup;
-	}
-	win_w = SDL_WIN_WIDTH;
-	win_h = SDL_WIN_HEIGHT;
-
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	SDL_StartTextInput(win);
-
-	handle_resize(font_size,
-	              win,
-	              &win_w,
-	              &win_h,
+	              &font,
+	              font_path,
+	              font_size,
+	              &renderer,
+	              &win,
 	              &world_area_w,
 	              &world_area_h,
-	              &world_dst);
-	handle_statusbar_resize(font,
-	                        ip_address,
-	                        &statusbar_elems,
-	                        statusbar_elem,
-	                        win_w,
-	                        world_name);
+	              &world_dst,
 #else
-	CSI_set_raw();
-	fputs(CSI_CLEAR, stdout);
-
-	if (no_color) {
-		dot_depth = 1;
-	} else {
-		dot_depth = CSI_COLORSTRING_LEN + 1;
-	}
-
-	/* we love hacks
-	 * handle_resize ONLY reallocs for performance */
-	display = malloc(1);
-	if (NULL == display) {
-		fprintf(stderr, "Could not allocate memory\n");
+	              cmdline_len,
+	              &cmdline_shift,
+	              &display,
+	              &display_size,
+	              &dot_depth,
+	              input_mode,
+	              no_color,
+	              &tool_opts,
+	              world,
+	              &world_draw,
+	              &world_draw_space_w,
+	              &world_draw_space_h,
+#endif /* BACKEND_SDL */
+	              cwd,
+	              ip_address,
+	              &statusbar_elems,
+	              statusbar_elem,
+	              &win_w,
+	              &win_h,
+	              world_init_path,
+	              world_name) == false) {
 		goto cleanup;
 	}
 
-	handle_resize(cmdline_len,
-		      &cmdline_shift,
-		      &display,
-		      &display_size,
-		      dot_depth,
-		      input_mode,
-		      ip_address,
-		      &statusbar_elems,
-		      statusbar_elem,
-		      &tool_opts,
-		      &win_w,
-		      &win_h,
-		      world,
-		      &world_draw,
-		      &world_draw_space_w,
-		      &world_draw_space_h,
-		      world_name);
-#endif /* BACKEND_SDL */
-
-	if (NULL != world_init_path) {
-		file = fopen(world_init_path, "r");
-		if (NULL == file) {
-			fprintf(stderr, "Could not load world, given via argument\n");
+	if (net_host != NULL) {
+		if (NULL == net_port) {
+			net_port = STD_NET_PORT;
+		}
+		cl = Client_new();
+		if (Client_connect(&cl, net_host, net_port, &world) != NE_OKAY) {
 			goto cleanup;
 		}
 
-		world = World_load(file);
-		fclose(file);
-	} else {
-		command_load_core(cwd, &world, WORLDNAME_NEW);
-	}
+		tha_cl.active = &active;
+		tha_cl.cl = &cl;
+		tha_cl.w = &world;
 
-	if (0 == world.w ||
-	    0 == world.h) {
-		command_new(
+		if (pthread_create(&thrd_cl, NULL, thrdfn_cl, &tha_cl) != 0) {
+			fprintf(stderr, "Could not create thread\n");
+			goto cleanup;
+		}
+	} else {
+		if (NULL != world_init_path) {
+			file = fopen(world_init_path, "r");
+			if (NULL == file) {
+				fprintf(stderr,
+				        "Could not load world, given via argument\n");
+				goto cleanup;
+			}
+
+			world = World_load(file);
+			fclose(file);
+		} else {
+			command_load_core(cwd, &world, WORLDNAME_NEW);
+		}
+
+		if (0 == world.w ||
+		    0 == world.h) {
+			command_new(
 #ifdef BACKEND_SDL
-		            renderer,
-		            world_area_w,
-		            world_area_h,
-		            &world_dst,
-		            world_scale,
-		            &world_tx,
+				    renderer,
+				    world_area_w,
+				    world_area_h,
+				    &world_dst,
+				    world_scale,
+				    &world_tx,
 #else
-		            win_w,
-		            win_h,
-		            &world_draw,
-		            &world_draw_space_w,
-		            &world_draw_space_h,
+				    win_w,
+				    win_h,
+				    &world_draw,
+				    &world_draw_space_w,
+				    &world_draw_space_h,
 #endif
-		            &tool_opts,
-		            &world,
-		            world_name);
+				    &tool_opts,
+				    &world,
+				    world_name);
+		}
 	}
 
 	handle_world_resize(
@@ -4791,6 +4918,9 @@ main(int    argc,
 	                world_name);
 
 cleanup:
+	active = false;
+	pthread_join(thrd_cl, NULL);
+
 #ifdef BACKEND_SDL
 	SDL_DestroyTexture(world_tx);
 	SDL_StopTextInput(win);
@@ -4811,6 +4941,7 @@ cleanup:
 #endif
 
 	World_free(&world);
+	Client_free(&cl);
 
 	return 0;
 }

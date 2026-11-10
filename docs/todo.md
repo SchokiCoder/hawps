@@ -149,8 +149,8 @@ and an uninitialized world to be used for world array copies.
 Now there is a loop for it.
 This also adds a long overdue test case.
 
-- [ ] desktop client: add network logic
-This completes prior commit.
+- [x] desktop client: add network logic
+This completes 3b42f62cda5907ccd27455ea91743c590a2afc1d.
 
 - [ ] desktop client: display world or hostname/ip in the same statusbar SBE
 Because we don't know the worldname the server uses,
