@@ -6,13 +6,44 @@
 #include <assert.h>
 #include <hawps_core.h>
 #include <hawps_extra.h>
+#include <pthread.h>
 #include <stdio.h>
 
+#define SLOTS             8
+#define TICKRATE          24.0
+#define PORT              25565
+#define PORT_STR          "25565"
 #define WORLD_W           10
 #define WORLD_H           10
 #define WORLD_TEMPERATURE 273.15 + 20
 
+struct ThArgsServer {
+	volatile bool *active;
+	struct Server *sv;
+	struct World  *w;
+};
+
 static struct World world;
+
+void*
+threadfn_sv(void *arg)
+{
+	struct ThArgsServer *args = arg;
+	uint64_t             last_tick = 0;
+	uint64_t             now = 0;
+
+	while (*args->active) {
+		now = get_now();
+		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / TICKRATE)) {
+			continue;
+		}
+		last_tick = now;
+
+		Server_tick(args->sv, now, args->w);
+	}
+
+	return NULL;
+}
 
 void
 test_rgba_blend(void)
@@ -125,6 +156,41 @@ test_strtoaddr(void)
 	assert(NULL == port);
 }
 
+void
+test_connect(void)
+{
+	bool                active = true;
+	struct Client       cl;
+	struct Server       sv;
+	pthread_t           th_sv = 0;
+	struct ThArgsServer tha_sv;
+	struct World        w_cl;
+	struct World        w_sv;
+
+	memset(&w_cl, 0, sizeof(w_cl));
+	w_sv = World_new(WORLD_W, WORLD_H);
+
+	assert(Server_new(&sv, SLOTS, PORT, WORLD_W, WORLD_H) == NE_OKAY);
+
+	tha_sv.active = &active;
+	tha_sv.sv = &sv;
+	tha_sv.w = &w_sv;
+
+	assert(pthread_create(&th_sv, NULL, threadfn_sv, &tha_sv) == 0);
+
+	assert(Client_connect(&cl, "localhost", PORT_STR, &w_cl) == NE_OKAY);
+	assert(w_cl.w == WORLD_W);
+	assert(w_cl.h == WORLD_H);
+
+	active = false;
+	pthread_join(th_sv, NULL);
+
+	Client_free(&cl);
+	Server_free(&sv);
+	World_free(&w_cl);
+	World_free(&w_sv);
+}
+
 int
 main()
 {
@@ -134,6 +200,7 @@ main()
 	test_rgba_blend();
 	test_heat_glow();
 	test_strtoaddr();
+	test_connect();
 
 	printf("All tests passed :)\n");
 	return 0;

@@ -321,8 +321,28 @@ Client_connect(struct Client *c,
 	send_msg = MSG_REQ_WORLDINFO;
 	send(c->sockfd, &send_msg, sizeof(send_msg), 0);
 
-	recv(c->sockfd, &recv_buf, sizeof(recv_buf), 0);
-	recv_msg = recv_buf[0];
+	for (i = 0; i < NET_MAX_CONNECT_RETRIES; i++) {
+		while (recv(c->sockfd,
+		            &recv_buf,
+		            sizeof(recv_buf),
+		            MSG_DONTWAIT) > 0) {
+
+			recv_msg = recv_buf[0];
+			if (MSG_WORLDINFO == recv_msg) {
+				break;
+			}
+		}
+
+		if (MSG_WORLDINFO == recv_msg) {
+			break;
+		}
+		sleep(NET_RETRY_SLEEP_LEN);
+	}
+	if (i >= NET_MAX_CONNECT_RETRIES) {
+		fprintf(stderr, "Server did not respond properly\n");
+		return NE_IRREGULAR_RESPONSE;
+	}
+
 	pos = sizeof(recv_msg);
 	w->w = recv_buf[pos];
 	pos += sizeof(w->w);

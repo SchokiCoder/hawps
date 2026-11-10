@@ -141,6 +141,14 @@ in those cases.
 - [x] desktop client: add flag for connecting to a server (ip or hostname)
 WIP
 
+- [x] libextra net: fix initial worldinfo exchange
+Upon `Client_connect` world info should be received,
+but any signal could use up the only `recv` call for it,
+causing signal misinterpretation,
+and an uninitialized world to be used for world array copies.
+Now there is a loop for it.
+This also adds a long overdue test case.
+
 - [ ] desktop client: add network logic
 This completes prior commit.
 
@@ -151,6 +159,8 @@ This means we don't need to display both a worldname statusbar element,
 and one for hostname/ip.
 
 - [ ] desktop client: add cmd for connecting to a server
+
+- [ ] libextra net: remove fprintfs and replace them with enum NetError returns
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
@@ -176,6 +186,8 @@ we can let them set the transmission rate high enough,
 so that client's normal tickrate is all covered by transmissions.
 This should be able to piggyback off the saving/loading serialization.
 Remember to update the ip address display to reflect this.
+
+- [ ] sim: acid is invincible, it shouldn't be
 
 - [ ] desktop client: add flag to enable hosting a server
 - [ ] desktop client: add flag to enable hosting a dedicated server
