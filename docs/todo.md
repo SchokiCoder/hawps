@@ -152,6 +152,20 @@ This also adds a long overdue test case.
 - [x] desktop client: add network logic
 This completes 3b42f62cda5907ccd27455ea91743c590a2afc1d.
 
+- [x] libextra net: add compile time option to remove printfs
+Add `#define HAWPS_NET_NO_PRINT` before include to use.
+
+- [ ] libextra net: add static fileptr var for print target
+- [ ] libextra net: add timestamps to prints
+
+- [ ] libextra net: make struct for worldinfo msg
+to replace hardwired `w->w = recv_buf[pos];`
+the success of this commit may be measured in `size_t pos;` no longer existing
+
+- [ ] libextra net: let Sv-tick and Cl-tick handle all pending msgs
+It only handles one per tick, which can be very bad in many cases.
+Many clients, low tickrate, easy to DOS target...
+
 - [ ] desktop client: display world or hostname/ip in the same statusbar SBE
 Because we don't know the worldname the server uses,
 and its none of the client's business to know.
@@ -160,13 +174,10 @@ and one for hostname/ip.
 
 - [ ] desktop client: add cmd for connecting to a server
 
-- [ ] libextra net: remove fprintfs and replace them with enum NetError returns
-
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
 
 - [ ] server: add pausing
-- [ ] server: add logging to file
 - [ ] server: make tickrates configurable as flags
 - [ ] server: make client updaterate configurable as flags
 
