@@ -156,7 +156,7 @@ This completes 3b42f62cda5907ccd27455ea91743c590a2afc1d.
 Add `#define HAWPS_NET_NO_PRINT` before include to use.
 
 - [x] libextra net: add static fileptr var for print target
-- [ ] libextra net: add timestamps to prints
+- [x] libextra net: add timestamps to prints
 
 - [ ] libextra net: make struct for worldinfo msg
 to replace hardwired `w->w = recv_buf[pos];`
