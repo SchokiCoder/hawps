@@ -101,6 +101,14 @@ enum NetError {
 	NE_SERVER_DOESNT_RESPOND,
 };
 
+/* Constants
+ */
+
+/* Global variables
+ */
+
+static FILE *net_log = NULL;
+
 /* Function declarations
  */
 
@@ -244,7 +252,7 @@ Client_connect(struct Client *c,
 	e = getaddrinfo(target, port, &hints, &c->ai);
 	if (e) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "%s\n", gai_strerror(e));
+		fprintf(net_log, "%s\n", gai_strerror(e));
 #endif
 		return NE_COULDNT_GET_ADDRINFO;
 	}
@@ -262,7 +270,7 @@ Client_connect(struct Client *c,
 		            c->aip->ai_addrlen) != 0) {
 			close(c->sockfd);
 #ifndef HAWPS_NET_NO_PRINT
-			fprintf(stderr, "socket connect: %i\n", errno);
+			fprintf(net_log, "socket connect: %i\n", errno);
 #endif
 		} else {
 			break;
@@ -271,7 +279,7 @@ Client_connect(struct Client *c,
 
 	if (c->aip == NULL) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Could not connect socket\n");
+		fprintf(net_log, "Could not connect socket\n");
 #endif
 		return NE_COULDNT_CONNECT_SOCKET;
 	}
@@ -295,7 +303,7 @@ Client_connect(struct Client *c,
 
 	if (i >= NET_MAX_CONNECT_RETRIES) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr,
+		fprintf(net_log,
 		        "Connection failed after %i retries\n",
 		        NET_MAX_CONNECT_RETRIES);
 #endif
@@ -305,7 +313,7 @@ Client_connect(struct Client *c,
 	switch (recv_msg) {
 	case MSG_CONNECTED:
 #ifndef HAWPS_NET_NO_PRINT
-		printf("Connected\n");
+		fprintf(net_log, "Connected\n");
 #endif
 		send_msg = MSG_CONNECTED;
 		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
@@ -314,21 +322,21 @@ Client_connect(struct Client *c,
 
 	case MSG_INCOMPATIBLE:
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Server version doesn't match\n");
+		fprintf(net_log, "Server version doesn't match\n");
 #endif
 		return NE_INCOMPATIBLE_VERSIONS;
 		break;
 
 	case MSG_NOSLOTS:
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Server has no slots available\n");
+		fprintf(net_log, "Server has no slots available\n");
 #endif
 		return NE_SERVER_IS_FULL;
 		break;
 
 	default:
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Server did not respond properly\n");
+		fprintf(net_log, "Server did not respond properly\n");
 #endif
 		return NE_IRREGULAR_RESPONSE;
 		break;
@@ -356,7 +364,7 @@ Client_connect(struct Client *c,
 	}
 	if (i >= NET_MAX_CONNECT_RETRIES) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Server did not respond properly\n");
+		fprintf(net_log, "Server did not respond properly\n");
 #endif
 		return NE_IRREGULAR_RESPONSE;
 	}
@@ -502,19 +510,19 @@ Server_new(struct Server *s,
 	s->sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (s->sockfd == -1) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Couldn't get socket: %i\n", errno);
+		fprintf(net_log, "Couldn't get socket: %i\n", errno);
 #endif
 		return NE_COULDNT_GET_SOCKET;
 	}
 	if (setsockopt(s->sockfd, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val))) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Couldn't set IPv& only: %i\n", errno);
+		fprintf(net_log, "Couldn't set IPv& only: %i\n", errno);
 #endif
 		return NE_COULDNT_DISABLE_IPV6ONLY;
 	}
 	if (bind(s->sockfd, (struct sockaddr*) &addr, sizeof(addr))) {
 #ifndef HAWPS_NET_NO_PRINT
-		fprintf(stderr, "Couldn't bind: %i\n", errno);
+		fprintf(net_log, "Couldn't bind: %i\n", errno);
 #endif
 		return NE_COULDNT_BIND_SOCKET;
 	}
@@ -610,7 +618,7 @@ Server_handle_message(struct Server         *s,
 			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
 			       &recv_addr, recv_addr_len);
 #ifndef HAWPS_NET_NO_PRINT
-			fprintf(stderr, "Client version doesn't match\n");
+			fprintf(net_log, "Client version doesn't match\n");
 #endif
 			break;
 		}
@@ -652,7 +660,7 @@ Server_handle_message(struct Server         *s,
 			          ip,
 			          NET_IPSTR_LEN);
 #ifndef HAWPS_NET_NO_PRINT
-			printf("Invalid recipient %s\n", ip);
+			fprintf(net_log, "Invalid recipient %s\n", ip);
 #endif
 			return;
 		}
@@ -662,7 +670,7 @@ Server_handle_message(struct Server         *s,
 		}
 
 #ifndef HAWPS_NET_NO_PRINT
-		printf("Connection established with %s\n", s->cl_ip[i]);
+		fprintf(net_log, "Connection established with %s\n", s->cl_ip[i]);
 #endif
 
 		Server_set_client_active(s, i, true);
@@ -691,7 +699,7 @@ Server_handle_message(struct Server         *s,
 			          ip,
 			          NET_IPSTR_LEN);
 #ifndef HAWPS_NET_NO_PRINT
-			printf("Invalid recipient %s\n", ip);
+			fprintf(net_log, "Invalid recipient %s\n", ip);
 #endif
 			return;
 		}
@@ -722,8 +730,9 @@ Server_housekeeping(struct Server  *s,
 			     NET_SERVER_SLOT_DEACTIVATE_TIME) {
 				Server_set_client_active(s, i, false);
 #ifndef HAWPS_NET_NO_PRINT
-				printf("No lifesignal from %s, disconnecting\n",
-				       s->cl_ip[i]);
+				fprintf(net_log,
+				        "No lifesignal from %s, disconnecting\n",
+				        s->cl_ip[i]);
 #endif
 			}
 		} else {

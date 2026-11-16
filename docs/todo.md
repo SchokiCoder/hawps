@@ -155,7 +155,7 @@ This completes 3b42f62cda5907ccd27455ea91743c590a2afc1d.
 - [x] libextra net: add compile time option to remove printfs
 Add `#define HAWPS_NET_NO_PRINT` before include to use.
 
-- [ ] libextra net: add static fileptr var for print target
+- [x] libextra net: add static fileptr var for print target
 - [ ] libextra net: add timestamps to prints
 
 - [ ] libextra net: make struct for worldinfo msg

@@ -36,6 +36,8 @@ void
 hawps_extra_init(void)
 {
 	glowcolor_init();
+
+	net_log = stdout;
 }
 
 #endif /* HAWPS_IMPL */
