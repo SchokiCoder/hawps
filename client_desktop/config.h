@@ -48,6 +48,8 @@ static const char DOT_APPEARANCE[] = {
 #define CMD_CLEAR_SHORT             "cl"
 #define CMD_CLEARALL                "clearall"
 #define CMD_CLEARALL_SHORT          "cla"
+#define CMD_CONNECT                 "connect"
+#define CMD_CONNECT_SHORT           "cnct"
 #define CMD_COOLER                  "cooler"
 #define CMD_COOLER_SHORT            "c"
 #define CMD_DEFAULTS                "defaults"

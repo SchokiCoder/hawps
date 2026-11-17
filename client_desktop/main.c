@@ -7,6 +7,7 @@
 #include <hawps_core.h>
 #include <hawps_extra.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -193,6 +194,12 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_CLEARALL_SHORT " " CMD_CLEARALL "\n"
 "        clears the world, including spawners\n"
 "\n"
+"    " CMD_CONNECT_SHORT " " CMD_CONNECT " HOST[:PORT]\n"
+"        tries to connect to the given target\n"
+"        target is IPv4, IPv6, or hostname and may have a port\n"
+"        example: 192.168.0.42:25565\n"
+"        default port: %s\n"
+"\n"
 "    " CMD_COOLER_SHORT " " CMD_COOLER "\n"
 "        selects the cooler as active tool\n"
 "\n"
@@ -288,7 +295,7 @@ static const char APP_HELP_FLAGS[] = "Options:\n"
 "        sets the host and if given the port, and tries to connect\n"
 "        the host can be an IPv4, IPv6 address, or a hostname\n"
 "        valid examples:\n"
-"            192.168.0.43\n"
+"            192.168.0.47\n"
 "            102.16.0.200:25565\n"
 "            a00:d993::\n"
 "            [a00:d993::]:25565\n"
@@ -517,6 +524,18 @@ check_flag_arg(int         argc,
                const int   idx);
 
 void
+command_connect(bool                 *active,
+                struct Client        *cl,
+                char                **restrict feedback,
+                uint64_t             *feedback_expiration,
+                char                 *restrict net_host,
+                char                **restrict net_port,
+                const uint64_t        now,
+                struct ThArgsClient  *tha_cl,
+                pthread_t            *thrd_cl,
+                struct World         *world);
+
+void
 command_load_core(const char   *cwd,
                   struct World *world,
                   const char   *world_name);
@@ -650,14 +669,20 @@ handle_advanced_command(const char            *cmd,
                         int                   *world_draw_space_w,
                         int                   *world_draw_space_h,
 #endif
+                        bool                  *active,
+                        struct Client         *cl,
                         const char            *cwd,
                         char                 **feedback,
                         uint64_t              *feedback_expiration,
                         float                 *framerate,
                         const char            *ip_address,
+                        char                 **restrict net_host,
+                        char                 **restrict net_port,
                         const uint64_t         now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
+                        struct ThArgsClient   *tha_cl,
+                        pthread_t             *thrd_cl,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
                         const int              win_w,
@@ -716,17 +741,22 @@ handle_command(char                  *cmdline,
                int                   *world_draw_space_h,
 #endif
                bool                  *active,
+               struct Client         *cl,
                const char            *cwd,
                char                 **feedback,
                uint64_t              *feedback_expiration,
                float                 *framerate,
                const char            *ip_address,
+               char                 **restrict net_host,
+               char                 **restrict net_port,
                bool                  *no_glowcolor,
                const uint64_t         now,
                bool                  *paused,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
                bool                  *th_vision,
+               struct ThArgsClient   *tha_cl,
+               pthread_t             *thrd_cl,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
                const int              win_w,
@@ -798,6 +828,7 @@ handle_input(
              int                   *world_draw_space_h,
 #endif /* BACKEND_SDL */
              bool                  *active,
+             struct Client         *cl,
              char                  *cmdline,
              size_t                *cmdline_len,
              const char            *cwd,
@@ -810,6 +841,8 @@ handle_input(
              enum InputMode        *input_mode,
              const char            *ip_address,
              uint64_t              *last_key_use,
+             char                 **restrict net_host,
+             char                 **restrict net_port,
              bool                  *no_glowcolor,
              const uint64_t         now,
              bool                  *paused,
@@ -817,6 +850,8 @@ handle_input(
              enum StatusbarElement *statusbar_elem,
              float                 *tickrate,
              bool                  *th_vision,
+             struct ThArgsClient   *tha_cl,
+             pthread_t             *thrd_cl,
              struct ToolOptions    *tool_opts,
              struct World          *world,
              char                  *world_name);
@@ -1117,6 +1152,69 @@ check_flag_arg(int         argc,
 	}
 
 	return true;
+}
+
+void
+command_connect(bool                 *active,
+                struct Client        *cl,
+                char                **restrict feedback,
+                uint64_t             *feedback_expiration,
+                char                 *restrict net_host,
+                char                **restrict net_port,
+                const uint64_t        now,
+                struct ThArgsClient  *tha_cl,
+                pthread_t            *thrd_cl,
+                struct World         *world)
+{
+	struct World tempwld;
+
+	memset(&tempwld, 0, sizeof(tempwld));
+
+	if (NULL == net_host) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "Network target is invalid.");
+		return;
+	}
+
+	if (NULL == *net_port) {
+		*net_port = STD_NET_PORT;
+	}
+
+	if (0 == cl->sockfd ||
+	    0 == cl->recvbuf_size ||
+	    NULL == cl->recvbuf) {
+		*cl = Client_new();
+	}
+
+	if (0 != *thrd_cl &&
+	    pthread_kill(*thrd_cl, 0) == 0) {
+		*active = false;
+		pthread_cancel(*thrd_cl);
+		*active = true;
+	}
+
+	tempwld = *world;
+	World_free(world);
+
+	if (Client_connect(cl, net_host, *net_port, world) != NE_OKAY) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "Could not connect.");
+		World_free(world);
+		*world = tempwld;
+		return;
+	}
+
+	tha_cl->active = active;
+	tha_cl->cl = cl;
+	tha_cl->w = world;
+
+	if (pthread_create(thrd_cl, NULL, thrdfn_cl, tha_cl) != 0) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "Could not create net thread.");
+		World_free(world);
+		*world = tempwld;
+		return;
+	}
 }
 
 void
@@ -1755,14 +1853,20 @@ handle_advanced_command(const char            *cmd,
                         int                   *world_draw_space_w,
                         int                   *world_draw_space_h,
 #endif
+                        bool                  *active,
+                        struct Client         *cl,
                         const char            *cwd,
                         char                 **feedback,
                         uint64_t              *feedback_expiration,
                         float                 *framerate,
                         const char            *ip_address,
+                        char                 **restrict net_host,
+                        char                 **restrict net_port,
                         const uint64_t         now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
+                        struct ThArgsClient   *tha_cl,
+                        pthread_t             *thrd_cl,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
                         const int              win_w,
@@ -1796,6 +1900,26 @@ handle_advanced_command(const char            *cmd,
 		} else {
 			tool_opts->brush_radius = l;
 		}
+	} else if (strcmp(cmd, CMD_CONNECT) == 0 ||
+	           strcmp(cmd, CMD_CONNECT_SHORT) == 0) {
+		if (NULL != *net_host)
+			free(net_host);
+
+		if (NULL != *net_port &&
+		    strcmp(STD_NET_PORT, *net_port) != 0)
+			free(net_port);
+
+		strtoaddr(arg, net_host, net_port);
+		command_connect(active,
+		                cl,
+		                feedback,
+		                feedback_expiration,
+		                *net_host,
+		                net_port,
+		                now,
+		                tha_cl,
+		                thrd_cl,
+		                world);
 	} else if (strcmp(cmd, CMD_ERASERRADIUS) == 0 ||
 	           strcmp(cmd, CMD_ERASERRADIUS_SHORT) == 0) {
 		errno = 0;
@@ -2160,6 +2284,7 @@ handle_args(int                  argc,
 			       key_pause);
 
 			printf(APP_HELP_COMMANDS,
+			       STD_NET_PORT,
 			       WORLDNAME_MAXLEN,
 			       WORLDNAME_MAXLEN);
 
@@ -2310,17 +2435,22 @@ handle_command(char                  *cmdline,
                int                   *world_draw_space_h,
 #endif
                bool                  *active,
+               struct Client         *cl,
                const char            *cwd,
                char                 **feedback,
                uint64_t              *feedback_expiration,
                float                 *framerate,
                const char            *ip_address,
+               char                 **restrict net_host,
+               char                 **restrict net_port,
                bool                  *no_glowcolor,
                const uint64_t         now,
                bool                  *paused,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
                bool                  *th_vision,
+               struct ThArgsClient   *tha_cl,
+               pthread_t             *thrd_cl,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
                const int              win_w,
@@ -2355,14 +2485,20 @@ handle_command(char                  *cmdline,
 			                        world_draw_space_w,
 			                        world_draw_space_h,
 #endif
+			                        active,
+			                        cl,
 			                        cwd,
 			                        feedback,
 			                        feedback_expiration,
 			                        framerate,
 			                        ip_address,
+			                        net_host,
+			                        net_port,
 			                        now,
 			                        statusbar_elems,
 			                        statusbar_elem,
+			                        tha_cl,
+			                        thrd_cl,
 			                        tickrate,
 			                        tool_opts,
 			                        win_w,
@@ -2576,6 +2712,7 @@ handle_input(
              int                   *world_draw_space_h,
 #endif /* BACKEND_SDL */
              bool                  *active,
+             struct Client         *cl,
              char                  *cmdline,
              size_t                *cmdline_len,
              const char            *cwd,
@@ -2588,6 +2725,8 @@ handle_input(
              enum InputMode        *input_mode,
              const char            *ip_address,
              uint64_t              *last_key_use,
+             char                 **restrict net_host,
+             char                 **restrict net_port,
              bool                  *no_glowcolor,
              const uint64_t         now,
              bool                  *paused,
@@ -2595,6 +2734,8 @@ handle_input(
              enum StatusbarElement *statusbar_elem,
              float                 *tickrate,
              bool                  *th_vision,
+             struct ThArgsClient   *tha_cl,
+             pthread_t             *thrd_cl,
              struct ToolOptions    *tool_opts,
              struct World          *world,
              char                  *world_name)
@@ -2683,17 +2824,22 @@ handle_input(
 				               world_scale,
 				               world_tx,
 				               active,
+				               cl,
 				               cwd,
 				               feedback,
 				               feedback_expiration,
 				               framerate,
 				               ip_address,
+				               net_host,
+				               net_port,
 				               no_glowcolor,
 				               now,
 				               paused,
 				               statusbar_elems,
 				               statusbar_elem,
 				               th_vision,
+				               tha_cl,
+				               thrd_cl,
 				               tickrate,
 				               tool_opts,
 				               *win_w,
@@ -4628,6 +4774,8 @@ main(int    argc,
 
 	cmdline[0] = '\0';
 	tool_opts = ToolOptions_new();
+	memset(&cl, 0, sizeof(cl));
+	memset(&world, 0, sizeof(world));
 
 	if (!handle_args(argc, argv,
 #ifdef BACKEND_SDL
@@ -4684,24 +4832,23 @@ main(int    argc,
 		goto cleanup;
 	}
 
+	now = get_now();
+
 	if (net_host != NULL) {
-		if (NULL == net_port) {
-			net_port = STD_NET_PORT;
-		}
-		cl = Client_new();
-		if (Client_connect(&cl, net_host, net_port, &world) != NE_OKAY) {
-			goto cleanup;
-		}
+		command_connect(&active,
+		                &cl,
+		                &feedback,
+		                &feedback_expiration,
+		                net_host,
+		                &net_port,
+		                now,
+		                &tha_cl,
+		                &thrd_cl,
+		                &world);
+	}
 
-		tha_cl.active = &active;
-		tha_cl.cl = &cl;
-		tha_cl.w = &world;
-
-		if (pthread_create(&thrd_cl, NULL, thrdfn_cl, &tha_cl) != 0) {
-			fprintf(stderr, "Could not create thread\n");
-			goto cleanup;
-		}
-	} else {
+	if (0 == world.w ||
+	    0 == world.h) {
 		if (NULL != world_init_path) {
 			file = fopen(world_init_path, "r");
 			if (NULL == file) {
@@ -4787,6 +4934,7 @@ main(int    argc,
 		             &world_draw_space_h,
 #endif
 		             &active,
+		             &cl,
 		             cmdline,
 		             &cmdline_len,
 		             cwd,
@@ -4799,6 +4947,8 @@ main(int    argc,
 		             &input_mode,
 		             ip_address,
 		             &last_key_use,
+		             &net_host,
+		             &net_port,
 		             &no_glowcolor,
 		             now,
 		             &paused,
@@ -4806,6 +4956,8 @@ main(int    argc,
 		             statusbar_elem,
 		             &tickrate,
 		             &th_vision,
+		             &tha_cl,
+		             &thrd_cl,
 		             &tool_opts,
 		             &world,
 		             world_name);
@@ -4919,7 +5071,9 @@ main(int    argc,
 
 cleanup:
 	active = false;
-	pthread_join(thrd_cl, NULL);
+	if (pthread_kill(thrd_cl, 0) == 0) {
+		pthread_join(thrd_cl, NULL);
+	}
 
 #ifdef BACKEND_SDL
 	SDL_DestroyTexture(world_tx);

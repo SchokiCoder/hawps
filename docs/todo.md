@@ -173,13 +173,25 @@ It's a string
 It only handled one per tick, which can be very bad in many cases.
 Many clients, low tickrate. It's also way easier to DOS.
 
+- [x] desktop client: add cmd for connecting to a server
+Also fix `pthread_join` crash.
+The pthread Linux man-pages 6.13 says:
+"If that thread has already terminated,
+then pthread_join() returns immediately."
+No, it just crashes!
+Lies. Filthy lies.
+I only noticed now because I tried to use it at actual runtime.
+
+- [ ] desktop client: add explicit tracking bool for thread being initialized
+`pthread_t` CAN be 0, or even a non int type for that matter
+
+- [ ] desktop client: fix crash when cmd new entered during net connection
+
 - [ ] desktop client: display world or hostname/ip in the same statusbar SBE
 Because we don't know the worldname the server uses,
 and its none of the client's business to know.
 This means we don't need to display both a worldname statusbar element,
 and one for hostname/ip.
-
-- [ ] desktop client: add cmd for connecting to a server
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
