@@ -49,6 +49,47 @@ struct Client {
 	char            *target;
 };
 
+enum MessageType {
+	MT_CONNECT,
+	MT_CONNECTED,
+	MT_INCOMPATIBLE,
+	MT_NOSLOTS,
+
+	MT_REQ_WORLDINFO,
+	MT_WORLDINFO,
+	MT_STILL_ALIVE,
+
+	/* Tells which array is being sent/received.
+	 * Those commented out, don't need to exist,
+	 * as they can be calculated on client side. */
+	MT_WAT_DISSOL,
+	MT_WAT_DOT,
+	MT_WAT_OXID,
+	/* MSG_WAT_STATE, */
+	MT_WAT_THERMO,
+	/* MSG_WAT_WEIGHT, */
+};
+
+struct MsgWorldInfo {
+	enum MessageType mt;
+	uint32_t         width;
+	uint32_t         height;
+};
+
+enum NetError {
+	NE_OKAY,
+	NE_COULDNT_GET_ADDRINFO,
+	NE_COULDNT_CONNECT_SOCKET,
+	NE_SERVER_UNREACHABLE,
+	NE_INCOMPATIBLE_VERSIONS,
+	NE_SERVER_IS_FULL,
+	NE_IRREGULAR_RESPONSE,
+	NE_COULDNT_GET_SOCKET,
+	NE_COULDNT_DISABLE_IPV6ONLY,
+	NE_COULDNT_BIND_SOCKET,
+	NE_SERVER_DOESNT_RESPOND,
+};
+
 struct Server {
 	uint64_t         last_housekeep;
 	size_t           sendbuf_size;
@@ -65,41 +106,6 @@ struct Server {
 
 	size_t           active_cls;
 	size_t          *active_cl;
-};
-
-enum Message {
-	MSG_CONNECT,
-	MSG_CONNECTED,
-	MSG_INCOMPATIBLE,
-	MSG_NOSLOTS,
-
-	MSG_REQ_WORLDINFO,
-	MSG_WORLDINFO,
-	MSG_STILL_ALIVE,
-
-	/* Tells which array is being sent/received.
-	 * Those commented out, don't need to exist,
-	 * as they can be calculated on client side. */
-	MSG_WAT_DISSOL,
-	MSG_WAT_DOT,
-	MSG_WAT_OXID,
-	/* MSG_WAT_STATE, */
-	MSG_WAT_THERMO,
-	/* MSG_WAT_WEIGHT, */
-};
-
-enum NetError {
-	NE_OKAY,
-	NE_COULDNT_GET_ADDRINFO,
-	NE_COULDNT_CONNECT_SOCKET,
-	NE_SERVER_UNREACHABLE,
-	NE_INCOMPATIBLE_VERSIONS,
-	NE_SERVER_IS_FULL,
-	NE_IRREGULAR_RESPONSE,
-	NE_COULDNT_GET_SOCKET,
-	NE_COULDNT_DISABLE_IPV6ONLY,
-	NE_COULDNT_BIND_SOCKET,
-	NE_SERVER_DOESNT_RESPOND,
 };
 
 /* Constants
@@ -180,11 +186,11 @@ Server_housekeeping(struct Server  *s,
                     const uint64_t  now);
 
 void
-Server_send_worldarr(struct Server      *s,
-                     size_t              client_id,
-                     void               *world_arr,
-                     const size_t        world_arr_size,
-                     const enum Message  msg_wat);
+Server_send_worldarr(struct Server          *s,
+                     size_t                  client_id,
+                     void                   *world_arr,
+                     const size_t            world_arr_size,
+                     const enum MessageType  mt_wat);
 
 void
 Server_set_client_active(struct Server *s,
@@ -235,14 +241,15 @@ Client_connect(struct Client *c,
                char          *restrict port,
                struct World  *w)
 {
-	int              e;
-	struct addrinfo  hints;
-	size_t           i;
-	size_t           pos;
-	char             recv_buf[NET_MEDIUM_MSG_SIZE] = "\0";
-	enum Message     recv_msg;
-	char             send_buf[NET_MEDIUM_MSG_SIZE] = "\0";
-	enum Message     send_msg;
+	int                  e;
+	struct addrinfo      hints;
+	size_t               i;
+	size_t               pos;
+	char                 recv_buf[NET_MEDIUM_MSG_SIZE] = "\0";
+	enum MessageType     recv_mt;
+	char                 send_buf[NET_MEDIUM_MSG_SIZE] = "\0";
+	enum MessageType     send_mt;
+	struct MsgWorldInfo  mwi;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = 0;
@@ -287,14 +294,14 @@ Client_connect(struct Client *c,
 	c->target = target;
 
 	for (i = 0; i < NET_MAX_CONNECT_RETRIES; i++) {
-		send_msg = MSG_CONNECT;
+		send_mt = MT_CONNECT;
 		pos = 0;
-		memcpy(&send_buf[pos], &send_msg, sizeof(send_msg));
-		pos += sizeof(send_msg);
+		memcpy(&send_buf[pos], &send_mt, sizeof(send_mt));
+		pos += sizeof(send_mt);
 		strncpy(&send_buf[pos], APP_VERSION, NET_MEDIUM_MSG_SIZE - pos);
 		send(c->sockfd, send_buf, NET_MEDIUM_MSG_SIZE, 0);
 
-		if (recv(c->sockfd, &recv_msg, sizeof(recv_msg), MSG_DONTWAIT) > 0) {
+		if (recv(c->sockfd, &recv_mt, sizeof(recv_mt), MSG_DONTWAIT) > 0) {
 			break;
 		}
 		sleep(NET_RETRY_SLEEP_LEN);
@@ -306,20 +313,20 @@ Client_connect(struct Client *c,
 		return NE_SERVER_UNREACHABLE;
 	}
 
-	switch (recv_msg) {
-	case MSG_CONNECTED:
+	switch (recv_mt) {
+	case MT_CONNECTED:
 		NET_logln("Connected");
-		send_msg = MSG_CONNECTED;
-		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+		send_mt = MT_CONNECTED;
+		send(c->sockfd, &send_mt, sizeof(send_mt), 0);
 		c->last_update = get_now();
 		break;
 
-	case MSG_INCOMPATIBLE:
+	case MT_INCOMPATIBLE:
 		NET_logln("Server version doesn't match");
 		return NE_INCOMPATIBLE_VERSIONS;
 		break;
 
-	case MSG_NOSLOTS:
+	case MT_NOSLOTS:
 		NET_logln("Server has no slots available");
 		return NE_SERVER_IS_FULL;
 		break;
@@ -330,8 +337,8 @@ Client_connect(struct Client *c,
 		break;
 	}
 
-	send_msg = MSG_REQ_WORLDINFO;
-	send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+	send_mt = MT_REQ_WORLDINFO;
+	send(c->sockfd, &send_mt, sizeof(send_mt), 0);
 
 	for (i = 0; i < NET_MAX_CONNECT_RETRIES; i++) {
 		while (recv(c->sockfd,
@@ -339,13 +346,13 @@ Client_connect(struct Client *c,
 		            sizeof(recv_buf),
 		            MSG_DONTWAIT) > 0) {
 
-			recv_msg = recv_buf[0];
-			if (MSG_WORLDINFO == recv_msg) {
+			recv_mt = recv_buf[0];
+			if (MT_WORLDINFO == recv_mt) {
 				break;
 			}
 		}
 
-		if (MSG_WORLDINFO == recv_msg) {
+		if (MT_WORLDINFO == recv_mt) {
 			break;
 		}
 		sleep(NET_RETRY_SLEEP_LEN);
@@ -355,12 +362,8 @@ Client_connect(struct Client *c,
 		return NE_IRREGULAR_RESPONSE;
 	}
 
-	pos = sizeof(recv_msg);
-	w->w = recv_buf[pos];
-	pos += sizeof(w->w);
-	w->h = recv_buf[pos];
-	pos += sizeof(w->h);
-	Client_handle_worldinfo(c, w, w->w, w->h);
+	mwi = *(struct MsgWorldInfo*) ((void*) recv_buf);
+	Client_handle_worldinfo(c, w, mwi.width, mwi.height);
 
 	return NE_OKAY;
 }
@@ -369,41 +372,39 @@ void
 Client_handle_message(struct Client  *c,
                       struct World   *w)
 {
-	enum Message recv_msg;
-	size_t       pos;
-	size_t       ret = 0;
+	enum MessageType     recv_mt;
+	size_t               pos;
+	size_t               ret = 0;
+	struct MsgWorldInfo  mwi;
 
-	recv_msg = c->recvbuf[0];
-	pos = sizeof(recv_msg);
+	recv_mt = c->recvbuf[0];
+	pos = sizeof(recv_mt);
 
-	switch (recv_msg) {
-	case MSG_WORLDINFO:
-		w->w = c->recvbuf[pos];
-		pos += sizeof(w->w);
-		w->h = c->recvbuf[pos];
-		pos += sizeof(w->h);
-		Client_handle_worldinfo(c, w, w->w, w->h);
+	switch (recv_mt) {
+	case MT_WORLDINFO:
+		mwi = *(struct MsgWorldInfo*) ((void*) c->recvbuf);
+		Client_handle_worldinfo(c, w, mwi.width, mwi.height);
 		break;
 
-	case MSG_WAT_DISSOL:
+	case MT_WAT_DISSOL:
 		memcpy(w->_dissol,
 		       &c->recvbuf[pos],
 		       w->w * w->h * sizeof(*w->_dissol));
 		break;
 
-	case MSG_WAT_DOT:
+	case MT_WAT_DOT:
 		memcpy(w->_dot,
 		       &c->recvbuf[pos],
 		       w->w * w->h * sizeof(*w->_dot));
 		break;
 
-	case MSG_WAT_OXID:
+	case MT_WAT_OXID:
 		memcpy(w->_oxid,
 		       &c->recvbuf[pos],
 		       w->w * w->h * sizeof(*w->_oxid));
 		break;
 
-	case MSG_WAT_THERMO:
+	case MT_WAT_THERMO:
 		memcpy(w->_thermo,
 		       &c->recvbuf[pos],
 		       w->w * w->h * sizeof(*w->_thermo));
@@ -423,7 +424,7 @@ Client_handle_worldinfo(struct Client  *c,
 	World_free(w);
 	*w = World_new(wld_w, wld_h);
 
-	c->recvbuf_size = sizeof(enum Message) +
+	c->recvbuf_size = sizeof(enum MessageType) +
 		          (NET_WORLD_AE_BYTES * w->w * w->h) +
 		          1;
 	if (c->recvbuf_size < NET_MEDIUM_MSG_SIZE) {
@@ -437,8 +438,7 @@ Client_tick(struct Client  *c,
             const uint64_t  now,
             struct World   *w)
 {
-	size_t       pos;
-	enum Message send_msg;
+	enum MessageType send_mt;
 
 	errno = 0;
 	if (recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT) > 0 &&
@@ -451,8 +451,8 @@ Client_tick(struct Client  *c,
 	    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
 		c->last_lifesignal = now;
 
-		send_msg = MSG_STILL_ALIVE;
-		send(c->sockfd, &send_msg, sizeof(send_msg), 0);
+		send_mt = MT_STILL_ALIVE;
+		send(c->sockfd, &send_mt, sizeof(send_mt), 0);
 	}
 
 	if ((now - c->last_update) / NANOS_PER_SEC >=
@@ -535,11 +535,11 @@ Server_new(struct Server *s,
 		return NE_COULDNT_BIND_SOCKET;
 	}
 
-	s->sendbuf_size = sizeof(enum Message) +
+	s->sendbuf_size = sizeof(enum MessageType) +
 	                  (NET_WORLD_AE_BYTES * wld_w * wld_h) +
 	                  1;
-	if (s->sendbuf_size < sizeof(enum Message)) {
-		s->sendbuf_size = sizeof(enum Message);
+	if (s->sendbuf_size < sizeof(enum MessageType)) {
+		s->sendbuf_size = sizeof(enum MessageType);
 	}
 	s->sendbuf = malloc(s->sendbuf_size);
 
@@ -601,29 +601,29 @@ Server_handle_message(struct Server         *s,
                       const char            *recv_buf,
                       const struct World     w)
 {
-	size_t           i;
-	char             ip[NET_IPSTR_LEN];
-	size_t           pos;
-	enum Message     recv_msg;
-	char             send_buf[NET_MEDIUM_MSG_SIZE];
-	enum Message     send_msg;
+	size_t               i;
+	char                 ip[NET_IPSTR_LEN];
+	enum MessageType     recv_mt;
+	char                 send_buf[NET_MEDIUM_MSG_SIZE];
+	enum MessageType     send_mt;
+	struct MsgWorldInfo  mwi;
 
 	if (recv_addr.sa_family != AF_INET &&
 	    recv_addr.sa_family != AF_INET6) {
 		return;
 	}
 
-	recv_msg = recv_buf[0];
-	switch (recv_msg) {
-	case MSG_CONNECT:
+	recv_mt = recv_buf[0];
+	switch (recv_mt) {
+	case MT_CONNECT:
 		i = Server_get_client_id(s, recv_addr, recv_addr_len);
 		if (i < s->cl_slots) {
 			return;
 		}
 
-		if (strcmp(&recv_buf[sizeof(recv_msg)], APP_VERSION) != 0) {
-			send_msg = MSG_INCOMPATIBLE;
-			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+		if (strcmp(&recv_buf[sizeof(recv_mt)], APP_VERSION) != 0) {
+			send_mt = MT_INCOMPATIBLE;
+			sendto(s->sockfd, &send_mt, sizeof(send_mt), 0,
 			       &recv_addr, recv_addr_len);
 			NET_logln("Client version doesn't match");
 			break;
@@ -638,8 +638,8 @@ Server_handle_message(struct Server         *s,
 		}
 
 		if (i >= s->cl_slots) {
-			send_msg = MSG_NOSLOTS;
-			sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+			send_mt = MT_NOSLOTS;
+			sendto(s->sockfd, &send_mt, sizeof(send_mt), 0,
 			       &recv_addr, recv_addr_len);
 			return;
 		}
@@ -653,12 +653,12 @@ Server_handle_message(struct Server         *s,
 		          NET_IPSTR_LEN);
 		s->cl_last_seen[i] = now;
 
-		send_msg = MSG_CONNECTED;
-		sendto(s->sockfd, &send_msg, sizeof(send_msg), 0,
+		send_mt = MT_CONNECTED;
+		sendto(s->sockfd, &send_mt, sizeof(send_mt), 0,
 		       &recv_addr, recv_addr_len);
 		break;
 
-	case MSG_CONNECTED:
+	case MT_CONNECTED:
 		i = Server_get_client_id(s, recv_addr, recv_addr_len);
 		if (i >= s->cl_slots) {
 			inet_ntop(recv_addr.sa_family,
@@ -679,21 +679,15 @@ Server_handle_message(struct Server         *s,
 		s->cl_last_seen[i] = now;
 		break;
 
-	case MSG_REQ_WORLDINFO:
-		send_msg = MSG_WORLDINFO;
-		pos = 0;
-		memcpy(&send_buf[pos], &send_msg, sizeof(send_msg));
-		pos += sizeof(send_msg);
-		memcpy(&send_buf[pos], &w.w, sizeof(w.w));
-		pos += sizeof(w.w);
-		memcpy(&send_buf[pos], &w.h, sizeof(w.h));
-		pos += sizeof(w.h);
-		send_buf[pos] = '\0';
-		sendto(s->sockfd, send_buf, NET_MEDIUM_MSG_SIZE, 0,
+	case MT_REQ_WORLDINFO:
+		mwi.mt = MT_WORLDINFO;
+		mwi.width = w.w;
+		mwi.height = w.h;
+		sendto(s->sockfd, &mwi, sizeof(mwi), 0,
 		       &recv_addr, recv_addr_len);
 		break;
 
-	case MSG_STILL_ALIVE:
+	case MT_STILL_ALIVE:
 		i = Server_get_client_id(s, recv_addr, recv_addr_len);
 		if (i >= s->cl_slots) {
 			inet_ntop(recv_addr.sa_family,
@@ -746,18 +740,18 @@ Server_housekeeping(struct Server  *s,
 }
 
 void
-Server_send_worldarr(struct Server      *s,
-                     size_t              client_id,
-                     void               *world_arr,
-                     const size_t        world_arr_size,
-                     const enum Message  msg_wat)
+Server_send_worldarr(struct Server          *s,
+                     size_t                  client_id,
+                     void                   *world_arr,
+                     const size_t            world_arr_size,
+                     const enum MessageType  mt_wat)
 {
 	size_t len;
 	size_t pos;
 
 	pos = 0;
-	len = sizeof(msg_wat);
-	memset(s->sendbuf, msg_wat, len);
+	len = sizeof(mt_wat);
+	memset(s->sendbuf, mt_wat, len);
 	pos += len;
 	len = world_arr_size;
 	memcpy(&s->sendbuf[pos], world_arr, len);
@@ -823,22 +817,22 @@ Server_tick(struct Server  *s,
 		                     i,
 		                     w->_dissol,
 		                     w->w * w->h * sizeof(*w->_dissol),
-		                     MSG_WAT_DISSOL);
+		                     MT_WAT_DISSOL);
 		Server_send_worldarr(s,
 		                     i,
 		                     w->_dot,
 		                     w->w * w->h * sizeof(*w->_dot),
-		                     MSG_WAT_DOT);
+		                     MT_WAT_DOT);
 		Server_send_worldarr(s,
 		                     i,
 		                     w->_oxid,
 		                     w->w * w->h * sizeof(*w->_oxid),
-		                     MSG_WAT_OXID);
+		                     MT_WAT_OXID);
 		Server_send_worldarr(s,
 		                     i,
 		                     w->_thermo,
 		                     w->w * w->h * sizeof(*w->_thermo),
-		                     MSG_WAT_THERMO);
+		                     MT_WAT_THERMO);
 	}
 
 	if (recvfrom(s->sockfd,

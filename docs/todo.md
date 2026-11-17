@@ -158,8 +158,15 @@ Add `#define HAWPS_NET_NO_PRINT` before include to use.
 - [x] libextra net: add static fileptr var for print target
 - [x] libextra net: add timestamps to prints
 
-- [ ] libextra net: make struct for worldinfo msg
-to replace hardwired `w->w = recv_buf[pos];`
+- [x] libextra net: make struct for worldinfo msg
+This replaces error-prone, direct assignments from/to buffers.
+This also renames Message enum and its `MSG_` values,
+because that prefix is already used by libc.
+
+- [ ] server: fix missing lib inits
+- [ ] desktop client: fix missing `free` calls for `net_` strings
+
+- [ ] libextra net: make struct for appversion msg
 the success of this commit may be measured in `size_t pos;` no longer existing
 
 - [ ] libextra net: let Sv-tick and Cl-tick handle all pending msgs
