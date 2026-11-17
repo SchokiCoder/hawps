@@ -166,12 +166,12 @@ because that prefix is already used by libc.
 - [x] server: fix missing lib inits
 - [x] desktop client: fix missing `free` calls for `net_` strings
 
-- [ ] libextra net: make struct for appversion msg
-the success of this commit may be measured in `size_t pos;` no longer existing
+- [x] ~libextra net: make struct for appversion msg~
+It's a string
 
-- [ ] libextra net: let Sv-tick and Cl-tick handle all pending msgs
-It only handles one per tick, which can be very bad in many cases.
-Many clients, low tickrate, easy to DOS target...
+- [x] libextra net: let tick functions handle all pending msgs
+It only handled one per tick, which can be very bad in many cases.
+Many clients, low tickrate. It's also way easier to DOS.
 
 - [ ] desktop client: display world or hostname/ip in the same statusbar SBE
 Because we don't know the worldname the server uses,

@@ -441,8 +441,8 @@ Client_tick(struct Client  *c,
 	enum MessageType send_mt;
 
 	errno = 0;
-	if (recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT) > 0 &&
-	    errno == 0) {
+	while (recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT) > 0 &&
+	       0 == errno) {
 		Client_handle_message(c, w);
 		c->last_update = now;
 	}
@@ -835,12 +835,10 @@ Server_tick(struct Server  *s,
 		                     MT_WAT_THERMO);
 	}
 
-	if (recvfrom(s->sockfd,
-	             &recv_buf,
-	             NET_MEDIUM_MSG_SIZE,
-	             MSG_DONTWAIT,
-	             &recv_addr,
-	             &recv_addr_len) > 0) {
+	errno = 0;
+	while (recvfrom(s->sockfd, &recv_buf, NET_MEDIUM_MSG_SIZE, MSG_DONTWAIT,
+	                &recv_addr, &recv_addr_len) > 0 &&
+	       0 == errno) {
 		Server_handle_message(s,
 		                      now,
 		                      recv_addr,
