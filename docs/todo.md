@@ -163,7 +163,7 @@ This replaces error-prone, direct assignments from/to buffers.
 This also renames Message enum and its `MSG_` values,
 because that prefix is already used by libc.
 
-- [ ] server: fix missing lib inits
+- [x] server: fix missing lib inits
 - [ ] desktop client: fix missing `free` calls for `net_` strings
 
 - [ ] libextra net: make struct for appversion msg

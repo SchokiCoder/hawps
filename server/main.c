@@ -168,6 +168,9 @@ main(int    argc,
 		return 0;
 	}
 
+	hawps_core_init();
+	hawps_extra_init();
+
 	th_wa.active = &active;
 	th_wa.w = &w;
 
