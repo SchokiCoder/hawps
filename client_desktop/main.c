@@ -4935,13 +4935,19 @@ cleanup:
 	fputs(CSI_FG_DEFAULT, stdout);
 	fputs(CSI_BG_DEFAULT, stdout);
 
-	if (display != NULL) {
+	if (NULL != display)
 		free(display);
-	}
 #endif
 
 	World_free(&world);
 	Client_free(&cl);
+
+	if (NULL != net_host)
+		free(net_host);
+
+	if (NULL != net_port &&
+	    strcmp(STD_NET_PORT, net_port) != 0)
+		free(net_port);
 
 	return 0;
 }

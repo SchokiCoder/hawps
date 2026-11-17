@@ -164,7 +164,7 @@ This also renames Message enum and its `MSG_` values,
 because that prefix is already used by libc.
 
 - [x] server: fix missing lib inits
-- [ ] desktop client: fix missing `free` calls for `net_` strings
+- [x] desktop client: fix missing `free` calls for `net_` strings
 
 - [ ] libextra net: make struct for appversion msg
 the success of this commit may be measured in `size_t pos;` no longer existing
