@@ -24,7 +24,7 @@ enum StatusbarElement {
 	SBE_COORDS,
 	SBE_VIEW,
 	SBE_SPEED,
-	SBE_IP_ADDRESS,
+	SBE_NET_HOST,
 
 	SBE_COUNT
 };

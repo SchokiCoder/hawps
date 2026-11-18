@@ -136,17 +136,17 @@ static const char DOT_APPEARANCE[] = {
  */
 static enum StatusbarElement STATUSBAR_DISPLAY_ORDER[] = {
 	SBE_WORLD_NAME, /* first */
+	SBE_NET_HOST,
 	SBE_VIEW,
 	SBE_SPEED,
-	SBE_IP_ADDRESS,
 	SBE_COORDS,
 };
 
 static enum StatusbarElement STATUSBAR_DISPLAY_PRIORITY[] = {
 	SBE_SPEED,      /* most important */
 	SBE_VIEW,
-	SBE_IP_ADDRESS,
 	SBE_WORLD_NAME,
+	SBE_NET_HOST,
 	SBE_COORDS,
 };
 

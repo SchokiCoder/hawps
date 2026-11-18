@@ -186,13 +186,20 @@ I only noticed now because I tried to use it at actual runtime.
 `pthread_t` CAN be 0, or even a non int type for that matter.
 Also fix missing parameters for terminal backend.
 
+- [x] desktop client: display only world or hostname in the statusbar
+You're either offline OR online, not both,
+and its none of the client's business to know the host's world name.
+
+- [ ] desktop client: when connect failed, free and NULL `net_host`
+Causes ip addr to be shown in the statusbar, when not connected.
+
+- [ ] desktop client: fix statusbar not updating upon cmd connect
+- [ ] desktop client: fix segfault upon quit when connection never happened
+- [ ] desktop client: fix crash when cmd connect fails
 - [ ] desktop client: fix crash when cmd new entered during net connection
 
-- [ ] desktop client: display world or hostname/ip in the same statusbar SBE
-Because we don't know the worldname the server uses,
-and its none of the client's business to know.
-This means we don't need to display both a worldname statusbar element,
-and one for hostname/ip.
+- [ ] libextra net: "localhost" works but "127.0.0.1" doesn't?
+do any IPs work?
 
 - [ ] libextra net: add tool signals
 This way clients can make changes to the world.
