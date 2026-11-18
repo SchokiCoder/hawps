@@ -529,7 +529,7 @@ command_connect(bool                 *active,
                 struct Client        *cl,
                 char                **restrict feedback,
                 uint64_t             *feedback_expiration,
-                char                 *restrict net_host,
+                char                **restrict net_host,
                 char                **restrict net_port,
                 const uint64_t        now,
                 struct ThArgsClient  *tha_cl,
@@ -1166,7 +1166,7 @@ command_connect(bool                 *active,
                 struct Client        *cl,
                 char                **restrict feedback,
                 uint64_t             *feedback_expiration,
-                char                 *restrict net_host,
+                char                **restrict net_host,
                 char                **restrict net_port,
                 const uint64_t        now,
                 struct ThArgsClient  *tha_cl,
@@ -1204,9 +1204,11 @@ command_connect(bool                 *active,
 	tempwld = *world;
 	World_free(world);
 
-	if (Client_connect(cl, net_host, *net_port, world) != NE_OKAY) {
+	if (Client_connect(cl, *net_host, *net_port, world) != NE_OKAY) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Could not connect.");
+		free(*net_host);
+		*net_host = NULL;
 		World_free(world);
 		*world = tempwld;
 		return;
@@ -1220,6 +1222,8 @@ command_connect(bool                 *active,
 	if (pthread_create(thrd_cl, NULL, thrdfn_cl, tha_cl) != 0) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Could not create net thread.");
+		free(*net_host);
+		*net_host = NULL;
 		World_free(world);
 		*world = tempwld;
 		return;
@@ -1923,7 +1927,7 @@ handle_advanced_command(const char            *cmd,
 		                cl,
 		                feedback,
 		                feedback_expiration,
-		                *net_host,
+		                net_host,
 		                net_port,
 		                now,
 		                tha_cl,
@@ -4882,7 +4886,7 @@ main(int    argc,
 		                &cl,
 		                &feedback,
 		                &feedback_expiration,
-		                net_host,
+		                &net_host,
 		                &net_port,
 		                now,
 		                &tha_cl,

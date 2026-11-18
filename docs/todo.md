@@ -190,7 +190,7 @@ Also fix missing parameters for terminal backend.
 You're either offline OR online, not both,
 and its none of the client's business to know the host's world name.
 
-- [ ] desktop client: when connect failed, free and NULL `net_host`
+- [x] desktop client: when connect failed, free and NULL `net_host`
 Causes ip addr to be shown in the statusbar, when not connected.
 
 - [ ] desktop client: fix statusbar not updating upon cmd connect
