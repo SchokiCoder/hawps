@@ -143,6 +143,7 @@
 struct ThArgsClient {
 	volatile bool *active;
 	struct Client *cl;
+	volatile bool *thrd_active;
 	struct World  *w;
 };
 
@@ -533,6 +534,7 @@ command_connect(bool                 *active,
                 const uint64_t        now,
                 struct ThArgsClient  *tha_cl,
                 pthread_t            *thrd_cl,
+                bool                 *thrd_cl_active,
                 struct World         *world);
 
 void
@@ -683,6 +685,7 @@ handle_advanced_command(const char            *cmd,
                         enum StatusbarElement *statusbar_elem,
                         struct ThArgsClient   *tha_cl,
                         pthread_t             *thrd_cl,
+                        bool                  *thrd_cl_active,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
                         const int              win_w,
@@ -757,6 +760,7 @@ handle_command(char                  *cmdline,
                bool                  *th_vision,
                struct ThArgsClient   *tha_cl,
                pthread_t             *thrd_cl,
+               bool                  *thrd_cl_active,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
                const int              win_w,
@@ -768,6 +772,7 @@ handle_command(char                  *cmdline,
 void
 handle_command_input(const char            *in,
                      bool                  *active,
+                     struct Client         *cl,
                      char                  *cmdline,
                      size_t                *cmdline_len,
                      size_t                *cmdline_shift,
@@ -777,12 +782,17 @@ handle_command_input(const char            *in,
                      float                 *framerate,
                      enum InputMode        *input_mode,
                      const char            *ip_address,
+                     char                 **restrict net_host,
+                     char                 **restrict net_port,
                      bool                  *no_glowcolor,
                      uint64_t               now,
                      bool                  *paused,
                      size_t                *statusbar_elems,
                      enum StatusbarElement *statusbar_elem,
                      bool                  *th_vision,
+                     struct ThArgsClient   *tha_cl,
+                     pthread_t             *thrd_cl,
+                     bool                  *thrd_cl_active,
                      float                 *tickrate,
                      struct ToolOptions    *tool_opts,
                      const int              win_w,
@@ -852,6 +862,7 @@ handle_input(
              bool                  *th_vision,
              struct ThArgsClient   *tha_cl,
              pthread_t             *thrd_cl,
+             bool                  *thrd_cl_active,
              struct ToolOptions    *tool_opts,
              struct World          *world,
              char                  *world_name);
@@ -1164,6 +1175,7 @@ command_connect(bool                 *active,
                 const uint64_t        now,
                 struct ThArgsClient  *tha_cl,
                 pthread_t            *thrd_cl,
+                bool                 *thrd_cl_active,
                 struct World         *world)
 {
 	struct World tempwld;
@@ -1186,7 +1198,7 @@ command_connect(bool                 *active,
 		*cl = Client_new();
 	}
 
-	if (0 != *thrd_cl &&
+	if (true == *thrd_cl_active &&
 	    pthread_kill(*thrd_cl, 0) == 0) {
 		*active = false;
 		pthread_cancel(*thrd_cl);
@@ -1206,6 +1218,7 @@ command_connect(bool                 *active,
 
 	tha_cl->active = active;
 	tha_cl->cl = cl;
+	tha_cl->thrd_active = thrd_cl_active;
 	tha_cl->w = world;
 
 	if (pthread_create(thrd_cl, NULL, thrdfn_cl, tha_cl) != 0) {
@@ -1867,6 +1880,7 @@ handle_advanced_command(const char            *cmd,
                         enum StatusbarElement *statusbar_elem,
                         struct ThArgsClient   *tha_cl,
                         pthread_t             *thrd_cl,
+                        bool                  *thrd_cl_active,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
                         const int              win_w,
@@ -1919,6 +1933,7 @@ handle_advanced_command(const char            *cmd,
 		                now,
 		                tha_cl,
 		                thrd_cl,
+		                thrd_cl_active,
 		                world);
 	} else if (strcmp(cmd, CMD_ERASERRADIUS) == 0 ||
 	           strcmp(cmd, CMD_ERASERRADIUS_SHORT) == 0) {
@@ -2451,6 +2466,7 @@ handle_command(char                  *cmdline,
                bool                  *th_vision,
                struct ThArgsClient   *tha_cl,
                pthread_t             *thrd_cl,
+               bool                  *thrd_cl_active,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
                const int              win_w,
@@ -2499,6 +2515,7 @@ handle_command(char                  *cmdline,
 			                        statusbar_elem,
 			                        tha_cl,
 			                        thrd_cl,
+			                        thrd_cl_active,
 			                        tickrate,
 			                        tool_opts,
 			                        win_w,
@@ -2550,6 +2567,7 @@ handle_command(char                  *cmdline,
 void
 handle_command_input(const char            *in,
                      bool                  *active,
+                     struct Client         *cl,
                      char                  *cmdline,
                      size_t                *cmdline_len,
                      size_t                *cmdline_shift,
@@ -2559,12 +2577,17 @@ handle_command_input(const char            *in,
                      float                 *framerate,
                      enum InputMode        *input_mode,
                      const char            *ip_address,
+                     char                 **restrict net_host,
+                     char                 **restrict net_port,
                      bool                  *no_glowcolor,
                      uint64_t               now,
                      bool                  *paused,
                      size_t                *statusbar_elems,
                      enum StatusbarElement *statusbar_elem,
                      bool                  *th_vision,
+                     struct ThArgsClient   *tha_cl,
+                     pthread_t             *thrd_cl,
+                     bool                  *thrd_cl_active,
                      float                 *tickrate,
                      struct ToolOptions    *tool_opts,
                      const int              win_w,
@@ -2595,17 +2618,23 @@ handle_command_input(const char            *in,
 		               world_draw_space_w,
 		               world_draw_space_h,
 		               active,
+		               cl,
 		               cwd,
 		               feedback,
 		               feedback_expiration,
 		               framerate,
 		               ip_address,
+		               net_host,
+		               net_port,
 		               no_glowcolor,
 		               now,
 		               paused,
 		               statusbar_elems,
 		               statusbar_elem,
 		               th_vision,
+		               tha_cl,
+		               thrd_cl,
+		               thrd_cl_active,
 		               tickrate,
 		               tool_opts,
 		               win_w,
@@ -2736,6 +2765,7 @@ handle_input(
              bool                  *th_vision,
              struct ThArgsClient   *tha_cl,
              pthread_t             *thrd_cl,
+             bool                  *thrd_cl_active,
              struct ToolOptions    *tool_opts,
              struct World          *world,
              char                  *world_name)
@@ -2840,6 +2870,7 @@ handle_input(
 				               th_vision,
 				               tha_cl,
 				               thrd_cl,
+				               thrd_cl_active,
 				               tickrate,
 				               tool_opts,
 				               *win_w,
@@ -2964,6 +2995,7 @@ handle_input(
 		if (input_len == 1) {
 			handle_command_input(input,
 			                     active,
+			                     cl,
 			                     cmdline,
 			                     cmdline_len,
 			                     cmdline_shift,
@@ -2973,12 +3005,17 @@ handle_input(
 			                     framerate,
 			                     input_mode,
 			                     ip_address,
+			                     net_host,
+			                     net_port,
 			                     no_glowcolor,
 			                     now,
 			                     paused,
 			                     statusbar_elems,
 			                     statusbar_elem,
 			                     th_vision,
+			                     tha_cl,
+			                     thrd_cl,
+			                     thrd_cl_active,
 			                     tickrate,
 			                     tool_opts,
 			                     win_w,
@@ -4288,6 +4325,8 @@ thrdfn_cl(void *arg)
 	uint64_t             last_tick = 0;
 	uint64_t             now = 0;
 
+	*args->thrd_active = true;
+
 	while (*args->active) {
 		now = get_now();
 		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
@@ -4297,6 +4336,8 @@ thrdfn_cl(void *arg)
 
 		Client_tick(args->cl, now, args->w);
 	}
+
+	*args->thrd_active = false;
 
 	return NULL;
 }
@@ -4728,6 +4769,7 @@ main(int    argc,
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[ARRLEN(STATUSBAR_DISPLAY_PRIORITY)];
 	pthread_t              thrd_cl = 0;
+	bool                   thrd_cl_active = false;
 	struct ThArgsClient    tha_cl;
 	bool                   th_vision = false;
 	float                  tickrate = STD_TICKRATE;
@@ -4844,6 +4886,7 @@ main(int    argc,
 		                now,
 		                &tha_cl,
 		                &thrd_cl,
+		                &thrd_cl_active,
 		                &world);
 	}
 
@@ -4958,6 +5001,7 @@ main(int    argc,
 		             &th_vision,
 		             &tha_cl,
 		             &thrd_cl,
+		             &thrd_cl_active,
 		             &tool_opts,
 		             &world,
 		             world_name);

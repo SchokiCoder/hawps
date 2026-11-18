@@ -182,8 +182,9 @@ No, it just crashes!
 Lies. Filthy lies.
 I only noticed now because I tried to use it at actual runtime.
 
-- [ ] desktop client: add explicit tracking bool for thread being initialized
-`pthread_t` CAN be 0, or even a non int type for that matter
+- [x] desktop client: add explicit tracking bool for thread being initialized
+`pthread_t` CAN be 0, or even a non int type for that matter.
+Also fix missing parameters for terminal backend.
 
 - [ ] desktop client: fix crash when cmd new entered during net connection
 
