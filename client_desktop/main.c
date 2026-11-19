@@ -1238,7 +1238,7 @@ command_connect(bool                   *active,
 	memset(world, 0, sizeof(*world));
 
 	if (Client_connect(cl, *net_host, *net_port, world) != NE_OKAY) {
-		set_feedback(feedback, feedback_expiration, now,
+		set_feedback(feedback, feedback_expiration, get_now(),
 		             "Could not connect.");
 		free_netstrs(net_host, net_port);
 		*world = tempwld;
