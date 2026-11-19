@@ -1222,12 +1222,6 @@ command_connect(bool                   *active,
 		*net_port = STD_NET_PORT;
 	}
 
-	if (-1 == cl->sockfd ||
-	    0 == cl->recvbuf_size ||
-	    NULL == cl->recvbuf) {
-		*cl = Client_new();
-	}
-
 	if (true == *thrd_cl_active) {
 		*active = false;
 		pthread_cancel(*thrd_cl);
@@ -1289,7 +1283,7 @@ command_disconnect_core(bool           *active,
 	}
 
 	free_netstrs(net_host, net_port);
-	Client_free(cl);
+	Client_disconnect(cl);
 }
 
 void
@@ -5005,8 +4999,7 @@ main(int    argc,
 
 	cmdline[0] = '\0';
 	tool_opts = ToolOptions_new();
-	memset(&cl, 0, sizeof(cl));
-	cl.sockfd = -1;
+	cl = Client_new();
 	memset(&world, 0, sizeof(world));
 
 	if (!handle_args(argc, argv,

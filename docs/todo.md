@@ -228,7 +228,16 @@ Caused crashes on `STD_NET_HOST`.
 - [x] desktop client: fix `getaddrinfo` memory leak when double connect
 (When command connect while already connected.)
 
+- [x] libextra net: add activity bool to client
+- [ ] libextra net: add activity bool to server
+
 - [ ] desktop client: fix statusbar when failed connect after successful connect
+don't forget the cases cmd cnct needs to handle:
+local   -> connect
+connect -> connect
+connect -> local   (when failure)
+
+- [ ] desktop client: `Client_tick` return value not checked, signal loss not handled
 
 - [ ] desktop client: disable quicksave and -load when connected to server
 - [ ] desktop client: disable autosave when connected to server

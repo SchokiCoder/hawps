@@ -38,6 +38,7 @@
  */
 
 struct Client {
+	bool             active;
 	struct addrinfo *ai;
 	struct addrinfo *aip;
 	uint64_t         last_lifesignal;
@@ -127,6 +128,9 @@ Client_connect(struct Client *c,
                char          *restrict target,
                char          *restrict port,
                struct World  *w);
+
+void
+Client_disconnect(struct Client *c);
 
 void
 Client_handle_message(struct Client  *c,
@@ -362,10 +366,28 @@ Client_connect(struct Client *c,
 		return NE_IRREGULAR_RESPONSE;
 	}
 
+	c->active = true;
 	mwi = *(struct MsgWorldInfo*) ((void*) recv_buf);
 	Client_handle_worldinfo(c, w, mwi.width, mwi.height);
 
 	return NE_OKAY;
+}
+
+void
+Client_disconnect(struct Client *c)
+{
+	if (c->ai != NULL) {
+		freeaddrinfo(c->ai);
+		c->ai = NULL;
+		c->aip = NULL;
+	}
+
+	if (c->sockfd > -1) {
+		close(c->sockfd);
+		c->sockfd = -1;
+	}
+
+	c->active = false;
 }
 
 void
@@ -440,6 +462,10 @@ Client_tick(struct Client  *c,
 {
 	enum MessageType send_mt;
 
+	if (false == c->active) {
+		return NE_SERVER_DOESNT_RESPOND;
+	}
+
 	errno = 0;
 	while (recv(c->sockfd, c->recvbuf, c->recvbuf_size, MSG_DONTWAIT) > 0 &&
 	       0 == errno) {
@@ -457,6 +483,8 @@ Client_tick(struct Client  *c,
 
 	if ((now - c->last_update) / NANOS_PER_SEC >=
 	    NET_CLIENT_DISCONNECT_TIME) {
+		NET_logln("Server stopped responding, disconnecting");
+		Client_disconnect(c);
 		return NE_SERVER_DOESNT_RESPOND;
 	}
 
@@ -466,16 +494,10 @@ Client_tick(struct Client  *c,
 void
 Client_free(struct Client *c)
 {
-	if (c->ai != NULL) {
-		freeaddrinfo(c->ai);
-	}
+	Client_disconnect(c);
 
 	if (c->recvbuf != NULL) {
 		free(c->recvbuf);
-	}
-
-	if (c->sockfd != -1) {
-		close(c->sockfd);
 	}
 
 	memset(c, 0, sizeof(*c));
