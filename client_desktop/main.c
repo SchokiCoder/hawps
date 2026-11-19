@@ -1204,8 +1204,7 @@ command_connect(bool                   *active,
 		*cl = Client_new();
 	}
 
-	if (true == *thrd_cl_active &&
-	    pthread_kill(*thrd_cl, 0) == 0) {
+	if (true == *thrd_cl_active) {
 		*active = false;
 		pthread_cancel(*thrd_cl);
 		*active = true;
@@ -5149,7 +5148,7 @@ main(int    argc,
 
 cleanup:
 	active = false;
-	if (pthread_kill(thrd_cl, 0) == 0) {
+	if (true == thrd_cl_active) {
 		pthread_join(thrd_cl, NULL);
 	}
 

@@ -194,7 +194,12 @@ and its none of the client's business to know the host's world name.
 Causes ip addr to be shown in the statusbar, when not connected.
 
 - [x] desktop client: fix statusbar not updating upon cmd connect
-- [ ] desktop client: fix segfault upon quit when connection never happened
+- [x] desktop client: fix segfault upon quit when connection never happened
+"On success, pthread_kill() returns 0;
+on error, it returns an error number, and no signal is sent."
+...or it just crashes your shit... again :)
+This commit removes reliance on pthread to detect if a pthread is active.
+
 - [ ] desktop client: fix crash when cmd connect fails (too aggressive World free)
 - [ ] desktop client: fix crash when cmd new entered during net connection
 - [ ] desktop client: disable autosave when connected to server
