@@ -221,8 +221,11 @@ Caused double frees.
 - [x] desktop client: fix `cl->sockfd` handling
 It CAN be 0.
 
-- [ ] desktop client: remove old free calls on net strs in `command_connect`
+- [x] desktop client: fix unguarded free calls on net strs in `command_connect`
 Caused crashes on `STD_NET_HOST`.
+
+- [ ] desktop client: fix missing feedback when connection fails after n retries
+- [ ] desktop client: fix `getaddrinfo` memory leak when command connect
 
 - [ ] desktop client: disable quicksave and -load when connected to server
 - [ ] desktop client: disable autosave when connected to server

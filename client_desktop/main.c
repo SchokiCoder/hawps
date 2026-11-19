@@ -1240,8 +1240,7 @@ command_connect(bool                   *active,
 	if (Client_connect(cl, *net_host, *net_port, world) != NE_OKAY) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Could not connect.");
-		free(*net_host);
-		*net_host = NULL;
+		free_netstrs(net_host, net_port);
 		*world = tempwld;
 		return;
 	}
@@ -1254,8 +1253,7 @@ command_connect(bool                   *active,
 	if (pthread_create(thrd_cl, NULL, thrdfn_cl, tha_cl) != 0) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Could not create net thread.");
-		free(*net_host);
-		*net_host = NULL;
+		free_netstrs(net_host, net_port);
 		*world = tempwld;
 		return;
 	}
