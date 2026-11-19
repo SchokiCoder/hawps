@@ -466,14 +466,19 @@ Client_tick(struct Client  *c,
 void
 Client_free(struct Client *c)
 {
-	freeaddrinfo(c->ai);
+	if (c->ai != NULL) {
+		freeaddrinfo(c->ai);
+	}
 
 	if (c->recvbuf != NULL) {
 		free(c->recvbuf);
-		c->recvbuf = NULL;
 	}
 
-	close(c->sockfd);
+	if (c->sockfd != -1) {
+		close(c->sockfd);
+	}
+
+	memset(c, 0, sizeof(*c));
 }
 
 void

@@ -215,8 +215,12 @@ or overwriting local world with still incoming server data.
 
 - [x] desktop client: fix command new not updating statusbar properly
 
-- [ ] libextra net: fix unguarded `freeaddrinfo` and `close(c->sockfd)`
-Can cause double frees.
+- [x] libextra net: fix unguarded `freeaddrinfo` and `close(c->sockfd)`
+Caused double frees.
+
+- [ ] desktop client: fix `cl->sockfd` check in `command_connect`
+- [ ] desktop client: remove old free calls on net strs in `command_connect`
+Caused crashes on `STD_NET_HOST`.
 
 - [ ] desktop client: disable quicksave and -load when connected to server
 - [ ] desktop client: disable autosave when connected to server
