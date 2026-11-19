@@ -54,6 +54,8 @@ static const char DOT_APPEARANCE[] = {
 #define CMD_COOLER_SHORT            "c"
 #define CMD_DEFAULTS                "defaults"
 #define CMD_DEFAULTS_SHORT          "def"
+#define CMD_DISCONNECT              "disconnect"
+#define CMD_DISCONNECT_SHORT        "dcnct"
 #define CMD_ERASER                  "eraser"
 #define CMD_ERASER_SHORT            "e"
 #define CMD_ERASERRADIUS            "eraserradius"

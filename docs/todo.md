@@ -204,7 +204,16 @@ This commit removes reliance on pthread to detect if a pthread is active.
 Caused crash when cmd connect fails,
 because the temp-world swap would give a freed world.
 
-- [ ] desktop client: fix crash when cmd new entered during net connection
+- [x] desktop client: add command disconnect
+This would then leave you with a local copy of that server's world.
+
+- [ ] desktop client: fix commands new and load not disconnecting from a server
+Caused crash when world size differs,
+or overwriting local world with still incoming server data.
+
+- [ ] libextra net: fix unguarded `freeaddrinfo` and `close(c->sockfd)`
+Can cause double frees.
+
 - [ ] desktop client: disable autosave when connected to server
 
 - [ ] libextra net: "localhost" works but "127.0.0.1" doesn't?

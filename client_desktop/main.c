@@ -207,6 +207,9 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_DEFAULTS_SHORT " " CMD_DEFAULTS "\n"
 "        sets everything back to default settings\n"
 "\n"
+"    " CMD_DISCONNECT_SHORT " " CMD_DISCONNECT "\n"
+"        disconnects from a server, leaving you with a local copy\n"
+"\n"
 "    " CMD_ERASER_SHORT " " CMD_ERASER "\n"
 "        selects the eraser as active tool\n"
 "\n"
@@ -541,6 +544,22 @@ command_connect(bool                   *active,
                 const int               win_w,
                 struct World           *world,
                 const char             *world_name);
+
+void
+command_disconnect(bool                   *active,
+                   struct Client          *cl,
+                   char                  **restrict feedback,
+                   uint64_t               *feedback_expiration,
+                   TTF_Font               *font,
+                   char                  **restrict net_host,
+                   char                  **restrict net_port,
+                   const uint64_t          now,
+                   size_t                 *statusbar_elems,
+                   enum StatusbarElement  *statusbar_elem,
+                   pthread_t              *thrd_cl,
+                   bool                   *thrd_cl_active,
+                   const int               win_w,
+                   char                   *world_name);
 
 void
 command_load_core(const char   *cwd,
@@ -985,34 +1004,43 @@ handle_resize(const size_t            cmdline_len,
 #endif /* BACKEND_SDL */
 
 void
-handle_simple_command(const char          *cmdline,
+handle_simple_command(const char             *cmdline,
 #ifdef BACKEND_SDL
-                      SDL_Renderer        *renderer,
-                      const size_t         world_area_w,
-                      const size_t         world_area_h,
-                      SDL_FRect           *world_dst,
-                      const size_t         world_scale,
-                      SDL_Texture        **world_tx,
+                      SDL_Renderer           *renderer,
+                      const size_t            world_area_w,
+                      const size_t            world_area_h,
+                      SDL_FRect              *world_dst,
+                      const size_t            world_scale,
+                      SDL_Texture           **world_tx,
 #else
-                      const int            win_w,
-                      const int            win_h,
-                      struct Rect         *world_draw,
-                      int                 *world_draw_space_w,
-                      int                 *world_draw_space_h,
+                      const int               win_w,
+                      const int               win_h,
+                      struct Rect            *world_draw,
+                      int                    *world_draw_space_w,
+                      int                    *world_draw_space_h,
 #endif
-                      bool                *active,
-                      const char          *cwd,
-                      char               **feedback,
-                      uint64_t            *feedback_expiration,
-                      float               *framerate,
-                      bool                *no_glowcolor,
-                      const uint64_t       now,
-                      bool                *paused,
-                      bool                *th_vision,
-                      float               *tickrate,
-                      struct ToolOptions  *tool_opts,
-                      struct World        *world,
-                      char                *world_name);
+                      bool                   *active,
+                      struct Client          *cl,
+                      const char             *cwd,
+                      char                  **feedback,
+                      uint64_t               *feedback_expiration,
+                      TTF_Font               *font,
+                      float                  *framerate,
+                      char                  **restrict net_host,
+                      char                  **restrict net_port,
+                      bool                   *no_glowcolor,
+                      const uint64_t          now,
+                      bool                   *paused,
+                      size_t                 *statusbar_elems,
+                      enum StatusbarElement  *statusbar_elem,
+                      bool                   *th_vision,
+                      pthread_t              *thrd_cl,
+                      bool                   *thrd_cl_active,
+                      float                  *tickrate,
+                      struct ToolOptions     *tool_opts,
+                      const int               win_w,
+                      struct World           *world,
+                      char                   *world_name);
 
 void
 handle_statusbar_resize(
@@ -1244,6 +1272,58 @@ command_connect(bool                   *active,
 	                        statusbar_elem,
 	                        win_w,
 	                        world_name);
+}
+
+void
+command_disconnect(bool                   *active,
+                   struct Client          *cl,
+                   char                  **restrict feedback,
+                   uint64_t               *feedback_expiration,
+                   TTF_Font               *font,
+                   char                  **restrict net_host,
+                   char                  **restrict net_port,
+                   const uint64_t          now,
+                   size_t                 *statusbar_elems,
+                   enum StatusbarElement  *statusbar_elem,
+                   pthread_t              *thrd_cl,
+                   bool                   *thrd_cl_active,
+                   const int               win_w,
+                   char                   *world_name)
+{
+	if (NULL == *net_host) {
+		set_feedback(feedback, feedback_expiration, now,
+		             "You're already offline.");
+		return;
+	}
+
+	if (true == *thrd_cl_active) {
+		*active = false;
+		pthread_cancel(*thrd_cl);
+		*active = true;
+	}
+
+	free(*net_host);
+	*net_host = NULL;
+	if (NULL != *net_port &&
+	    strcmp(STD_NET_PORT, *net_port) != 0) {
+		free(*net_port);
+		*net_port = NULL;
+	}
+	Client_free(cl);
+
+	string_copy(world_name, WORLDNAME_SIZE, "localcopy");
+	handle_statusbar_resize(
+#ifdef BACKEND_SDL
+		                font,
+#endif
+		                *net_host,
+		                statusbar_elems,
+		                statusbar_elem,
+		                win_w,
+		                world_name);
+
+	set_feedback(feedback, feedback_expiration, now,
+	             "You're now offline.");
 }
 
 void
@@ -2566,16 +2646,25 @@ handle_command(char                  *cmdline,
 	                      world_draw_space_h,
 #endif
 	                      active,
+	                      cl,
 	                      cwd,
 	                      feedback,
 	                      feedback_expiration,
+	                      font,
 	                      framerate,
+	                      net_host,
+	                      net_port,
 	                      no_glowcolor,
 	                      now,
 	                      paused,
+	                      statusbar_elems,
+	                      statusbar_elem,
 	                      th_vision,
+	                      thrd_cl,
+	                      thrd_cl_active,
 	                      tickrate,
 	                      tool_opts,
+	                      win_w,
 	                      world,
 	                      world_name);
 }
@@ -3766,34 +3855,43 @@ handle_resize(const size_t            cmdline_len,
 #endif /* BACKEND_SDL */
 
 void
-handle_simple_command(const char          *cmdline,
+handle_simple_command(const char             *cmdline,
 #ifdef BACKEND_SDL
-                      SDL_Renderer        *renderer,
-                      const size_t         world_area_w,
-                      const size_t         world_area_h,
-                      SDL_FRect           *world_dst,
-                      const size_t         world_scale,
-                      SDL_Texture        **world_tx,
+                      SDL_Renderer           *renderer,
+                      const size_t            world_area_w,
+                      const size_t            world_area_h,
+                      SDL_FRect              *world_dst,
+                      const size_t            world_scale,
+                      SDL_Texture           **world_tx,
 #else
-                      const int            win_w,
-                      const int            win_h,
-                      struct Rect         *world_draw,
-                      int                 *world_draw_space_w,
-                      int                 *world_draw_space_h,
+                      const int               win_w,
+                      const int               win_h,
+                      struct Rect            *world_draw,
+                      int                    *world_draw_space_w,
+                      int                    *world_draw_space_h,
 #endif
-                      bool                *active,
-                      const char          *cwd,
-                      char               **feedback,
-                      uint64_t            *feedback_expiration,
-                      float               *framerate,
-                      bool                *no_glowcolor,
-                      const uint64_t       now,
-                      bool                *paused,
-                      bool                *th_vision,
-                      float               *tickrate,
-                      struct ToolOptions  *tool_opts,
-                      struct World        *world,
-                      char                *world_name)
+                      bool                   *active,
+                      struct Client          *cl,
+                      const char             *cwd,
+                      char                  **feedback,
+                      uint64_t               *feedback_expiration,
+                      TTF_Font               *font,
+                      float                  *framerate,
+                      char                  **restrict net_host,
+                      char                  **restrict net_port,
+                      bool                   *no_glowcolor,
+                      const uint64_t          now,
+                      bool                   *paused,
+                      size_t                 *statusbar_elems,
+                      enum StatusbarElement  *statusbar_elem,
+                      bool                   *th_vision,
+                      pthread_t              *thrd_cl,
+                      bool                   *thrd_cl_active,
+                      float                  *tickrate,
+                      struct ToolOptions     *tool_opts,
+                      const int               win_w,
+                      struct World           *world,
+                      char                   *world_name)
 {
 	int           x, y;
 
@@ -3825,6 +3923,22 @@ handle_simple_command(const char          *cmdline,
 		tool_opts->thermo_radius = STD_THERMO_RADIUS;
 		tool_opts->thermo_rate = STD_THERMO_RATE;
 		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
+	} else if (strcmp(cmdline, CMD_DISCONNECT) == 0 ||
+	           strcmp(cmdline, CMD_DISCONNECT_SHORT) == 0) {
+		command_disconnect(active,
+		                   cl,
+		                   feedback,
+		                   feedback_expiration,
+		                   font,
+		                   net_host,
+		                   net_port,
+		                   now,
+		                   statusbar_elems,
+		                   statusbar_elem,
+		                   thrd_cl,
+		                   thrd_cl_active,
+		                   win_w,
+		                   world_name);
 	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
 	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_ERASER;
