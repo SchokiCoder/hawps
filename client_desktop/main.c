@@ -1993,7 +1993,12 @@ handle_advanced_command(const char            *cmd,
 		}
 	} else if (strcmp(cmd, CMD_CONNECT) == 0 ||
 	           strcmp(cmd, CMD_CONNECT_SHORT) == 0) {
-		free_netstrs(net_host, net_port);
+		command_disconnect_core(active,
+		                        cl,
+		                        net_host,
+		                        net_port,
+		                        thrd_cl,
+		                        thrd_cl_active);
 
 		strtoaddr(arg, net_host, net_port);
 		command_connect(active,
@@ -3899,7 +3904,12 @@ handle_simple_command(const char             *cmdline,
 		World_clear(world);
 	} else if (strcmp(cmdline, CMD_CONNECT) == 0 ||
 	           strcmp(cmdline, CMD_CONNECT_SHORT) == 0) {
-		free_netstrs(net_host, net_port);
+		command_disconnect_core(active,
+		                        cl,
+		                        net_host,
+		                        net_port,
+		                        thrd_cl,
+		                        thrd_cl_active);
 
 		*net_host = STD_NET_HOST;
 		*net_port = STD_NET_PORT;

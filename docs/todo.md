@@ -225,7 +225,10 @@ It CAN be 0.
 Caused crashes on `STD_NET_HOST`.
 
 - [x] desktop client: fix missing feedback when connection fails after n retries
-- [ ] desktop client: fix `getaddrinfo` memory leak when command connect
+- [x] desktop client: fix `getaddrinfo` memory leak when double connect
+(When command connect while already connected.)
+
+- [ ] desktop client: fix statusbar when failed connect after successful connect
 
 - [ ] desktop client: disable quicksave and -load when connected to server
 - [ ] desktop client: disable autosave when connected to server
