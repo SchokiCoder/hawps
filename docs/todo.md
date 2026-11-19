@@ -209,13 +209,16 @@ This would then leave you with a local copy of that server's world.
 
 - [x] desktop client: make command connect param optional
 
-- [ ] desktop client: fix commands new and load not disconnecting from a server
+- [x] desktop client: fix commands new and load not disconnecting from a server
 Caused crash when world size differs,
 or overwriting local world with still incoming server data.
+
+- [ ] desktop client: fix new cmd after connection not having worldname in statusbar
 
 - [ ] libextra net: fix unguarded `freeaddrinfo` and `close(c->sockfd)`
 Can cause double frees.
 
+- [ ] desktop client: disable quicksave and -load when connected to server
 - [ ] desktop client: disable autosave when connected to server
 
 - [ ] libextra net: "localhost" works but "127.0.0.1" doesn't?

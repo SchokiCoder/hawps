@@ -547,20 +547,12 @@ command_connect(bool                   *active,
                 const char             *world_name);
 
 void
-command_disconnect(bool                   *active,
-                   struct Client          *cl,
-                   char                  **restrict feedback,
-                   uint64_t               *feedback_expiration,
-                   TTF_Font               *font,
-                   char                  **restrict net_host,
-                   char                  **restrict net_port,
-                   const uint64_t          now,
-                   size_t                 *statusbar_elems,
-                   enum StatusbarElement  *statusbar_elem,
-                   pthread_t              *thrd_cl,
-                   bool                   *thrd_cl_active,
-                   const int               win_w,
-                   char                   *world_name);
+command_disconnect_core(bool           *active,
+                        struct Client  *cl,
+                        char          **restrict net_host,
+                        char          **restrict net_port,
+                        pthread_t      *thrd_cl,
+                        bool           *thrd_cl_active);
 
 void
 command_load_core(const char   *cwd,
@@ -1281,24 +1273,14 @@ command_connect(bool                   *active,
 }
 
 void
-command_disconnect(bool                   *active,
-                   struct Client          *cl,
-                   char                  **restrict feedback,
-                   uint64_t               *feedback_expiration,
-                   TTF_Font               *font,
-                   char                  **restrict net_host,
-                   char                  **restrict net_port,
-                   const uint64_t          now,
-                   size_t                 *statusbar_elems,
-                   enum StatusbarElement  *statusbar_elem,
-                   pthread_t              *thrd_cl,
-                   bool                   *thrd_cl_active,
-                   const int               win_w,
-                   char                   *world_name)
+command_disconnect_core(bool           *active,
+                        struct Client  *cl,
+                        char          **restrict net_host,
+                        char          **restrict net_port,
+                        pthread_t      *thrd_cl,
+                        bool           *thrd_cl_active)
 {
 	if (NULL == *net_host) {
-		set_feedback(feedback, feedback_expiration, now,
-		             "You're already offline.");
 		return;
 	}
 
@@ -1310,20 +1292,6 @@ command_disconnect(bool                   *active,
 
 	free_netstrs(net_host, net_port);
 	Client_free(cl);
-
-	string_copy(world_name, WORLDNAME_SIZE, "localcopy");
-	handle_statusbar_resize(
-#ifdef BACKEND_SDL
-		                font,
-#endif
-		                *net_host,
-		                statusbar_elems,
-		                statusbar_elem,
-		                win_w,
-		                world_name);
-
-	set_feedback(feedback, feedback_expiration, now,
-	             "You're now offline.");
 }
 
 void
@@ -2083,6 +2051,13 @@ handle_advanced_command(const char            *cmd,
 			             "World name too long.");
 			return;
 		}
+
+		command_disconnect_core(active,
+		                        cl,
+		                        net_host,
+		                        net_port,
+		                        thrd_cl,
+		                        thrd_cl_active);
 
 		command_load_core(cwd, &tempworld, arg);
 		if (0 == tempworld.w ||
@@ -3962,20 +3937,32 @@ handle_simple_command(const char             *cmdline,
 		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
 	} else if (strcmp(cmdline, CMD_DISCONNECT) == 0 ||
 	           strcmp(cmdline, CMD_DISCONNECT_SHORT) == 0) {
-		command_disconnect(active,
-		                   cl,
-		                   feedback,
-		                   feedback_expiration,
-		                   font,
-		                   net_host,
-		                   net_port,
-		                   now,
-		                   statusbar_elems,
-		                   statusbar_elem,
-		                   thrd_cl,
-		                   thrd_cl_active,
-		                   win_w,
-		                   world_name);
+		if (NULL == *net_host) {
+			set_feedback(feedback, feedback_expiration, now,
+				     "You're already offline.");
+			return;
+		}
+
+		command_disconnect_core(active,
+		                        cl,
+		                        net_host,
+		                        net_port,
+		                        thrd_cl,
+		                        thrd_cl_active);
+
+		string_copy(world_name, WORLDNAME_SIZE, "localcopy");
+		handle_statusbar_resize(
+#ifdef BACKEND_SDL
+				        font,
+#endif
+				        *net_host,
+				        statusbar_elems,
+				        statusbar_elem,
+				        win_w,
+				        world_name);
+
+		set_feedback(feedback, feedback_expiration, now,
+			     "You're now offline.");
 	} else if (strcmp(cmdline, CMD_ERASER) == 0 ||
 	           strcmp(cmdline, CMD_ERASER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_ERASER;
@@ -3994,6 +3981,13 @@ handle_simple_command(const char             *cmdline,
 		          world,
 		          world_name);
 	} else if (strcmp(cmdline, CMD_NEW) == 0) {
+		command_disconnect_core(active,
+		                        cl,
+		                        net_host,
+		                        net_port,
+		                        thrd_cl,
+		                        thrd_cl_active);
+
 		command_new(
 #ifdef BACKEND_SDL
 		            renderer,
