@@ -193,10 +193,11 @@ and its none of the client's business to know the host's world name.
 - [x] desktop client: when connect failed, free and NULL `net_host`
 Causes ip addr to be shown in the statusbar, when not connected.
 
-- [ ] desktop client: fix statusbar not updating upon cmd connect
+- [x] desktop client: fix statusbar not updating upon cmd connect
 - [ ] desktop client: fix segfault upon quit when connection never happened
-- [ ] desktop client: fix crash when cmd connect fails
+- [ ] desktop client: fix crash when cmd connect fails (too aggressive World free)
 - [ ] desktop client: fix crash when cmd new entered during net connection
+- [ ] desktop client: disable autosave when connected to server
 
 - [ ] libextra net: "localhost" works but "127.0.0.1" doesn't?
 do any IPs work?

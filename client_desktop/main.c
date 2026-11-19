@@ -525,17 +525,22 @@ check_flag_arg(int         argc,
                const int   idx);
 
 void
-command_connect(bool                 *active,
-                struct Client        *cl,
-                char                **restrict feedback,
-                uint64_t             *feedback_expiration,
-                char                **restrict net_host,
-                char                **restrict net_port,
-                const uint64_t        now,
-                struct ThArgsClient  *tha_cl,
-                pthread_t            *thrd_cl,
-                bool                 *thrd_cl_active,
-                struct World         *world);
+command_connect(bool                   *active,
+                struct Client          *cl,
+                char                  **restrict feedback,
+                uint64_t               *feedback_expiration,
+                TTF_Font               *font,
+                char                  **restrict net_host,
+                char                  **restrict net_port,
+                const uint64_t          now,
+                size_t                 *statusbar_elems,
+                enum StatusbarElement  *statusbar_elem,
+                struct ThArgsClient    *tha_cl,
+                pthread_t              *thrd_cl,
+                bool                   *thrd_cl_active,
+                const int               win_w,
+                struct World           *world,
+                const char             *world_name);
 
 void
 command_load_core(const char   *cwd,
@@ -1162,17 +1167,22 @@ check_flag_arg(int         argc,
 }
 
 void
-command_connect(bool                 *active,
-                struct Client        *cl,
-                char                **restrict feedback,
-                uint64_t             *feedback_expiration,
-                char                **restrict net_host,
-                char                **restrict net_port,
-                const uint64_t        now,
-                struct ThArgsClient  *tha_cl,
-                pthread_t            *thrd_cl,
-                bool                 *thrd_cl_active,
-                struct World         *world)
+command_connect(bool                   *active,
+                struct Client          *cl,
+                char                  **restrict feedback,
+                uint64_t               *feedback_expiration,
+                TTF_Font               *font,
+                char                  **restrict net_host,
+                char                  **restrict net_port,
+                const uint64_t          now,
+                size_t                 *statusbar_elems,
+                enum StatusbarElement  *statusbar_elem,
+                struct ThArgsClient    *tha_cl,
+                pthread_t              *thrd_cl,
+                bool                   *thrd_cl_active,
+                const int               win_w,
+                struct World           *world,
+                const char             *world_name)
 {
 	struct World tempwld;
 
@@ -1228,6 +1238,16 @@ command_connect(bool                 *active,
 		*world = tempwld;
 		return;
 	}
+
+	handle_statusbar_resize(
+#ifdef BACKEND_SDL
+	                        font,
+#endif
+	                        *net_host,
+	                        statusbar_elems,
+	                        statusbar_elem,
+	                        win_w,
+	                        world_name);
 }
 
 void
@@ -1927,13 +1947,18 @@ handle_advanced_command(const char            *cmd,
 		                cl,
 		                feedback,
 		                feedback_expiration,
+		                font,
 		                net_host,
 		                net_port,
 		                now,
+		                statusbar_elems,
+		                statusbar_elem,
 		                tha_cl,
 		                thrd_cl,
 		                thrd_cl_active,
-		                world);
+		                win_w,
+		                world,
+		                world_name);
 	} else if (strcmp(cmd, CMD_ERASERRADIUS) == 0 ||
 	           strcmp(cmd, CMD_ERASERRADIUS_SHORT) == 0) {
 		errno = 0;
@@ -4886,13 +4911,18 @@ main(int    argc,
 		                &cl,
 		                &feedback,
 		                &feedback_expiration,
+		                font,
 		                &net_host,
 		                &net_port,
 		                now,
+		                &statusbar_elems,
+		                statusbar_elem,
 		                &tha_cl,
 		                &thrd_cl,
 		                &thrd_cl_active,
-		                &world);
+		                win_w,
+		                &world,
+		                world_name);
 	}
 
 	if (0 == world.w ||
