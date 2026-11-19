@@ -51,14 +51,19 @@ struct Client {
 };
 
 enum MessageType {
+	/* handshake signals
+	 */
 	MT_CONNECT,
 	MT_CONNECTED,
 	MT_INCOMPATIBLE,
 	MT_NOSLOTS,
 
+	/* runtime signals
+	 */
 	MT_REQ_WORLDINFO,
 	MT_WORLDINFO,
 	MT_STILL_ALIVE,
+	MT_DISCONNECT,
 
 	/* Tells which array is being sent/received.
 	 * Those commented out, don't need to exist,
@@ -376,6 +381,11 @@ Client_connect(struct Client *c,
 void
 Client_disconnect(struct Client *c)
 {
+	enum MessageType send_mt;
+
+	send_mt = MT_DISCONNECT;
+	send(c->sockfd, &send_mt, sizeof(send_mt), 0);
+
 	if (c->ai != NULL) {
 		freeaddrinfo(c->ai);
 		c->ai = NULL;
@@ -403,6 +413,11 @@ Client_handle_message(struct Client  *c,
 	pos = sizeof(recv_mt);
 
 	switch (recv_mt) {
+	case MT_DISCONNECT:
+		NET_logln("Server shutting down");
+		Client_disconnect(c);
+		break;
+
 	case MT_WORLDINFO:
 		mwi = *(struct MsgWorldInfo*) ((void*) c->recvbuf);
 		Client_handle_worldinfo(c, w, mwi.width, mwi.height);
@@ -588,6 +603,22 @@ Server_new(struct Server *s,
 	return NE_OKAY;
 }
 
+void
+Server_disconnect_client(struct Server *s,
+                         const size_t   cid)
+{
+	if (cid > s->cl_slots) {
+		return;
+	}
+
+	Server_set_client_active(s, cid, false);
+	memset(&s->cl_addr[cid], 0, sizeof(s->cl_addr[cid]));
+	s->cl_addr_len[cid] = 0;
+	s->cl_connected[cid] = false;
+	s->cl_last_seen[cid] = 0;
+	s->cl_last_update[cid] = 0;
+}
+
 bool
 Server_get_client_active(struct Server *s,
                          const size_t   cid)
@@ -707,6 +738,21 @@ Server_handle_message(struct Server         *s,
 		s->cl_last_seen[i] = now;
 		break;
 
+	case MT_DISCONNECT:
+		i = Server_get_client_id(s, recv_addr, recv_addr_len);
+		if (i >= s->cl_slots) {
+			inet_ntop(recv_addr.sa_family,
+			          &recv_addr,
+			          ip,
+			          NET_IPSTR_LEN);
+			NET_logln("Invalid recipient %s", ip);
+			return;
+		}
+
+		NET_logln("Client %s disconnected", s->cl_ip[i]);
+		Server_disconnect_client(s, i);
+		break;
+
 	case MT_REQ_WORLDINFO:
 		mwi.mt = MT_WORLDINFO;
 		mwi.width = w.w;
@@ -757,11 +803,7 @@ Server_housekeeping(struct Server  *s,
 		} else {
 			if ((now - s->cl_last_seen[i]) / NANOS_PER_SEC >
 			     NET_SERVER_SLOT_DISCONNECT_TIME) {
-				memset(&s->cl_addr[i], 0, sizeof(s->cl_addr[i]));
-				s->cl_addr_len[i] = 0;
-				s->cl_connected[i] = false;
-				s->cl_last_seen[i] = 0;
-				s->cl_last_update[i] = 0;
+				Server_disconnect_client(s, i);
 			}
 		}
 	}
@@ -800,7 +842,7 @@ Server_set_client_active(struct Server *s,
 	is_active = Server_get_client_active(s, cid);
 
 	if (active == is_active) {
-		return; /* you're dumb lol */
+		return;
 	}
 
 	if (active == true) {
@@ -820,6 +862,23 @@ Server_set_client_active(struct Server *s,
 			s->active_cl[i] = s->active_cl[i + 1];
 		}
 		s->active_cls--;
+	}
+}
+
+void
+Server_shutdown(struct Server *s)
+{
+	const enum MessageType send_mt = MT_DISCONNECT;
+
+	size_t i;
+
+	for (i = 0; i < s->cl_slots; i++) {
+		if (false == s->cl_connected[i]) {
+			continue;
+		}
+
+		sendto(s->sockfd, &send_mt, sizeof(send_mt), 0,
+		       &s->cl_addr[i], s->cl_addr_len[i]);
 	}
 }
 

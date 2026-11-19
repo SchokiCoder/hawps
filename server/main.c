@@ -213,6 +213,7 @@ main(int    argc,
 		} else if (strcmp(input, CMD_QUIT) == 0 ||
 		           strcmp(input, CMD_QUIT_SHORT) == 0) {
 			active = false;
+			Server_shutdown(&sv);
 		} else {
 			printf("Command not recognized\n");
 		}

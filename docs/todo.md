@@ -229,7 +229,12 @@ Caused crashes on `STD_NET_HOST`.
 (When command connect while already connected.)
 
 - [x] libextra net: add activity bool to client
-- [ ] libextra net: add activity bool to server
+- [x] ~libextra net: add activity bool to server~
+
+- [x] libextra net: add disconnect signal
+Sent by client when disconnecting, and by server when shutting down.
+
+- [ ] libextra net: server doesn't use `active_cl` array optimization for sending world data?
 
 - [ ] desktop client: fix statusbar when failed connect after successful connect
 don't forget the cases cmd cnct needs to handle:
