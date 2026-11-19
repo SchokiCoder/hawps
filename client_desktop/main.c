@@ -4006,6 +4006,16 @@ handle_simple_command(const char             *cmdline,
 		            tool_opts,
 		            world,
 		            world_name);
+
+		handle_statusbar_resize(
+#ifdef BACKEND_SDL
+				        font,
+#endif
+				        *net_host,
+				        statusbar_elems,
+				        statusbar_elem,
+				        win_w,
+				        world_name);
 	} else if (strcmp(cmdline, CMD_NOGLOWCOLOR) == 0 ||
 	           strcmp(cmdline, CMD_NOGLOWCOLOR_SHORT) == 0) {
 		*no_glowcolor = true;
