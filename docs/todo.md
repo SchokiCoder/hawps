@@ -207,6 +207,8 @@ because the temp-world swap would give a freed world.
 - [x] desktop client: add command disconnect
 This would then leave you with a local copy of that server's world.
 
+- [x] desktop client: make command connect param optional
+
 - [ ] desktop client: fix commands new and load not disconnecting from a server
 Caused crash when world size differs,
 or overwriting local world with still incoming server data.

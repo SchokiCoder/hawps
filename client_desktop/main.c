@@ -195,10 +195,11 @@ static const char APP_HELP_COMMANDS[] = "Commands:\n"
 "    " CMD_CLEARALL_SHORT " " CMD_CLEARALL "\n"
 "        clears the world, including spawners\n"
 "\n"
-"    " CMD_CONNECT_SHORT " " CMD_CONNECT " HOST[:PORT]\n"
+"    " CMD_CONNECT_SHORT " " CMD_CONNECT " [HOST[:PORT]]\n"
 "        tries to connect to the given target\n"
 "        target is IPv4, IPv6, or hostname and may have a port\n"
 "        example: 192.168.0.42:25565\n"
+"        default target: %s\n"
 "        default port: %s\n"
 "\n"
 "    " CMD_COOLER_SHORT " " CMD_COOLER "\n"
@@ -665,6 +666,10 @@ draw(const char                  *cmdline,
      const char                  *world_name);
 #endif /* BACKEND_SDL */
 
+void
+free_netstrs(char **restrict net_host,
+             char **restrict net_port);
+
 struct Rgba
 get_normal_dot_color(const struct World world,
                      const int          x,
@@ -1034,6 +1039,7 @@ handle_simple_command(const char             *cmdline,
                       size_t                 *statusbar_elems,
                       enum StatusbarElement  *statusbar_elem,
                       bool                   *th_vision,
+                      struct ThArgsClient    *tha_cl,
                       pthread_t              *thrd_cl,
                       bool                   *thrd_cl_active,
                       float                  *tickrate,
@@ -1302,13 +1308,7 @@ command_disconnect(bool                   *active,
 		*active = true;
 	}
 
-	free(*net_host);
-	*net_host = NULL;
-	if (NULL != *net_port &&
-	    strcmp(STD_NET_PORT, *net_port) != 0) {
-		free(*net_port);
-		*net_port = NULL;
-	}
+	free_netstrs(net_host, net_port);
 	Client_free(cl);
 
 	string_copy(world_name, WORLDNAME_SIZE, "localcopy");
@@ -1874,6 +1874,22 @@ draw(const char                  *cmdline,
 }
 #endif /* BACKEND_SDL */
 
+void
+free_netstrs(char **restrict net_host,
+             char **restrict net_port)
+{
+	if (NULL != *net_host &&
+	    strcmp(STD_NET_HOST, *net_host) != 0) {
+		free(*net_host);
+	}
+	*net_host = NULL;
+	if (NULL != *net_port &&
+	    strcmp(STD_NET_PORT, *net_port) != 0) {
+		free(*net_port);
+		*net_port = NULL;
+	}
+}
+
 struct Rgba
 get_normal_dot_color(const struct World world,
                      const int          x,
@@ -2011,12 +2027,7 @@ handle_advanced_command(const char            *cmd,
 		}
 	} else if (strcmp(cmd, CMD_CONNECT) == 0 ||
 	           strcmp(cmd, CMD_CONNECT_SHORT) == 0) {
-		if (NULL != *net_host)
-			free(net_host);
-
-		if (NULL != *net_port &&
-		    strcmp(STD_NET_PORT, *net_port) != 0)
-			free(net_port);
+		free_netstrs(net_host, net_port);
 
 		strtoaddr(arg, net_host, net_port);
 		command_connect(active,
@@ -2399,6 +2410,7 @@ handle_args(int                  argc,
 			       key_pause);
 
 			printf(APP_HELP_COMMANDS,
+			       STD_NET_HOST,
 			       STD_NET_PORT,
 			       WORLDNAME_MAXLEN,
 			       WORLDNAME_MAXLEN);
@@ -2660,6 +2672,7 @@ handle_command(char                  *cmdline,
 	                      statusbar_elems,
 	                      statusbar_elem,
 	                      th_vision,
+	                      tha_cl,
 	                      thrd_cl,
 	                      thrd_cl_active,
 	                      tickrate,
@@ -3885,6 +3898,7 @@ handle_simple_command(const char             *cmdline,
                       size_t                 *statusbar_elems,
                       enum StatusbarElement  *statusbar_elem,
                       bool                   *th_vision,
+                      struct ThArgsClient    *tha_cl,
                       pthread_t              *thrd_cl,
                       bool                   *thrd_cl_active,
                       float                  *tickrate,
@@ -3910,6 +3924,29 @@ handle_simple_command(const char             *cmdline,
 	} else if (strcmp(cmdline, CMD_CLEARALL) == 0 ||
 	           strcmp(cmdline, CMD_CLEARALL_SHORT) == 0) {
 		World_clear(world);
+	} else if (strcmp(cmdline, CMD_CONNECT) == 0 ||
+	           strcmp(cmdline, CMD_CONNECT_SHORT) == 0) {
+		free_netstrs(net_host, net_port);
+
+		*net_host = STD_NET_HOST;
+		*net_port = STD_NET_PORT;
+		command_connect(active,
+		                cl,
+		                feedback,
+		                feedback_expiration,
+		                font,
+		                net_host,
+		                net_port,
+		                now,
+		                statusbar_elems,
+		                statusbar_elem,
+		                tha_cl,
+		                thrd_cl,
+		                thrd_cl_active,
+		                win_w,
+		                world,
+		                world_name);
+
 	} else if (strcmp(cmdline, CMD_COOLER) == 0 ||
 	           strcmp(cmdline, CMD_COOLER_SHORT) == 0) {
 		tool_opts->sel_tool = TOOL_COOLER;
@@ -5283,13 +5320,7 @@ cleanup:
 
 	World_free(&world);
 	Client_free(&cl);
-
-	if (NULL != net_host)
-		free(net_host);
-
-	if (NULL != net_port &&
-	    strcmp(STD_NET_PORT, net_port) != 0)
-		free(net_port);
+	free_netstrs(&net_host, &net_port);
 
 	return 0;
 }
