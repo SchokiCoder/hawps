@@ -1222,7 +1222,7 @@ command_connect(bool                   *active,
 		*net_port = STD_NET_PORT;
 	}
 
-	if (0 == cl->sockfd ||
+	if (-1 == cl->sockfd ||
 	    0 == cl->recvbuf_size ||
 	    NULL == cl->recvbuf) {
 		*cl = Client_new();
@@ -4998,6 +4998,7 @@ main(int    argc,
 	cmdline[0] = '\0';
 	tool_opts = ToolOptions_new();
 	memset(&cl, 0, sizeof(cl));
+	cl.sockfd = -1;
 	memset(&world, 0, sizeof(world));
 
 	if (!handle_args(argc, argv,

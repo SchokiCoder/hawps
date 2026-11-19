@@ -479,6 +479,7 @@ Client_free(struct Client *c)
 	}
 
 	memset(c, 0, sizeof(*c));
+	c->sockfd = -1;
 }
 
 void

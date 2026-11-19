@@ -218,7 +218,9 @@ or overwriting local world with still incoming server data.
 - [x] libextra net: fix unguarded `freeaddrinfo` and `close(c->sockfd)`
 Caused double frees.
 
-- [ ] desktop client: fix `cl->sockfd` check in `command_connect`
+- [x] desktop client: fix `cl->sockfd` handling
+It CAN be 0.
+
 - [ ] desktop client: remove old free calls on net strs in `command_connect`
 Caused crashes on `STD_NET_HOST`.
 
