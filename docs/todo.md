@@ -200,7 +200,10 @@ on error, it returns an error number, and no signal is sent."
 ...or it just crashes your shit... again :)
 This commit removes reliance on pthread to detect if a pthread is active.
 
-- [ ] desktop client: fix crash when cmd connect fails (too aggressive World free)
+- [x] desktop client: fix too aggressive World free in `command_connect`
+Caused crash when cmd connect fails,
+because the temp-world swap would give a freed world.
+
 - [ ] desktop client: fix crash when cmd new entered during net connection
 - [ ] desktop client: disable autosave when connected to server
 

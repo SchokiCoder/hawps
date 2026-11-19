@@ -1186,8 +1186,6 @@ command_connect(bool                   *active,
 {
 	struct World tempwld;
 
-	memset(&tempwld, 0, sizeof(tempwld));
-
 	if (NULL == net_host) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Network target is invalid.");
@@ -1211,14 +1209,13 @@ command_connect(bool                   *active,
 	}
 
 	tempwld = *world;
-	World_free(world);
+	memset(world, 0, sizeof(*world));
 
 	if (Client_connect(cl, *net_host, *net_port, world) != NE_OKAY) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Could not connect.");
 		free(*net_host);
 		*net_host = NULL;
-		World_free(world);
 		*world = tempwld;
 		return;
 	}
@@ -1233,11 +1230,11 @@ command_connect(bool                   *active,
 		             "Could not create net thread.");
 		free(*net_host);
 		*net_host = NULL;
-		World_free(world);
 		*world = tempwld;
 		return;
 	}
 
+	World_free(&tempwld);
 	handle_statusbar_resize(
 #ifdef BACKEND_SDL
 	                        font,
