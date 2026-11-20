@@ -4841,7 +4841,7 @@ main_init(
 	} else {
 		for (i = 0; i < ARRLEN(FONTPATH); i++) {
 			*font = TTF_OpenFont(FONTPATH[i], font_size);
-			if (NULL != font) {
+			if (NULL != *font) {
 				break;
 			}
 		}

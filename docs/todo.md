@@ -234,6 +234,10 @@ Caused crashes on `STD_NET_HOST`.
 - [x] libextra net: add disconnect signal
 Sent by client when disconnecting, and by server when shutting down.
 
+- [x] desktop client: fix pointer check during font opening
+
+- [ ] desktop client: `FLAG_HELP` memory leak
+
 - [ ] libextra net: server doesn't use `active_cl` array optimization for sending world data?
 
 - [ ] desktop client: fix statusbar when failed connect after successful connect
