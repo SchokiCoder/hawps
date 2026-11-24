@@ -534,8 +534,7 @@ command_connect(bool                   *active,
                 char                  **restrict feedback,
                 NSecs                  *feedback_expiration,
                 TTF_Font               *font,
-                char                  **restrict net_host,
-                char                  **restrict net_port,
+                struct NetAddr         *na,
                 const NSecs             now,
                 size_t                 *statusbar_elems,
                 enum StatusbarElement  *statusbar_elem,
@@ -549,8 +548,7 @@ command_connect(bool                   *active,
 void
 command_disconnect_core(bool           *active,
                         struct Client  *cl,
-                        char          **restrict net_host,
-                        char          **restrict net_port,
+                        struct NetAddr *na,
                         pthread_t      *thrd_cl,
                         bool           *thrd_cl_active);
 
@@ -698,8 +696,7 @@ handle_advanced_command(const char            *cmd,
                         char                 **feedback,
                         NSecs                 *feedback_expiration,
                         float                 *framerate,
-                        char                 **restrict net_host,
-                        char                 **restrict net_port,
+                        struct NetAddr        *na,
                         const NSecs            now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
@@ -725,8 +722,7 @@ handle_args(int                  argc,
             bool                *autosave_all,
             bool                *autosave_none,
             float               *framerate,
-            char               **net_host,
-            char               **net_port,
+            struct NetAddr      *na,
             bool                *no_glowcolor,
             float               *tickrate,
             struct ToolOptions  *tool_opts,
@@ -769,8 +765,7 @@ handle_command(char                  *cmdline,
                char                 **feedback,
                NSecs                 *feedback_expiration,
                float                 *framerate,
-               char                 **restrict net_host,
-               char                 **restrict net_port,
+               struct NetAddr        *na,
                bool                  *no_glowcolor,
                const NSecs            now,
                bool                  *paused,
@@ -868,8 +863,7 @@ handle_input(
              float                 *framerate,
              enum InputMode        *input_mode,
              NSecs                 *last_key_use,
-             char                 **restrict net_host,
-             char                 **restrict net_port,
+             struct NetAddr        *na,
              bool                  *no_glowcolor,
              const NSecs            now,
              bool                  *paused,
@@ -1023,8 +1017,7 @@ handle_simple_command(const char             *cmdline,
                       NSecs                  *feedback_expiration,
                       TTF_Font               *font,
                       float                  *framerate,
-                      char                  **restrict net_host,
-                      char                  **restrict net_port,
+                      struct NetAddr         *na,
                       bool                   *no_glowcolor,
                       const NSecs             now,
                       bool                   *paused,
@@ -1198,8 +1191,7 @@ command_connect(bool                   *active,
                 char                  **restrict feedback,
                 NSecs                  *feedback_expiration,
                 TTF_Font               *font,
-                char                  **restrict net_host,
-                char                  **restrict net_port,
+                struct NetAddr         *na,
                 const NSecs             now,
                 size_t                 *statusbar_elems,
                 enum StatusbarElement  *statusbar_elem,
@@ -1212,14 +1204,14 @@ command_connect(bool                   *active,
 {
 	struct World tempwld;
 
-	if (NULL == net_host) {
+	if (NULL == na->host) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Network target is invalid.");
 		return;
 	}
 
-	if (NULL == *net_port) {
-		*net_port = STD_NET_PORT;
+	if (NULL == na->port) {
+		na->port = STD_NET_PORT;
 	}
 
 	if (true == *thrd_cl_active) {
@@ -1231,10 +1223,10 @@ command_connect(bool                   *active,
 	tempwld = *world;
 	memset(world, 0, sizeof(*world));
 
-	if (Client_connect(cl, *net_host, *net_port, world) != NE_OKAY) {
+	if (Client_connect(cl, na->host, na->port, world) != NE_OKAY) {
 		set_feedback(feedback, feedback_expiration, get_now(),
 		             "Could not connect.");
-		free_netstrs(net_host, net_port);
+		NetAddr_free(na);
 		*world = tempwld;
 		return;
 	}
@@ -1247,7 +1239,7 @@ command_connect(bool                   *active,
 	if (pthread_create(thrd_cl, NULL, thrdfn_cl, tha_cl) != 0) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Could not create net thread.");
-		free_netstrs(net_host, net_port);
+		NetAddr_free(na);
 		*world = tempwld;
 		return;
 	}
@@ -1257,7 +1249,7 @@ command_connect(bool                   *active,
 #ifdef BACKEND_SDL
 	                        font,
 #endif
-	                        *net_host,
+	                        na->host,
 	                        statusbar_elems,
 	                        statusbar_elem,
 	                        win_w,
@@ -1267,12 +1259,11 @@ command_connect(bool                   *active,
 void
 command_disconnect_core(bool           *active,
                         struct Client  *cl,
-                        char          **restrict net_host,
-                        char          **restrict net_port,
+                        struct NetAddr *na,
                         pthread_t      *thrd_cl,
                         bool           *thrd_cl_active)
 {
-	if (NULL == *net_host) {
+	if (NULL == na->host) {
 		return;
 	}
 
@@ -1282,7 +1273,7 @@ command_disconnect_core(bool           *active,
 		*active = true;
 	}
 
-	free_netstrs(net_host, net_port);
+	NetAddr_free(na);
 	Client_disconnect(cl);
 }
 
@@ -1834,22 +1825,6 @@ draw(const char                  *cmdline,
 }
 #endif /* BACKEND_SDL */
 
-void
-free_netstrs(char **restrict net_host,
-             char **restrict net_port)
-{
-	if (NULL != *net_host &&
-	    strcmp(STD_NET_HOST, *net_host) != 0) {
-		free(*net_host);
-	}
-	*net_host = NULL;
-	if (NULL != *net_port &&
-	    strcmp(STD_NET_PORT, *net_port) != 0) {
-		free(*net_port);
-		*net_port = NULL;
-	}
-}
-
 struct Rgba
 get_normal_dot_color(const struct World world,
                      const int          x,
@@ -1944,8 +1919,7 @@ handle_advanced_command(const char            *cmd,
                         char                 **feedback,
                         NSecs                 *feedback_expiration,
                         float                 *framerate,
-                        char                 **restrict net_host,
-                        char                 **restrict net_port,
+                        struct NetAddr        *na,
                         const NSecs            now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
@@ -1989,19 +1963,17 @@ handle_advanced_command(const char            *cmd,
 	           strcmp(cmd, CMD_CONNECT_SHORT) == 0) {
 		command_disconnect_core(active,
 		                        cl,
-		                        net_host,
-		                        net_port,
+		                        na,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
-		strtoaddr(arg, net_host, net_port);
+		*na = NetAddr_from_str(arg);
 		command_connect(active,
 		                cl,
 		                feedback,
 		                feedback_expiration,
 		                font,
-		                net_host,
-		                net_port,
+		                na,
 		                now,
 		                statusbar_elems,
 		                statusbar_elem,
@@ -2051,8 +2023,7 @@ handle_advanced_command(const char            *cmd,
 
 		command_disconnect_core(active,
 		                        cl,
-		                        net_host,
-		                        net_port,
+		                        na,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
@@ -2072,7 +2043,7 @@ handle_advanced_command(const char            *cmd,
 #ifdef BACKEND_SDL
 		                        font,
 #endif
-		                        *net_host,
+		                        na->host,
 		                        statusbar_elems,
 		                        statusbar_elem,
 		                        win_w,
@@ -2138,7 +2109,7 @@ handle_advanced_command(const char            *cmd,
 #ifdef BACKEND_SDL
 		                        font,
 #endif
-		                        *net_host,
+		                        na->host,
 		                        statusbar_elems,
 		                        statusbar_elem,
 		                        win_w,
@@ -2262,8 +2233,7 @@ handle_args(int                  argc,
             bool                *autosave_all,
             bool                *autosave_none,
             float               *framerate,
-            char               **net_host,
-            char               **net_port,
+            struct NetAddr      *na,
             bool                *no_glowcolor,
             float               *tickrate,
             struct ToolOptions  *tool_opts,
@@ -2299,7 +2269,7 @@ handle_args(int                  argc,
 				return false;
 			}
 			i++;
-			strtoaddr(argv[i], net_host, net_port);
+			*na = NetAddr_from_str(argv[i]);
 		} else if (strcmp(argv[i], FLAG_ERASERRADIUS) == 0 ||
 		           strcmp(argv[i], FLAG_ERASERRADIUS_SHORT) == 0) {
 			if (!handle_flag_number_arg(argc, argv,
@@ -2539,8 +2509,7 @@ handle_command(char                  *cmdline,
                char                 **feedback,
                NSecs                 *feedback_expiration,
                float                 *framerate,
-               char                 **restrict net_host,
-               char                 **restrict net_port,
+               struct NetAddr        *na,
                bool                  *no_glowcolor,
                const NSecs            now,
                bool                  *paused,
@@ -2590,8 +2559,7 @@ handle_command(char                  *cmdline,
 			                        feedback,
 			                        feedback_expiration,
 			                        framerate,
-			                        net_host,
-			                        net_port,
+			                        na,
 			                        now,
 			                        statusbar_elems,
 			                        statusbar_elem,
@@ -2636,8 +2604,7 @@ handle_command(char                  *cmdline,
 	                      feedback_expiration,
 	                      font,
 	                      framerate,
-	                      net_host,
-	                      net_port,
+	                      na,
 	                      no_glowcolor,
 	                      now,
 	                      paused,
@@ -2843,8 +2810,7 @@ handle_input(
              float                 *framerate,
              enum InputMode        *input_mode,
              NSecs                 *last_key_use,
-             char                 **restrict net_host,
-             char                 **restrict net_port,
+             struct NetAddr        *na,
              bool                  *no_glowcolor,
              const NSecs            now,
              bool                  *paused,
@@ -2948,8 +2914,7 @@ handle_input(
 				               feedback,
 				               feedback_expiration,
 				               framerate,
-				               net_host,
-				               net_port,
+				               na,
 				               no_glowcolor,
 				               now,
 				               paused,
@@ -3014,7 +2979,7 @@ handle_input(
 			              world_area_h,
 			              world_dst);
 			handle_statusbar_resize(font,
-			                        *net_host,
+			                        na->host,
 			                        statusbar_elems,
 			                        statusbar_elem,
 			                        *win_w,
@@ -3862,8 +3827,7 @@ handle_simple_command(const char             *cmdline,
                       NSecs                  *feedback_expiration,
                       TTF_Font               *font,
                       float                  *framerate,
-                      char                  **restrict net_host,
-                      char                  **restrict net_port,
+                      struct NetAddr         *na,
                       bool                   *no_glowcolor,
                       const NSecs             now,
                       bool                   *paused,
@@ -3900,20 +3864,18 @@ handle_simple_command(const char             *cmdline,
 	           strcmp(cmdline, CMD_CONNECT_SHORT) == 0) {
 		command_disconnect_core(active,
 		                        cl,
-		                        net_host,
-		                        net_port,
+		                        na,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
-		*net_host = STD_NET_HOST;
-		*net_port = STD_NET_PORT;
+		na->host = STD_NET_HOST;
+		na->port = STD_NET_PORT;
 		command_connect(active,
 		                cl,
 		                feedback,
 		                feedback_expiration,
 		                font,
-		                net_host,
-		                net_port,
+		                na,
 		                now,
 		                statusbar_elems,
 		                statusbar_elem,
@@ -3939,7 +3901,7 @@ handle_simple_command(const char             *cmdline,
 		tool_opts->spawn_temperature = STD_SPAWN_TEMPERATURE;
 	} else if (strcmp(cmdline, CMD_DISCONNECT) == 0 ||
 	           strcmp(cmdline, CMD_DISCONNECT_SHORT) == 0) {
-		if (NULL == *net_host) {
+		if (NULL == na->host) {
 			set_feedback(feedback, feedback_expiration, now,
 				     "You're already offline.");
 			return;
@@ -3947,8 +3909,7 @@ handle_simple_command(const char             *cmdline,
 
 		command_disconnect_core(active,
 		                        cl,
-		                        net_host,
-		                        net_port,
+		                        na,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
@@ -3957,7 +3918,7 @@ handle_simple_command(const char             *cmdline,
 #ifdef BACKEND_SDL
 				        font,
 #endif
-				        *net_host,
+				        na->host,
 				        statusbar_elems,
 				        statusbar_elem,
 				        win_w,
@@ -3985,8 +3946,7 @@ handle_simple_command(const char             *cmdline,
 	} else if (strcmp(cmdline, CMD_NEW) == 0) {
 		command_disconnect_core(active,
 		                        cl,
-		                        net_host,
-		                        net_port,
+		                        na,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
@@ -4013,7 +3973,7 @@ handle_simple_command(const char             *cmdline,
 #ifdef BACKEND_SDL
 				        font,
 #endif
-				        *net_host,
+				        na->host,
 				        statusbar_elems,
 				        statusbar_elem,
 				        win_w,
@@ -4800,7 +4760,7 @@ main_init(
               int                    *world_draw_space_h,
 #endif /* BACKEND_SDL */
               char                   *cwd,
-              const char             *net_host,
+              const struct NetAddr    na,
               size_t                 *statusbar_elems,
               enum StatusbarElement  *statusbar_elem,
               int                    *win_w,
@@ -4878,7 +4838,7 @@ main_init(
 	              world_area_h,
 	              world_dst);
 	handle_statusbar_resize(*font,
-	                        net_host,
+	                        na.host,
 	                        statusbar_elems,
 	                        statusbar_elem,
 	                        *win_w,
@@ -4948,8 +4908,7 @@ main(int    argc,
 	NSecs                  last_frame = 0;
 	NSecs                  last_key_use = 0;
 	NSecs                  last_tick = 0;
-	char                  *net_host = NULL;
-	char                  *net_port = NULL;
+	struct NetAddr         na;
 	bool                   no_glowcolor = false;
 	NSecs                  now = 0;
 	size_t                 statusbar_elems = 0;
@@ -5001,6 +4960,7 @@ main(int    argc,
 #endif
 
 	cmdline[0] = '\0';
+	na = NetAddr_new();
 	tool_opts = ToolOptions_new();
 	memset(&world, 0, sizeof(world));
 
@@ -5015,8 +4975,7 @@ main(int    argc,
 	                 &autosave_all,
 	                 &autosave_none,
 	                 &framerate,
-	                 &net_host,
-	                 &net_port,
+	                 &na,
 	                 &no_glowcolor,
 	                 &tickrate,
 	                 &tool_opts,
@@ -5050,7 +5009,7 @@ main(int    argc,
 	              &world_draw_space_h,
 #endif /* BACKEND_SDL */
 	              cwd,
-	              net_host,
+	              na,
 	              &statusbar_elems,
 	              statusbar_elem,
 	              &win_w,
@@ -5062,14 +5021,13 @@ main(int    argc,
 
 	now = get_now();
 
-	if (net_host != NULL) {
+	if (na.host != NULL) {
 		command_connect(&active,
 		                &cl,
 		                &feedback,
 		                &feedback_expiration,
 		                font,
-		                &net_host,
-		                &net_port,
+		                &na,
 		                now,
 		                &statusbar_elems,
 		                statusbar_elem,
@@ -5180,8 +5138,7 @@ main(int    argc,
 		             &framerate,
 		             &input_mode,
 		             &last_key_use,
-		             &net_host,
-		             &net_port,
+		             &na,
 		             &no_glowcolor,
 		             now,
 		             &paused,
@@ -5236,7 +5193,7 @@ main(int    argc,
 			     font,
 			     font_size,
 			     input_mode,
-			     net_host,
+			     na.host,
 			     no_glowcolor,
 			     paused,
 			     statusbar_elems,
@@ -5329,7 +5286,7 @@ cleanup:
 
 	World_free(&world);
 	Client_free(&cl);
-	free_netstrs(&net_host, &net_port);
+	NetAddr_free(&na);
 
 	return 0;
 }

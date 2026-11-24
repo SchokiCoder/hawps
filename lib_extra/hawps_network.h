@@ -82,6 +82,13 @@ struct MsgWorldInfo {
 	uint32_t         height;
 };
 
+struct NetAddr {
+	size_t  host_size;
+	char   *host;
+	size_t  port_size;
+	char   *port;
+};
+
 enum NetError {
 	NE_OKAY,
 	NE_COULDNT_GET_ADDRINFO,
@@ -158,6 +165,15 @@ Client_free(struct Client *c);
 void
 NET_logln(char *fmt,
           ...);
+
+struct NetAddr
+NetAddr_new();
+
+struct NetAddr
+NetAddr_from_str(const char *str);
+
+void
+NetAddr_free(struct NetAddr *na);
 
 enum NetError
 Server_new(struct Server *s,
@@ -545,6 +561,142 @@ NET_logln(char *fmt,
 
 	fputc('\n', net_log);
 #endif /* HAWPS_NET_NO_PRINT */
+}
+
+struct NetAddr
+NetAddr_new()
+{
+	struct NetAddr ret = {
+		.host_size = 0,
+		.host = NULL,
+		.port_size = 0,
+		.port = NULL,
+	};
+
+	return ret;
+}
+
+struct NetAddr
+NetAddr_from_str(const char *str)
+{
+	const size_t NONE = -1;
+
+	size_t         i = 0;
+	size_t         bracket1 = -1;
+	size_t         bracket2 = -1;
+	bool           dots = false;
+	size_t         last_colon = -1;
+	struct NetAddr ret;
+	size_t         str_len = strlen(str);
+
+	ret = NetAddr_new();
+
+	for (i = str_len; i > 0; i--) {
+		if (':' == str[i]) {
+			last_colon = i;
+			break;
+		}
+	}
+	for (i = str_len; i > 0; i--) {
+		if (']' == str[i]) {
+			bracket2 = i;
+			break;
+		}
+	}
+	for (i = 0; i < str_len; i++) {
+		if ('[' == str[i]) {
+			bracket1 = i;
+			break;
+		}
+	}
+	for (i = 0; i < str_len; i++) {
+		if ('.' == str[i]) {
+			dots = true;
+			break;
+		}
+	}
+
+	if (true == dots &&
+	    NONE == last_colon &&
+	    NONE == bracket1 &&
+	    NONE == bracket2) {
+		/* ipv4 */
+		ret.host_size = str_len + 1;
+		ret.host = malloc(ret.host_size);
+		strncpy(ret.host, str, ret.host_size);
+		ret.host[ret.host_size - 1] = '\0';
+
+		ret.port = NULL;
+	} else if (true == dots &&
+	           NONE != last_colon &&
+	           NONE == bracket1 &&
+	           NONE == bracket2) {
+		/* ipv4:port */
+		ret.host_size = last_colon + 1;
+		ret.host = malloc(ret.host_size);
+		strncpy(ret.host, str, ret.host_size);
+		ret.host[ret.host_size - 1] = '\0';
+
+		ret.port_size = str_len - last_colon + 1;
+		ret.port = malloc(ret.port_size);
+		strncpy(ret.port, &str[last_colon + 1], ret.port_size);
+		ret.port[ret.port_size - 1] = '\0';
+	} else if (false == dots &&
+	           NONE == bracket1 &&
+	           NONE == bracket2) {
+		/* ipv6 */
+		ret.host_size = str_len + 1;
+		ret.host = malloc(ret.host_size);
+		strncpy(ret.host, str, ret.host_size);
+		ret.host[ret.host_size - 1] = '\0';
+
+		ret.port = NULL;
+	} else if (false == dots &&
+	           NONE != bracket1 &&
+	           NONE != bracket2 &&
+	           last_colon < bracket2) {
+		/* [ipv6] */
+		ret.host_size = bracket2 - bracket1;
+		ret.host = malloc(ret.host_size);
+		strncpy(ret.host, &str[bracket1 + 1], ret.host_size);
+		ret.host[ret.host_size - 1] = '\0';
+
+		ret.port = NULL;
+	} else if (false == dots &&
+	           NONE != bracket1 &&
+	           NONE != bracket2 &&
+	           bracket2 < last_colon) {
+		/* [ipv6]:port */
+		ret.host_size = bracket2 - bracket1;
+		ret.host = malloc(ret.host_size);
+		strncpy(ret.host, &str[bracket1 + 1], ret.host_size);
+		ret.host[ret.host_size - 1] = '\0';
+
+		ret.port_size = str_len - last_colon + 1;
+		ret.port = malloc(ret.port_size);
+		strncpy(ret.port, &str[last_colon + 1], ret.port_size);
+		ret.port[ret.port_size - 1] = '\0';
+	}
+
+	return ret;
+}
+
+void
+NetAddr_free(struct NetAddr *na)
+{
+	if (NULL != na->host &&
+	    na->host_size > 0) {
+		free(na->host);
+	}
+	na->host_size = 0;
+	na->host = NULL;
+
+	if (NULL != na->port &&
+	    na->port_size > 0) {
+		free(na->port);
+	}
+	na->port_size = 0;
+	na->port = NULL;
 }
 
 enum NetError
@@ -987,113 +1139,6 @@ Server_free(struct Server *s)
 	s->sockfd = -1;
 
 	memset(s, 0, sizeof(*s));
-}
-
-void
-strtoaddr(const char  *restrict str,
-          char       **restrict host,
-          char       **restrict port)
-{
-	const size_t NONE = -1;
-
-	size_t i = 0;
-	size_t bracket1 = -1;
-	size_t bracket2 = -1;
-	bool   dots = false;
-	size_t host_size = 0;
-	size_t last_colon = -1;
-	size_t port_size = 0;
-	size_t str_len = strlen(str);
-
-	for (i = str_len; i > 0; i--) {
-		if (':' == str[i]) {
-			last_colon = i;
-			break;
-		}
-	}
-	for (i = str_len; i > 0; i--) {
-		if (']' == str[i]) {
-			bracket2 = i;
-			break;
-		}
-	}
-	for (i = 0; i < str_len; i++) {
-		if ('[' == str[i]) {
-			bracket1 = i;
-			break;
-		}
-	}
-	for (i = 0; i < str_len; i++) {
-		if ('.' == str[i]) {
-			dots = true;
-			break;
-		}
-	}
-
-	if (true == dots &&
-	    NONE == last_colon &&
-	    NONE == bracket1 &&
-	    NONE == bracket2) {
-		/* ipv4 */
-		host_size = str_len + 1;
-		*host = malloc(host_size);
-		strncpy(*host, str, host_size);
-		(*host)[host_size - 1] = '\0';
-
-		port = NULL;
-	} else if (true == dots &&
-	           NONE != last_colon &&
-	           NONE == bracket1 &&
-	           NONE == bracket2) {
-		/* ipv4:port */
-		host_size = last_colon + 1;
-		*host = malloc(host_size);
-		strncpy(*host, str, host_size);
-		(*host)[host_size - 1] = '\0';
-
-		port_size = str_len - last_colon + 1;
-		*port = malloc(port_size);
-		strncpy(*port, &str[last_colon + 1], port_size);
-		(*port)[port_size - 1] = '\0';
-	} else if (false == dots &&
-	           NONE == bracket1 &&
-	           NONE == bracket2) {
-		/* ipv6 */
-		host_size = str_len + 1;
-		*host = malloc(host_size);
-		strncpy(*host, str, host_size);
-		(*host)[host_size - 1] = '\0';
-
-		port = NULL;
-	} else if (false == dots &&
-	           NONE != bracket1 &&
-	           NONE != bracket2 &&
-	           last_colon < bracket2) {
-		/* [ipv6] */
-		host_size = bracket2 - bracket1;
-		*host = malloc(host_size);
-		strncpy(*host, &str[bracket1 + 1], host_size);
-		(*host)[host_size - 1] = '\0';
-
-		port = NULL;
-	} else if (false == dots &&
-	           NONE != bracket1 &&
-	           NONE != bracket2 &&
-	           bracket2 < last_colon) {
-		/* [ipv6]:port */
-		host_size = bracket2 - bracket1;
-		*host = malloc(host_size);
-		strncpy(*host, &str[bracket1 + 1], host_size);
-		(*host)[host_size - 1] = '\0';
-
-		port_size = str_len - last_colon + 1;
-		*port = malloc(port_size);
-		strncpy(*port, &str[last_colon + 1], port_size);
-		(*port)[port_size - 1] = '\0';
-	} else {
-		host = NULL;
-		port = NULL;
-	}
 }
 
 #endif /* HAWPS_IMPL */

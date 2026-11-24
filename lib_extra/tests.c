@@ -100,60 +100,47 @@ test_heat_glow(void)
 void
 test_strtoaddr(void)
 {
-	char *host = NULL;
-	char *port = NULL;
+	struct NetAddr na;
 
-	strtoaddr("192.168.0.43", &host, &port);
-	assert(strcmp("192.168.0.43", host) == 0);
-	assert(NULL == port);
-	free(host);
-	host = NULL;
+	na = NetAddr_from_str("192.168.0.43");
+	assert(strcmp("192.168.0.43", na.host) == 0);
+	assert(NULL == na.port);
+	NetAddr_free(&na);
 
-	strtoaddr("102.16.0.200:25565", &host, &port);
-	assert(strcmp("102.16.0.200", host) == 0);
-	assert(strcmp("25565", port) == 0);
-	free(host);
-	host = NULL;
-	free(port);
-	port = NULL;
+	na = NetAddr_from_str("102.16.0.200:25565");
+	assert(strcmp("102.16.0.200", na.host) == 0);
+	assert(strcmp("25565", na.port) == 0);
+	NetAddr_free(&na);
 
-	strtoaddr("a00:d993::", &host, &port);
-	assert(strcmp("a00:d993::", host) == 0);
-	assert(NULL == port);
-	free(host);
-	host = NULL;
+	na = NetAddr_from_str("a00:d993::");
+	assert(strcmp("a00:d993::", na.host) == 0);
+	assert(NULL == na.port);
+	NetAddr_free(&na);
 
-	strtoaddr("[a00:d993::]", &host, &port);
-	assert(strcmp("a00:d993::", host) == 0);
-	assert(NULL == port);
-	free(host);
-	host = NULL;
+	na = NetAddr_from_str("[a00:d993::]");
+	assert(strcmp("a00:d993::", na.host) == 0);
+	assert(NULL == na.port);
+	NetAddr_free(&na);
 
-	strtoaddr("[a00:d993::]:25565", &host, &port);
-	assert(strcmp("a00:d993::", host) == 0);
-	assert(strcmp("25565", port) == 0);
-	free(host);
-	host = NULL;
-	free(port);
-	port = NULL;
+	na = NetAddr_from_str("[a00:d993::]:25565");
+	assert(strcmp("a00:d993::", na.host) == 0);
+	assert(strcmp("25565", na.port) == 0);
+	NetAddr_free(&na);
 
-	strtoaddr("www.youactuallyhostthis.net", &host, &port);
-	assert(strcmp("www.youactuallyhostthis.net", host) == 0);
-	assert(NULL == port);
-	free(host);
-	host = NULL;
+	na = NetAddr_from_str("www.youactuallyhostthis.net");
+	assert(strcmp("www.youactuallyhostthis.net", na.host) == 0);
+	assert(NULL == na.port);
+	NetAddr_free(&na);
 
-	strtoaddr("www.youactuallyhostthis.net:420", &host, &port);
-	assert(strcmp("www.youactuallyhostthis.net", host) == 0);
-	assert(strcmp("420", port) == 0);
-	free(host);
-	host = NULL;
-	free(port);
-	port = NULL;
+	na = NetAddr_from_str("www.youactuallyhostthis.net:420");
+	assert(strcmp("www.youactuallyhostthis.net", na.host) == 0);
+	assert(strcmp("420", na.port) == 0);
+	NetAddr_free(&na);
 
-	strtoaddr("]a00:d993::[:25565", &host, &port);
-	assert(NULL == host);
-	assert(NULL == port);
+	na = NetAddr_from_str("]a00:d993::[:25565");
+	assert(NULL == na.host);
+	assert(NULL == na.port);
+	NetAddr_free(&na);
 }
 
 void

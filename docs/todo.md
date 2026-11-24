@@ -245,6 +245,11 @@ Also fix super minor code smell.
 
 - [x] libextra net: fix server never reactivating inactive clients
 
+- [x] desktop client: fix memory leak from net strs
+When default values are given explicitly,
+the code thought it's a pointer to a built-in string, which mustn't be freed.
+
+- [ ] desktop client: fix statusbar when connect flag fails
 - [ ] desktop client: fix statusbar when failed connect after successful connect
 don't forget the cases cmd cnct needs to handle:
 local   -> connect
