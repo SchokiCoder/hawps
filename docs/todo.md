@@ -243,7 +243,7 @@ Also fix super minor code smell.
 
 - [x] libextra runtime: add NSecs type to replace raw `uint64_t`
 
-- [ ] libextra net: fix server not reactivating inactive clients upon lifesignal
+- [x] libextra net: fix server never reactivating inactive clients
 
 - [ ] desktop client: fix statusbar when failed connect after successful connect
 don't forget the cases cmd cnct needs to handle:

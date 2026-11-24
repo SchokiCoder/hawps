@@ -773,6 +773,7 @@ Server_handle_message(struct Server         *s,
 		}
 
 		s->cl_last_seen[i] = now;
+		Server_set_client_active(s, i, true);
 		break;
 
 	default:
