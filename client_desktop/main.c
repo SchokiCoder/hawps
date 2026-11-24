@@ -141,10 +141,20 @@
  */
 
 struct ThArgsClient {
-	volatile bool *active;
-	struct Client *cl;
-	volatile bool *thrd_active;
-	struct World  *w;
+	volatile bool          *active;
+	struct Client          *cl;
+	char                  **feedback;
+	NSecs                  *feedback_expiration;
+#ifdef BACKEND_SDL
+	TTF_Font               *font;
+#endif
+	struct NetAddr         *na;
+	size_t                 *statusbar_elems;
+	enum StatusbarElement  *statusbar_elem;
+	volatile bool          *thrd_active;
+	struct World           *w;
+	int                    *win_w;
+	char                   *world_name;
 };
 
 struct ToolOptions {
@@ -541,9 +551,9 @@ command_connect(bool                   *active,
                 struct ThArgsClient    *tha_cl,
                 pthread_t              *thrd_cl,
                 bool                   *thrd_cl_active,
-                const int               win_w,
+                int                    *win_w,
                 struct World           *world,
-                const char             *world_name);
+                char                   *world_name);
 
 void
 command_disconnect_core(bool           *active,
@@ -705,7 +715,7 @@ handle_advanced_command(const char            *cmd,
                         bool                  *thrd_cl_active,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
-                        const int              win_w,
+                        int                   *win_w,
                         struct World          *world,
                         char                  *world_name);
 
@@ -777,7 +787,7 @@ handle_command(char                  *cmdline,
                bool                  *thrd_cl_active,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
-               const int              win_w,
+               int                   *win_w,
                struct World          *world,
                char                  *world_name);
 
@@ -808,7 +818,7 @@ handle_command_input(const char            *in,
                      bool                  *thrd_cl_active,
                      float                 *tickrate,
                      struct ToolOptions    *tool_opts,
-                     const int              win_w,
+                     int                   *win_w,
                      const int              win_h,
                      struct World          *world,
                      struct Rect           *world_draw,
@@ -1004,7 +1014,6 @@ handle_simple_command(const char             *cmdline,
                       const size_t            world_scale,
                       SDL_Texture           **world_tx,
 #else
-                      const int               win_w,
                       const int               win_h,
                       struct Rect            *world_draw,
                       int                    *world_draw_space_w,
@@ -1029,7 +1038,7 @@ handle_simple_command(const char             *cmdline,
                       bool                   *thrd_cl_active,
                       float                  *tickrate,
                       struct ToolOptions     *tool_opts,
-                      const int               win_w,
+                      int                    *win_w,
                       struct World           *world,
                       char                   *world_name);
 
@@ -1198,9 +1207,9 @@ command_connect(bool                   *active,
                 struct ThArgsClient    *tha_cl,
                 pthread_t              *thrd_cl,
                 bool                   *thrd_cl_active,
-                const int               win_w,
+                int                    *win_w,
                 struct World           *world,
-                const char             *world_name)
+                char                   *world_name)
 {
 	struct World tempwld;
 
@@ -1214,7 +1223,7 @@ command_connect(bool                   *active,
 			                na->host,
 			                statusbar_elems,
 			                statusbar_elem,
-			                win_w,
+			                *win_w,
 			                world_name);
 		return;
 	}
@@ -1244,15 +1253,25 @@ command_connect(bool                   *active,
 			                na->host,
 			                statusbar_elems,
 			                statusbar_elem,
-			                win_w,
+			                *win_w,
 			                world_name);
 		return;
 	}
 
 	tha_cl->active = active;
 	tha_cl->cl = cl;
+	tha_cl->feedback = feedback;
+	tha_cl->feedback_expiration = feedback_expiration;
+#ifdef BACKEND_SDL
+	tha_cl->font = font;
+#endif
+	tha_cl->na = na;
+	tha_cl->statusbar_elems = statusbar_elems;
+	tha_cl->statusbar_elem = statusbar_elem;
 	tha_cl->thrd_active = thrd_cl_active;
 	tha_cl->w = world;
+	tha_cl->win_w = win_w;
+	tha_cl->world_name = world_name;
 
 	if (pthread_create(thrd_cl, NULL, thrdfn_cl, tha_cl) != 0) {
 		set_feedback(feedback, feedback_expiration, now,
@@ -1266,7 +1285,7 @@ command_connect(bool                   *active,
 			                na->host,
 			                statusbar_elems,
 			                statusbar_elem,
-			                win_w,
+			                *win_w,
 			                world_name);
 		return;
 	}
@@ -1279,7 +1298,7 @@ command_connect(bool                   *active,
 	                        na->host,
 	                        statusbar_elems,
 	                        statusbar_elem,
-	                        win_w,
+	                        *win_w,
 	                        world_name);
 }
 
@@ -1955,7 +1974,7 @@ handle_advanced_command(const char            *cmd,
                         bool                  *thrd_cl_active,
                         float                 *tickrate,
                         struct ToolOptions    *tool_opts,
-                        const int              win_w,
+                        int                   *win_w,
                         struct World          *world,
                         char                  *world_name)
 {
@@ -2073,7 +2092,7 @@ handle_advanced_command(const char            *cmd,
 		                        na->host,
 		                        statusbar_elems,
 		                        statusbar_elem,
-		                        win_w,
+		                        *win_w,
 		                        world_name);
 
 		handle_world_resize(
@@ -2139,7 +2158,7 @@ handle_advanced_command(const char            *cmd,
 		                        na->host,
 		                        statusbar_elems,
 		                        statusbar_elem,
-		                        win_w,
+		                        *win_w,
 		                        world_name);
 	} else if (strcmp(cmd, CMD_SPAWNER) == 0 ||
 	           strcmp(cmd, CMD_SPAWNER_SHORT) == 0) {
@@ -2548,7 +2567,7 @@ handle_command(char                  *cmdline,
                bool                  *thrd_cl_active,
                float                 *tickrate,
                struct ToolOptions    *tool_opts,
-               const int              win_w,
+               int                   *win_w,
                struct World          *world,
                char                  *world_name)
 {
@@ -2618,7 +2637,6 @@ handle_command(char                  *cmdline,
 	                      world_scale,
 	                      world_tx,
 #else
-	                      win_w,
 	                      win_h,
 	                      world_draw,
 	                      world_draw_space_w,
@@ -2675,7 +2693,7 @@ handle_command_input(const char            *in,
                      bool                  *thrd_cl_active,
                      float                 *tickrate,
                      struct ToolOptions    *tool_opts,
-                     const int              win_w,
+                     int                   *win_w,
                      const int              win_h,
                      struct World          *world,
                      struct Rect           *world_draw,
@@ -2953,7 +2971,7 @@ handle_input(
 				               thrd_cl_active,
 				               tickrate,
 				               tool_opts,
-				               *win_w,
+				               win_w,
 				               world,
 				               world_name);
 				cmdline[0] = '\0';
@@ -3841,7 +3859,6 @@ handle_simple_command(const char             *cmdline,
                       const size_t            world_scale,
                       SDL_Texture           **world_tx,
 #else
-                      const int               win_w,
                       const int               win_h,
                       struct Rect            *world_draw,
                       int                    *world_draw_space_w,
@@ -3866,7 +3883,7 @@ handle_simple_command(const char             *cmdline,
                       bool                   *thrd_cl_active,
                       float                  *tickrate,
                       struct ToolOptions     *tool_opts,
-                      const int               win_w,
+                      int                    *win_w,
                       struct World           *world,
                       char                   *world_name)
 {
@@ -3940,7 +3957,7 @@ handle_simple_command(const char             *cmdline,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
-		string_copy(world_name, WORLDNAME_SIZE, "localcopy");
+		string_copy(world_name, WORLDNAME_SIZE, NET_DISCONNECT_WORLDNAME);
 		handle_statusbar_resize(
 #ifdef BACKEND_SDL
 				        font,
@@ -3948,7 +3965,7 @@ handle_simple_command(const char             *cmdline,
 				        na->host,
 				        statusbar_elems,
 				        statusbar_elem,
-				        win_w,
+				        *win_w,
 				        world_name);
 
 		set_feedback(feedback, feedback_expiration, now,
@@ -4003,7 +4020,7 @@ handle_simple_command(const char             *cmdline,
 				        na->host,
 				        statusbar_elems,
 				        statusbar_elem,
-				        win_w,
+				        *win_w,
 				        world_name);
 	} else if (strcmp(cmdline, CMD_NOGLOWCOLOR) == 0 ||
 	           strcmp(cmdline, CMD_NOGLOWCOLOR_SHORT) == 0) {
@@ -4503,7 +4520,27 @@ thrdfn_cl(void *arg)
 		}
 		last_tick = now;
 
-		Client_tick(args->cl, now, args->w);
+		if (Client_tick(args->cl, now, args->w) != NE_OKAY) {
+			string_copy(args->world_name,
+			            WORLDNAME_SIZE,
+			            NET_DISCONNECT_WORLDNAME);
+			NetAddr_free(args->na);
+			handle_statusbar_resize(
+#ifdef BACKEND_SDL
+			                        args->font,
+#endif
+			                        args->na->host,
+			                        args->statusbar_elems,
+			                        args->statusbar_elem,
+			                        *args->win_w,
+			                        args->world_name);
+
+			set_feedback(args->feedback,
+			             args->feedback_expiration,
+			             now,
+			             "Disconnected from server.");
+			break;
+		}
 	}
 
 	*args->thrd_active = false;
@@ -5061,7 +5098,7 @@ main(int    argc,
 		                &tha_cl,
 		                &thrd_cl,
 		                &thrd_cl_active,
-		                win_w,
+		                &win_w,
 		                &world,
 		                world_name);
 	}

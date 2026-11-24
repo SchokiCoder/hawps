@@ -251,7 +251,8 @@ the code thought it's a pointer to a built-in string, which mustn't be freed.
 
 - [x] desktop client: fix missing statusbar updates with connect attempts
 
-- [ ] desktop client: `Client_tick` return value not checked, signal loss not handled
+- [x] desktop client: add connection loss handling
+`Client_tick` return value has never been checked, until now.
 
 - [ ] desktop client: disable quicksave and -load when connected to server
 - [ ] desktop client: disable autosave when connected to server
