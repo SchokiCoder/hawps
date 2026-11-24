@@ -532,11 +532,11 @@ void
 command_connect(bool                   *active,
                 struct Client          *cl,
                 char                  **restrict feedback,
-                uint64_t               *feedback_expiration,
+                NSecs                  *feedback_expiration,
                 TTF_Font               *font,
                 char                  **restrict net_host,
                 char                  **restrict net_port,
-                const uint64_t          now,
+                const NSecs             now,
                 size_t                 *statusbar_elems,
                 enum StatusbarElement  *statusbar_elem,
                 struct ThArgsClient    *tha_cl,
@@ -601,8 +601,8 @@ command_screenshot(
 #endif
                    const char               *cwd,
                    char                    **feedback,
-                   uint64_t                 *feedback_expiration,
-                   const uint64_t            now,
+                   NSecs                    *feedback_expiration,
+                   const NSecs               now,
                    const bool                th_vision);
 
 void
@@ -696,11 +696,11 @@ handle_advanced_command(const char            *cmd,
                         struct Client         *cl,
                         const char            *cwd,
                         char                 **feedback,
-                        uint64_t              *feedback_expiration,
+                        NSecs                 *feedback_expiration,
                         float                 *framerate,
                         char                 **restrict net_host,
                         char                 **restrict net_port,
-                        const uint64_t         now,
+                        const NSecs            now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
                         struct ThArgsClient   *tha_cl,
@@ -736,8 +736,8 @@ void
 handle_autosave(const bool          autosave_all,
                 const bool          autosave_none,
                 const char         *cwd,
-                uint64_t           *last_autosave,
-                const uint64_t      now,
+                NSecs              *last_autosave,
+                const NSecs         now,
                 const struct World  world,
                 const char         *world_name);
 
@@ -767,12 +767,12 @@ handle_command(char                  *cmdline,
                struct Client         *cl,
                const char            *cwd,
                char                 **feedback,
-               uint64_t              *feedback_expiration,
+               NSecs                 *feedback_expiration,
                float                 *framerate,
                char                 **restrict net_host,
                char                 **restrict net_port,
                bool                  *no_glowcolor,
-               const uint64_t         now,
+               const NSecs            now,
                bool                  *paused,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
@@ -797,13 +797,13 @@ handle_command_input(const char            *in,
                      size_t                *cmdline_shift,
                      const char            *cwd,
                      char                 **feedback,
-                     uint64_t              *feedback_expiration,
+                     NSecs                 *feedback_expiration,
                      float                 *framerate,
                      enum InputMode        *input_mode,
                      char                 **restrict net_host,
                      char                 **restrict net_port,
                      bool                  *no_glowcolor,
-                     uint64_t               now,
+                     NSecs                  now,
                      bool                  *paused,
                      size_t                *statusbar_elems,
                      enum StatusbarElement *statusbar_elem,
@@ -864,14 +864,14 @@ handle_input(
              int                   *drag_start_x,
              int                   *drag_start_y,
              char                 **feedback,
-             uint64_t              *feedback_expiration,
+             NSecs                 *feedback_expiration,
              float                 *framerate,
              enum InputMode        *input_mode,
-             uint64_t              *last_key_use,
+             NSecs                 *last_key_use,
              char                 **restrict net_host,
              char                 **restrict net_port,
              bool                  *no_glowcolor,
-             const uint64_t         now,
+             const NSecs            now,
              bool                  *paused,
              size_t                *statusbar_elems,
              enum StatusbarElement *statusbar_elem,
@@ -920,11 +920,11 @@ handle_normal_csi_input(const char         *in,
                         int                *drag_start_x,
                         int                *drag_start_y,
                         char              **feedback,
-                        uint64_t           *feedback_expiration,
+                        NSecs              *feedback_expiration,
                         bool               *lmb_pressed,
                         const bool          no_color,
                         const bool          no_glowcolor,
-                        const uint64_t      now,
+                        const NSecs         now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
@@ -960,8 +960,8 @@ handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
-                    uint64_t           *last_key_use,
-                    const uint64_t      now,
+                    NSecs              *last_key_use,
+                    const NSecs         now,
                     bool               *paused,
                     float              *tickrate,
                     bool               *th_vision,
@@ -1020,13 +1020,13 @@ handle_simple_command(const char             *cmdline,
                       struct Client          *cl,
                       const char             *cwd,
                       char                  **feedback,
-                      uint64_t               *feedback_expiration,
+                      NSecs                  *feedback_expiration,
                       TTF_Font               *font,
                       float                  *framerate,
                       char                  **restrict net_host,
                       char                  **restrict net_port,
                       bool                   *no_glowcolor,
-                      const uint64_t          now,
+                      const NSecs             now,
                       bool                   *paused,
                       size_t                 *statusbar_elems,
                       enum StatusbarElement  *statusbar_elem,
@@ -1083,8 +1083,8 @@ handle_world_resize(
 void
 quickload(const char     *cwd,
           char          **feedback,
-          uint64_t       *feedback_expiration,
-          const uint64_t  now,
+          NSecs          *feedback_expiration,
+          const NSecs     now,
           struct World   *world,
           const char     *world_name);
 
@@ -1134,8 +1134,8 @@ render_world(char               *out,
 
 void
 set_feedback(char          **feedback,
-             uint64_t       *feedback_expiration,
-             const uint64_t  now,
+             NSecs          *feedback_expiration,
+             const NSecs     now,
              char           *str);
 
 void*
@@ -1196,11 +1196,11 @@ void
 command_connect(bool                   *active,
                 struct Client          *cl,
                 char                  **restrict feedback,
-                uint64_t               *feedback_expiration,
+                NSecs                  *feedback_expiration,
                 TTF_Font               *font,
                 char                  **restrict net_host,
                 char                  **restrict net_port,
-                const uint64_t          now,
+                const NSecs             now,
                 size_t                 *statusbar_elems,
                 enum StatusbarElement  *statusbar_elem,
                 struct ThArgsClient    *tha_cl,
@@ -1402,8 +1402,8 @@ command_screenshot(
 #endif
                    const char               *cwd,
                    char                    **feedback,
-                   uint64_t                 *feedback_expiration,
-                   const uint64_t            now,
+                   NSecs                    *feedback_expiration,
+                   const NSecs               now,
                    const bool                th_vision)
 {
 	char    datetime[BUF_SIZE];
@@ -1942,11 +1942,11 @@ handle_advanced_command(const char            *cmd,
                         struct Client         *cl,
                         const char            *cwd,
                         char                 **feedback,
-                        uint64_t              *feedback_expiration,
+                        NSecs                 *feedback_expiration,
                         float                 *framerate,
                         char                 **restrict net_host,
                         char                 **restrict net_port,
-                        const uint64_t         now,
+                        const NSecs            now,
                         size_t                *statusbar_elems,
                         enum StatusbarElement *statusbar_elem,
                         struct ThArgsClient   *tha_cl,
@@ -2491,8 +2491,8 @@ void
 handle_autosave(const bool          autosave_all,
                 const bool          autosave_none,
                 const char         *cwd,
-                uint64_t           *last_autosave,
-                const uint64_t      now,
+                NSecs              *last_autosave,
+                const NSecs         now,
                 const struct World  world,
                 const char         *world_name)
 {
@@ -2537,12 +2537,12 @@ handle_command(char                  *cmdline,
                struct Client         *cl,
                const char            *cwd,
                char                 **feedback,
-               uint64_t              *feedback_expiration,
+               NSecs                 *feedback_expiration,
                float                 *framerate,
                char                 **restrict net_host,
                char                 **restrict net_port,
                bool                  *no_glowcolor,
-               const uint64_t         now,
+               const NSecs            now,
                bool                  *paused,
                size_t                *statusbar_elems,
                enum StatusbarElement *statusbar_elem,
@@ -2665,13 +2665,13 @@ handle_command_input(const char            *in,
                      size_t                *cmdline_shift,
                      const char            *cwd,
                      char                 **feedback,
-                     uint64_t              *feedback_expiration,
+                     NSecs                 *feedback_expiration,
                      float                 *framerate,
                      enum InputMode        *input_mode,
                      char                 **restrict net_host,
                      char                 **restrict net_port,
                      bool                  *no_glowcolor,
-                     uint64_t               now,
+                     NSecs                  now,
                      bool                  *paused,
                      size_t                *statusbar_elems,
                      enum StatusbarElement *statusbar_elem,
@@ -2839,14 +2839,14 @@ handle_input(
              int                   *drag_start_x,
              int                   *drag_start_y,
              char                 **feedback,
-             uint64_t              *feedback_expiration,
+             NSecs                 *feedback_expiration,
              float                 *framerate,
              enum InputMode        *input_mode,
-             uint64_t              *last_key_use,
+             NSecs                 *last_key_use,
              char                 **restrict net_host,
              char                 **restrict net_port,
              bool                  *no_glowcolor,
-             const uint64_t         now,
+             const NSecs            now,
              bool                  *paused,
              size_t                *statusbar_elems,
              enum StatusbarElement *statusbar_elem,
@@ -3306,11 +3306,11 @@ handle_normal_csi_input(const char         *in,
                         int                *drag_start_x,
                         int                *drag_start_y,
                         char              **feedback,
-                        uint64_t           *feedback_expiration,
+                        NSecs              *feedback_expiration,
                         bool               *lmb_pressed,
                         const bool          no_color,
                         const bool          no_glowcolor,
-                        const uint64_t      now,
+                        const NSecs         now,
                         const bool          th_vision,
                         struct ToolOptions *tool_opts,
                         struct World       *world,
@@ -3417,8 +3417,8 @@ handle_normal_input(const char         *in,
                     bool               *active,
                     const float         delta,
                     enum InputMode     *input_mode,
-                    uint64_t           *last_key_use,
-                    const uint64_t      now,
+                    NSecs              *last_key_use,
+                    const NSecs         now,
                     bool               *paused,
                     float              *tickrate,
                     bool               *th_vision,
@@ -3859,13 +3859,13 @@ handle_simple_command(const char             *cmdline,
                       struct Client          *cl,
                       const char             *cwd,
                       char                  **feedback,
-                      uint64_t               *feedback_expiration,
+                      NSecs                  *feedback_expiration,
                       TTF_Font               *font,
                       float                  *framerate,
                       char                  **restrict net_host,
                       char                  **restrict net_port,
                       bool                   *no_glowcolor,
-                      const uint64_t          now,
+                      const NSecs             now,
                       bool                   *paused,
                       size_t                 *statusbar_elems,
                       enum StatusbarElement  *statusbar_elem,
@@ -4218,8 +4218,8 @@ handle_world_resize(
 void
 quickload(const char     *cwd,
           char          **feedback,
-          uint64_t       *feedback_expiration,
-          const uint64_t  now,
+          NSecs          *feedback_expiration,
+          const NSecs     now,
           struct World   *world,
           const char     *world_name)
 {
@@ -4492,8 +4492,8 @@ render_world(char               *out,
 
 void
 set_feedback(char          **feedback,
-             uint64_t       *feedback_expiration,
-             const uint64_t  now,
+             NSecs          *feedback_expiration,
+             const NSecs     now,
              char           *str)
 {
 	*feedback = str;
@@ -4504,14 +4504,14 @@ void*
 thrdfn_cl(void *arg)
 {
 	struct ThArgsClient *args = arg;
-	uint64_t             last_tick = 0;
-	uint64_t             now = 0;
+	NSecs                last_tick = 0;
+	NSecs                now = 0;
 
 	*args->thrd_active = true;
 
 	while (*args->active) {
 		now = get_now();
-		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / NET_TICKRATE)) {
+		if (now - last_tick < (NSecs) (NANOS_PER_SEC / NET_TICKRATE)) {
 			continue;
 		}
 		last_tick = now;
@@ -4938,20 +4938,20 @@ main(int    argc,
 	int                    drag_start_x = 0;
 	int                    drag_start_y = 0;
 	char                  *feedback = NULL;
-	uint64_t               feedback_expiration = 0;
+	NSecs                  feedback_expiration = 0;
 	FILE                  *file = NULL;
 	float                  framerate = STD_FRAMERATE;
 	enum InputMode         input_mode = IM_NORMAL;
 	bool                   paused = false;
-	uint64_t               last_autosave = 0;
-	uint64_t               last_input = 0;
-	uint64_t               last_frame = 0;
-	uint64_t               last_key_use = 0;
-	uint64_t               last_tick = 0;
+	NSecs                  last_autosave = 0;
+	NSecs                  last_input = 0;
+	NSecs                  last_frame = 0;
+	NSecs                  last_key_use = 0;
+	NSecs                  last_tick = 0;
 	char                  *net_host = NULL;
 	char                  *net_port = NULL;
 	bool                   no_glowcolor = false;
-	uint64_t               now = 0;
+	NSecs                  now = 0;
 	size_t                 statusbar_elems = 0;
 	enum StatusbarElement  statusbar_elem[ARRLEN(STATUSBAR_DISPLAY_PRIORITY)];
 	pthread_t              thrd_cl = 0;
@@ -5202,7 +5202,7 @@ main(int    argc,
 			use_tool(delta, tool_opts, &world);
 		}
 #endif
-		if (now - last_tick >= (uint64_t) (NANOS_PER_SEC / tickrate)) {
+		if (now - last_tick >= (NSecs) (NANOS_PER_SEC / tickrate)) {
 			last_tick = now;
 
 			World_update(&world, tool_opts.spawn_temperature);
@@ -5223,7 +5223,7 @@ main(int    argc,
 			}
 		}
 
-		if (now - last_frame >= (uint64_t) (NANOS_PER_SEC / framerate)) {
+		if (now - last_frame >= (NSecs) (NANOS_PER_SEC / framerate)) {
 			last_frame = now;
 
 			if (now > feedback_expiration) {

@@ -41,8 +41,8 @@ struct Client {
 	bool             active;
 	struct addrinfo *ai;
 	struct addrinfo *aip;
-	uint64_t         last_lifesignal;
-	uint64_t         last_update;
+	NSecs            last_lifesignal;
+	NSecs            last_update;
 	char            *port;
 	size_t           recvbuf_size;
 	char            *recvbuf;
@@ -97,7 +97,7 @@ enum NetError {
 };
 
 struct Server {
-	uint64_t         last_housekeep;
+	NSecs            last_housekeep;
 	size_t           sendbuf_size;
 	char            *sendbuf;
 	int              sockfd;
@@ -107,8 +107,8 @@ struct Server {
 	socklen_t       *cl_addr_len;
 	bool            *cl_connected;
 	char           **cl_ip;
-	uint64_t        *cl_last_seen;
-	uint64_t        *cl_last_update;
+	NSecs           *cl_last_seen;
+	NSecs           *cl_last_update;
 
 	size_t           active_cls;
 	size_t          *active_cl;
@@ -148,9 +148,9 @@ Client_handle_worldinfo(struct Client  *c,
                         const int       wld_h);
 
 enum NetError
-Client_tick(struct Client  *c,
-            const uint64_t  now,
-            struct World   *w);
+Client_tick(struct Client *c,
+            const NSecs    now,
+            struct World  *w);
 
 void
 Client_free(struct Client *c);
@@ -184,7 +184,7 @@ Server_get_client_id(struct Server         *s,
 
 void
 Server_handle_message(struct Server         *s,
-                      const uint64_t         now,
+                      const NSecs            now,
                       const struct sockaddr  recv_addr,
                       const socklen_t        recv_addr_len,
                       const char            *recv_buf,
@@ -192,7 +192,7 @@ Server_handle_message(struct Server         *s,
 
 void
 Server_housekeeping(struct Server  *s,
-                    const uint64_t  now);
+                    const NSecs     now);
 
 void
 Server_send_worldarr(struct Server          *s,
@@ -208,7 +208,7 @@ Server_set_client_active(struct Server *s,
 
 void
 Server_tick(struct Server  *s,
-            const uint64_t  now,
+            const NSecs     now,
             struct World   *w);
 
 void
@@ -471,9 +471,9 @@ Client_handle_worldinfo(struct Client  *c,
 }
 
 enum NetError
-Client_tick(struct Client  *c,
-            const uint64_t  now,
-            struct World   *w)
+Client_tick(struct Client *c,
+            const NSecs    now,
+            struct World  *w)
 {
 	enum MessageType send_mt;
 
@@ -489,7 +489,7 @@ Client_tick(struct Client  *c,
 	}
 
 	if (now - c->last_lifesignal >=
-	    (uint64_t) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
+	    (NSecs) (NANOS_PER_SEC / NET_CLIENT_LIFESIGNALRATE)) {
 		c->last_lifesignal = now;
 
 		send_mt = MT_STILL_ALIVE;
@@ -591,8 +591,8 @@ Server_new(struct Server *s,
 	s->cl_addr_len = calloc(s->cl_slots, sizeof(socklen_t));
 	s->cl_connected = calloc(s->cl_slots, sizeof(bool));
 	s->cl_ip = calloc(s->cl_slots, sizeof(char*));
-	s->cl_last_seen = calloc(s->cl_slots, sizeof(uint64_t));
-	s->cl_last_update = calloc(s->cl_slots, sizeof(uint64_t));
+	s->cl_last_seen = calloc(s->cl_slots, sizeof(NSecs));
+	s->cl_last_update = calloc(s->cl_slots, sizeof(NSecs));
 
 	for (i = 0; i < s->cl_slots; i++) {
 		s->cl_ip[i] = calloc(NET_IPSTR_LEN, sizeof(char));
@@ -654,7 +654,7 @@ Server_get_client_id(struct Server         *s,
 
 void
 Server_handle_message(struct Server         *s,
-                      const uint64_t         now,
+                      const NSecs            now,
                       const struct sockaddr  recv_addr,
                       const socklen_t        recv_addr_len,
                       const char            *recv_buf,
@@ -784,7 +784,7 @@ Server_handle_message(struct Server         *s,
 
 void
 Server_housekeeping(struct Server  *s,
-                    const uint64_t  now)
+                    const NSecs     now)
 {
 	size_t i;
 
@@ -884,7 +884,7 @@ Server_shutdown(struct Server *s)
 
 void
 Server_tick(struct Server  *s,
-            const uint64_t  now,
+            const NSecs     now,
             struct World   *w)
 {
 	size_t           i;
@@ -894,7 +894,7 @@ Server_tick(struct Server  *s,
 
 	for (i = 0; i < s->active_cls; i++) {
 		if (now - s->cl_last_update[s->active_cl[i]] <
-		    (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE)) {
+		    (NSecs) (NANOS_PER_SEC / NET_UPDATERATE)) {
 			continue;
 		}
 		s->cl_last_update[s->active_cl[i]] = now;
@@ -934,7 +934,7 @@ Server_tick(struct Server  *s,
 	}
 
 	if (now - s->last_housekeep >=
-	    (uint64_t) (NANOS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
+	    (NSecs) (NANOS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
 		s->last_housekeep = now;
 		Server_housekeeping(s, now);
 	}

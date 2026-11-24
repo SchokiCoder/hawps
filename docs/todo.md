@@ -241,7 +241,7 @@ Sent by client when disconnecting, and by server when shutting down.
 - [x] libextra net: fix server not using `active_cl` array optimization
 Also fix super minor code smell.
 
-- [ ] libextra runtime: add NSecs type to replace raw `uint64_t`
+- [x] libextra runtime: add NSecs type to replace raw `uint64_t`
 
 - [ ] libextra net: fix server not reactivating inactive clients upon lifesignal
 

@@ -112,12 +112,12 @@ void*
 threadfn_server(void *arg)
 {
 	struct ThServerArgs *args = arg;
-	uint64_t            last_tick = 0;
-	uint64_t            now = 0;
+	NSecs                last_tick = 0;
+	NSecs                now = 0;
 
 	while (*args->active) {
 		now = get_now();
-		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / TICKRATE)) {
+		if (now - last_tick < (NSecs) (NANOS_PER_SEC / TICKRATE)) {
 			continue;
 		}
 		last_tick = now;
@@ -132,12 +132,12 @@ void*
 threadfn_world(void *arg)
 {
 	struct ThWorldArgs *args = arg;
-	uint64_t            last_tick = 0;
-	uint64_t            now = 0;
+	NSecs               last_tick = 0;
+	NSecs               now = 0;
 
 	while (*args->active) {
 		now = get_now();
-		if (now - last_tick < (uint64_t) (NANOS_PER_SEC / TICKRATE)) {
+		if (now - last_tick < (NSecs) (NANOS_PER_SEC / TICKRATE)) {
 			continue;
 		}
 		last_tick = now;

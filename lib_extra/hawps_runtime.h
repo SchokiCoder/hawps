@@ -14,15 +14,17 @@
 /* Constant defines
  */
 
-#define NANOS_PER_SEC ((uint64_t) 1000000000)
+#define NANOS_PER_SEC ((NSecs) 1000000000)
 
 /* Types
  */
 
+typedef uint64_t NSecs;
+
 /* Function declarations
  */
 
-uint64_t
+NSecs
 get_now();
 
 /* Function definitions
@@ -30,14 +32,14 @@ get_now();
 
 #ifdef HAWPS_IMPL
 
-uint64_t
+NSecs
 get_now()
 {
-	uint64_t        ret;
+	NSecs           ret;
 	struct timespec ts;
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	ret = ((uint64_t) ts.tv_sec * NANOS_PER_SEC) + (uint64_t) ts.tv_nsec;
+	ret = ((NSecs) ts.tv_sec * NANOS_PER_SEC) + (NSecs) ts.tv_nsec;
 
 	return ret;
 }
