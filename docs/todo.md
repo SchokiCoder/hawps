@@ -236,7 +236,7 @@ Sent by client when disconnecting, and by server when shutting down.
 
 - [x] desktop client: fix pointer check during font opening
 
-- [ ] desktop client: `FLAG_HELP` memory leak
+- [x] desktop client: fix client data memory leak when flagwise return
 
 - [ ] libextra net: server doesn't use `active_cl` array optimization for sending world data?
 

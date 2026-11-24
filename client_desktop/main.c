@@ -4776,6 +4776,7 @@ write_tool_hint(char                     *out,
 bool
 main_init(
 #ifdef BACKEND_SDL
+              struct Client          *cl,
               TTF_Font              **font,
               const char             *font_path,
               const size_t            font_size,
@@ -4813,6 +4814,8 @@ main_init(
 
 	hawps_core_init();
 	hawps_extra_init();
+
+	*cl = Client_new();
 
 	if (NULL == world_init_path) {
 		string_copy(world_name, WORLDNAME_SIZE, WORLDNAME_NEW);
@@ -4999,7 +5002,6 @@ main(int    argc,
 
 	cmdline[0] = '\0';
 	tool_opts = ToolOptions_new();
-	cl = Client_new();
 	memset(&world, 0, sizeof(world));
 
 	if (!handle_args(argc, argv,
@@ -5024,6 +5026,7 @@ main(int    argc,
 
 	if (main_init(
 #ifdef BACKEND_SDL
+	              &cl,
 	              &font,
 	              font_path,
 	              font_size,
