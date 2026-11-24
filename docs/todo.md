@@ -259,7 +259,8 @@ This way using auto- or quicksave uses a "localcopy" name,
 for worlds saved from an ongoing net connection.
 Why disable features, when can fix / improve them?
 
-- [ ] desktop client: disable quickload when connected to server?
+- [x] desktop client: make world loading handle ongoing connection
+Aka. just disconnecting.
 
 - [ ] libextra net: "localhost" works but "127.0.0.1" doesn't?
 do any IPs work?

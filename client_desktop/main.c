@@ -563,9 +563,14 @@ command_disconnect_core(bool           *active,
                         bool           *thrd_cl_active);
 
 void
-command_load_core(const char   *cwd,
-                  struct World *world,
-                  const char   *world_name);
+command_load_core(bool           *active,
+                  struct Client  *cl,
+                  const char     *cwd,
+                  struct NetAddr *na,
+                  pthread_t      *thrd_cl,
+                  bool           *thrd_cl_active,
+                  struct World   *world,
+                  const char     *world_name);
 
 void
 command_new(
@@ -1083,12 +1088,17 @@ handle_world_resize(
                     const struct World   world);
 
 void
-quickload(const char     *cwd,
-          char          **feedback,
-          NSecs          *feedback_expiration,
-          const NSecs     now,
-          struct World   *world,
-          const char     *world_name);
+quickload(bool            *active,
+          struct Client   *cl,
+          const char      *cwd,
+          char           **feedback,
+          NSecs           *feedback_expiration,
+          struct NetAddr  *na,
+          const NSecs      now,
+          pthread_t       *thrd_cl,
+          bool            *thrd_cl_active,
+          struct World    *world,
+          const char      *world_name);
 
 #ifdef BACKEND_SDL
 #else
@@ -1325,9 +1335,14 @@ command_disconnect_core(bool           *active,
 }
 
 void
-command_load_core(const char   *cwd,
-                  struct World *world,
-                  const char   *world_name)
+command_load_core(bool           *active,
+                  struct Client  *cl,
+                  const char     *cwd,
+                  struct NetAddr *na,
+                  pthread_t      *thrd_cl,
+                  bool           *thrd_cl_active,
+                  struct World   *world,
+                  const char     *world_name)
 {
 	FILE  *file;
 	char   path[PATH_SIZE];
@@ -1345,6 +1360,7 @@ command_load_core(const char   *cwd,
 		return;
 	}
 
+	command_disconnect_core(active, cl, na, thrd_cl, thrd_cl_active);
 	*world = World_load(file);
 	fclose(file);
 }
@@ -2074,7 +2090,14 @@ handle_advanced_command(const char            *cmd,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
-		command_load_core(cwd, &tempworld, arg);
+		command_load_core(active,
+		                  cl,
+		                  cwd,
+		                  na,
+		                  thrd_cl,
+		                  thrd_cl_active,
+		                  &tempworld,
+		                  world_name);
 		if (0 == tempworld.w ||
 		    0 == tempworld.h) {
 			set_feedback(feedback, feedback_expiration, now,
@@ -2929,12 +2952,24 @@ handle_input(
 				break;
 
 			case SDLK_F7:
-				quickload(cwd,
+				quickload(active,
+				          cl,
+				          cwd,
 				          feedback,
 				          feedback_expiration,
+				          na,
 				          now,
+				          thrd_cl,
+				          thrd_cl_active,
 				          world,
 				          world_name);
+
+				handle_statusbar_resize(font,
+				                        na->host,
+				                        statusbar_elems,
+				                        statusbar_elem,
+				                        *win_w,
+				                        world_name);
 				break;
 
 			case SDLK_BACKSPACE:
@@ -3373,12 +3408,23 @@ handle_normal_csi_input(const char         *in,
 		command_save_core(cwd, *world, world_name);
 		set_feedback(feedback, feedback_expiration, now, "World saved");
 	} else if (strcmp(in, CSI_KEY_F7) == 0) {
-		quickload(cwd,
+		quickload(active,
+		          cl,
+		          cwd,
 		          feedback,
 		          feedback_expiration,
+		          na,
 		          now,
+		          thrd_cl,
+		          thrd_cl_active,
 		          world,
 		          world_name);
+
+		handle_statusbar_resize(na->host,
+		                        statusbar_elems,
+		                        statusbar_elem,
+		                        *win_w,
+		                        world_name);
 	} else if (strcmp(in, CSI_KEY_HOME) == 0) {
 		tool_opts->x = 0;
 		world_draw->x = 0;
@@ -3981,10 +4027,15 @@ handle_simple_command(const char             *cmdline,
 		tool_opts->sel_tool = TOOL_HEATER;
 	} else if (strcmp(cmdline, CMD_LOAD) == 0 ||
 	           strcmp(cmdline, CMD_LOAD_SHORT) == 0) {
-		quickload(cwd,
+		quickload(active,
+		          cl,
+		          cwd,
 		          feedback,
 		          feedback_expiration,
+		          na,
 		          now,
+		          thrd_cl,
+		          thrd_cl_active,
 		          world,
 		          world_name);
 	} else if (strcmp(cmdline, CMD_NEW) == 0) {
@@ -4220,16 +4271,28 @@ handle_world_resize(
 }
 
 void
-quickload(const char     *cwd,
-          char          **feedback,
-          NSecs          *feedback_expiration,
-          const NSecs     now,
-          struct World   *world,
-          const char     *world_name)
+quickload(bool            *active,
+          struct Client   *cl,
+          const char      *cwd,
+          char           **feedback,
+          NSecs           *feedback_expiration,
+          struct NetAddr  *na,
+          const NSecs      now,
+          pthread_t       *thrd_cl,
+          bool            *thrd_cl_active,
+          struct World    *world,
+          const char      *world_name)
 {
 	struct World tempworld;
 
-	command_load_core(cwd, &tempworld, world_name);
+	command_load_core(active,
+	                  cl,
+	                  cwd,
+	                  na,
+	                  thrd_cl,
+	                  thrd_cl_active,
+	                  &tempworld,
+	                  world_name);
 	if (0 == tempworld.w ||
 	    0 == tempworld.h) {
 		set_feedback(feedback, feedback_expiration, now,
@@ -5113,7 +5176,14 @@ main(int    argc,
 			world = World_load(file);
 			fclose(file);
 		} else {
-			command_load_core(cwd, &world, WORLDNAME_NEW);
+			command_load_core(&active,
+			                  &cl,
+			                  cwd,
+			                  &na,
+			                  &thrd_cl,
+			                  &thrd_cl_active,
+			                  &world,
+			                  WORLDNAME_NEW);
 		}
 
 		if (0 == world.w ||
