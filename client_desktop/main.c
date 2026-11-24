@@ -1207,6 +1207,15 @@ command_connect(bool                   *active,
 	if (NULL == na->host) {
 		set_feedback(feedback, feedback_expiration, now,
 		             "Network target is invalid.");
+		handle_statusbar_resize(
+#ifdef BACKEND_SDL
+		                        font,
+#endif
+			                na->host,
+			                statusbar_elems,
+			                statusbar_elem,
+			                win_w,
+			                world_name);
 		return;
 	}
 
@@ -1228,6 +1237,15 @@ command_connect(bool                   *active,
 		             "Could not connect.");
 		NetAddr_free(na);
 		*world = tempwld;
+		handle_statusbar_resize(
+#ifdef BACKEND_SDL
+		                        font,
+#endif
+			                na->host,
+			                statusbar_elems,
+			                statusbar_elem,
+			                win_w,
+			                world_name);
 		return;
 	}
 
@@ -1241,6 +1259,15 @@ command_connect(bool                   *active,
 		             "Could not create net thread.");
 		NetAddr_free(na);
 		*world = tempwld;
+		handle_statusbar_resize(
+#ifdef BACKEND_SDL
+		                        font,
+#endif
+			                na->host,
+			                statusbar_elems,
+			                statusbar_elem,
+			                win_w,
+			                world_name);
 		return;
 	}
 

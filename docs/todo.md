@@ -249,12 +249,7 @@ Also fix super minor code smell.
 When default values are given explicitly,
 the code thought it's a pointer to a built-in string, which mustn't be freed.
 
-- [ ] desktop client: fix statusbar when connect flag fails
-- [ ] desktop client: fix statusbar when failed connect after successful connect
-don't forget the cases cmd cnct needs to handle:
-local   -> connect
-connect -> connect
-connect -> local   (when failure)
+- [x] desktop client: fix missing statusbar updates with connect attempts
 
 - [ ] desktop client: `Client_tick` return value not checked, signal loss not handled
 
