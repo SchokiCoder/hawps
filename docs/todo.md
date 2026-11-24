@@ -238,7 +238,12 @@ Sent by client when disconnecting, and by server when shutting down.
 
 - [x] desktop client: fix client data memory leak when flagwise return
 
-- [ ] libextra net: server doesn't use `active_cl` array optimization for sending world data?
+- [x] libextra net: fix server not using `active_cl` array optimization
+Also fix super minor code smell.
+
+- [ ] libextra runtime: add NSecs type to replace raw `uint64_t`
+
+- [ ] libextra net: fix server not reactivating inactive clients upon lifesignal
 
 - [ ] desktop client: fix statusbar when failed connect after successful connect
 don't forget the cases cmd cnct needs to handle:

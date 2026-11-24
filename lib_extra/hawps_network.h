@@ -892,31 +892,30 @@ Server_tick(struct Server  *s,
 	socklen_t        recv_addr_len = sizeof(recv_addr);
 	char             recv_buf[NET_MEDIUM_MSG_SIZE];
 
-	for (i = 0; i < s->cl_slots; i++) {
-		if (false == Server_get_client_active(s, i) ||
-		    (now - s->cl_last_update[i] <
-		     (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE))) {
+	for (i = 0; i < s->active_cls; i++) {
+		if (now - s->cl_last_update[s->active_cl[i]] <
+		    (uint64_t) (NANOS_PER_SEC / NET_UPDATERATE)) {
 			continue;
 		}
-		s->cl_last_update[i] = now;
+		s->cl_last_update[s->active_cl[i]] = now;
 
 		Server_send_worldarr(s,
-		                     i,
+		                     s->active_cl[i],
 		                     w->_dissol,
 		                     w->w * w->h * sizeof(*w->_dissol),
 		                     MT_WAT_DISSOL);
 		Server_send_worldarr(s,
-		                     i,
+		                     s->active_cl[i],
 		                     w->_dot,
 		                     w->w * w->h * sizeof(*w->_dot),
 		                     MT_WAT_DOT);
 		Server_send_worldarr(s,
-		                     i,
+		                     s->active_cl[i],
 		                     w->_oxid,
 		                     w->w * w->h * sizeof(*w->_oxid),
 		                     MT_WAT_OXID);
 		Server_send_worldarr(s,
-		                     i,
+		                     s->active_cl[i],
 		                     w->_thermo,
 		                     w->w * w->h * sizeof(*w->_thermo),
 		                     MT_WAT_THERMO);
@@ -934,12 +933,11 @@ Server_tick(struct Server  *s,
 		                      *w);
 	}
 
-	if (now - s->last_housekeep <
+	if (now - s->last_housekeep >=
 	    (uint64_t) (NANOS_PER_SEC / NET_SERVER_HOUSEKEEPRATE)) {
-		return;
+		s->last_housekeep = now;
+		Server_housekeeping(s, now);
 	}
-	s->last_housekeep = now;
-	Server_housekeeping(s, now);
 }
 
 void
