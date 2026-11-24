@@ -254,8 +254,12 @@ the code thought it's a pointer to a built-in string, which mustn't be freed.
 - [x] desktop client: add connection loss handling
 `Client_tick` return value has never been checked, until now.
 
-- [ ] desktop client: disable quicksave and -load when connected to server
-- [ ] desktop client: disable autosave when connected to server
+- [x] desktop client: set connected worldname for auto- and quicksave
+This way using auto- or quicksave uses a "localcopy" name,
+for worlds saved from an ongoing net connection.
+Why disable features, when can fix / improve them?
+
+- [ ] desktop client: disable quickload when connected to server?
 
 - [ ] libextra net: "localhost" works but "127.0.0.1" doesn't?
 do any IPs work?

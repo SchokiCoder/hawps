@@ -1290,6 +1290,7 @@ command_connect(bool                   *active,
 		return;
 	}
 
+	string_copy(world_name, WORLDNAME_SIZE, NET_DISCONNECT_WORLDNAME);
 	World_free(&tempwld);
 	handle_statusbar_resize(
 #ifdef BACKEND_SDL
@@ -3957,7 +3958,6 @@ handle_simple_command(const char             *cmdline,
 		                        thrd_cl,
 		                        thrd_cl_active);
 
-		string_copy(world_name, WORLDNAME_SIZE, NET_DISCONNECT_WORLDNAME);
 		handle_statusbar_resize(
 #ifdef BACKEND_SDL
 				        font,
@@ -4521,9 +4521,6 @@ thrdfn_cl(void *arg)
 		last_tick = now;
 
 		if (Client_tick(args->cl, now, args->w) != NE_OKAY) {
-			string_copy(args->world_name,
-			            WORLDNAME_SIZE,
-			            NET_DISCONNECT_WORLDNAME);
 			NetAddr_free(args->na);
 			handle_statusbar_resize(
 #ifdef BACKEND_SDL
